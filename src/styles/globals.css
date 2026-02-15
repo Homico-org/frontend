@@ -6688,12 +6688,12 @@ img:not(.loading) {
 }
 
 /* Scrollbar hide utility */
-.pro-page .scrollbar-hide {
+.scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-.pro-page .scrollbar-hide::-webkit-scrollbar {
+.scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 

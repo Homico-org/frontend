@@ -132,14 +132,14 @@ function BeforeAfterPreview({
         >
           <div className="flex items-center gap-0.5">
             <svg
-              className={`text-gray-700 ${compact ? "w-2 h-2" : "w-3 h-3"}`}
+              className={`text-neutral-700 ${compact ? "w-2 h-2" : "w-3 h-3"}`}
               fill="currentColor"
               viewBox="0 0 24 24"
             >
               <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
             </svg>
             <svg
-              className={`text-gray-700 ${compact ? "w-2 h-2" : "w-3 h-3"}`}
+              className={`text-neutral-700 ${compact ? "w-2 h-2" : "w-3 h-3"}`}
               fill="currentColor"
               viewBox="0 0 24 24"
             >
@@ -544,31 +544,29 @@ export default function ProjectsStep({
     <div className="space-y-6">
       {/* Header with Stats */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#C4735B]/20 to-[#D4896B]/10 flex items-center justify-center border border-[#C4735B]/20 shadow-sm">
-            <svg
-              className="w-6 h-6 text-[#C4735B]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
+        <div className="flex items-center gap-2">
+          <svg
+            className="w-5 h-5 text-[#C4735B]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
           <div>
-            <h3 className="text-lg font-bold text-neutral-900">
+            <span className="font-semibold text-[var(--color-text-primary)]">
               {t('common.portfolio')}
-            </h3>
-            <p className="text-xs text-neutral-500">
+            </span>
+            <span className="text-xs text-[var(--color-text-secondary)] ml-2">
               {locale === "ka"
                 ? `${projects.length} პროექტი • ${visibleProjects.length} ხილვადი`
                 : `${projects.length} projects • ${visibleProjects.length} visible`}
-            </p>
+            </span>
           </div>
         </div>
 
@@ -610,11 +608,11 @@ export default function ProjectsStep({
                   onDrop={(e) => handleDrop(e, project.id)}
                   onTouchStart={(e) => handleTouchStart(e, project.id)}
                   className={`
-                    group relative rounded-2xl overflow-hidden border-2 bg-white transition-all duration-300
+                    group relative rounded-2xl overflow-hidden border-2 bg-[var(--color-bg-elevated)] transition-all duration-300
                     ${
                       isHomico
-                        ? "border-emerald-200 bg-gradient-to-r from-emerald-50/50 to-white cursor-default"
-                        : "border-neutral-100 hover:border-[#C4735B]/30 cursor-grab active:cursor-grabbing"
+                        ? "border-emerald-200 dark:border-emerald-800 bg-gradient-to-r from-emerald-50/50 to-transparent cursor-default"
+                        : "border-[var(--color-border-subtle)] hover:border-[#C4735B]/30 cursor-grab active:cursor-grabbing"
                     }
                     ${isDragOver ? "border-[#C4735B] border-dashed bg-[#C4735B]/5 transform scale-[1.02]" : ""}
                     ${isBeingDragged ? "opacity-50 scale-95" : ""}
@@ -628,7 +626,7 @@ export default function ProjectsStep({
                     ${
                       willShowInBrowse
                         ? "bg-[#C4735B] text-white shadow-lg shadow-[#C4735B]/30"
-                        : "bg-neutral-200 text-neutral-500"
+                        : "bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]"
                     }
                   `}
                   >
@@ -652,9 +650,9 @@ export default function ProjectsStep({
                   {/* Drag Handle (for non-Homico) */}
                   {!isHomico && (
                     <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="p-1.5 rounded-lg bg-white/90 border border-neutral-200 shadow-sm">
+                      <div className="p-1.5 rounded-lg bg-[var(--color-bg-elevated)]/90 border border-[var(--color-border-subtle)] shadow-sm">
                         <svg
-                          className="w-4 h-4 text-neutral-400"
+                          className="w-4 h-4 text-[var(--color-text-muted)]"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -675,7 +673,7 @@ export default function ProjectsStep({
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-neutral-900 truncate">
+                          <h4 className="font-semibold text-[var(--color-text-primary)] truncate">
                             {project.title}
                           </h4>
                           {willShowInBrowse && (
@@ -685,12 +683,12 @@ export default function ProjectsStep({
                           )}
                         </div>
                         {project.description && (
-                          <p className="text-xs text-neutral-600 mt-1 line-clamp-2">
+                          <p className="text-xs text-[var(--color-text-secondary)] mt-1 line-clamp-2">
                             {project.description}
                           </p>
                         )}
                         {project.location && (
-                          <p className="text-xs text-neutral-500 flex items-center gap-1 mt-1">
+                          <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1 mt-1">
                             <svg
                               className="w-3 h-3 flex-shrink-0"
                               fill="none"
@@ -736,8 +734,8 @@ export default function ProjectsStep({
                             onClick={() => toggleVisibility(project.id)}
                             className={`p-2 rounded-lg transition-colors ${
                               isVisible
-                                ? "text-amber-600 hover:bg-amber-50"
-                                : "text-neutral-400 hover:bg-neutral-100"
+                                ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                                : "text-[var(--color-text-muted)] hover:bg-[var(--color-bg-tertiary)]"
                             }`}
                             title={
                               isVisible
@@ -784,7 +782,7 @@ export default function ProjectsStep({
                           <button
                             type="button"
                             onClick={() => handleEditProject(project)}
-                            className="p-2 rounded-lg text-neutral-400 hover:text-[#C4735B] hover:bg-[#C4735B]/10 transition-colors"
+                            className="p-2 rounded-lg text-[var(--color-text-muted)] hover:text-[#C4735B] hover:bg-[#C4735B]/10 transition-colors"
                           >
                             <svg
                               className="w-4 h-4"
@@ -803,7 +801,7 @@ export default function ProjectsStep({
                           <button
                             type="button"
                             onClick={() => handleDeleteProject(project.id)}
-                            className="p-2 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                            className="p-2 rounded-lg text-[var(--color-text-muted)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                           >
                             <svg
                               className="w-4 h-4"
@@ -850,7 +848,7 @@ export default function ProjectsStep({
                               muted
                               playsInline
                             />
-                            <div className="absolute top-1 left-1 px-1 py-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded text-[8px] font-bold text-white flex items-center gap-0.5">
+                            <div className="absolute top-1 left-1 px-1 py-0.5 bg-[#C4735B] rounded text-[8px] font-bold text-white flex items-center gap-0.5">
                               <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 5v14l11-7z" />
                               </svg>
@@ -862,7 +860,7 @@ export default function ProjectsStep({
                         .map((url, idx) => (
                           <div
                             key={idx}
-                            className="aspect-square rounded-lg overflow-hidden bg-neutral-100"
+                            className="aspect-square rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)]"
                           >
                             <img
                               src={url}
@@ -875,7 +873,7 @@ export default function ProjectsStep({
                         (project.videos?.length || 0) +
                         (project.beforeAfterPairs?.length || 0) >
                         5 && (
-                        <div className="aspect-square rounded-lg bg-neutral-900 flex items-center justify-center">
+                        <div className="aspect-square rounded-lg bg-neutral-900 dark:bg-neutral-800 flex items-center justify-center">
                           <span className="text-white text-sm font-bold">
                             +
                             {(project.images?.length || 0) +
@@ -907,7 +905,7 @@ export default function ProjectsStep({
         <button
           type="button"
           onClick={handleAddProject}
-          className="w-full py-12 rounded-2xl border-2 border-dashed border-neutral-200 hover:border-[#C4735B]/40 bg-gradient-to-br from-neutral-50 to-white transition-all duration-300 group"
+          className="w-full py-12 rounded-2xl border-2 border-dashed border-[var(--color-border-subtle)] hover:border-[#C4735B]/40 bg-[var(--color-bg-tertiary)] transition-all duration-300 group"
         >
           <div className="flex flex-col items-center gap-4">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C4735B]/15 to-[#D4896B]/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-[#C4735B]/20 border border-[#C4735B]/20">
@@ -926,10 +924,10 @@ export default function ProjectsStep({
               </svg>
             </div>
             <div className="text-center">
-              <p className="font-semibold text-neutral-600 group-hover:text-[#C4735B] transition-colors">
+              <p className="font-semibold text-[var(--color-text-secondary)] group-hover:text-[#C4735B] transition-colors">
                 {t('common.addYourFirstProject')}
               </p>
-              <p className="text-xs text-neutral-400 mt-1 max-w-[280px]">
+              <p className="text-xs text-[var(--color-text-muted)] mt-1 max-w-[280px]">
                 {t('common.showcaseYourWorkWithPhotos')}
               </p>
             </div>
@@ -939,10 +937,10 @@ export default function ProjectsStep({
 
       {/* Add/Edit Project Form */}
       {isAddingProject && (
-        <div className="rounded-2xl border-2 border-[#C4735B]/30 overflow-hidden bg-white shadow-xl shadow-[#C4735B]/10">
+        <div className="rounded-2xl border-2 border-[#C4735B]/30 overflow-hidden bg-[var(--color-bg-elevated)] shadow-xl shadow-[#C4735B]/10">
           {/* Form Header */}
-          <div className="px-5 py-4 border-b border-neutral-100 bg-gradient-to-r from-[#C4735B]/5 to-transparent flex items-center justify-between">
-            <h4 className="font-semibold text-neutral-900 flex items-center gap-2.5">
+          <div className="px-5 py-4 border-b border-[var(--color-border-subtle)] bg-gradient-to-r from-[#C4735B]/5 to-transparent flex items-center justify-between">
+            <h4 className="font-semibold text-[var(--color-text-primary)] flex items-center gap-2.5">
               <span className="w-2 h-2 rounded-full bg-[#C4735B] animate-pulse"></span>
               {editingProjectId
                 ? t('common.editProject')
@@ -951,7 +949,7 @@ export default function ProjectsStep({
             <button
               type="button"
               onClick={resetForm}
-              className="p-2 rounded-xl hover:bg-neutral-100 transition-colors text-neutral-400 hover:text-neutral-600"
+              className="p-2 rounded-xl hover:bg-[var(--color-bg-tertiary)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
             >
               <svg
                 className="w-5 h-5"
@@ -972,7 +970,7 @@ export default function ProjectsStep({
           <div className="p-5 space-y-5">
             {/* Project Title */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
+              <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
                 {t('common.projectTitle')}{" "}
                 <span className="text-red-500">*</span>
               </label>
@@ -1007,7 +1005,7 @@ export default function ProjectsStep({
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
+              <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
                 {t('common.description')}
               </label>
               <Textarea
@@ -1029,12 +1027,12 @@ export default function ProjectsStep({
             {/* Media Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <label className="block text-sm font-medium text-neutral-700">
+                <label className="block text-sm font-medium text-[var(--color-text-primary)]">
                   {t('common.media')}{" "}
                   <span className="text-red-500">*</span>
                 </label>
                 {totalMedia > 0 && (
-                  <span className="text-xs text-neutral-500">
+                  <span className="text-xs text-[var(--color-text-muted)]">
                     {totalMedia} {t('common.items')}
                   </span>
                 )}
@@ -1092,7 +1090,7 @@ export default function ProjectsStep({
                           e.currentTarget.currentTime = 0;
                         }}
                       />
-                      <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded text-[8px] font-bold text-white shadow flex items-center gap-0.5">
+                      <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-[#C4735B] rounded text-[8px] font-bold text-white shadow flex items-center gap-0.5">
                         <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z" />
                         </svg>
@@ -1174,7 +1172,7 @@ export default function ProjectsStep({
                   type="button"
                   onClick={() => galleryInputRef.current?.click()}
                   disabled={uploadingType === "gallery"}
-                  className="w-full p-4 rounded-xl border-2 border-dashed border-neutral-200 hover:border-[#C4735B]/40 bg-neutral-50 transition-all duration-200 flex flex-col items-center gap-2 text-neutral-600 hover:text-[#C4735B] group"
+                  className="w-full p-4 rounded-xl border-2 border-dashed border-[var(--color-border-subtle)] hover:border-[#C4735B]/40 bg-[var(--color-bg-tertiary)] transition-all duration-200 flex flex-col items-center gap-2 text-[var(--color-text-secondary)] hover:text-[#C4735B] group"
                 >
                   {uploadingType === "gallery" ? (
                     <>
@@ -1201,7 +1199,7 @@ export default function ProjectsStep({
                       <span className="text-sm font-medium">
                         {t('common.photos')}
                       </span>
-                      <span className="text-[10px] text-neutral-400">
+                      <span className="text-[10px] text-[var(--color-text-muted)]">
                         {t('common.multiplePhotos')}
                       </span>
                     </>
@@ -1220,18 +1218,18 @@ export default function ProjectsStep({
                   type="button"
                   onClick={() => videoInputRef.current?.click()}
                   disabled={uploadingType === "video"}
-                  className="w-full p-4 rounded-xl border-2 border-dashed border-neutral-200 hover:border-indigo-400/40 bg-neutral-50 transition-all duration-200 flex flex-col items-center gap-2 text-neutral-600 hover:text-indigo-600 group"
+                  className="w-full p-4 rounded-xl border-2 border-dashed border-[var(--color-border-subtle)] hover:border-[#C4735B]/40 bg-[var(--color-bg-tertiary)] transition-all duration-200 flex flex-col items-center gap-2 text-[var(--color-text-secondary)] hover:text-[#C4735B] group"
                 >
                   {uploadingType === "video" ? (
                     <>
-                      <LoadingSpinner size="md" color="#6366f1" />
+                      <LoadingSpinner size="md" color="#C4735B" />
                       <span className="text-sm">{uploadProgress}%</span>
                     </>
                   ) : (
                     <>
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 group-hover:from-indigo-500/20 group-hover:to-purple-500/20 flex items-center justify-center transition-colors">
+                      <div className="w-10 h-10 rounded-xl bg-[#C4735B]/10 group-hover:bg-[#C4735B]/20 flex items-center justify-center transition-colors">
                         <svg
-                          className="w-5 h-5 text-indigo-600"
+                          className="w-5 h-5 text-[#C4735B]"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -1247,7 +1245,7 @@ export default function ProjectsStep({
                       <span className="text-sm font-medium">
                         {t('common.videos')}
                       </span>
-                      <span className="text-[10px] text-neutral-400">
+                      <span className="text-[10px] text-[var(--color-text-muted)]">
                         {t('common.max100mbEach')}
                       </span>
                     </>
@@ -1266,7 +1264,7 @@ export default function ProjectsStep({
                   type="button"
                   onClick={() => beforeAfterInputRef.current?.click()}
                   disabled={uploadingType === "beforeAfter"}
-                  className="w-full p-4 rounded-xl border-2 border-dashed border-neutral-200 hover:border-amber-400/40 bg-neutral-50 transition-all duration-200 flex flex-col items-center gap-2 text-neutral-600 hover:text-amber-600 group"
+                  className="w-full p-4 rounded-xl border-2 border-dashed border-[var(--color-border-subtle)] hover:border-amber-400/40 bg-[var(--color-bg-tertiary)] transition-all duration-200 flex flex-col items-center gap-2 text-[var(--color-text-secondary)] hover:text-amber-600 group"
                 >
                   {uploadingType === "beforeAfter" ? (
                     <>
@@ -1293,7 +1291,7 @@ export default function ProjectsStep({
                       <span className="text-sm font-medium">
                         {t('common.beforeafter')}
                       </span>
-                      <span className="text-[10px] text-neutral-400">
+                      <span className="text-[10px] text-[var(--color-text-muted)]">
                         {t('common.selectExactly2Images')}
                       </span>
                     </>
@@ -1330,11 +1328,11 @@ export default function ProjectsStep({
       {/* Stats Summary */}
       {projects.length > 0 && !isAddingProject && (
         <div className="grid grid-cols-3 gap-3">
-          <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100 text-center">
-            <div className="text-2xl font-bold text-neutral-900">
+          <div className="p-4 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border-subtle)] text-center">
+            <div className="text-2xl font-bold text-[var(--color-text-primary)]">
               {projects.length}
             </div>
-            <div className="text-xs text-neutral-500">
+            <div className="text-xs text-[var(--color-text-secondary)]">
               {t('common.total')}
             </div>
           </div>

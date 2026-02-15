@@ -7,16 +7,13 @@ import AboutTab from "@/components/professionals/AboutTab";
 import ContactModal from "@/components/professionals/ContactModal";
 import InviteProToJobModal from "@/components/professionals/InviteProToJobModal";
 import PortfolioTab from "@/components/professionals/PortfolioTab";
-import {
-  type ProfileSidebarTab,
-} from "@/components/professionals/ProfileSidebar";
+import { type ProfileSidebarTab } from "@/components/professionals/ProfileSidebar";
 import ReviewsTab from "@/components/professionals/ReviewsTab";
 import SimilarProfessionals from "@/components/professionals/SimilarProfessionals";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ConfirmModal, Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
@@ -25,18 +22,24 @@ import { useToast } from "@/contexts/ToastContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
-import type { BaseEntity, Job, PortfolioItem, ProProfile } from "@/types/shared";
+import type {
+  BaseEntity,
+  Job,
+  PortfolioItem,
+  ProProfile,
+} from "@/types/shared";
 import { PricingModel } from "@/types/shared";
 import { backOrNavigate } from "@/utils/navigationUtils";
 import { formatGeorgianPhoneDisplay } from "@/utils/validationUtils";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   BadgeCheck,
   Briefcase,
+  Calendar,
   Check,
   ChevronLeft,
   ChevronRight,
   Edit3,
-  Eye,
   Facebook,
   Link2,
   MapPin,
@@ -45,9 +48,9 @@ import {
   Plus,
   Share2,
   Star,
-  X,
+  Settings,
+  X
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -90,7 +93,7 @@ interface PageReview extends BaseEntity {
   createdAt: string;
   projectTitle?: string;
   isAnonymous?: boolean;
-  source?: 'homico' | 'external';
+  source?: "homico" | "external";
   externalClientName?: string;
   externalClientPhone?: string;
   externalVerifiedAt?: string;
@@ -98,7 +101,15 @@ interface PageReview extends BaseEntity {
 }
 
 /** Animated counter that counts up from 0 */
-function AnimatedCounter({ value, decimals = 0, duration = 1.2 }: { value: number; decimals?: number; duration?: number }) {
+function AnimatedCounter({
+  value,
+  decimals = 0,
+  duration = 1.2,
+}: {
+  value: number;
+  decimals?: number;
+  duration?: number;
+}) {
   const [display, setDisplay] = useState("0");
   useEffect(() => {
     let startTime: number;
@@ -136,7 +147,9 @@ export default function ProfessionalDetailClient({
   const { trackEvent } = useAnalytics();
   const { categories: CATEGORIES } = useCategories();
 
-  const [profile, setProfile] = useState<ProProfile | null>(initialProfile ?? null);
+  const [profile, setProfile] = useState<ProProfile | null>(
+    initialProfile ?? null,
+  );
   const [isLoading, setIsLoading] = useState(!initialProfile);
   const [error, setError] = useState<string | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
@@ -165,7 +178,6 @@ export default function ProfessionalDetailClient({
   const [myMatchingOpenJobs, setMyMatchingOpenJobs] = useState<Job[]>([]);
   const [myOpenJobsLoaded, setMyOpenJobsLoaded] = useState(false);
   const [showInviteToJobModal, setShowInviteToJobModal] = useState(false);
-
   // Owner edit states
   const [showEditAboutModal, setShowEditAboutModal] = useState(false);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
@@ -192,14 +204,16 @@ export default function ProfessionalDetailClient({
   // Pricing editing state (owner)
   const [isEditingPricing, setIsEditingPricing] = useState(false);
   const [editedPricingModel, setEditedPricingModel] = useState<PricingModel>(
-    PricingModel.FIXED
+    PricingModel.FIXED,
   );
   const [editedBasePrice, setEditedBasePrice] = useState("");
   const [editedMaxPrice, setEditedMaxPrice] = useState("");
 
   // Admin verification panel state
-  const [showAdminVerificationModal, setShowAdminVerificationModal] = useState(false);
-  const [adminVerificationStatus, setAdminVerificationStatus] = useState<string>("");
+  const [showAdminVerificationModal, setShowAdminVerificationModal] =
+    useState(false);
+  const [adminVerificationStatus, setAdminVerificationStatus] =
+    useState<string>("");
   const [adminVerificationNotes, setAdminVerificationNotes] = useState("");
   const [adminNotifyUser, setAdminNotifyUser] = useState(true);
   const [isAdminSaving, setIsAdminSaving] = useState(false);
@@ -207,6 +221,7 @@ export default function ProfessionalDetailClient({
   // Check if current user is viewing their own profile
   const isOwner = user?.id === profile?.id;
   const isAdmin = user?.role === "admin";
+  const canEdit = isOwner || isAdmin;
 
   const fetchProfileAbortRef = useRef<AbortController | null>(null);
   const profileFetchInFlightRef = useRef<string | null>(null);
@@ -354,7 +369,7 @@ export default function ProfessionalDetailClient({
         reviewsData.map((r: PageReview & { _id?: string }) => ({
           ...r,
           id: r.id || r._id || "",
-        }))
+        })),
       );
     } catch (err) {
       console.error("Failed to fetch reviews:", err);
@@ -378,16 +393,18 @@ export default function ProfessionalDetailClient({
   const proCategories = useMemo(() => {
     if (!profile) return [];
     const cats =
-      (profile.categories?.length ? profile.categories : profile.selectedCategories) ||
-      [];
+      (profile.categories?.length
+        ? profile.categories
+        : profile.selectedCategories) || [];
     return cats.filter(Boolean);
   }, [profile]);
 
   const proSubcategories = useMemo(() => {
     if (!profile) return [];
     const subcats =
-      (profile.subcategories?.length ? profile.subcategories : profile.selectedSubcategories) ||
-      [];
+      (profile.subcategories?.length
+        ? profile.subcategories
+        : profile.selectedSubcategories) || [];
     return subcats.filter(Boolean);
   }, [profile]);
 
@@ -403,7 +420,9 @@ export default function ProfessionalDetailClient({
     const fetchMyOpenJobs = async () => {
       try {
         const response = await api.get("/jobs/my-jobs?status=open");
-        const list = Array.isArray(response.data) ? (response.data as Job[]) : [];
+        const list = Array.isArray(response.data)
+          ? (response.data as Job[])
+          : [];
         if (!cancelled) {
           const normalize = (s: string) => s.trim().toLowerCase();
           const proSet = new Set(proSubcategories.map(normalize));
@@ -445,9 +464,12 @@ export default function ProfessionalDetailClient({
 
   const pricingMeta = useMemo(() => {
     if (!profile) return null;
-    const model = (profile.pricingModel as unknown as string | undefined) || undefined;
-    const base = typeof profile.basePrice === "number" ? profile.basePrice : undefined;
-    const max = typeof profile.maxPrice === "number" ? profile.maxPrice : undefined;
+    const model =
+      (profile.pricingModel as unknown as string | undefined) || undefined;
+    const base =
+      typeof profile.basePrice === "number" ? profile.basePrice : undefined;
+    const max =
+      typeof profile.maxPrice === "number" ? profile.maxPrice : undefined;
     const hasBase = typeof base === "number" && base > 0;
     const hasMax = typeof max === "number" && max > 0;
 
@@ -459,9 +481,9 @@ export default function ProfessionalDetailClient({
           ? "per_sqm"
           : model === "daily" || model === "from"
             ? "fixed"
-          : model === "project_based"
-            ? "range"
-            : model;
+            : model === "project_based"
+              ? "range"
+              : model;
 
     const normalized =
       normalizedIncoming === "range"
@@ -474,16 +496,19 @@ export default function ProfessionalDetailClient({
           ? hasBase || hasMax
             ? "per_sqm"
             : "byAgreement"
-        : normalizedIncoming === "fixed"
-          ? hasBase || hasMax
-            ? "fixed"
-            : "byAgreement"
-          : normalizedIncoming === "byAgreement"
-            ? "byAgreement"
-            : undefined;
+          : normalizedIncoming === "fixed"
+            ? hasBase || hasMax
+              ? "fixed"
+              : "byAgreement"
+            : normalizedIncoming === "byAgreement"
+              ? "byAgreement"
+              : undefined;
 
     if (normalized === "byAgreement") {
-      return { typeLabel: t("common.negotiable"), valueLabel: null as string | null };
+      return {
+        typeLabel: t("common.negotiable"),
+        valueLabel: null as string | null,
+      };
     }
     if (normalized === "per_sqm" && (hasBase || hasMax)) {
       const val = hasBase ? base! : max!;
@@ -543,7 +568,7 @@ export default function ProfessionalDetailClient({
     window.open(
       `https://www.facebook.com/sharer/sharer.php?u=${url}`,
       "_blank",
-      "width=600,height=400"
+      "width=600,height=400",
     );
     setShowShareMenu(false);
   };
@@ -588,7 +613,7 @@ export default function ProfessionalDetailClient({
 
   // === OWNER CRUD FUNCTIONS ===
   const handleSaveName = async () => {
-    if (!isOwner || !profile || !editedName.trim()) return;
+    if (!canEdit || !profile || !editedName.trim()) return;
     if (editedName.trim() === profile.name) {
       setIsEditingName(false);
       return;
@@ -597,7 +622,7 @@ export default function ProfessionalDetailClient({
     try {
       await api.patch("/users/me", { name: editedName.trim() });
       setProfile((prev) =>
-        prev ? { ...prev, name: editedName.trim() } : prev
+        prev ? { ...prev, name: editedName.trim() } : prev,
       );
       setIsEditingName(false);
       toast.success(t("professional.savedSuccessfully"));
@@ -609,7 +634,7 @@ export default function ProfessionalDetailClient({
   };
 
   const handleSaveTitle = async () => {
-    if (!isOwner || !profile) return;
+    if (!canEdit || !profile) return;
     const newTitle = editedTitle.trim();
     if (newTitle === (profile.title || "")) {
       setIsEditingTitle(false);
@@ -619,7 +644,7 @@ export default function ProfessionalDetailClient({
     try {
       await api.patch("/users/me/pro-profile", { title: newTitle || null });
       setProfile((prev) =>
-        prev ? { ...prev, title: newTitle || undefined } : prev
+        prev ? { ...prev, title: newTitle || undefined } : prev,
       );
       setIsEditingTitle(false);
       toast.success(t("professional.savedSuccessfully"));
@@ -631,8 +656,9 @@ export default function ProfessionalDetailClient({
   };
 
   const openPricingEdit = () => {
-    if (!isOwner || !profile) return;
-    const model = (profile.pricingModel as unknown as string | undefined) || "byAgreement";
+    if (!canEdit || !profile) return;
+    const model =
+      (profile.pricingModel as unknown as string | undefined) || "byAgreement";
     const normalized: PricingModel =
       model === "sqm" || model === PricingModel.PER_SQUARE_METER
         ? PricingModel.PER_SQUARE_METER
@@ -644,16 +670,16 @@ export default function ProfessionalDetailClient({
 
     setEditedPricingModel(normalized);
     setEditedBasePrice(
-      typeof profile.basePrice === "number" ? String(profile.basePrice) : ""
+      typeof profile.basePrice === "number" ? String(profile.basePrice) : "",
     );
     setEditedMaxPrice(
-      typeof profile.maxPrice === "number" ? String(profile.maxPrice) : ""
+      typeof profile.maxPrice === "number" ? String(profile.maxPrice) : "",
     );
     setIsEditingPricing(true);
   };
 
   const handleSavePricing = async () => {
-    if (!isOwner || !profile) return;
+    if (!canEdit || !profile) return;
 
     const base = editedBasePrice ? Number(editedBasePrice) : undefined;
     const max = editedMaxPrice ? Number(editedMaxPrice) : undefined;
@@ -665,13 +691,19 @@ export default function ProfessionalDetailClient({
       // ok
     } else if (editedPricingModel === PricingModel.RANGE) {
       if (!baseValid || !maxValid || max! < base!) {
-        toast.error(t("common.error"), t("common.invalidPriceRange") || t("common.invalid"));
+        toast.error(
+          t("common.error"),
+          t("common.invalidPriceRange") || t("common.invalid"),
+        );
         return;
       }
     } else {
       // fixed or per_sqm
       if (!baseValid) {
-        toast.error(t("common.error"), t("common.invalidPrice") || t("common.invalid"));
+        toast.error(
+          t("common.error"),
+          t("common.invalidPrice") || t("common.invalid"),
+        );
         return;
       }
     }
@@ -684,7 +716,8 @@ export default function ProfessionalDetailClient({
 
       const response = await api.patch("/users/me/pro-profile", {
         pricingModel: editedPricingModel,
-        basePrice: editedPricingModel === PricingModel.BY_AGREEMENT ? null : base,
+        basePrice:
+          editedPricingModel === PricingModel.BY_AGREEMENT ? null : base,
         maxPrice:
           editedPricingModel === PricingModel.BY_AGREEMENT
             ? null
@@ -713,10 +746,14 @@ export default function ProfessionalDetailClient({
             ? {
                 ...prev,
                 pricingModel: editedPricingModel,
-                basePrice: editedPricingModel === PricingModel.BY_AGREEMENT ? undefined : base,
-                maxPrice: editedPricingModel === PricingModel.RANGE ? max : undefined,
+                basePrice:
+                  editedPricingModel === PricingModel.BY_AGREEMENT
+                    ? undefined
+                    : base,
+                maxPrice:
+                  editedPricingModel === PricingModel.RANGE ? max : undefined,
               }
-            : prev
+            : prev,
         );
       }
       setIsEditingPricing(false);
@@ -733,28 +770,44 @@ export default function ProfessionalDetailClient({
     if (!isAdmin || !profile?.id) return;
     setIsAdminSaving(true);
     try {
-      console.log('[Admin] Updating verification for pro:', profile.id, 'to status:', adminVerificationStatus);
-      const response = await api.patch(`/admin/pros/${profile.id}/verification`, {
-        status: adminVerificationStatus,
-        notes: adminVerificationNotes || undefined,
-        notifyUser: adminNotifyUser,
-      });
+      console.log(
+        "[Admin] Updating verification for pro:",
+        profile.id,
+        "to status:",
+        adminVerificationStatus,
+      );
+      const response = await api.patch(
+        `/admin/pros/${profile.id}/verification`,
+        {
+          status: adminVerificationStatus,
+          notes: adminVerificationNotes || undefined,
+          notifyUser: adminNotifyUser,
+        },
+      );
 
       const updated = response?.data as ProProfile | undefined;
-      console.log('[Admin] Update response:', updated?.verificationStatus);
+      console.log("[Admin] Update response:", updated?.verificationStatus);
 
       if (updated) {
         setProfile((prev) => {
           if (!prev) return updated;
-          return { ...prev, verificationStatus: updated.verificationStatus, verificationNotes: updated.verificationNotes };
+          return {
+            ...prev,
+            verificationStatus: updated.verificationStatus,
+            verificationNotes: updated.verificationNotes,
+          };
         });
       }
 
       setShowAdminVerificationModal(false);
-      toast.success(t("admin.verificationUpdated") || "Verification status updated");
+      toast.success(
+        t("admin.verificationUpdated") || "Verification status updated",
+      );
     } catch (err) {
-      console.error('[Admin] Update failed:', err);
-      toast.error(t("admin.verificationUpdateFailed") || "Failed to update verification");
+      console.error("[Admin] Update failed:", err);
+      toast.error(
+        t("admin.verificationUpdateFailed") || "Failed to update verification",
+      );
     } finally {
       setIsAdminSaving(false);
     }
@@ -768,14 +821,14 @@ export default function ProfessionalDetailClient({
   };
 
   const handleSaveAbout = async (data: { description: string }) => {
-    if (!isOwner || !profile) return;
+    if (!canEdit || !profile) return;
     setIsSaving(true);
     try {
       await api.patch("/users/me/pro-profile", {
         description: data.description,
       });
       setProfile((prev) =>
-        prev ? { ...prev, description: data.description } : prev
+        prev ? { ...prev, description: data.description } : prev,
       );
       setShowEditAboutModal(false);
       toast.success(t("professional.savedSuccessfully"));
@@ -794,7 +847,7 @@ export default function ProfessionalDetailClient({
     videos?: string[];
     beforeAfter?: { before: string; after: string }[];
   }) => {
-    if (!isOwner || !profile) return;
+    if (!canEdit || !profile) return;
     setIsSaving(true);
     try {
       const response = await api.post(`/portfolio?proId=${profile.id}`, {
@@ -823,12 +876,12 @@ export default function ProfessionalDetailClient({
     videos?: string[];
     beforeAfter?: { before: string; after: string }[];
   }) => {
-    if (!isOwner || !editingProject || !profile?.id) return;
+    if (!canEdit || !editingProject || !profile?.id) return;
     setIsSaving(true);
     try {
       // Check if this project exists in the portfolio collection
       const existsInPortfolio = portfolio.some(
-        (p) => p.id === editingProject.id
+        (p) => p.id === editingProject.id,
       );
 
       if (existsInPortfolio) {
@@ -851,8 +904,8 @@ export default function ProfessionalDetailClient({
                   location: data.location,
                   images: data.images,
                 }
-              : p
-          )
+              : p,
+          ),
         );
       } else {
         // Project is embedded in profile, create new portfolio item
@@ -877,7 +930,7 @@ export default function ProfessionalDetailClient({
   };
 
   const handleDeleteProject = async () => {
-    if (!isOwner || !deleteProjectId) return;
+    if (!canEdit || !deleteProjectId) return;
     setIsSaving(true);
 
     console.log("[handleDeleteProject]", {
@@ -894,26 +947,26 @@ export default function ProfessionalDetailClient({
       // Check if this project exists in the portfolio collection
       // Check both id and _id in case the transformation didn't work
       const existsInPortfolio = portfolio.some(
-        (p) => p.id === deleteProjectId || (p as any)._id === deleteProjectId
+        (p) => p.id === deleteProjectId || (p as any)._id === deleteProjectId,
       );
 
       if (existsInPortfolio) {
         console.log(
           "[handleDeleteProject] Deleting from portfolio collection:",
-          deleteProjectId
+          deleteProjectId,
         );
         await api.delete(`/portfolio/${deleteProjectId}`);
         setPortfolio((prev) =>
           prev.filter(
             (p) =>
-              p.id !== deleteProjectId && (p as any)._id !== deleteProjectId
-          )
+              p.id !== deleteProjectId && (p as any)._id !== deleteProjectId,
+          ),
         );
       } else {
         // Check if it's an embedded project in profile.portfolioProjects
         const embeddedIdx = profile?.portfolioProjects?.findIndex(
           (p, idx) =>
-            p.id === deleteProjectId || `embedded-${idx}` === deleteProjectId
+            p.id === deleteProjectId || `embedded-${idx}` === deleteProjectId,
         );
 
         if (
@@ -923,13 +976,13 @@ export default function ProfessionalDetailClient({
         ) {
           // Remove from embedded portfolioProjects via profile update
           const updatedProjects = profile.portfolioProjects.filter(
-            (_, idx) => idx !== embeddedIdx
+            (_, idx) => idx !== embeddedIdx,
           );
           await api.patch("/users/me/pro-profile", {
             portfolioProjects: updatedProjects,
           });
           setProfile((prev) =>
-            prev ? { ...prev, portfolioProjects: updatedProjects } : prev
+            prev ? { ...prev, portfolioProjects: updatedProjects } : prev,
           );
         }
       }
@@ -948,8 +1001,8 @@ export default function ProfessionalDetailClient({
     const category = CATEGORIES.find((cat) => cat.key === categoryKey);
     if (category)
       return (
-        ({ ka: category.nameKa, en: category.name, ru: category.name }[locale] ??
-          category.name)
+        { ka: category.nameKa, en: category.name, ru: category.name }[locale] ??
+        category.name
       );
     return categoryKey
       .split("-")
@@ -965,7 +1018,7 @@ export default function ProfessionalDetailClient({
       (cat) =>
         cat.name.toLowerCase() === lowerTitle ||
         cat.nameKa.toLowerCase() === lowerTitle ||
-        cat.key === lowerTitle
+        cat.key === lowerTitle,
     );
   };
 
@@ -985,7 +1038,7 @@ export default function ProfessionalDetailClient({
   const getServiceExperience = (subcategoryKey: string) => {
     if (!profile?.selectedServices) return null;
     const service = profile.selectedServices.find(
-      (s) => s.key === subcategoryKey
+      (s) => s.key === subcategoryKey,
     );
     return service?.experience || null;
   };
@@ -996,25 +1049,25 @@ export default function ProfessionalDetailClient({
       return subcategoryKey.replace("custom:", "");
     for (const category of CATEGORIES) {
       const subcategory = category.subcategories.find(
-        (sub) => sub.key === subcategoryKey
+        (sub) => sub.key === subcategoryKey,
       );
       if (subcategory)
         return (
-          ({
+          {
             ka: subcategory.nameKa,
             en: subcategory.name,
             ru: subcategory.name,
-          }[locale] ?? subcategory.name)
+          }[locale] ?? subcategory.name
         );
       for (const sub of category.subcategories) {
         if (sub.children) {
           const subSub = sub.children.find(
-            (child) => child.key === subcategoryKey
+            (child) => child.key === subcategoryKey,
           );
           if (subSub)
             return (
-              ({ ka: subSub.nameKa, en: subSub.name, ru: subSub.name }[locale] ??
-                subSub.name)
+              { ka: subSub.nameKa, en: subSub.name, ru: subSub.name }[locale] ??
+              subSub.name
             );
         }
       }
@@ -1197,7 +1250,7 @@ export default function ProfessionalDetailClient({
     georgia: "Georgia",
     countrywide: "Nationwide",
     "საქართველოს მასშტაბით": "Nationwide",
-    "საქართველო": "Georgia",
+    საქართველო: "Georgia",
   };
 
   const translateCity = (city: string) => {
@@ -1209,7 +1262,6 @@ export default function ProfessionalDetailClient({
     };
     const map = mapByLocale[locale] || cityTranslationsEn;
     return map[city] || map[lowerCity] || city;
-    return city;
   };
 
   const totalCompletedJobs =
@@ -1228,13 +1280,15 @@ export default function ProfessionalDetailClient({
 
   const nextImage = useCallback(() => {
     const images = getAllPortfolioImages();
-    setLightboxIndex((prev) => (images.length ? (prev + 1) % images.length : 0));
+    setLightboxIndex((prev) =>
+      images.length ? (prev + 1) % images.length : 0,
+    );
   }, [getAllPortfolioImages]);
 
   const prevImage = useCallback(() => {
     const images = getAllPortfolioImages();
     setLightboxIndex((prev) =>
-      images.length ? (prev - 1 + images.length) % images.length : 0
+      images.length ? (prev - 1 + images.length) % images.length : 0,
     );
   }, [getAllPortfolioImages]);
 
@@ -1250,7 +1304,7 @@ export default function ProfessionalDetailClient({
                   ...prev,
                   currentIndex: (prev.currentIndex + 1) % prev.images.length,
                 }
-              : null
+              : null,
           );
         }
         if (e.key === "ArrowLeft") {
@@ -1262,7 +1316,7 @@ export default function ProfessionalDetailClient({
                     (prev.currentIndex - 1 + prev.images.length) %
                     prev.images.length,
                 }
-              : null
+              : null,
           );
         }
         return;
@@ -1336,7 +1390,10 @@ export default function ProfessionalDetailClient({
                 {error}
               </p>
             )}
-            <Button onClick={() => router.push("/professionals")} className="mt-6">
+            <Button
+              onClick={() => router.push("/professionals")}
+              className="mt-6"
+            >
               {t("common.goBack")}
             </Button>
           </div>
@@ -1357,7 +1414,7 @@ export default function ProfessionalDetailClient({
       <HeaderSpacer />
 
       {/* Pending Approval Banner - Only visible to the pro owner */}
-      {isOwner && profile && profile.verificationStatus !== 'verified' && (
+      {canEdit && profile && profile.verificationStatus !== "verified" && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
           <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
             <div className="p-1.5 sm:p-2 rounded-full bg-amber-100 dark:bg-amber-800/30 flex-shrink-0">
@@ -1384,7 +1441,10 @@ export default function ProfessionalDetailClient({
               </p>
               {profile.verificationNotes && (
                 <p className="text-[10px] sm:text-sm mt-1.5 sm:mt-2 p-1.5 sm:p-2 bg-amber-100 dark:bg-amber-800/40 rounded text-amber-800 dark:text-amber-200">
-                  <span className="font-medium">{t("admin.noteFromAdmin") || "Note from admin"}:</span> {profile.verificationNotes}
+                  <span className="font-medium">
+                    {t("admin.noteFromAdmin") || "Note from admin"}:
+                  </span>{" "}
+                  {profile.verificationNotes}
                 </p>
               )}
             </div>
@@ -1393,7 +1453,7 @@ export default function ProfessionalDetailClient({
       )}
 
       {/* Rejected Profile Banner */}
-      {isOwner && profile && profile.adminRejectionReason && (
+      {canEdit && profile && profile.adminRejectionReason && (
         <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
           <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
             <div className="p-1.5 sm:p-2 rounded-full bg-red-100 dark:bg-red-800/30 flex-shrink-0">
@@ -1409,7 +1469,7 @@ export default function ProfessionalDetailClient({
             </div>
             <Button
               size="sm"
-              onClick={() => router.push("/pro/profile-setup")}
+              onClick={() => router.push(isAdmin && !isOwner ? `/pro/profile-setup?proId=${profile.id}` : "/pro/profile-setup")}
               className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm flex-shrink-0"
             >
               {t("professional.editProfile")}
@@ -1430,19 +1490,34 @@ export default function ProfessionalDetailClient({
                 {t("admin.verificationPanel") || "Admin Verification Panel"}
               </p>
               <p className="text-[10px] sm:text-sm text-indigo-700 dark:text-indigo-300 truncate sm:whitespace-normal">
-                {t("admin.currentStatus") || "Current Status"}: <span className="font-semibold capitalize">{profile.verificationStatus || "pending"}</span>
+                {t("admin.currentStatus") || "Current Status"}:{" "}
+                <span className="font-semibold capitalize">
+                  {profile.verificationStatus || "pending"}
+                </span>
                 {profile.verificationNotes && (
-                  <span className="hidden sm:inline ml-2">| {t("admin.notes") || "Notes"}: {profile.verificationNotes}</span>
+                  <span className="hidden sm:inline ml-2">
+                    | {t("admin.notes") || "Notes"}: {profile.verificationNotes}
+                  </span>
                 )}
               </p>
             </div>
-            <Button
-              size="sm"
-              onClick={openAdminVerificationModal}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm flex-shrink-0"
-            >
-              {t("admin.updateStatus") || "Update Status"}
-            </Button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button
+                size="sm"
+                onClick={() => router.push(`/pro/profile-setup?proId=${profile.id}`)}
+                className="bg-indigo-500 hover:bg-indigo-600 text-white text-xs sm:text-sm"
+              >
+                <Settings className="w-3.5 h-3.5 mr-1" />
+                {t("admin.editProfile") || "Edit Profile"}
+              </Button>
+              <Button
+                size="sm"
+                onClick={openAdminVerificationModal}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm"
+              >
+                {t("admin.updateStatus") || "Update Status"}
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -1494,7 +1569,11 @@ export default function ProfessionalDetailClient({
                     className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#25D366] flex items-center justify-center flex-shrink-0">
-                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                       </svg>
                     </div>
@@ -1532,9 +1611,19 @@ export default function ProfessionalDetailClient({
             {/* Avatar */}
             <div className="relative flex-shrink-0">
               {avatarUrl ? (
-                <button type="button" onClick={() => setShowAvatarZoom(true)} className="cursor-zoom-in group">
+                <button
+                  type="button"
+                  onClick={() => setShowAvatarZoom(true)}
+                  className="cursor-zoom-in group"
+                >
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-neutral-900 shadow-xl">
-                    <Image src={avatarSrc} alt={profile.name} width={96} height={96} className="w-full h-full object-cover" />
+                    <Image
+                      src={avatarSrc}
+                      alt={profile.name}
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 </button>
               ) : (
@@ -1551,17 +1640,46 @@ export default function ProfessionalDetailClient({
 
             <div className="flex-1 min-w-0">
               {/* Name */}
-              {isOwner && isEditingName ? (
+              {canEdit && isEditingName ? (
                 <div className="flex items-center gap-2 mb-1">
-                  <Input value={editedName} onChange={(e) => setEditedName(e.target.value)} className="text-lg font-bold max-w-[180px]" autoFocus onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); if (e.key === "Escape") setIsEditingName(false); }} />
-                  <Button size="sm" onClick={handleSaveName} disabled={isSaving || !editedName.trim()}><Check className="w-4 h-4" /></Button>
-                  <Button size="sm" variant="ghost" onClick={() => setIsEditingName(false)}><X className="w-4 h-4" /></Button>
+                  <Input
+                    value={editedName}
+                    onChange={(e) => setEditedName(e.target.value)}
+                    className="text-lg font-bold max-w-[180px]"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveName();
+                      if (e.key === "Escape") setIsEditingName(false);
+                    }}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSaveName}
+                    disabled={isSaving || !editedName.trim()}
+                  >
+                    <Check className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsEditingName(false)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 mb-0.5">
-                  <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white tracking-tight truncate">{profile.name}</h1>
-                  {isOwner && (
-                    <button onClick={() => { setEditedName(profile.name); setIsEditingName(true); }} className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex-shrink-0">
+                  <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white tracking-tight truncate">
+                    {profile.name}
+                  </h1>
+                  {canEdit && (
+                    <button
+                      onClick={() => {
+                        setEditedName(profile.name);
+                        setIsEditingName(true);
+                      }}
+                      className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex-shrink-0"
+                    >
                       <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
                     </button>
                   )}
@@ -1570,7 +1688,9 @@ export default function ProfessionalDetailClient({
 
               {/* Title */}
               {profile.title && !isCategoryBasedTitle(profile.title) && (
-                <p className="text-sm text-[#C4735B] font-medium mb-1 truncate">{profile.title}</p>
+                <p className="text-sm text-[#C4735B] font-medium mb-1 truncate">
+                  {profile.title}
+                </p>
               )}
 
               {/* Availability + Location */}
@@ -1593,11 +1713,18 @@ export default function ProfessionalDetailClient({
           {pricingMeta && pricingMeta.valueLabel && (
             <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
               <div>
-                <span className="text-[9px] uppercase tracking-wider font-semibold text-neutral-400">{pricingMeta.typeLabel}</span>
-                <p className="text-lg font-bold text-[#C4735B]">{pricingMeta.valueLabel}</p>
+                <span className="text-[9px] uppercase tracking-wider font-semibold text-neutral-400">
+                  {pricingMeta.typeLabel}
+                </span>
+                <p className="text-lg font-bold text-[#C4735B]">
+                  {pricingMeta.valueLabel}
+                </p>
               </div>
-              {isOwner && (
-                <button onClick={openPricingEdit} className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B]">
+              {canEdit && (
+                <button
+                  onClick={openPricingEdit}
+                  className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B]"
+                >
                   <Edit3 className="w-4 h-4" />
                 </button>
               )}
@@ -1605,34 +1732,80 @@ export default function ProfessionalDetailClient({
           )}
 
           {/* Mobile pricing edit */}
-          {isOwner && isEditingPricing && (
+          {canEdit && isEditingPricing && (
             <div className="mt-3 space-y-2">
-              <Select size="sm" value={editedPricingModel} onChange={(val) => setEditedPricingModel(val as PricingModel)} options={[
-                { value: PricingModel.FIXED, label: t("common.fixed") },
-                { value: PricingModel.RANGE, label: t("common.priceRange") },
-                { value: PricingModel.PER_SQUARE_METER, label: t("professional.perSqm") },
-                { value: PricingModel.BY_AGREEMENT, label: t("common.negotiable") },
-              ]} />
+              <Select
+                size="sm"
+                value={editedPricingModel}
+                onChange={(val) => setEditedPricingModel(val as PricingModel)}
+                options={[
+                  { value: PricingModel.FIXED, label: t("common.fixed") },
+                  { value: PricingModel.RANGE, label: t("common.priceRange") },
+                  {
+                    value: PricingModel.PER_SQUARE_METER,
+                    label: t("professional.perSqm"),
+                  },
+                  {
+                    value: PricingModel.BY_AGREEMENT,
+                    label: t("common.negotiable"),
+                  },
+                ]}
+              />
               {editedPricingModel !== PricingModel.BY_AGREEMENT && (
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₾</span>
-                    <input type="number" min="0" inputMode="numeric" value={editedBasePrice} onChange={(e) => setEditedBasePrice(e.target.value)} className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30" placeholder="0" />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
+                      ₾
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      inputMode="numeric"
+                      value={editedBasePrice}
+                      onChange={(e) => setEditedBasePrice(e.target.value)}
+                      className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30"
+                      placeholder="0"
+                    />
                   </div>
                   {editedPricingModel === PricingModel.RANGE && (
                     <>
                       <span className="text-neutral-400">—</span>
                       <div className="relative flex-1">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₾</span>
-                        <input type="number" min="0" inputMode="numeric" value={editedMaxPrice} onChange={(e) => setEditedMaxPrice(e.target.value)} className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30" placeholder="0" />
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
+                          ₾
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          inputMode="numeric"
+                          value={editedMaxPrice}
+                          onChange={(e) => setEditedMaxPrice(e.target.value)}
+                          className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30"
+                          placeholder="0"
+                        />
                       </div>
                     </>
                   )}
                 </div>
               )}
               <div className="flex justify-end gap-2">
-                <Button variant="ghost" size="sm" onClick={() => setIsEditingPricing(false)} disabled={isSaving}><X className="w-4 h-4 mr-1" />{t("common.cancel")}</Button>
-                <Button size="sm" onClick={handleSavePricing} loading={isSaving}><Check className="w-4 h-4 mr-1" />{t("common.save")}</Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditingPricing(false)}
+                  disabled={isSaving}
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  {t("common.cancel")}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSavePricing}
+                  loading={isSaving}
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  {t("common.save")}
+                </Button>
               </div>
             </div>
           )}
@@ -1640,8 +1813,12 @@ export default function ProfessionalDetailClient({
           {/* Stats row */}
           <div className="flex items-center justify-around mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
             <div className="text-center">
-              <p className="text-base font-bold text-neutral-900 dark:text-white">{profile.profileViewCount ?? 0}</p>
-              <p className="text-[10px] text-neutral-500">{locale === "ka" ? "ნახვები" : "Views"}</p>
+              <p className="text-base font-bold text-neutral-900 dark:text-white">
+                {profile.profileViewCount ?? 0}
+              </p>
+              <p className="text-[10px] text-neutral-500">
+                {locale === "ka" ? "ნახვები" : "Views"}
+              </p>
             </div>
             {profile.avgRating > 0 && (
               <div className="text-center">
@@ -1649,13 +1826,20 @@ export default function ProfessionalDetailClient({
                   <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                   {profile.avgRating.toFixed(1)}
                 </p>
-                <p className="text-[10px] text-neutral-500">{reviews.length || profile.totalReviews} {locale === "ka" ? "შეფასებები" : "Reviews"}</p>
+                <p className="text-[10px] text-neutral-500">
+                  {reviews.length || profile.totalReviews}{" "}
+                  {locale === "ka" ? "შეფასებები" : "Reviews"}
+                </p>
               </div>
             )}
             {totalCompletedJobs > 0 && (
               <div className="text-center">
-                <p className="text-base font-bold text-neutral-900 dark:text-white">{totalCompletedJobs}</p>
-                <p className="text-[10px] text-neutral-500">{locale === "ka" ? "დასრულებული" : "Jobs"}</p>
+                <p className="text-base font-bold text-neutral-900 dark:text-white">
+                  {totalCompletedJobs}
+                </p>
+                <p className="text-[10px] text-neutral-500">
+                  {locale === "ka" ? "დასრულებული" : "Jobs"}
+                </p>
               </div>
             )}
           </div>
@@ -1664,12 +1848,26 @@ export default function ProfessionalDetailClient({
 
       {/* ========== MOBILE TAB NAVIGATION ========== */}
       <div className="lg:hidden sticky top-[56px] sm:top-[60px] z-30 bg-[var(--color-bg-app)]/95 dark:bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-neutral-200/50 dark:border-neutral-800/50 px-3 sm:px-6">
-        <nav className="flex gap-6 overflow-x-auto scrollbar-hide" aria-label="Profile sections">
-          {([
-            { key: "portfolio" as ProfileSidebarTab, label: locale === "ka" ? "ნამუშევრები" : "Portfolio", count: portfolioProjects.length },
-            { key: "about" as ProfileSidebarTab, label: locale === "ka" ? "შესახებ" : "About" },
-            { key: "reviews" as ProfileSidebarTab, label: locale === "ka" ? "შეფასებები" : "Reviews", count: profile.totalReviews },
-          ]).map((tab) => (
+        <nav
+          className="flex gap-6 overflow-x-auto scrollbar-hide"
+          aria-label="Profile sections"
+        >
+          {[
+            {
+              key: "portfolio" as ProfileSidebarTab,
+              label: locale === "ka" ? "ნამუშევრები" : "Portfolio",
+              count: portfolioProjects.length,
+            },
+            {
+              key: "about" as ProfileSidebarTab,
+              label: locale === "ka" ? "შესახებ" : "About",
+            },
+            {
+              key: "reviews" as ProfileSidebarTab,
+              label: locale === "ka" ? "შეფასებები" : "Reviews",
+              count: profile.totalReviews,
+            },
+          ].map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
@@ -1682,7 +1880,11 @@ export default function ProfessionalDetailClient({
                 )}
               </span>
               {activeTab === tab.key && (
-                <motion.span layoutId="mobile-tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C4735B] rounded-full" transition={{ type: "spring", stiffness: 500, damping: 35 }} />
+                <motion.span
+                  layoutId="mobile-tab-indicator"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C4735B] rounded-full"
+                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                />
               )}
             </button>
           ))}
@@ -1692,7 +1894,6 @@ export default function ProfessionalDetailClient({
       {/* ========== MAIN LAYOUT: SIDEBAR + CONTENT (Behance-style) ========== */}
       <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 pb-32 sm:pb-32 lg:pb-12">
         <div className="flex gap-6 lg:gap-8">
-
           {/* ====== DESKTOP SIDEBAR (Behance-style) ====== */}
           <motion.aside
             initial={{ opacity: 0, x: -30 }}
@@ -1701,21 +1902,42 @@ export default function ProfessionalDetailClient({
             className="hidden lg:block w-72 flex-shrink-0"
           >
             <div className="sticky top-20 space-y-4 pb-6">
-
               {/* Profile Card */}
               <motion.div
                 className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800 shadow-lg shadow-neutral-900/[0.05] dark:shadow-black/20"
                 initial="hidden"
                 animate="show"
-                variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06, delayChildren: 0.2 } } }}
+                variants={{
+                  hidden: {},
+                  show: {
+                    transition: { staggerChildren: 0.06, delayChildren: 0.2 },
+                  },
+                }}
               >
-                <motion.div variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }} transition={{ duration: 0.35 }} className="p-5 flex flex-col items-center">
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: 12 },
+                    show: { opacity: 1, y: 0 },
+                  }}
+                  transition={{ duration: 0.35 }}
+                  className="p-5 flex flex-col items-center"
+                >
                   {/* Avatar */}
                   <div className="relative mb-3">
                     {avatarUrl ? (
-                      <button type="button" onClick={() => setShowAvatarZoom(true)} className="cursor-zoom-in group">
+                      <button
+                        type="button"
+                        onClick={() => setShowAvatarZoom(true)}
+                        className="cursor-zoom-in group"
+                      >
                         <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-neutral-900 shadow-xl group-hover:shadow-2xl transition-all duration-300">
-                          <Image src={avatarSrc} alt={profile.name} width={96} height={96} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <Image
+                            src={avatarSrc}
+                            alt={profile.name}
+                            width={96}
+                            height={96}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
                         </div>
                       </button>
                     ) : (
@@ -1728,23 +1950,53 @@ export default function ProfessionalDetailClient({
                         <BadgeCheck className="w-4 h-4 text-white" />
                       </div>
                     )}
-                    {profile.isAvailable && profile.verificationStatus !== "verified" && (
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-[3px] border-white dark:border-neutral-900" />
-                    )}
+                    {profile.isAvailable &&
+                      profile.verificationStatus !== "verified" && (
+                        <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-[3px] border-white dark:border-neutral-900" />
+                      )}
                   </div>
 
                   {/* Name */}
-                  {isOwner && isEditingName ? (
+                  {canEdit && isEditingName ? (
                     <div className="flex items-center gap-1.5 mb-1 w-full">
-                      <Input value={editedName} onChange={(e) => setEditedName(e.target.value)} className="text-base font-bold flex-1" autoFocus onKeyDown={(e) => { if (e.key === "Enter") handleSaveName(); if (e.key === "Escape") setIsEditingName(false); }} />
-                      <Button size="sm" onClick={handleSaveName} disabled={isSaving || !editedName.trim()}><Check className="w-3.5 h-3.5" /></Button>
-                      <Button size="sm" variant="ghost" onClick={() => setIsEditingName(false)}><X className="w-3.5 h-3.5" /></Button>
+                      <Input
+                        value={editedName}
+                        onChange={(e) => setEditedName(e.target.value)}
+                        className="text-base font-bold flex-1"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveName();
+                          if (e.key === "Escape") setIsEditingName(false);
+                        }}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handleSaveName}
+                        disabled={isSaving || !editedName.trim()}
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setIsEditingName(false)}
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 mb-0.5">
-                      <h1 className="text-lg font-bold text-neutral-900 dark:text-white text-center">{profile.name}</h1>
-                      {isOwner && (
-                        <button onClick={() => { setEditedName(profile.name); setIsEditingName(true); }} className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+                      <h1 className="text-lg font-bold text-neutral-900 dark:text-white text-center">
+                        {profile.name}
+                      </h1>
+                      {canEdit && (
+                        <button
+                          onClick={() => {
+                            setEditedName(profile.name);
+                            setIsEditingName(true);
+                          }}
+                          className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        >
                           <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
                         </button>
                       )}
@@ -1760,28 +2012,69 @@ export default function ProfessionalDetailClient({
                   )}
 
                   {/* Title/Tagline */}
-                  {isOwner ? (
+                  {canEdit ? (
                     isEditingTitle ? (
                       <div className="flex items-center gap-1.5 mb-2 w-full">
-                        <Input value={editedTitle} onChange={(e) => setEditedTitle(e.target.value)} placeholder={t("professional.addTagline")} className="text-sm flex-1" autoFocus onKeyDown={(e) => { if (e.key === "Enter") handleSaveTitle(); if (e.key === "Escape") setIsEditingTitle(false); }} />
-                        <Button size="sm" onClick={handleSaveTitle} disabled={isSaving}><Check className="w-3.5 h-3.5" /></Button>
-                        <Button size="sm" variant="ghost" onClick={() => setIsEditingTitle(false)}><X className="w-3.5 h-3.5" /></Button>
+                        <Input
+                          value={editedTitle}
+                          onChange={(e) => setEditedTitle(e.target.value)}
+                          placeholder={t("professional.addTagline")}
+                          className="text-sm flex-1"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSaveTitle();
+                            if (e.key === "Escape") setIsEditingTitle(false);
+                          }}
+                        />
+                        <Button
+                          size="sm"
+                          onClick={handleSaveTitle}
+                          disabled={isSaving}
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setIsEditingTitle(false)}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5 mb-2">
-                        {profile.title && !isCategoryBasedTitle(profile.title) ? (
-                          <p className="text-sm text-[#C4735B] font-medium text-center">{profile.title}</p>
+                        {profile.title &&
+                        !isCategoryBasedTitle(profile.title) ? (
+                          <p className="text-sm text-[#C4735B] font-medium text-center">
+                            {profile.title}
+                          </p>
                         ) : (
-                          <p className="text-xs text-neutral-400 italic">{t("professional.addTagline")}</p>
+                          <p className="text-xs text-neutral-400 italic">
+                            {t("professional.addTagline")}
+                          </p>
                         )}
-                        <button onClick={() => { setEditedTitle(profile.title && !isCategoryBasedTitle(profile.title) ? profile.title : ""); setIsEditingTitle(true); }} className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+                        <button
+                          onClick={() => {
+                            setEditedTitle(
+                              profile.title &&
+                                !isCategoryBasedTitle(profile.title)
+                                ? profile.title
+                                : "",
+                            );
+                            setIsEditingTitle(true);
+                          }}
+                          className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        >
                           <Edit3 className="w-3 h-3 text-neutral-400" />
                         </button>
                       </div>
                     )
                   ) : (
-                    profile.title && !isCategoryBasedTitle(profile.title) && (
-                      <p className="text-sm text-[#C4735B] font-medium text-center mb-2">{profile.title}</p>
+                    profile.title &&
+                    !isCategoryBasedTitle(profile.title) && (
+                      <p className="text-sm text-[#C4735B] font-medium text-center mb-2">
+                        {profile.title}
+                      </p>
                     )
                   )}
 
@@ -1803,7 +2096,11 @@ export default function ProfessionalDetailClient({
                             initial={{ scale: 0.9, opacity: 0, rotateX: -15 }}
                             animate={{ scale: 1, opacity: 1, rotateX: 0 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 400,
+                              damping: 25,
+                            }}
                             href={`tel:${profile.phone.replace(/\s/g, "")}`}
                             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/25"
                             style={{ transformPerspective: 600 }}
@@ -1824,24 +2121,44 @@ export default function ProfessionalDetailClient({
                             exit={{ scale: 0.95, opacity: 0 }}
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
-                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 400,
+                              damping: 25,
+                            }}
                             onClick={handleContact}
                             className="relative w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] via-[#B5624A] to-[#A85D4A] shadow-lg shadow-[#C4735B]/25 overflow-hidden"
                           >
                             {/* Shine sweep */}
                             <motion.div
                               className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
-                              initial={{ x: '-100%' }}
-                              animate={{ x: '200%' }}
-                              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
+                              initial={{ x: "-100%" }}
+                              animate={{ x: "200%" }}
+                              transition={{
+                                duration: 1.5,
+                                repeat: Infinity,
+                                repeatDelay: 4,
+                                ease: "easeInOut",
+                              }}
                             />
                             <span className="relative flex items-center gap-2">
                               {isBasicTier ? (
-                                <motion.span animate={{ rotate: [0, -12, 12, -8, 0] }} transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}>
+                                <motion.span
+                                  animate={{ rotate: [0, -12, 12, -8, 0] }}
+                                  transition={{
+                                    duration: 0.5,
+                                    repeat: Infinity,
+                                    repeatDelay: 5,
+                                  }}
+                                >
                                   <Phone className="w-4 h-4" />
                                 </motion.span>
-                              ) : <MessageSquare className="w-4 h-4" />}
-                              {isBasicTier ? t("professional.showPhone") : t("professional.contact")}
+                              ) : (
+                                <MessageSquare className="w-4 h-4" />
+                              )}
+                              {isBasicTier
+                                ? t("professional.showPhone")
+                                : t("professional.contact")}
                             </span>
                           </motion.button>
                         )}
@@ -1863,49 +2180,123 @@ export default function ProfessionalDetailClient({
 
                 {/* Pricing */}
                 {pricingMeta && (
-                  <motion.div variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }} transition={{ duration: 0.35 }} className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3">
-                    {!isOwner || !isEditingPricing ? (
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0, y: 12 },
+                      show: { opacity: 1, y: 0 },
+                    }}
+                    transition={{ duration: 0.35 }}
+                    className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3"
+                  >
+                    {!canEdit || !isEditingPricing ? (
                       <div className="flex items-center justify-between">
                         <div>
-                          <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">{pricingMeta.typeLabel}</span>
+                          <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
+                            {pricingMeta.typeLabel}
+                          </span>
                           {pricingMeta.valueLabel && (
-                            <p className="text-xl font-bold text-[#C4735B] dark:text-[#D4937B]">{pricingMeta.valueLabel}</p>
+                            <p className="text-xl font-bold text-[#C4735B] dark:text-[#D4937B]">
+                              {pricingMeta.valueLabel}
+                            </p>
                           )}
                         </div>
-                        {isOwner && (
-                          <button onClick={openPricingEdit} className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] transition-colors">
+                        {canEdit && (
+                          <button
+                            onClick={openPricingEdit}
+                            className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] transition-colors"
+                          >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <Select size="sm" value={editedPricingModel} onChange={(val) => setEditedPricingModel(val as PricingModel)} options={[
-                          { value: PricingModel.FIXED, label: t("common.fixed") },
-                          { value: PricingModel.RANGE, label: t("common.priceRange") },
-                          { value: PricingModel.PER_SQUARE_METER, label: t("professional.perSqm") },
-                          { value: PricingModel.BY_AGREEMENT, label: t("common.negotiable") },
-                        ]} />
+                        <Select
+                          size="sm"
+                          value={editedPricingModel}
+                          onChange={(val) =>
+                            setEditedPricingModel(val as PricingModel)
+                          }
+                          options={[
+                            {
+                              value: PricingModel.FIXED,
+                              label: t("common.fixed"),
+                            },
+                            {
+                              value: PricingModel.RANGE,
+                              label: t("common.priceRange"),
+                            },
+                            {
+                              value: PricingModel.PER_SQUARE_METER,
+                              label: t("professional.perSqm"),
+                            },
+                            {
+                              value: PricingModel.BY_AGREEMENT,
+                              label: t("common.negotiable"),
+                            },
+                          ]}
+                        />
                         {editedPricingModel !== PricingModel.BY_AGREEMENT && (
                           <div className="flex items-center gap-2">
                             <div className="relative flex-1">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₾</span>
-                              <input type="number" min="0" inputMode="numeric" value={editedBasePrice} onChange={(e) => setEditedBasePrice(e.target.value)} className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30" placeholder="0" />
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
+                                ₾
+                              </span>
+                              <input
+                                type="number"
+                                min="0"
+                                inputMode="numeric"
+                                value={editedBasePrice}
+                                onChange={(e) =>
+                                  setEditedBasePrice(e.target.value)
+                                }
+                                className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30"
+                                placeholder="0"
+                              />
                             </div>
                             {editedPricingModel === PricingModel.RANGE && (
                               <>
-                                <span className="text-neutral-400 text-sm">—</span>
+                                <span className="text-neutral-400 text-sm">
+                                  —
+                                </span>
                                 <div className="relative flex-1">
-                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₾</span>
-                                  <input type="number" min="0" inputMode="numeric" value={editedMaxPrice} onChange={(e) => setEditedMaxPrice(e.target.value)} className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30" placeholder="0" />
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
+                                    ₾
+                                  </span>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    inputMode="numeric"
+                                    value={editedMaxPrice}
+                                    onChange={(e) =>
+                                      setEditedMaxPrice(e.target.value)
+                                    }
+                                    className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30"
+                                    placeholder="0"
+                                  />
                                 </div>
                               </>
                             )}
                           </div>
                         )}
                         <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => setIsEditingPricing(false)} disabled={isSaving}><X className="w-3.5 h-3.5 mr-1" />{t("common.cancel")}</Button>
-                          <Button size="sm" onClick={handleSavePricing} loading={isSaving}><Check className="w-3.5 h-3.5 mr-1" />{t("common.save")}</Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsEditingPricing(false)}
+                            disabled={isSaving}
+                          >
+                            <X className="w-3.5 h-3.5 mr-1" />
+                            {t("common.cancel")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={handleSavePricing}
+                            loading={isSaving}
+                          >
+                            <Check className="w-3.5 h-3.5 mr-1" />
+                            {t("common.save")}
+                          </Button>
                         </div>
                       </div>
                     )}
@@ -1913,38 +2304,121 @@ export default function ProfessionalDetailClient({
                 )}
 
                 {/* Stats Grid */}
-                <motion.div variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }} transition={{ duration: 0.35 }} className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3">
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0, y: 12 },
+                    show: { opacity: 1, y: 0 },
+                  }}
+                  transition={{ duration: 0.35 }}
+                  className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3"
+                >
                   <div className="grid grid-cols-2 gap-2">
-                    <motion.div whileHover={{ scale: 1.05, backgroundColor: 'rgba(196,115,91,0.06)' }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default">
-                      <p className="text-base font-bold text-neutral-900 dark:text-white"><AnimatedCounter value={profile.profileViewCount ?? 0} /></p>
-                      <p className="text-[10px] text-neutral-500 mt-0.5">{locale === "ka" ? "ნახვები" : "Views"}</p>
+                    <motion.div
+                      whileHover={{
+                        scale: 1.05,
+                        backgroundColor: "rgba(196,115,91,0.06)",
+                      }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 25,
+                      }}
+                      className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default"
+                    >
+                      <p className="text-base font-bold text-neutral-900 dark:text-white">
+                        <AnimatedCounter
+                          value={profile.profileViewCount ?? 0}
+                        />
+                      </p>
+                      <p className="text-[10px] text-neutral-500 mt-0.5">
+                        {locale === "ka" ? "ნახვები" : "Views"}
+                      </p>
                     </motion.div>
                     {profile.avgRating > 0 && (
-                      <motion.div whileHover={{ scale: 1.05, backgroundColor: 'rgba(196,115,91,0.06)' }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default">
+                      <motion.div
+                        whileHover={{
+                          scale: 1.05,
+                          backgroundColor: "rgba(196,115,91,0.06)",
+                        }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 25,
+                        }}
+                        className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default"
+                      >
                         <p className="text-base font-bold text-neutral-900 dark:text-white flex items-center justify-center gap-1">
                           <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                          <AnimatedCounter value={profile.avgRating} decimals={1} />
+                          <AnimatedCounter
+                            value={profile.avgRating}
+                            decimals={1}
+                          />
                         </p>
-                        <p className="text-[10px] text-neutral-500 mt-0.5">{reviews.length || profile.totalReviews} {locale === "ka" ? "შეფასებები" : "Reviews"}</p>
+                        <p className="text-[10px] text-neutral-500 mt-0.5">
+                          {reviews.length || profile.totalReviews}{" "}
+                          {locale === "ka" ? "შეფასებები" : "Reviews"}
+                        </p>
                       </motion.div>
                     )}
                     {totalCompletedJobs > 0 && (
-                      <motion.div whileHover={{ scale: 1.05, backgroundColor: 'rgba(196,115,91,0.06)' }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default">
-                        <p className="text-base font-bold text-neutral-900 dark:text-white"><AnimatedCounter value={totalCompletedJobs} /></p>
-                        <p className="text-[10px] text-neutral-500 mt-0.5">{locale === "ka" ? "დასრულებული" : "Jobs"}</p>
+                      <motion.div
+                        whileHover={{
+                          scale: 1.05,
+                          backgroundColor: "rgba(196,115,91,0.06)",
+                        }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 25,
+                        }}
+                        className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default"
+                      >
+                        <p className="text-base font-bold text-neutral-900 dark:text-white">
+                          <AnimatedCounter value={totalCompletedJobs} />
+                        </p>
+                        <p className="text-[10px] text-neutral-500 mt-0.5">
+                          {locale === "ka" ? "დასრულებული" : "Jobs"}
+                        </p>
                       </motion.div>
                     )}
                     {(() => {
                       let maxYears = profile.yearsExperience || 0;
-                      if (profile.selectedServices && profile.selectedServices.length > 0) {
-                        const experienceToYears: Record<string, number> = { "1-2": 2, "3-5": 5, "5-10": 10, "10+": 15 };
-                        const calcMax = Math.max(...profile.selectedServices.map((s) => experienceToYears[s.experience] || 0));
+                      if (
+                        profile.selectedServices &&
+                        profile.selectedServices.length > 0
+                      ) {
+                        const experienceToYears: Record<string, number> = {
+                          "1-2": 2,
+                          "3-5": 5,
+                          "5-10": 10,
+                          "10+": 15,
+                        };
+                        const calcMax = Math.max(
+                          ...profile.selectedServices.map(
+                            (s) => experienceToYears[s.experience] || 0,
+                          ),
+                        );
                         if (calcMax > maxYears) maxYears = calcMax;
                       }
                       return maxYears > 0 ? (
-                        <motion.div whileHover={{ scale: 1.05, backgroundColor: 'rgba(196,115,91,0.06)' }} transition={{ type: "spring", stiffness: 400, damping: 25 }} className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default">
-                          <p className="text-base font-bold text-neutral-900 dark:text-white"><AnimatedCounter value={maxYears} />+</p>
-                          <p className="text-[10px] text-neutral-500 mt-0.5">{locale === "ka" ? "წლის გამოცდ." : "Years Exp."}</p>
+                        <motion.div
+                          whileHover={{
+                            scale: 1.05,
+                            backgroundColor: "rgba(196,115,91,0.06)",
+                          }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 25,
+                          }}
+                          className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default"
+                        >
+                          <p className="text-base font-bold text-neutral-900 dark:text-white">
+                            <AnimatedCounter value={maxYears} />+
+                          </p>
+                          <p className="text-[10px] text-neutral-500 mt-0.5">
+                            {locale === "ka" ? "წლის გამოცდ." : "Years Exp."}
+                          </p>
                         </motion.div>
                       ) : null;
                     })()}
@@ -1952,50 +2426,120 @@ export default function ProfessionalDetailClient({
                 </motion.div>
 
                 {/* Services */}
-                {((profile.selectedServices?.length ?? 0) > 0 || proSubcategories.length > 0) && (
-                  <motion.div variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }} transition={{ duration: 0.35 }} className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3">
-                    <h3 className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-2">{locale === "ka" ? "სერვისები და გამოცდილება" : "Services & Experience"}</h3>
-                    <motion.div className="flex flex-wrap gap-1.5" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.04, delayChildren: 0.5 } } }}>
-                      {profile.selectedServices && profile.selectedServices.length > 0 ? (
-                        profile.selectedServices.map((service, idx) => (
-                          <motion.div
-                            key={`svc-${idx}`}
-                            variants={{ hidden: { opacity: 0, scale: 0.8 }, show: { opacity: 1, scale: 1 } }}
-                            transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                            whileHover={{ scale: 1.05, y: -1 }}
-                            className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 text-xs cursor-default hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-colors"
-                          >
-                            <span className="font-medium text-neutral-700 dark:text-neutral-200">
-                              {({ ka: service.nameKa, en: service.name, ru: service.name }[locale] ?? service.name)}
-                            </span>
-                            <span className="text-[10px] font-bold text-[#C4735B] bg-[#C4735B]/10 px-1 py-0.5 rounded">{getExperienceLabel(service.experience)}</span>
-                          </motion.div>
-                        ))
-                      ) : (
-                        proSubcategories.map((sub, idx) => {
-                          const experience = getServiceExperience(sub);
-                          return (
+                {((profile.selectedServices?.length ?? 0) > 0 ||
+                  proSubcategories.length > 0) && (
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0, y: 12 },
+                      show: { opacity: 1, y: 0 },
+                    }}
+                    transition={{ duration: 0.35 }}
+                    className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3"
+                  >
+                    <h3 className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-2">
+                      {locale === "ka"
+                        ? "სერვისები და გამოცდილება"
+                        : "Services & Experience"}
+                    </h3>
+                    <motion.div
+                      className="flex flex-wrap gap-1.5"
+                      initial="hidden"
+                      animate="show"
+                      variants={{
+                        hidden: {},
+                        show: {
+                          transition: {
+                            staggerChildren: 0.04,
+                            delayChildren: 0.5,
+                          },
+                        },
+                      }}
+                    >
+                      {profile.selectedServices &&
+                      profile.selectedServices.length > 0
+                        ? profile.selectedServices.map((service, idx) => (
                             <motion.div
-                              key={`sub-${idx}`}
-                              variants={{ hidden: { opacity: 0, scale: 0.8 }, show: { opacity: 1, scale: 1 } }}
-                              transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                              key={`svc-${idx}`}
+                              variants={{
+                                hidden: { opacity: 0, scale: 0.8 },
+                                show: { opacity: 1, scale: 1 },
+                              }}
+                              transition={{
+                                type: "spring",
+                                stiffness: 500,
+                                damping: 25,
+                              }}
                               whileHover={{ scale: 1.05, y: -1 }}
                               className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 text-xs cursor-default hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-colors"
                             >
-                              <span className="font-medium text-neutral-700 dark:text-neutral-200">{getSubcategoryLabel(sub)}</span>
-                              {experience && <span className="text-[10px] font-bold text-[#C4735B] bg-[#C4735B]/10 px-1 py-0.5 rounded">{getExperienceLabel(experience)}</span>}
+                              <span className="font-medium text-neutral-700 dark:text-neutral-200">
+                                {{
+                                  ka: service.nameKa,
+                                  en: service.name,
+                                  ru: service.name,
+                                }[locale] ?? service.name}
+                              </span>
+                              <span className="text-[10px] font-bold text-[#C4735B] bg-[#C4735B]/10 px-1 py-0.5 rounded">
+                                {getExperienceLabel(service.experience)}
+                              </span>
                             </motion.div>
-                          );
-                        })
-                      )}
+                          ))
+                        : proSubcategories.map((sub, idx) => {
+                            const experience = getServiceExperience(sub);
+                            return (
+                              <motion.div
+                                key={`sub-${idx}`}
+                                variants={{
+                                  hidden: { opacity: 0, scale: 0.8 },
+                                  show: { opacity: 1, scale: 1 },
+                                }}
+                                transition={{
+                                  type: "spring",
+                                  stiffness: 500,
+                                  damping: 25,
+                                }}
+                                whileHover={{ scale: 1.05, y: -1 }}
+                                className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 text-xs cursor-default hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-colors"
+                              >
+                                <span className="font-medium text-neutral-700 dark:text-neutral-200">
+                                  {getSubcategoryLabel(sub)}
+                                </span>
+                                {experience && (
+                                  <span className="text-[10px] font-bold text-[#C4735B] bg-[#C4735B]/10 px-1 py-0.5 rounded">
+                                    {getExperienceLabel(experience)}
+                                  </span>
+                                )}
+                              </motion.div>
+                            );
+                          })}
                     </motion.div>
                     {proCategories.length > 0 && (
-                      <motion.div className="flex flex-wrap gap-1.5 mt-2" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05, delayChildren: 0.7 } } }}>
+                      <motion.div
+                        className="flex flex-wrap gap-1.5 mt-2"
+                        initial="hidden"
+                        animate="show"
+                        variants={{
+                          hidden: {},
+                          show: {
+                            transition: {
+                              staggerChildren: 0.05,
+                              delayChildren: 0.7,
+                            },
+                          },
+                        }}
+                      >
                         {proCategories.map((cat, idx) => (
                           <motion.span
                             key={`cat-${idx}`}
-                            variants={{ hidden: { opacity: 0, scale: 0.8 }, show: { opacity: 1, scale: 1 } }}
-                            transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                            variants={{
+                              hidden: { opacity: 0, scale: 0.8 },
+                              show: { opacity: 1, scale: 1 },
+                            }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 500,
+                              damping: 25,
+                            }}
                             whileHover={{ scale: 1.08 }}
                             className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-gradient-to-r from-[#C4735B] to-[#D4937B] text-white cursor-default"
                           >
@@ -2009,9 +2553,23 @@ export default function ProfessionalDetailClient({
 
                 {/* Member since */}
                 {profile.createdAt && (
-                  <motion.div variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }} transition={{ duration: 0.35 }} className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3">
-                    <p className="text-[10px] text-neutral-400 uppercase tracking-wider" suppressHydrationWarning>
-                      {locale === "ka" ? "წევრია" : "Member since"}: {new Date(profile.createdAt).toLocaleDateString(locale === 'ka' ? 'ka-GE' : 'en-US', { month: 'long', year: 'numeric' })}
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0, y: 12 },
+                      show: { opacity: 1, y: 0 },
+                    }}
+                    transition={{ duration: 0.35 }}
+                    className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3"
+                  >
+                    <p
+                      className="text-[10px] text-neutral-400 uppercase tracking-wider"
+                      suppressHydrationWarning
+                    >
+                      {locale === "ka" ? "წევრია" : "Member since"}:{" "}
+                      {new Date(profile.createdAt).toLocaleDateString(
+                        locale === "ka" ? "ka-GE" : "en-US",
+                        { month: "long", year: "numeric" },
+                      )}
                     </p>
                   </motion.div>
                 )}
@@ -2029,11 +2587,22 @@ export default function ProfessionalDetailClient({
             {/* Desktop Tab Navigation - Behance style horizontal underline tabs */}
             <div className="hidden lg:block border-b border-neutral-200 dark:border-neutral-800 mb-6">
               <nav className="flex gap-8" aria-label="Profile sections">
-                {([
-                  { key: "portfolio" as ProfileSidebarTab, label: locale === "ka" ? "ნამუშევრები" : "Portfolio", count: portfolioProjects.length },
-                  { key: "about" as ProfileSidebarTab, label: locale === "ka" ? "შესახებ" : "About" },
-                  { key: "reviews" as ProfileSidebarTab, label: locale === "ka" ? "შეფასებები" : "Reviews", count: reviews.length || profile.totalReviews },
-                ]).map((tab) => (
+                {[
+                  {
+                    key: "portfolio" as ProfileSidebarTab,
+                    label: locale === "ka" ? "ნამუშევრები" : "Portfolio",
+                    count: portfolioProjects.length,
+                  },
+                  {
+                    key: "about" as ProfileSidebarTab,
+                    label: locale === "ka" ? "შესახებ" : "About",
+                  },
+                  {
+                    key: "reviews" as ProfileSidebarTab,
+                    label: locale === "ka" ? "შეფასებები" : "Reviews",
+                    count: reviews.length || profile.totalReviews,
+                  },
+                ].map((tab) => (
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
@@ -2042,11 +2611,21 @@ export default function ProfessionalDetailClient({
                     <span className="flex items-center gap-2">
                       {tab.label}
                       {tab.count !== undefined && tab.count > 0 && (
-                        <span className="text-xs text-neutral-400">{tab.count}</span>
+                        <span className="text-xs text-neutral-400">
+                          {tab.count}
+                        </span>
                       )}
                     </span>
                     {activeTab === tab.key && (
-                      <motion.span layoutId="desktop-tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C4735B] rounded-full" transition={{ type: "spring", stiffness: 500, damping: 35 }} />
+                      <motion.span
+                        layoutId="desktop-tab-indicator"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C4735B] rounded-full"
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 35,
+                        }}
+                      />
                     )}
                   </button>
                 ))}
@@ -2082,20 +2661,26 @@ export default function ProfessionalDetailClient({
                       locale={locale as "en" | "ka" | "ru"}
                       isAuthenticated={!!user}
                       onRequireAuth={() => openLoginModal(pathname)}
-                      isOwner={isOwner}
+                      isOwner={canEdit}
                       onSaveBio={async (bio) => {
                         await api.patch("/users/me/pro-profile", { bio });
                         setProfile((prev) => (prev ? { ...prev, bio } : prev));
                         toast.success(t("professional.saved"));
                       }}
                       onSaveServices={async (customServices) => {
-                        await api.patch("/users/me/pro-profile", { customServices });
-                        setProfile((prev) => prev ? { ...prev, customServices } : prev);
+                        await api.patch("/users/me/pro-profile", {
+                          customServices,
+                        });
+                        setProfile((prev) =>
+                          prev ? { ...prev, customServices } : prev,
+                        );
                         toast.success(t("common.saved"));
                       }}
                       onSaveSocialLinks={async (socialLinks) => {
                         await api.patch("/users/me/pro-profile", socialLinks);
-                        setProfile((prev) => prev ? { ...prev, ...socialLinks } : prev);
+                        setProfile((prev) =>
+                          prev ? { ...prev, ...socialLinks } : prev,
+                        );
                         toast.success(t("common.saved"));
                       }}
                     />
@@ -2131,7 +2716,9 @@ export default function ProfessionalDetailClient({
                           beforeAfter: project.beforeAfter,
                         })
                       }
-                      onDeleteProject={(projectId) => setDeleteProjectId(projectId)}
+                      onDeleteProject={(projectId) =>
+                        setDeleteProjectId(projectId)
+                      }
                     />
                   </div>
                 )}
@@ -2226,19 +2813,33 @@ export default function ProfessionalDetailClient({
               {/* Shine sweep */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
-                initial={{ x: '-100%' }}
-                animate={{ x: '200%' }}
-                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
+                initial={{ x: "-100%" }}
+                animate={{ x: "200%" }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  repeatDelay: 4,
+                  ease: "easeInOut",
+                }}
               />
               <span className="relative flex items-center justify-center gap-2">
                 {isBasicTier ? (
-                  <motion.span animate={{ rotate: [0, -12, 12, -8, 0] }} transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}>
+                  <motion.span
+                    animate={{ rotate: [0, -12, 12, -8, 0] }}
+                    transition={{
+                      duration: 0.5,
+                      repeat: Infinity,
+                      repeatDelay: 5,
+                    }}
+                  >
                     <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
                   </motion.span>
                 ) : (
                   <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
-                {isBasicTier ? t("professional.showPhone") : t("professional.contact")}
+                {isBasicTier
+                  ? t("professional.showPhone")
+                  : t("professional.contact")}
               </span>
             </motion.button>
           )}
@@ -2308,7 +2909,7 @@ export default function ProfessionalDetailClient({
                                   (prev.currentIndex - 1 + totalMedia) %
                                   totalMedia,
                               }
-                            : null
+                            : null,
                         );
                       }}
                       className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:text-white z-10 w-9 h-9 sm:w-12 sm:h-12"
@@ -2327,7 +2928,7 @@ export default function ProfessionalDetailClient({
                                 currentIndex:
                                   (prev.currentIndex + 1) % totalMedia,
                               }
-                            : null
+                            : null,
                         );
                       }}
                       className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:text-white z-10 w-9 h-9 sm:w-12 sm:h-12"
@@ -2346,7 +2947,7 @@ export default function ProfessionalDetailClient({
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={storage.getOptimizedImageUrl(currentItem, 'lightbox')}
+                    src={storage.getOptimizedImageUrl(currentItem, "lightbox")}
                     alt=""
                     loading="eager"
                     fetchPriority="high"
@@ -2357,7 +2958,10 @@ export default function ProfessionalDetailClient({
 
               {/* Thumbnail Strip */}
               {totalMedia > 1 && (
-                <div className="p-2 sm:p-4" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="p-2 sm:p-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <div className="flex justify-start gap-1.5 sm:gap-2 overflow-x-auto pb-2">
                     {/* Image thumbnails */}
                     {selectedProject.images.map((img, idx) => (
@@ -2365,7 +2969,7 @@ export default function ProfessionalDetailClient({
                         key={`img-${idx}`}
                         onClick={() =>
                           setSelectedProject((prev) =>
-                            prev ? { ...prev, currentIndex: idx } : null
+                            prev ? { ...prev, currentIndex: idx } : null,
                           )
                         }
                         className={`relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-md sm:rounded-lg overflow-hidden flex-shrink-0 transition-all ${
@@ -2376,7 +2980,10 @@ export default function ProfessionalDetailClient({
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={storage.getOptimizedImageUrl(img, 'thumbnailSmall')}
+                          src={storage.getOptimizedImageUrl(
+                            img,
+                            "thumbnailSmall",
+                          )}
                           alt=""
                           loading="lazy"
                           className="w-full h-full object-cover"
@@ -2391,7 +2998,7 @@ export default function ProfessionalDetailClient({
                           key={`vid-${idx}`}
                           onClick={() =>
                             setSelectedProject((prev) =>
-                              prev ? { ...prev, currentIndex: mediaIdx } : null
+                              prev ? { ...prev, currentIndex: mediaIdx } : null,
                             )
                           }
                           className={`relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-md sm:rounded-lg overflow-hidden flex-shrink-0 transition-all ${
@@ -2483,7 +3090,7 @@ export default function ProfessionalDetailClient({
                   Authorization: `Bearer ${localStorage.getItem("access_token")}`,
                 },
                 body: JSON.stringify({ proId: profile?.id, message: msg }),
-              }
+              },
             );
             if (!response.ok) {
               throw new Error("Failed to send message");
@@ -2539,7 +3146,8 @@ export default function ProfessionalDetailClient({
       >
         <div className="space-y-4 p-6">
           <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
-            {t("admin.updateVerificationStatus") || "Update Verification Status"}
+            {t("admin.updateVerificationStatus") ||
+              "Update Verification Status"}
           </h2>
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
@@ -2549,10 +3157,22 @@ export default function ProfessionalDetailClient({
               value={adminVerificationStatus}
               onChange={(value: string) => setAdminVerificationStatus(value)}
               options={[
-                { value: "pending", label: t("admin.statusPending") || "Pending" },
-                { value: "submitted", label: t("admin.statusSubmitted") || "Submitted" },
-                { value: "verified", label: t("admin.statusVerified") || "Verified" },
-                { value: "rejected", label: t("admin.statusRejected") || "Rejected" },
+                {
+                  value: "pending",
+                  label: t("admin.statusPending") || "Pending",
+                },
+                {
+                  value: "submitted",
+                  label: t("admin.statusSubmitted") || "Submitted",
+                },
+                {
+                  value: "verified",
+                  label: t("admin.statusVerified") || "Verified",
+                },
+                {
+                  value: "rejected",
+                  label: t("admin.statusRejected") || "Rejected",
+                },
               ]}
               placeholder={t("admin.selectStatus") || "Select status"}
             />
@@ -2560,12 +3180,16 @@ export default function ProfessionalDetailClient({
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-              {t("admin.verificationNotes") || "Notes (visible to professional)"}
+              {t("admin.verificationNotes") ||
+                "Notes (visible to professional)"}
             </label>
             <textarea
               value={adminVerificationNotes}
               onChange={(e) => setAdminVerificationNotes(e.target.value)}
-              placeholder={t("admin.notesPlaceholder") || "Add notes for the professional..."}
+              placeholder={
+                t("admin.notesPlaceholder") ||
+                "Add notes for the professional..."
+              }
               className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white resize-none"
               rows={3}
             />
@@ -2651,7 +3275,7 @@ function ProjectFormModal({
   const { t } = useLanguage();
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(
-    initialData?.description || ""
+    initialData?.description || "",
   );
   const [location, setLocation] = useState(initialData?.location || "");
 
@@ -2670,10 +3294,10 @@ function ProjectFormModal({
   // Upload states
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingType, setUploadingType] = useState<MediaUploadType | null>(
-    null
+    null,
   );
   const [pendingBeforeImage, setPendingBeforeImage] = useState<string | null>(
-    null
+    null,
   );
 
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -2688,7 +3312,11 @@ function ProjectFormModal({
       return err.name === "NotReadableError";
     }
     // Axios/other wrappers may serialize to plain object
-    return typeof err === "object" && err !== null && (err as any).name === "NotReadableError";
+    return (
+      typeof err === "object" &&
+      err !== null &&
+      (err as any).name === "NotReadableError"
+    );
   };
 
   const fileReadErrorText =
@@ -2919,10 +3547,7 @@ function ProjectFormModal({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error(
-        t("common.error"),
-        t("professional.titleIsRequired")
-      );
+      toast.error(t("common.error"), t("professional.titleIsRequired"));
       return;
     }
     if (
@@ -2930,10 +3555,7 @@ function ProjectFormModal({
       videos.length === 0 &&
       beforeAfterPairs.length === 0
     ) {
-      toast.error(
-        t("common.error"),
-        t("professional.atLeastOneMediaItem")
-      );
+      toast.error(t("common.error"), t("professional.atLeastOneMediaItem"));
       return;
     }
     onSubmit({
@@ -2963,7 +3585,9 @@ function ProjectFormModal({
           </div>
           <div className="relative flex items-center justify-between">
             <div>
-              <h2 className="text-base sm:text-xl font-bold text-white">{modalTitle}</h2>
+              <h2 className="text-base sm:text-xl font-bold text-white">
+                {modalTitle}
+              </h2>
               <p className="text-white/70 text-xs sm:text-sm mt-0.5">
                 {t("professional.showcaseYourBestWork")}
               </p>
@@ -3426,7 +4050,12 @@ function ProjectFormModal({
               : `${totalMedia} ${t("professional.filesReady")}`}
           </p>
           <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
-            <Button variant="ghost" onClick={onClose} disabled={isLoading} className="flex-1 sm:flex-none text-sm">
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              disabled={isLoading}
+              className="flex-1 sm:flex-none text-sm"
+            >
               {t("common.cancel")}
             </Button>
             <Button

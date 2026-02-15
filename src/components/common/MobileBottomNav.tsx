@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Briefcase, Calculator, FileText, Images, Plus, Search, Users } from 'lucide-react';
+import { Briefcase, Calculator, FileText, Images, LayoutDashboard, Plus, Search, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
@@ -49,33 +49,33 @@ const NAV_ITEMS: NavItem[] = [
     icon: Briefcase,
     showFor: 'client',
   },
-  // Pro navigation (4 items: 2 left + plus + 2 right)
+  // Pro navigation (2 left + center + 2 right)
   {
-    key: 'find-jobs',
+    key: 'my-space',
+    href: '/my-space',
+    labelKey: 'mySpace.mySpace',
+    icon: LayoutDashboard,
+    showFor: 'pro',
+  },
+  {
+    key: 'portfolio-pro',
+    href: '/portfolio',
+    labelKey: 'nav.portfolios',
+    icon: Images,
+    showFor: 'pro',
+  },
+  {
+    key: 'jobs-pro',
     href: '/jobs',
     labelKey: 'nav.jobs',
     icon: Briefcase,
     showFor: 'pro',
   },
   {
-    key: 'my-work',
-    href: '/my-work',
-    labelKey: 'header.myWork',
-    icon: Images,
-    showFor: 'pro',
-  },
-  {
-    key: 'my-jobs',
-    href: '/my-jobs',
-    labelKey: 'header.myJobs',
-    icon: FileText,
-    showFor: 'pro',
-  },
-  {
-    key: 'tools-pro',
-    href: '/tools',
-    labelKey: 'nav.tools',
-    icon: Calculator,
+    key: 'professionals-pro',
+    href: '/professionals',
+    labelKey: 'browse.professionals',
+    icon: Users,
     showFor: 'pro',
   },
 ];
@@ -130,13 +130,14 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
 
   // Determine active tab
   const getActiveKey = () => {
+    if (pathname.includes('/my-space')) return 'my-space';
     if (pathname.includes('/tools')) return isPro ? 'tools-pro' : '';
-    if (pathname.includes('/my-work')) return 'my-work';
-    if (pathname.includes('/my-proposals')) return 'my-jobs';
-    if (pathname.includes('/my-jobs')) return isPro ? 'my-jobs' : 'my-jobs-client';
-    if (pathname.includes('/jobs')) return 'find-jobs';
-    if (pathname.includes('/professionals')) return isPro ? '' : (isAuthenticated ? 'browse' : 'professionals-guest');
-    if (pathname.includes('/portfolio')) return isPro ? '' : (isAuthenticated ? 'browse' : 'portfolios');
+    if (pathname.includes('/my-work')) return isPro ? 'my-space' : '';
+    if (pathname.includes('/my-proposals')) return isPro ? 'my-space' : 'my-jobs-client';
+    if (pathname.includes('/my-jobs')) return isPro ? 'my-space' : 'my-jobs-client';
+    if (pathname.includes('/jobs')) return isPro ? 'jobs-pro' : '';
+    if (pathname.includes('/professionals')) return isPro ? 'professionals-pro' : (isAuthenticated ? 'browse' : 'professionals-guest');
+    if (pathname.includes('/portfolio')) return isPro ? 'portfolio-pro' : (isAuthenticated ? 'browse' : 'portfolios');
     return '';
   };
 

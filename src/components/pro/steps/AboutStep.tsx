@@ -4,7 +4,8 @@ import AvatarCropper from '@/components/common/AvatarCropper';
 import { Input, Textarea } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { AlertCircle, Camera, CheckCircle2, Clock, FileText, Globe, Instagram, Facebook, Linkedin, MessageCircle, Send, Sparkles, Plus, X } from 'lucide-react';
+import { aiService } from '@/services/ai';
+import { AlertCircle, Camera, CheckCircle2, Clock, FileText, Globe, Instagram, Facebook, Linkedin, MessageCircle, Send, Sparkles, Plus, X, Wand2, Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 interface AboutStepProps {
@@ -21,7 +22,7 @@ interface AboutStepProps {
   };
   avatarPreview: string | null;
   onFormChange: (updates: Partial<AboutStepProps['formData']>) => void;
-  onAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onAvatarChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAvatarCropped?: (croppedDataUrl: string) => void;
   validation: {
     bio: boolean;
@@ -51,6 +52,27 @@ export default function AboutStep({
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
   const [customSkillInput, setCustomSkillInput] = useState('');
+  const [isGeneratingBio, setIsGeneratingBio] = useState(false);
+  const [aiError, setAiError] = useState('');
+
+  const wordCount = formData.bio.trim().split(/\s+/).filter(Boolean).length;
+  const canGenerateBio = wordCount >= 5 && !isGeneratingBio;
+
+  const handleGenerateBio = async () => {
+    if (!canGenerateBio) return;
+    setIsGeneratingBio(true);
+    setAiError('');
+    try {
+      const generatedBio = await aiService.generateBio(formData.bio.trim(), locale);
+      if (generatedBio) {
+        onFormChange({ bio: generatedBio });
+      }
+    } catch {
+      setAiError(locale === 'ka' ? 'AI გენერაცია ვერ მოხერხდა' : 'AI generation failed');
+    } finally {
+      setIsGeneratingBio(false);
+    }
+  };
 
   const addCustomSkill = () => {
     if (customSkillInput.trim() && onCustomServicesChange) {
@@ -121,7 +143,7 @@ export default function AboutStep({
 
   return (
     <>
-      <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="space-y-6">
 
         {/* Avatar Upload Card - REQUIRED */}
         <div className={`
@@ -289,23 +311,71 @@ export default function AboutStep({
               </Badge>
             )}
           </div>
-          <Textarea
-            rows={5}
-            value={formData.bio}
-            onChange={(e) => onFormChange({ bio: e.target.value })}
-            variant="filled"
-            textareaSize="lg"
-            success={validation.bio}
-            placeholder={t('common.brieflyDescribeYourExperienceAnd')}
-          />
-          <div className="flex justify-between items-center mt-2">
-            <p className="text-xs text-[var(--color-text-muted)]">
-              {t('common.minimum50CharactersRequired')}
-            </p>
-            <span className={`text-xs font-medium ${formData.bio.length >= 50 ? 'text-emerald-600' : formData.bio.length > 0 ? 'text-amber-600' : 'text-[var(--color-text-muted)]'}`}>
-              {formData.bio.length}/500
-            </span>
+          <div className="relative">
+            <Textarea
+              rows={5}
+              maxLength={500}
+              value={formData.bio}
+              onChange={(e) => {
+                onFormChange({ bio: e.target.value });
+                setAiError('');
+              }}
+              variant="filled"
+              textareaSize="lg"
+              success={validation.bio}
+              placeholder={locale === 'ka'
+                ? 'მაგ: სანტექნიკი ვარ 10 წლის გამოცდილებით, ვმუშაობ თბილისში, ვაკეთებ გათბობას, წყალგაყვანილობას და კანალიზაციას...'
+                : 'e.g: I am a plumber with 10 years of experience, I work in Tbilisi, I do heating, plumbing and sewage...'}
+            />
+            {isGeneratingBio && (
+              <div className="absolute inset-0 bg-[var(--color-bg-elevated)]/80 backdrop-blur-[2px] rounded-xl flex items-center justify-center">
+                <div className="flex items-center gap-2.5 text-[#C4735B]">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="text-sm font-medium">
+                    {locale === 'ka' ? 'AI ამზადებს აღწერას...' : 'AI is writing your bio...'}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
+          <div className="flex items-center justify-between mt-2 gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <p className="text-xs text-[var(--color-text-muted)] shrink-0">
+                {t('common.minimum50CharactersRequired')}
+              </p>
+              {aiError && (
+                <p className="text-xs text-red-500 truncate">{aiError}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={handleGenerateBio}
+                disabled={!canGenerateBio}
+                className={`
+                  inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
+                  ${canGenerateBio
+                    ? 'bg-gradient-to-r from-[#C4735B] to-[#B5624A] text-white shadow-sm hover:shadow-md hover:from-[#B5624A] hover:to-[#A85D4A] active:scale-[0.97]'
+                    : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] cursor-not-allowed'
+                  }
+                `}
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+                {locale === 'ka' ? 'AI აღწერა' : 'AI Write'}
+              </button>
+              <span className={`text-xs font-medium tabular-nums ${formData.bio.length >= 50 ? 'text-emerald-600' : formData.bio.length > 0 ? 'text-amber-600' : 'text-[var(--color-text-muted)]'}`}>
+                {formData.bio.length}/500
+              </span>
+            </div>
+          </div>
+          {wordCount > 0 && wordCount < 5 && (
+            <p className="text-[11px] text-[var(--color-text-muted)] mt-1 flex items-center gap-1">
+              <Wand2 className="w-3 h-3" />
+              {locale === 'ka'
+                ? `კიდევ ${5 - wordCount} სიტყვა და AI დაგეხმარებათ აღწერის შექმნაში`
+                : `${5 - wordCount} more word${5 - wordCount === 1 ? '' : 's'} to unlock AI bio generation`}
+            </p>
+          )}
         </div>
 
         {/* Custom Skills - OPTIONAL */}

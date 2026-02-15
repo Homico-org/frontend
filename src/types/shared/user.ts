@@ -210,9 +210,11 @@ export interface ProProfile extends BaseEntity {
   profileType: string;
   isActive: boolean;
   lastLoginAt?: string;
-  
+
   // Payment
   paymentMethods: PaymentMethod[];
+
+  feedVisible?: boolean;
 }
 
 // ============== PRO CARD (LIST VIEW) ==============

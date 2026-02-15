@@ -13,6 +13,7 @@ const CUSTOM_LAYOUT_PATHS = [
   '/tools',
   '/my-jobs',
   '/my-work',
+  '/my-space',
   '/admin',
   '/login',
   '/register',

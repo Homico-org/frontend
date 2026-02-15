@@ -2917,5 +2917,23 @@
         "lm": "lm"
       }
     }
+  },
+  "mySpace": {
+    "mySpace": "My Space",
+    "title": "My Space",
+    "subtitle": "Your workspace at a glance",
+    "totalReviews": "Total Reviews",
+    "avgRating": "Avg Rating",
+    "editProfile": "Edit Profile",
+    "viewProfile": "View Profile",
+    "manageReviews": "Reviews",
+    "activeWork": "Active Work",
+    "noActiveWork": "No active projects right now",
+    "findNewJobs": "Find New Jobs",
+    "browseAvailableJobs": "Browse available jobs and submit proposals",
+    "welcomeBack": "Welcome back",
+    "workWillAppear": "Accepted jobs and projects will show up here",
+    "noReviewsYet": "No reviews yet",
+    "requestReviewsHint": "Share your review link with past clients to collect reviews"
   }
 }

@@ -54,7 +54,7 @@ function ProReviewsPageContent() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewLink, setReviewLink] = useState<string>('');
   const [isCopied, setIsCopied] = useState(false);
-  
+
   // Invitation form
   const [invitePhone, setInvitePhone] = useState('');
   const [inviteName, setInviteName] = useState('');
@@ -105,11 +105,11 @@ function ProReviewsPageContent() {
         phone: invitePhone.trim(),
         name: inviteName.trim() || undefined,
       });
-      
+
       toast.success(t('common.success'), t('reviews.invitationSent'));
       setInvitePhone('');
       setInviteName('');
-      
+
       // Refresh stats
       fetchData();
     } catch (err: any) {

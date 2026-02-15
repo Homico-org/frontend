@@ -8,13 +8,14 @@ import ReviewStep from '@/components/pro/steps/ReviewStep';
 import StepSelectServices, { ExperienceLevel, SelectedService } from '@/components/register/steps/StepSelectServices';
 import { Alert } from '@/components/ui/Alert';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 // Raw portfolio project from API (may have _id and imageUrl)
@@ -66,12 +67,16 @@ function Logo({ className = "" }: { className?: string }) {
 
 function ProProfileSetupPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isLoading: authLoading, updateUser } = useAuth();
+  const adminTargetProId = searchParams.get('proId');
+  const isAdminEditing = user?.role === 'admin' && !!adminTargetProId;
   const { t, locale } = useLanguage();
   const { categories: allCategories, getCategoryByKey } = useCategories();
 
   // Step state
   const [currentStep, setCurrentStep] = useState<ProfileSetupStep>('about');
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
 
   // Form state - use SelectedService[] to match new registration flow
   const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
@@ -109,7 +114,7 @@ function ProProfileSetupPageContent() {
     availability: [] as string[],
     basePrice: '',
     maxPrice: '',
-    pricingModel: '' as 'fixed' | 'range' | 'per_sqm' | 'byAgreement' | '',
+    pricingModel: 'range' as 'fixed' | 'range' | 'per_sqm' | 'byAgreement' | '',
     serviceAreas: [] as string[],
     nationwide: false,
     // Social media
@@ -171,17 +176,11 @@ function ProProfileSetupPageContent() {
   // Get current step index
   const getCurrentStepIndex = () => STEPS.findIndex(s => s.id === currentStep);
 
-  // Get progress percentage
-  const getProgressPercentage = () => {
-    const index = getCurrentStepIndex();
-    return ((index + 1) / STEPS.length) * 100;
-  };
-
   // Fetch existing profile data if user is a pro (only once)
   useEffect(() => {
     const fetchExistingProfile = async () => {
       if (hasFetchedProfile.current) return;
-      if (!user || user.role !== 'pro') {
+      if (!user || (user.role !== 'pro' && !isAdminEditing)) {
         setProfileLoading(false);
         return;
       }
@@ -295,7 +294,10 @@ function ProProfileSetupPageContent() {
       // Try to fetch existing profile
       try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`, {
+        const profileUrl = isAdminEditing
+          ? `${process.env.NEXT_PUBLIC_API_URL}/users/pros/${adminTargetProId}`
+          : `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`;
+        const response = await fetch(profileUrl, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -528,12 +530,12 @@ function ProProfileSetupPageContent() {
     }
   }, [locationData, formData.serviceAreas, formData.nationwide]);
 
-  // Auth redirect
+  // Auth redirect (allow admin with proId)
   useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'pro')) {
+    if (!authLoading && (!user || (user.role !== 'pro' && !isAdminEditing))) {
       router.push('/portfolio');
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, isAdminEditing]);
 
   // Calculate max experience from selectedServices for API compatibility
   const maxExperienceYears = useMemo(() => {
@@ -588,10 +590,6 @@ function ProProfileSetupPageContent() {
   const isFormValid = validation.avatar && validation.bio && validation.categories && validation.subcategories && validation.pricing && validation.serviceAreas;
 
   // Handlers
-  const handleAvatarChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
-    // This is now handled internally by AboutStep with cropper
-  };
-
   const handleAvatarCropped = (croppedDataUrl: string) => {
     setAvatarPreview(croppedDataUrl);
     setFormData(prev => ({ ...prev, avatar: croppedDataUrl }));
@@ -606,6 +604,7 @@ function ProProfileSetupPageContent() {
   const handleNext = () => {
     const currentIndex = getCurrentStepIndex();
     if (currentIndex < STEPS.length - 1) {
+      setDirection(1);
       setCurrentStep(STEPS[currentIndex + 1].id);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -616,12 +615,16 @@ function ProProfileSetupPageContent() {
   const handleBack = () => {
     const currentIndex = getCurrentStepIndex();
     if (currentIndex > 0) {
+      setDirection(-1);
       setCurrentStep(STEPS[currentIndex - 1].id);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const goToStep = (step: ProfileSetupStep) => {
+    const targetIndex = STEPS.findIndex(s => s.id === step);
+    const currentIndex = getCurrentStepIndex();
+    setDirection(targetIndex > currentIndex ? 1 : -1);
     setCurrentStep(step);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -713,7 +716,9 @@ function ProProfileSetupPageContent() {
         websiteUrl: formData.website || undefined,
       };
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`;
+      const url = isAdminEditing
+        ? `${process.env.NEXT_PUBLIC_API_URL}/users/pros/${adminTargetProId}/profile`
+        : `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`;
       const method = isEditMode && existingProfileId ? 'PATCH' : 'POST';
 
       const response = await fetch(url, {
@@ -731,23 +736,25 @@ function ProProfileSetupPageContent() {
         throw new Error(data.message || (isEditMode ? 'Failed to update profile' : 'Failed to create profile'));
       }
 
-      // Update the user context with all the updated profile data
-      updateUser({
-        isProfileCompleted: true,
-        selectedCategories: selectedCategories.length > 0 ? selectedCategories : ['interior-design'],
-        selectedSubcategories: selectedSubcategories.length > 0 ? selectedSubcategories : (user?.selectedSubcategories || []),
-        selectedServices: selectedServices.map(s => ({
-          key: s.key,
-          categoryKey: s.categoryKey,
-          name: s.name,
-          nameKa: s.nameKa,
-          experience: s.experience,
-        })),
-        avatar: formData.avatar || user?.avatar,
-      });
+      // Update the user context with all the updated profile data (skip for admin editing another pro)
+      if (!isAdminEditing) {
+        updateUser({
+          isProfileCompleted: true,
+          selectedCategories: selectedCategories.length > 0 ? selectedCategories : ['interior-design'],
+          selectedSubcategories: selectedSubcategories.length > 0 ? selectedSubcategories : (user?.selectedSubcategories || []),
+          selectedServices: selectedServices.map(s => ({
+            key: s.key,
+            categoryKey: s.categoryKey,
+            name: s.name,
+            nameKa: s.nameKa,
+            experience: s.experience,
+          })),
+          avatar: formData.avatar || user?.avatar,
+        });
+      }
 
       // Navigate to the professional's profile page
-      const userId = data.id || data._id || user?.id;
+      const userId = isAdminEditing ? adminTargetProId : (data.id || data._id || user?.id);
       if (userId) {
         router.push(`/professionals/${userId}`);
       } else {
@@ -793,17 +800,54 @@ function ProProfileSetupPageContent() {
             </Link>
           </div>
 
-          {/* Progress bar */}
-          <div className="pb-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] sm:text-[10px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                {locale === "ka" ? `${getCurrentStepIndex() + 1}/${STEPS.length}` : `STEP ${getCurrentStepIndex() + 1}/${STEPS.length}`}
-              </span>
-              <span className="text-[10px] sm:text-[10px] font-medium text-[#C4735B]">
-                {STEPS[getCurrentStepIndex()].title[locale === 'ka' ? 'ka' : 'en']}
-              </span>
+          {/* Step indicators */}
+          <div className="pb-3 pt-1">
+            <div className="flex items-center justify-center gap-0">
+              {STEPS.map((step, index) => {
+                const currentIndex = getCurrentStepIndex();
+                const isCompleted = index < currentIndex;
+                const isCurrent = index === currentIndex;
+                const isFuture = index > currentIndex;
+
+                return (
+                  <div key={step.id} className="flex items-center">
+                    {/* Step circle */}
+                    <button
+                      type="button"
+                      onClick={() => isCompleted ? goToStep(step.id) : undefined}
+                      disabled={isFuture || isCurrent}
+                      className={`
+                        relative w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300
+                        ${isCompleted
+                          ? 'bg-[#C4735B] text-white cursor-pointer hover:bg-[#B5624A] hover:scale-110 shadow-md shadow-[#C4735B]/20'
+                          : isCurrent
+                            ? 'bg-[#C4735B] text-white ring-4 ring-[#C4735B]/20 shadow-lg shadow-[#C4735B]/25'
+                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-default'
+                        }
+                      `}
+                    >
+                      {isCompleted ? (
+                        <Check className="w-4 h-4" strokeWidth={3} />
+                      ) : (
+                        <span>{index + 1}</span>
+                      )}
+                    </button>
+
+                    {/* Connecting line */}
+                    {index < STEPS.length - 1 && (
+                      <div className={`
+                        w-6 sm:w-10 h-0.5 transition-colors duration-300
+                        ${index < currentIndex ? 'bg-[#C4735B]' : 'bg-neutral-200 dark:bg-neutral-700'}
+                      `} />
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            <Progress value={getProgressPercentage()} size="sm" indicatorVariant="gradient" />
+            {/* Current step title */}
+            <p className="text-center text-xs font-medium text-[#C4735B] mt-2">
+              {STEPS[getCurrentStepIndex()].title[locale === 'ka' ? 'ka' : 'en']}
+            </p>
           </div>
         </div>
       </header>
@@ -817,182 +861,192 @@ function ProProfileSetupPageContent() {
             </Alert>
           )}
 
-          {/* STEP 1: About */}
-          {currentStep === 'about' && (
-            <div className="space-y-4">
-              <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                  {t('becomePro.aboutYou')}
-                </h1>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {t('becomePro.fillInYourBasicInformation')}
-                </p>
-              </div>
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={currentStep}
+              custom={direction}
+              initial={{ x: direction * 80, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: direction * -80, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            >
+              {/* STEP 1: About */}
+              {currentStep === 'about' && (
+                <div className="space-y-4">
+                  <div>
+                    <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
+                      {t('becomePro.aboutYou')}
+                    </h1>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      {t('becomePro.fillInYourBasicInformation')}
+                    </p>
+                  </div>
 
-              <AboutStep
-                formData={{
-                  bio: formData.bio,
-                  yearsExperience: '', // Experience is now per-service in the Services step
-                  avatar: formData.avatar,
-                  whatsapp: formData.whatsapp,
-                  telegram: formData.telegram,
-                  instagram: formData.instagram,
-                  facebook: formData.facebook,
-                  linkedin: formData.linkedin,
-                  website: formData.website,
-                }}
-                avatarPreview={avatarPreview}
-                onFormChange={handleFormChange}
-                onAvatarChange={handleAvatarChange}
-                onAvatarCropped={handleAvatarCropped}
-                validation={{
-                  avatar: validation.avatar,
-                  bio: validation.bio,
-                  experience: true, // Always valid - experience is set per service
-                }}
-                hideExperience // Hide the experience field
-                customServices={customServices}
-                onCustomServicesChange={setCustomServices}
-              />
-            </div>
-          )}
+                  <AboutStep
+                    formData={{
+                      bio: formData.bio,
+                      yearsExperience: '', // Experience is now per-service in the Services step
+                      avatar: formData.avatar,
+                      whatsapp: formData.whatsapp,
+                      telegram: formData.telegram,
+                      instagram: formData.instagram,
+                      facebook: formData.facebook,
+                      linkedin: formData.linkedin,
+                      website: formData.website,
+                    }}
+                    avatarPreview={avatarPreview}
+                    onFormChange={handleFormChange}
+                    onAvatarCropped={handleAvatarCropped}
+                    validation={{
+                      avatar: validation.avatar,
+                      bio: validation.bio,
+                      experience: true, // Always valid - experience is set per service
+                    }}
+                    hideExperience // Hide the experience field
+                    customServices={customServices}
+                    onCustomServicesChange={setCustomServices}
+                  />
+                </div>
+              )}
 
-          {/* STEP 2: Services with per-service experience */}
-          {currentStep === 'categories' && (
-            <div className="space-y-4">
-              <StepSelectServices
-                selectedServices={selectedServices}
-                onServicesChange={setSelectedServices}
-              />
-            </div>
-          )}
+              {/* STEP 2: Services with per-service experience */}
+              {currentStep === 'categories' && (
+                <div className="space-y-4">
+                  <StepSelectServices
+                    selectedServices={selectedServices}
+                    onServicesChange={setSelectedServices}
+                  />
+                </div>
+              )}
 
-          {/* STEP 3: Pricing & Service Areas (Combined) */}
-          {currentStep === 'pricing-areas' && (
-            <div className="space-y-4">
-              <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                  {t('becomePro.pricingAreas')}
-                </h1>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {t('becomePro.setYourRatesAndWork')}
-                </p>
-              </div>
+              {/* STEP 3: Pricing & Service Areas (Combined) */}
+              {currentStep === 'pricing-areas' && (
+                <div className="space-y-4">
+                  <div>
+                    <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
+                      {t('becomePro.pricingAreas')}
+                    </h1>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      {t('becomePro.setYourRatesAndWork')}
+                    </p>
+                  </div>
 
-              <PricingAreasStep
-                formData={{
-                  priceRange: {
-                    min: parseInt(formData.basePrice) || 0,
-                    max: parseInt(formData.maxPrice) || 0,
-                  },
-                  priceType: (
-                    formData.pricingModel === 'byAgreement' ? 'byAgreement' :
-                    formData.pricingModel === 'range' ? 'range' :
-                    'fixed'
-                  ) as 'byAgreement' | 'fixed' | 'range',
-                  serviceAreas: formData.serviceAreas,
-                  nationwide: formData.nationwide,
-                }}
-                locationData={locationData}
-                onFormChange={(updates) => {
-                  if ('priceRange' in updates && updates.priceRange) {
-                    handleFormChange({
-                      basePrice: updates.priceRange.min.toString(),
-                      maxPrice: updates.priceRange.max.toString(),
-                    });
-                  }
-                  if ('priceType' in updates && updates.priceType) {
-                    const typeMap: Record<string, typeof formData.pricingModel> = {
-                      byAgreement: 'byAgreement',
-                      fixed: 'fixed',
-                      range: 'range',
-                    };
-                    const nextModel = typeMap[updates.priceType] || 'fixed';
-                    if (nextModel === 'byAgreement') {
-                      handleFormChange({ pricingModel: nextModel, basePrice: '', maxPrice: '' });
-                    } else if (nextModel === 'fixed') {
-                      // Fixed is a single price; clear max price.
-                      handleFormChange({ pricingModel: nextModel, maxPrice: '' });
-                    } else {
-                      handleFormChange({ pricingModel: nextModel });
-                    }
-                  }
-                  if ('serviceAreas' in updates) {
-                    handleFormChange({ serviceAreas: updates.serviceAreas });
-                  }
-                  if ('nationwide' in updates) {
-                    handleFormChange({ nationwide: updates.nationwide });
-                  }
-                }}
-              />
-            </div>
-          )}
+                  <PricingAreasStep
+                    formData={{
+                      priceRange: {
+                        min: parseInt(formData.basePrice) || 0,
+                        max: parseInt(formData.maxPrice) || 0,
+                      },
+                      priceType: (
+                        formData.pricingModel === 'byAgreement' ? 'byAgreement' :
+                        formData.pricingModel === 'range' ? 'range' :
+                        'fixed'
+                      ) as 'byAgreement' | 'fixed' | 'range',
+                      serviceAreas: formData.serviceAreas,
+                      nationwide: formData.nationwide,
+                    }}
+                    locationData={locationData}
+                    onFormChange={(updates) => {
+                      if ('priceRange' in updates && updates.priceRange) {
+                        handleFormChange({
+                          basePrice: updates.priceRange.min.toString(),
+                          maxPrice: updates.priceRange.max.toString(),
+                        });
+                      }
+                      if ('priceType' in updates && updates.priceType) {
+                        const typeMap: Record<string, typeof formData.pricingModel> = {
+                          byAgreement: 'byAgreement',
+                          fixed: 'fixed',
+                          range: 'range',
+                        };
+                        const nextModel = typeMap[updates.priceType] || 'fixed';
+                        if (nextModel === 'byAgreement') {
+                          handleFormChange({ pricingModel: nextModel, basePrice: '', maxPrice: '' });
+                        } else if (nextModel === 'fixed') {
+                          // Fixed is a single price; clear max price.
+                          handleFormChange({ pricingModel: nextModel, maxPrice: '' });
+                        } else {
+                          handleFormChange({ pricingModel: nextModel });
+                        }
+                      }
+                      if ('serviceAreas' in updates) {
+                        handleFormChange({ serviceAreas: updates.serviceAreas });
+                      }
+                      if ('nationwide' in updates) {
+                        handleFormChange({ nationwide: updates.nationwide });
+                      }
+                    }}
+                  />
+                </div>
+              )}
 
-          {/* STEP 4: Projects */}
-          {currentStep === 'projects' && (
-            <div className="space-y-4">
-              <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                  {t('becomePro.portfolio')}
-                </h1>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {t('becomePro.showcaseYourWork')}
-                </p>
-              </div>
+              {/* STEP 4: Projects */}
+              {currentStep === 'projects' && (
+                <div className="space-y-4">
+                  <div>
+                    <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
+                      {t('becomePro.portfolio')}
+                    </h1>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      {t('becomePro.showcaseYourWork')}
+                    </p>
+                  </div>
 
-              <ProjectsStep
-                projects={portfolioProjects}
-                onChange={setPortfolioProjects}
-                maxProjects={20}
-                maxVisibleInBrowse={6}
-              />
-            </div>
-          )}
+                  <ProjectsStep
+                    projects={portfolioProjects}
+                    onChange={setPortfolioProjects}
+                    maxProjects={20}
+                    maxVisibleInBrowse={6}
+                  />
+                </div>
+              )}
 
-          {/* STEP 5: Review */}
-          {currentStep === 'review' && (
-            <div className="space-y-4">
-              <div>
-                <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                  {t('becomePro.review')}
-                </h1>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  {t('becomePro.reviewYourProfile')}
-                </p>
-              </div>
+              {/* STEP 5: Review */}
+              {currentStep === 'review' && (
+                <div className="space-y-4">
+                  <div>
+                    <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
+                      {t('becomePro.review')}
+                    </h1>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      {t('becomePro.reviewYourProfile')}
+                    </p>
+                  </div>
 
-              <ReviewStep
-                formData={{
-                  ...formData,
-                  yearsExperience: maxExperienceYears.toString(), // Derived from services
-                }}
-                selectedCategories={selectedCategories}
-                selectedSubcategories={selectedSubcategories}
-                customServices={customServices}
-                avatarPreview={avatarPreview}
-                locationData={locationData}
-                onEditStep={(stepIndex) => {
-                  // Map old step indices to new step ids
-                  const stepMap: ProfileSetupStep[] = ['about', 'categories', 'pricing-areas', 'projects', 'review'];
-                  goToStep(stepMap[stepIndex] || 'about');
-                }}
-                isEditMode={isEditMode}
-                portfolioProjects={portfolioProjects}
-                selectedServices={selectedServices}
-              />
-            </div>
-          )}
+                  <ReviewStep
+                    formData={{
+                      ...formData,
+                      yearsExperience: maxExperienceYears.toString(), // Derived from services
+                    }}
+                    selectedCategories={selectedCategories}
+                    selectedSubcategories={selectedSubcategories}
+                    customServices={customServices}
+                    avatarPreview={avatarPreview}
+                    locationData={locationData}
+                    onEditStep={(stepIndex) => {
+                      // Map old step indices to new step ids
+                      const stepMap: ProfileSetupStep[] = ['about', 'categories', 'pricing-areas', 'projects', 'review'];
+                      goToStep(stepMap[stepIndex] || 'about');
+                    }}
+                    isEditMode={isEditMode}
+                    portfolioProjects={portfolioProjects}
+                    selectedServices={selectedServices}
+                  />
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
 
       {/* Fixed Footer with navigation */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 border-t border-neutral-100 dark:border-neutral-800 shadow-lg shadow-black/5 z-50 safe-area-bottom">
+      <footer className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-t border-neutral-100 dark:border-neutral-800 shadow-lg shadow-black/5 z-50 safe-area-bottom">
         <div className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-3">
           <div className="flex items-center justify-between gap-3">
             {getCurrentStepIndex() > 0 ? (
               <button
                 onClick={handleBack}
-                className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all active:scale-[0.98]"
+                className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 min-h-[44px] rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all active:scale-[0.98]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -1003,10 +1057,15 @@ function ProProfileSetupPageContent() {
               <div />
             )}
 
+            {/* Center step title - desktop only */}
+            <span className="hidden sm:block text-xs font-medium text-neutral-400 dark:text-neutral-500 absolute left-1/2 -translate-x-1/2">
+              {STEPS[getCurrentStepIndex()].title[locale === 'ka' ? 'ka' : 'en']}
+            </span>
+
             <button
               onClick={handleNext}
               disabled={isLoading || !canProceedToNextStep}
-              className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2.5 sm:py-2.5 rounded-xl bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 dark:disabled:bg-neutral-700 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all shadow-lg shadow-[#C4735B]/25 disabled:shadow-none active:scale-[0.98]"
+              className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 min-h-[44px] rounded-xl bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-200 dark:disabled:bg-neutral-700 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all shadow-lg shadow-[#C4735B]/25 disabled:shadow-none active:scale-[0.98]"
             >
               {isLoading ? (
                 <>

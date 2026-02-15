@@ -181,6 +181,20 @@ export const aiService = {
   },
 
   /**
+   * Generate a professional bio from short user input
+   */
+  async generateBio(
+    prompt: string,
+    locale: string = 'en'
+  ): Promise<string> {
+    const response = await api.post('/ai/generate-bio', {
+      prompt,
+      locale,
+    });
+    return response.data.bio;
+  },
+
+  /**
    * Chat with AI renovation assistant
    */
   async chat(

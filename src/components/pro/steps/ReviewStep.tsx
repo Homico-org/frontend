@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
+  AlertCircle,
   Briefcase,
+  CheckCircle2,
   Clock,
   DollarSign,
   Facebook,
@@ -114,27 +116,87 @@ export default function ReviewStep({
     }
   };
 
+  // Completeness checks per section
+  const completeness = {
+    about: {
+      complete: !!avatarPreview && formData.bio.trim().length >= 50,
+      required: true,
+    },
+    services: {
+      complete: selectedServices.length > 0 || selectedSubcategories.length > 0,
+      required: true,
+    },
+    pricing: {
+      complete: formData.pricingModel === 'byAgreement'
+        ? true
+        : formData.pricingModel === 'fixed'
+          ? !!formData.basePrice && Number(formData.basePrice) > 0
+          : !!formData.basePrice && !!formData.maxPrice && Number(formData.maxPrice) >= Number(formData.basePrice) && Number(formData.basePrice) > 0,
+      required: true,
+    },
+    areas: {
+      complete: formData.nationwide || formData.serviceAreas.length > 0,
+      required: true,
+    },
+    portfolio: {
+      complete: portfolioProjects.length > 0,
+      required: false,
+    },
+    social: {
+      complete: !!(formData.whatsapp || formData.telegram || formData.instagram || formData.facebook || formData.linkedin || formData.website),
+      required: false,
+    },
+  };
+
+  const StatusBadge = ({ complete, required }: { complete: boolean; required: boolean }) => {
+    if (complete) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+          <CheckCircle2 className="w-3 h-3" />
+          {locale === 'ka' ? 'შევსებულია' : 'Complete'}
+        </span>
+      );
+    }
+    if (required) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+          <AlertCircle className="w-3 h-3" />
+          {locale === 'ka' ? 'შეავსეთ' : 'Incomplete'}
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+        <AlertCircle className="w-3 h-3" />
+        {locale === 'ka' ? 'რეკომენდებული' : 'Recommended'}
+      </span>
+    );
+  };
+
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+    <div className="space-y-6">
       {/* Profile Preview Card */}
       <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] overflow-hidden shadow-sm">
         {/* About Section */}
         <div className="p-6 border-b border-[var(--color-border-subtle)]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-              <User className="w-4 h-4 text-[#E07B4F]" />
+              <User className="w-4 h-4 text-[#C4735B]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
                 {t('common.about')}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => onEditStep(0)}
-              className="flex items-center gap-1.5 text-sm text-[#E07B4F] hover:text-[#D26B3F] font-medium transition-colors"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-              {t('common.edit')}
-            </button>
+            <div className="flex items-center gap-2">
+              <StatusBadge complete={completeness.about.complete} required={completeness.about.required} />
+              <button
+                type="button"
+                onClick={() => onEditStep(0)}
+                className="flex items-center gap-1.5 text-sm text-[#C4735B] hover:text-[#A85D4A] font-medium transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                {t('common.edit')}
+              </button>
+            </div>
           </div>
 
           <div className="flex items-start gap-4">
@@ -209,19 +271,22 @@ export default function ReviewStep({
         <div className="p-6 border-b border-[var(--color-border-subtle)]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-              <Briefcase className="w-4 h-4 text-[#E07B4F]" />
+              <Briefcase className="w-4 h-4 text-[#C4735B]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
                 {t('common.services')}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => onEditStep(1)}
-              className="flex items-center gap-1.5 text-sm text-[#E07B4F] hover:text-[#D26B3F] font-medium transition-colors"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-              {locale === "ka" ? "რედაქტირება" : "Edit"}
-            </button>
+            <div className="flex items-center gap-2">
+              <StatusBadge complete={completeness.services.complete} required={completeness.services.required} />
+              <button
+                type="button"
+                onClick={() => onEditStep(1)}
+                className="flex items-center gap-1.5 text-sm text-[#C4735B] hover:text-[#A85D4A] font-medium transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                {locale === "ka" ? "რედაქტირება" : "Edit"}
+              </button>
+            </div>
           </div>
 
           {/* Categories */}
@@ -235,7 +300,7 @@ export default function ReviewStep({
                 return (
                   <span
                     key={catKey}
-                    className="px-3 py-1.5 rounded-lg bg-[#E07B4F]/10 text-[#E07B4F] text-sm font-medium"
+                    className="px-3 py-1.5 rounded-lg bg-[#C4735B]/10 text-[#C4735B] text-sm font-medium"
                   >
                     {locale === "ka" ? cat?.nameKa : cat?.name}
                   </span>
@@ -331,19 +396,22 @@ export default function ReviewStep({
         <div className="p-6 border-b border-[var(--color-border-subtle)]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-              <DollarSign className="w-4 h-4 text-[#E07B4F]" />
+              <DollarSign className="w-4 h-4 text-[#C4735B]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
                 {t('common.pricing')}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => onEditStep(2)}
-              className="flex items-center gap-1.5 text-sm text-[#E07B4F] hover:text-[#D26B3F] font-medium transition-colors"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-              {locale === "ka" ? "რედაქტირება" : "Edit"}
-            </button>
+            <div className="flex items-center gap-2">
+              <StatusBadge complete={completeness.pricing.complete} required={completeness.pricing.required} />
+              <button
+                type="button"
+                onClick={() => onEditStep(2)}
+                className="flex items-center gap-1.5 text-sm text-[#C4735B] hover:text-[#A85D4A] font-medium transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                {locale === "ka" ? "რედაქტირება" : "Edit"}
+              </button>
+            </div>
           </div>
 
           <div className="flex items-baseline gap-3">
@@ -366,19 +434,22 @@ export default function ReviewStep({
         <div className="p-6 border-b border-[var(--color-border-subtle)]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-              <Images className="w-4 h-4 text-[#E07B4F]" />
+              <Images className="w-4 h-4 text-[#C4735B]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
                 {t('common.portfolio')}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => onEditStep(3)}
-              className="flex items-center gap-1.5 text-sm text-[#E07B4F] hover:text-[#D26B3F] font-medium transition-colors"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-              {locale === "ka" ? "რედაქტირება" : "Edit"}
-            </button>
+            <div className="flex items-center gap-2">
+              <StatusBadge complete={completeness.portfolio.complete} required={completeness.portfolio.required} />
+              <button
+                type="button"
+                onClick={() => onEditStep(3)}
+                className="flex items-center gap-1.5 text-sm text-[#C4735B] hover:text-[#A85D4A] font-medium transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                {locale === "ka" ? "რედაქტირება" : "Edit"}
+              </button>
+            </div>
           </div>
 
           {portfolioProjects.length > 0 ? (
@@ -407,7 +478,7 @@ export default function ReviewStep({
                         />
                         {/* Play icon overlay */}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="w-10 h-10 rounded-full bg-indigo-500/80 flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-full bg-[#C4735B]/80 flex items-center justify-center">
                             <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                               <path d="M8 5v14l11-7z" />
                             </svg>
@@ -473,19 +544,22 @@ export default function ReviewStep({
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-              <MapPin className="w-4 h-4 text-[#E07B4F]" />
+              <MapPin className="w-4 h-4 text-[#C4735B]" />
               <span className="text-xs font-semibold uppercase tracking-wider">
                 {t('common.serviceArea')}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => onEditStep(2)}
-              className="flex items-center gap-1.5 text-sm text-[#E07B4F] hover:text-[#D26B3F] font-medium transition-colors"
-            >
-              <Pencil className="w-3.5 h-3.5" />
-              {locale === "ka" ? "რედაქტირება" : "Edit"}
-            </button>
+            <div className="flex items-center gap-2">
+              <StatusBadge complete={completeness.areas.complete} required={completeness.areas.required} />
+              <button
+                type="button"
+                onClick={() => onEditStep(2)}
+                className="flex items-center gap-1.5 text-sm text-[#C4735B] hover:text-[#A85D4A] font-medium transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                {locale === "ka" ? "რედაქტირება" : "Edit"}
+              </button>
+            </div>
           </div>
 
           {formData.nationwide ? (

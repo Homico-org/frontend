@@ -2,7 +2,7 @@
 
 import BrowseFiltersSidebar from "@/components/browse/BrowseFiltersSidebar";
 import JobsFiltersSidebar from "@/components/browse/JobsFiltersSidebar";
-import Header, { HeaderSpacer } from "@/components/common/Header";
+import Header from "@/components/common/Header";
 import MobileBottomNav from "@/components/common/MobileBottomNav";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -21,6 +21,7 @@ import {
   Hammer,
   HelpCircle,
   Images,
+  LayoutDashboard,
   Mail,
   Plus,
   Search,
@@ -39,7 +40,7 @@ const SIDEBAR_COLLAPSED_WIDTH = 56;
 
 type TabShowFor = "all" | "pro" | "client" | "auth";
 
-type TabKey = "jobs" | "portfolio" | "professionals";
+type TabKey = "my-space" | "my-jobs" | "jobs" | "portfolio" | "professionals";
 
 const TABS: Array<{
   key: TabKey;
@@ -51,10 +52,28 @@ const TABS: Array<{
   showFor: TabShowFor;
 }> = [
   {
+    key: "my-space",
+    route: "/my-space",
+    label: "My Space",
+    labelKa: "ჩემი სივრცე",
+    labelRu: "Моё пространство",
+    icon: LayoutDashboard,
+    showFor: "pro" as const,
+  },
+  {
+    key: "my-jobs",
+    route: "/my-jobs",
+    label: "My Jobs",
+    labelKa: "ჩემი განცხადებები",
+    labelRu: "Мои заказы",
+    icon: Hammer,
+    showFor: "client" as const,
+  },
+  {
     key: "jobs",
     route: "/jobs",
     label: "Jobs",
-    labelKa: "სამუშაო",
+    labelKa: "სამუშაოები",
     labelRu: "Работы",
     icon: Briefcase,
     showFor: "pro" as const,
@@ -350,6 +369,7 @@ function ShellContent({ children }: { children: ReactNode }) {
   const isClient = user?.role === "client";
   const isAuthenticated = !!user;
 
+  const isMySpacePage = pathname.startsWith("/my-space");
   const isJobsPage = pathname.startsWith("/jobs");
   const isProfessionalsPage = pathname.startsWith("/professionals");
   const isPortfolioPage = pathname.startsWith("/portfolio");
@@ -359,15 +379,19 @@ function ShellContent({ children }: { children: ReactNode }) {
   const isMyWorkPage = pathname.startsWith("/my-work");
   const isMyJobsPage = pathname.startsWith("/my-jobs");
 
-  const activeTab: TabKey | null = isJobsPage
-    ? "jobs"
-    : isPortfolioPage
-      ? "portfolio"
-      : isProfessionalsPage
-        ? "professionals"
-        : isMyWorkPage || isMyJobsPage || pathname.startsWith("/settings") || pathname.startsWith("/tools")
-          ? null
-          : "portfolio";
+  const activeTab: TabKey | null = isMySpacePage
+    ? "my-space"
+    : isMyJobsPage
+      ? "my-jobs"
+      : isJobsPage
+        ? "jobs"
+        : isPortfolioPage
+          ? "portfolio"
+          : isProfessionalsPage
+            ? "professionals"
+            : isMyWorkPage || pathname.startsWith("/settings") || pathname.startsWith("/tools")
+              ? null
+              : "portfolio";
 
   const visibleTabs = TABS.filter((tab) => {
     if (tab.showFor === "all") return true;
@@ -378,6 +402,9 @@ function ShellContent({ children }: { children: ReactNode }) {
   });
 
   const pageHeader = useMemo(() => {
+    if (isMySpacePage) {
+      return { icon: LayoutDashboard, title: t("mySpace.title"), subtitle: t("mySpace.subtitle") };
+    }
     if (isMyWorkPage) {
       return { icon: FileText, title: t("job.myWork"), subtitle: t("job.myWorkSubtitle") };
     }
@@ -397,12 +424,12 @@ function ShellContent({ children }: { children: ReactNode }) {
       return { icon: Wrench, title: t("tools.home.title"), subtitle: t("tools.home.subtitle") };
     }
     return { icon: Users, title: t("browse.title"), subtitle: undefined };
-  }, [isJobsPage, isPortfolioPage, isProfessionalsPage, isMyJobsPage, isMyWorkPage, pathname, t]);
+  }, [isMySpacePage, isJobsPage, isPortfolioPage, isProfessionalsPage, isMyJobsPage, isMyWorkPage, pathname, t]);
 
   const HeaderIcon = pageHeader.icon;
 
-  const showHeaderRow = !isToolsSubpage; // tool subpages already have their own PageHeader
-  const showSearchFilters = !isToolsSubpage && !isToolsPage && !isMyJobsPage && !isMyWorkPage;
+  const showHeaderRow = !isToolsSubpage && !isMySpacePage;
+  const showSearchFilters = !isToolsSubpage && !isToolsPage && !isMyJobsPage && !isMyWorkPage && !isMySpacePage;
 
   const jobsFilterCount = useJobsFilterCount();
   const browseFilterCount = useBrowseFilterCount(isProfessionalsPage);
@@ -412,8 +439,7 @@ function ShellContent({ children }: { children: ReactNode }) {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-[#fafafa] dark:bg-[#0a0a0a] max-w-full">
-      <Header />
-      <HeaderSpacer />
+      <Header fixed={false} />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Left Sidebar */}
@@ -492,60 +518,6 @@ function ShellContent({ children }: { children: ReactNode }) {
           <div className={`mt-auto pb-4 ${isCollapsed ? "px-2" : "px-3"}`}>
             {isAuthenticated && (
               <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 space-y-1.5">
-                {isPro && (
-                  <Link
-                    href="/my-work"
-                    className={`flex items-center text-sm font-medium transition-all border ${
-                      isCollapsed
-                        ? "justify-center px-2 py-2.5 rounded-xl"
-                        : "gap-3 px-3 py-2.5 rounded-xl"
-                    } ${
-                      pathname.startsWith("/my-work")
-                        ? "border-[#C4735B]/30 shadow-sm"
-                        : "border-neutral-200/80 dark:border-neutral-700/60 hover:border-[#C4735B]/30"
-                    }`}
-                    style={
-                      pathname.startsWith("/my-work")
-                        ? { backgroundColor: `${ACCENT_COLOR}12`, color: ACCENT_COLOR }
-                        : { backgroundColor: 'rgba(249,248,247,0.6)' }
-                    }
-                    title={isCollapsed ? t("header.myWork") : undefined}
-                  >
-                    <FileText className="w-4.5 h-4.5" style={pathname.startsWith("/my-work") ? { color: ACCENT_COLOR } : { color: '#9ca3af' }} />
-                    {!isCollapsed && (
-                      <span className={pathname.startsWith("/my-work") ? "" : "text-neutral-700 dark:text-neutral-300"}>
-                        {t("header.myWork")}
-                      </span>
-                    )}
-                  </Link>
-                )}
-
-                <Link
-                  href="/my-jobs"
-                  className={`flex items-center text-sm font-medium transition-all border ${
-                    isCollapsed
-                      ? "justify-center px-2 py-2.5 rounded-xl"
-                      : "gap-3 px-3 py-2.5 rounded-xl"
-                  } ${
-                    pathname.startsWith("/my-jobs")
-                      ? "border-[#C4735B]/30 shadow-sm"
-                      : "border-neutral-200/80 dark:border-neutral-700/60 hover:border-[#C4735B]/30"
-                  }`}
-                  style={
-                    pathname.startsWith("/my-jobs")
-                      ? { backgroundColor: `${ACCENT_COLOR}12`, color: ACCENT_COLOR }
-                      : { backgroundColor: 'rgba(249,248,247,0.6)' }
-                  }
-                  title={isCollapsed ? t("header.myJobs") : undefined}
-                >
-                  <Hammer className="w-4.5 h-4.5" style={pathname.startsWith("/my-jobs") ? { color: ACCENT_COLOR } : { color: '#9ca3af' }} />
-                  {!isCollapsed && (
-                    <span className={pathname.startsWith("/my-jobs") ? "" : "text-neutral-700 dark:text-neutral-300"}>
-                      {t("header.myJobs")}
-                    </span>
-                  )}
-                </Link>
-
                 <Link
                   href="/settings"
                   className={`flex items-center text-sm font-medium transition-all ${
@@ -653,37 +625,7 @@ function ShellContent({ children }: { children: ReactNode }) {
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-white dark:bg-neutral-950">
-          {/* Mobile Sticky Tabs - only show when logged in */}
-          {isAuthenticated && <div className="lg:hidden sticky top-0 z-20 bg-white dark:bg-neutral-950">
-            <div className="flex items-stretch border-b border-neutral-200 dark:border-neutral-800">
-              {visibleTabs.map((tab) => {
-                const isActive = activeTab === tab.key;
-                const Icon = tab.icon;
-                return (
-                  <Link
-                    key={tab.key}
-                    href={tab.route}
-                    className={`flex items-center justify-center gap-1.5 flex-1 py-3 text-xs font-semibold whitespace-nowrap transition-colors relative ${
-                      isActive
-                        ? "text-[#C4735B]"
-                        : "text-neutral-400 dark:text-neutral-500"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>
-                      {locale === "ka" ? tab.labelKa : locale === "ru" ? tab.labelRu : tab.label}
-                    </span>
-                    <span
-                      className="absolute bottom-0 left-4 right-4 h-[2px] rounded-full transition-colors"
-                      style={{ backgroundColor: isActive ? ACCENT_COLOR : 'transparent' }}
-                    />
-                  </Link>
-                );
-              })}
-            </div>
-          </div>}
-
-          {/* Mobile Header Row & Search (below sticky tabs) */}
+          {/* Mobile Header Row & Search */}
           <div className="lg:hidden">
             {showHeaderRow && (
               <div className="px-3 pt-3 pb-1">
@@ -722,8 +664,8 @@ function ShellContent({ children }: { children: ReactNode }) {
             )}
           </div>
 
-          <div className="p-3 sm:p-4 lg:p-6">
-            <div className={`max-w-[1600px] mx-auto ${mounted ? "animate-fade-in" : "opacity-0"}`}>
+          <div className={isMySpacePage ? "" : "p-3 sm:p-4 lg:p-6"}>
+            <div className={`${isMySpacePage ? "" : "max-w-[1600px] mx-auto"} ${mounted ? "animate-fade-in" : "opacity-0"}`}>
               {showHeaderRow && (
                 <PageHeader
                   icon={pageHeader.icon}
