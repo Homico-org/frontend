@@ -4,7 +4,9 @@ import AvatarCropper from "@/components/common/AvatarCropper";
 import BackButton from "@/components/common/BackButton";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import AboutStep from "@/components/pro/steps/AboutStep";
-import CategoriesStep from "@/components/pro/steps/CategoriesStep";
+import StepSelectServices, {
+  SelectedService,
+} from "@/components/register/steps/StepSelectServices";
 import ProjectsStep, {
   PortfolioProject,
 } from "@/components/pro/steps/ProjectsStep";
@@ -15,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
-import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   ArrowRight,
@@ -36,7 +37,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // Homico Terracotta Color Palette
 const TERRACOTTA = {
@@ -168,7 +169,6 @@ export default function BecomeProPage() {
   } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
-  const { categories } = useCategories();
 
   // Step state
   const [currentStep, setCurrentStep] = useState<Step>("intro");
@@ -178,19 +178,40 @@ export default function BecomeProPage() {
   const [isComplete, setIsComplete] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  // Category state
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
+  // Services state (replaces separate categories/subcategories)
+  const [selectedServices, setSelectedServices] = useState<SelectedService[]>(
     []
   );
-  const [customServices, setCustomServices] = useState<string[]>([]);
+
+  // Derived values from selected services
+  const selectedCategories = useMemo(
+    () => [...new Set(selectedServices.map((s) => s.categoryKey))],
+    [selectedServices]
+  );
+
+  const selectedSubcategories = useMemo(
+    () => selectedServices.map((s) => s.key),
+    [selectedServices]
+  );
+
+  const maxExperienceYears = useMemo(() => {
+    if (selectedServices.length === 0) return 0;
+    const experienceMap: Record<string, number> = {
+      "1-2": 2,
+      "3-5": 5,
+      "5-10": 10,
+      "10+": 15,
+    };
+    return Math.max(
+      ...selectedServices.map((s) => experienceMap[s.experience] || 0)
+    );
+  }, [selectedServices]);
 
   // About state
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
   const [bio, setBio] = useState("");
-  const [yearsExperience, setYearsExperience] = useState("");
 
   // Contact state
   const [whatsapp, setWhatsapp] = useState("");
@@ -226,11 +247,11 @@ export default function BecomeProPage() {
 
   // Validation
   const validation = {
-    category: selectedCategories.length > 0,
-    subcategory: selectedSubcategories.length > 0 || customServices.length > 0,
+    category: selectedServices.length > 0,
+    subcategory: selectedServices.length > 0,
     avatar: !!avatarPreview,
     bio: bio.trim().length >= 20,
-    experience: !!yearsExperience && parseInt(yearsExperience) >= 0,
+    experience: true, // Now per-service, always valid
   };
 
   const canProceed = () => {
@@ -240,7 +261,7 @@ export default function BecomeProPage() {
       case "category":
         return validation.category && validation.subcategory;
       case "about":
-        return validation.avatar && validation.bio && validation.experience;
+        return validation.avatar && validation.bio;
       case "contact":
         return true; // Contact is optional
       case "projects":
@@ -301,8 +322,8 @@ export default function BecomeProPage() {
         JSON.stringify({
           categories: selectedCategories,
           subcategories: selectedSubcategories,
-          customServices,
-          yearsExperience,
+          selectedServices,
+          yearsExperience: maxExperienceYears,
           bio,
           avatar: avatarPreview,
           whatsapp,
@@ -326,8 +347,9 @@ export default function BecomeProPage() {
           body: JSON.stringify({
             selectedCategories,
             selectedSubcategories,
+            selectedServices,
             bio,
-            yearsExperience: parseInt(yearsExperience),
+            yearsExperience: maxExperienceYears,
             avatar: avatarPreview,
             whatsapp,
             telegram,
@@ -652,13 +674,9 @@ export default function BecomeProPage() {
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               {/* Category Step */}
               {currentStep === "category" && (
-                <CategoriesStep
-                  selectedCategories={selectedCategories}
-                  selectedSubcategories={selectedSubcategories}
-                  onCategoriesChange={setSelectedCategories}
-                  onSubcategoriesChange={setSelectedSubcategories}
-                  customServices={customServices}
-                  onCustomServicesChange={setCustomServices}
+                <StepSelectServices
+                  selectedServices={selectedServices}
+                  onServicesChange={setSelectedServices}
                 />
               )}
 
@@ -667,7 +685,7 @@ export default function BecomeProPage() {
                 <AboutStep
                   formData={{
                     bio,
-                    yearsExperience,
+                    yearsExperience: String(maxExperienceYears),
                     avatar: avatarPreview || "",
                     whatsapp,
                     telegram,
@@ -679,8 +697,6 @@ export default function BecomeProPage() {
                   avatarPreview={avatarPreview}
                   onFormChange={(updates) => {
                     if (updates.bio !== undefined) setBio(updates.bio);
-                    if (updates.yearsExperience !== undefined)
-                      setYearsExperience(updates.yearsExperience);
                   }}
                   onAvatarChange={() => {}}
                   onAvatarCropped={(croppedDataUrl) =>
@@ -688,9 +704,10 @@ export default function BecomeProPage() {
                   }
                   validation={{
                     bio: validation.bio,
-                    experience: validation.experience,
+                    experience: true,
                     avatar: validation.avatar,
                   }}
+                  hideExperience
                 />
               )}
 
@@ -880,66 +897,39 @@ export default function BecomeProPage() {
                         <h4 className="font-semibold text-[var(--color-text-primary)]">
                           {user?.name}
                         </h4>
-                        {yearsExperience && (
+                        {maxExperienceYears > 0 && (
                           <p className="text-sm text-[var(--color-text-secondary)]">
-                            {yearsExperience} {t("becomePro.yearsExperience")}
+                            {maxExperienceYears} {t("becomePro.yearsExperience")}
                           </p>
                         )}
                       </div>
                     </div>
 
-                    {/* Categories */}
-                    <div className="mb-6">
-                      <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                        {t("common.categories")}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedCategories.map((catKey) => {
-                          const category = categories.find(
-                            (c) => c.key === catKey
-                          );
-                          return (
-                            <span
-                              key={catKey}
-                              className="px-3 py-1.5 rounded-full text-sm font-medium text-white"
-                              style={{ backgroundColor: TERRACOTTA.primary }}
-                            >
-                              {locale === "ka"
-                                ? category?.nameKa
-                                : category?.name}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Skills */}
-                    {selectedSubcategories.length > 0 && (
+                    {/* Services */}
+                    {selectedServices.length > 0 && (
                       <div className="mb-6">
                         <p className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
-                          {t("common.skills")}
+                          {t("common.services")}
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {selectedSubcategories.map((subKey) => {
-                            // Search through all categories' subcategories
-                            let subcategory = null;
-                            for (const cat of categories) {
-                              const found = cat.subcategories.find(
-                                (s) => s.key === subKey
-                              );
-                              if (found) {
-                                subcategory = found;
-                                break;
-                              }
-                            }
-                            return (
-                              <Badge key={subKey} variant="secondary" size="sm">
-                                {locale === "ka"
-                                  ? subcategory?.nameKa || subKey
-                                  : subcategory?.name || subKey}
-                              </Badge>
-                            );
-                          })}
+                          {selectedServices.map((service) => (
+                            <Badge
+                              key={service.key}
+                              variant="secondary"
+                              size="sm"
+                            >
+                              {locale === "ka"
+                                ? service.nameKa
+                                : service.name}{" "}
+                              <span
+                                className="ml-1 opacity-70"
+                                style={{ color: TERRACOTTA.primary }}
+                              >
+                                ({service.experience}{" "}
+                                {t("becomePro.yearsShort")})
+                              </span>
+                            </Badge>
+                          ))}
                         </div>
                       </div>
                     )}

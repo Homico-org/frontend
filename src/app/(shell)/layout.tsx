@@ -376,6 +376,7 @@ function ShellContent({ children }: { children: ReactNode }) {
   const isToolsPage = pathname === "/tools";
   const isToolsSubpage = pathname.startsWith("/tools/") && pathname !== "/tools";
 
+  const isSettingsPage = pathname.startsWith("/settings");
   const isMyWorkPage = pathname.startsWith("/my-work");
   const isMyJobsPage = pathname.startsWith("/my-jobs");
 
@@ -428,8 +429,8 @@ function ShellContent({ children }: { children: ReactNode }) {
 
   const HeaderIcon = pageHeader.icon;
 
-  const showHeaderRow = !isToolsSubpage && !isMySpacePage;
-  const showSearchFilters = !isToolsSubpage && !isToolsPage && !isMyJobsPage && !isMyWorkPage && !isMySpacePage;
+  const showHeaderRow = !isToolsSubpage && !isMySpacePage && !isSettingsPage;
+  const showSearchFilters = !isToolsSubpage && !isToolsPage && !isMyJobsPage && !isMyWorkPage && !isMySpacePage && !isSettingsPage;
 
   const jobsFilterCount = useJobsFilterCount();
   const browseFilterCount = useBrowseFilterCount(isProfessionalsPage);

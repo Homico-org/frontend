@@ -1,30 +1,33 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useBrowseContext } from '@/contexts/BrowseContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useLikes } from '@/hooks/useLikes';
-import { FeedItem, LikeTargetType } from '@/types';
-import { ArrowRight, Briefcase, Image, Plus, Users } from 'lucide-react';
-import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import FeedCard from './FeedCard';
-import EmptyState from '../common/EmptyState';
-import { SkeletonCardGrid } from '@/components/ui/Skeleton';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { ACCENT_COLOR } from '@/constants/theme';
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ACCENT_COLOR } from "@/constants/theme";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBrowseContext } from "@/contexts/BrowseContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useLikes } from "@/hooks/useLikes";
+import { FeedItem, LikeTargetType } from "@/types";
+import { ArrowRight, Briefcase, Image, Plus, Users } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
+import EmptyState from "../common/EmptyState";
+import FeedCard from "./FeedCard";
 
 interface FeedSectionProps {
   selectedCategory: string | null;
   topRatedActive?: boolean;
 }
 
-export default function FeedSection({ selectedCategory, topRatedActive }: FeedSectionProps) {
+export default function FeedSection({
+  selectedCategory,
+  topRatedActive,
+}: FeedSectionProps) {
   const { t, locale } = useLanguage();
   const { user, isAuthenticated } = useAuth();
-  const isPro = user?.role === 'pro' || user?.role === 'company';
-  const isClient = user?.role === 'client';
-  const { searchQuery, sortBy, selectedCity, selectedSubcategory } = useBrowseContext();
+  const isPro = user?.role === "pro" || user?.role === "company";
+  const isClient = user?.role === "client";
+  const { searchQuery, sortBy, selectedCity, selectedSubcategory } =
+    useBrowseContext();
   const { toggleLike, initializeLikeStates, likeStates } = useLikes();
 
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
@@ -58,35 +61,35 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
 
       try {
         const params = new URLSearchParams();
-        params.append('page', pageNum.toString());
-        params.append('limit', '12');
+        params.append("page", pageNum.toString());
+        params.append("limit", "12");
         if (selectedCategory) {
-          params.append('category', selectedCategory);
+          params.append("category", selectedCategory);
         }
         // Only apply subcategory filter when user explicitly selects it from filters.
         if (selectedSubcategory) {
-          params.append('subcategories', selectedSubcategory);
+          params.append("subcategories", selectedSubcategory);
         }
-        if (selectedCity && selectedCity !== 'all') {
-          params.append('location', selectedCity);
+        if (selectedCity && selectedCity !== "all") {
+          params.append("location", selectedCity);
         }
         if (topRatedActive) {
-          params.append('minRating', '4');
-          params.append('sort', 'rating');
-        } else if (sortBy && sortBy !== 'recommended') {
-          params.append('sort', sortBy);
+          params.append("minRating", "4");
+          params.append("sort", "rating");
+        } else if (sortBy && sortBy !== "recommended") {
+          params.append("sort", sortBy);
         }
         if (searchQuery) {
-          params.append('search', searchQuery);
+          params.append("search", searchQuery);
         }
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/feed?${params.toString()}`,
-          { signal: controller.signal }
+          { signal: controller.signal },
         );
 
         if (!response.ok) {
-          throw new Error('Failed to fetch feed');
+          throw new Error("Failed to fetch feed");
         }
 
         const result = await response.json();
@@ -102,7 +105,10 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
         setHasMore(pagination.hasMore);
 
         if (data.length > 0) {
-          const likeStatesFromServer: Record<string, { isLiked: boolean; likeCount: number }> = {};
+          const likeStatesFromServer: Record<
+            string,
+            { isLiked: boolean; likeCount: number }
+          > = {};
           data.forEach((item: FeedItem) => {
             // Use the actual like target ID for state tracking
             const targetId = item.likeTargetId || item.id;
@@ -115,10 +121,10 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
         }
       } catch (error) {
         // Ignore abort errors - these are expected when canceling stale requests
-        if (error instanceof Error && error.name === 'AbortError') {
+        if (error instanceof Error && error.name === "AbortError") {
           return;
         }
-        console.error('Failed to fetch feed:', error);
+        console.error("Failed to fetch feed:", error);
         if (!append) {
           setFeedItems([]);
         }
@@ -128,7 +134,15 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
         setIsLoadingMore(false);
       }
     },
-    [selectedCategory, selectedSubcategory, selectedCity, topRatedActive, searchQuery, sortBy, initializeLikeStates]
+    [
+      selectedCategory,
+      selectedSubcategory,
+      selectedCity,
+      topRatedActive,
+      searchQuery,
+      sortBy,
+      initializeLikeStates,
+    ],
   );
 
   // Previous filters ref to detect actual changes
@@ -170,32 +184,48 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
           fetchFeed(nextPage, true);
         }
       },
-      { threshold: 0.1, rootMargin: '100px' }
+      { threshold: 0.1, rootMargin: "100px" },
     );
 
     observer.observe(loaderRef.current);
     return () => observer.disconnect();
   }, [hasMore, isLoading, isLoadingMore, page, fetchFeed]);
 
-  const handleLike = async (itemId: string, likeTargetType?: string, likeTargetId?: string) => {
+  const handleLike = async (
+    itemId: string,
+    likeTargetType?: string,
+    likeTargetId?: string,
+  ) => {
     if (!isAuthenticated) return;
 
     // Use the actual like target (for embedded projects, this might be the pro profile)
     const actualTargetId = likeTargetId || itemId;
-    const actualTargetType = likeTargetType === 'pro_profile'
-      ? LikeTargetType.PRO_PROFILE
-      : LikeTargetType.PORTFOLIO_ITEM;
+    const actualTargetType =
+      likeTargetType === "pro_profile"
+        ? LikeTargetType.PRO_PROFILE
+        : LikeTargetType.PORTFOLIO_ITEM;
 
-    const currentState = likeStates[actualTargetId] || { isLiked: false, likeCount: 0 };
-    const newState = await toggleLike(actualTargetType, actualTargetId, currentState);
+    const currentState = likeStates[actualTargetId] || {
+      isLiked: false,
+      likeCount: 0,
+    };
+    const newState = await toggleLike(
+      actualTargetType,
+      actualTargetId,
+      currentState,
+    );
 
     // Update both the actual target ID and the item ID states
     setFeedItems((prev) =>
       prev.map((item) =>
         item.id === itemId
-          ? { ...item, isLiked: newState.isLiked, likeCount: newState.likeCount }
-          : item
-      )
+          ? {
+              ...item,
+              isLiked: newState.isLiked,
+              likeCount: newState.likeCount,
+            }
+          : item,
+      ),
     );
 
     // Also update likeStates for the actual target if different from itemId
@@ -208,7 +238,10 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
   const FeedSkeleton = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80">
+        <div
+          key={i}
+          className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80"
+        >
           <div className="aspect-[4/3] bg-neutral-200 dark:bg-neutral-700 animate-pulse" />
           <div className="p-2.5 sm:p-4">
             <div className="h-3 sm:h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/3 animate-pulse mb-2" />
@@ -249,10 +282,12 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
             </div>
             <div className="min-w-0">
               <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
-                {locale === 'ka' ? 'დაამატე შენი პროექტი' : 'Add Your Project'}
+                {locale === "ka" ? "დაამატე შენი პროექტი" : "Add Your Project"}
               </p>
               <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
-                {locale === 'ka' ? 'აჩვენე შენი ნამუშევრები კლიენტებს' : 'Showcase your work to attract clients'}
+                {locale === "ka"
+                  ? "აჩვენე შენი ნამუშევრები კლიენტებს"
+                  : "Showcase your work to attract clients"}
               </p>
             </div>
           </div>
@@ -273,10 +308,14 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
             </div>
             <div className="min-w-0">
               <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
-                {locale === 'ka' ? 'დარეგისტრირდი პროფესიონალად' : 'Register as a Professional'}
+                {locale === "ka"
+                  ? "დარეგისტრირდი პროფესიონალად"
+                  : "Register as a Professional"}
               </p>
               <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
-                {locale === 'ka' ? 'აჩვენე შენი ნამუშევრები და იპოვე კლიენტები' : 'Showcase your work and find clients'}
+                {locale === "ka"
+                  ? "აჩვენე შენი ნამუშევრები და იპოვე კლიენტები"
+                  : "Showcase your work and find clients"}
               </p>
             </div>
           </div>
@@ -297,10 +336,14 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
             </div>
             <div className="min-w-0">
               <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
-                {locale === 'ka' ? 'განათავსე პროექტი' : 'Post a Job to Find a Pro'}
+                {locale === "ka"
+                  ? "განათავსე დავალება"
+                  : "Post a Job to Find a Pro"}
               </p>
               <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
-                {locale === 'ka' ? 'აღწერე პროექტი და მიიღე შეთავაზებები' : 'Describe your project and get proposals'}
+                {locale === "ka"
+                  ? "აღწერე დავალება და მიიღე შეთავაზებები"
+                  : "Describe your project and get proposals"}
               </p>
             </div>
           </div>
@@ -333,10 +376,16 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
                   item={{
                     ...item,
                     // Use actual like target for state lookup
-                    isLiked: likeStates[item.likeTargetId || item.id]?.isLiked ?? item.isLiked,
-                    likeCount: likeStates[item.likeTargetId || item.id]?.likeCount ?? item.likeCount,
+                    isLiked:
+                      likeStates[item.likeTargetId || item.id]?.isLiked ??
+                      item.isLiked,
+                    likeCount:
+                      likeStates[item.likeTargetId || item.id]?.likeCount ??
+                      item.likeCount,
                   }}
-                  onLike={(likeTargetType, likeTargetId) => handleLike(item.id, likeTargetType, likeTargetId)}
+                  onLike={(likeTargetType, likeTargetId) =>
+                    handleLike(item.id, likeTargetType, likeTargetId)
+                  }
                   isAuthenticated={isAuthenticated}
                   locale={locale}
                 />
@@ -350,7 +399,7 @@ export default function FeedSection({ selectedCategory, topRatedActive }: FeedSe
               <div className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-neutral-100 dark:bg-neutral-800">
                 <LoadingSpinner size="sm" color={ACCENT_COLOR} />
                 <span className="text-xs sm:text-sm text-neutral-500">
-                  {t('common.loading')}
+                  {t("common.loading")}
                 </span>
               </div>
             )}

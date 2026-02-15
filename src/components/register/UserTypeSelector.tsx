@@ -1,67 +1,72 @@
-'use client';
+"use client";
 
-import { ArrowRight, Sparkles } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowRight, Sparkles } from "lucide-react";
+import Image from "next/image";
 
 export interface UserTypeSelectorProps {
   /** Called when user chooses a type - triggers navigation/flow change */
-  onSelect: (type: 'client' | 'pro') => void;
+  onSelect: (type: "client" | "pro") => void;
   /** Locale for translations */
-  locale?: 'en' | 'ka' | 'ru';
+  locale?: "en" | "ka" | "ru";
   /** Custom className */
   className?: string;
 }
 
 // Cloudinary illustration URLs
 const ILLUSTRATIONS = {
-  client: 'https://res.cloudinary.com/dakcvkodo/image/upload/w_400,h_300,c_pad,q_auto,f_auto/homico/avatars/client.png',
-  pro: 'https://res.cloudinary.com/dakcvkodo/image/upload/w_400,h_300,c_pad,q_auto,f_auto/homico/avatars/pro-plumber.png',
+  client:
+    "https://res.cloudinary.com/dakcvkodo/image/upload/w_400,h_300,c_pad,q_auto,f_auto/homico/avatars/client.png",
+  pro: "https://res.cloudinary.com/dakcvkodo/image/upload/w_400,h_300,c_pad,q_auto,f_auto/homico/avatars/pro-plumber.png",
 };
 
 const translations = {
   en: {
     client: {
-      label: 'I need help with a project',
-      title: 'Find a Pro',
-      description: 'Post your project and get quotes from verified professionals',
-      cta: 'Get Started',
+      label: "I need help with a project",
+      title: "Find a Pro",
+      description:
+        "Post your project and get quotes from verified professionals",
+      cta: "Get Started",
     },
     pro: {
-      label: 'I want to offer my services',
-      title: 'Become a Pro',
-      description: 'Join our network and connect with clients looking for your skills',
-      cta: 'Join Now',
-      badge: 'Popular',
+      label: "I want to offer my services",
+      title: "Become a Pro",
+      description:
+        "Join our network and connect with clients looking for your skills",
+      cta: "Join Now",
+      badge: "Popular",
     },
   },
   ka: {
     client: {
-      label: 'მჭირდება დახმარება პროექტში',
-      title: 'იპოვე სპეციალისტი',
-      description: 'განათავსე პროექტი და მიიღე შეთავაზებები ვერიფიცირებული სპეციალისტებისგან',
-      cta: 'დაწყება',
+      label: "მჭირდება დახმარება პროექტში",
+      title: "იპოვე სპეციალისტი",
+      description:
+        "განათავსე დავალება და მიიღე შეთავაზებები ვერიფიცირებული სპეციალისტებისგან",
+      cta: "დაწყება",
     },
     pro: {
-      label: 'მინდა შევთავაზო სერვისი',
-      title: 'გახდი სპეციალისტი',
-      description: 'შემოგვიერთდი და დაუკავშირდი კლიენტებს შენს რეგიონში',
-      cta: 'შემოგვიერთდი',
-      badge: 'პოპულარული',
+      label: "მინდა შევთავაზო სერვისი",
+      title: "გახდი სპეციალისტი",
+      description: "შემოგვიერთდი და დაუკავშირდი კლიენტებს შენს რეგიონში",
+      cta: "შემოგვიერთდი",
+      badge: "პოპულარული",
     },
   },
   ru: {
     client: {
-      label: 'Мне нужна помощь с проектом',
-      title: 'Найти специалиста',
-      description: 'Разместите проект и получите предложения от проверенных специалистов',
-      cta: 'Начать',
+      label: "Мне нужна помощь с проектом",
+      title: "Найти специалиста",
+      description:
+        "Разместите проект и получите предложения от проверенных специалистов",
+      cta: "Начать",
     },
     pro: {
-      label: 'Хочу предложить свои услуги',
-      title: 'Стать специалистом',
-      description: 'Присоединяйтесь и находите клиентов в вашем регионе',
-      cta: 'Присоединиться',
-      badge: 'Популярное',
+      label: "Хочу предложить свои услуги",
+      title: "Стать специалистом",
+      description: "Присоединяйтесь и находите клиентов в вашем регионе",
+      cta: "Присоединиться",
+      badge: "Популярное",
     },
   },
 };
@@ -71,8 +76,8 @@ const translations = {
  */
 export default function UserTypeSelector({
   onSelect,
-  locale = 'en',
-  className = '',
+  locale = "en",
+  className = "",
 }: UserTypeSelectorProps) {
   const t = translations[locale];
 
@@ -82,7 +87,7 @@ export default function UserTypeSelector({
       <div className="md:hidden space-y-3">
         {/* Client Card - Mobile */}
         <button
-          onClick={() => onSelect('client')}
+          onClick={() => onSelect("client")}
           className="group w-full bg-white rounded-2xl border-2 border-neutral-200 hover:border-neutral-300 active:scale-[0.98] transition-all duration-200 overflow-hidden text-left shadow-sm"
         >
           <div className="flex items-center gap-3 p-4">
@@ -115,7 +120,7 @@ export default function UserTypeSelector({
 
         {/* Pro Card - Mobile (Featured) */}
         <button
-          onClick={() => onSelect('pro')}
+          onClick={() => onSelect("pro")}
           className="group relative w-full bg-gradient-to-br from-[#1a1a1a] via-[#252525] to-[#1a1a1a] rounded-2xl overflow-hidden text-left active:scale-[0.98] transition-all duration-200 shadow-lg"
         >
           {/* Badge */}
@@ -161,7 +166,7 @@ export default function UserTypeSelector({
       <div className="hidden md:grid lg:hidden grid-cols-2 gap-4 max-w-2xl mx-auto">
         {/* Client Side - Tablet */}
         <button
-          onClick={() => onSelect('client')}
+          onClick={() => onSelect("client")}
           className="group relative bg-white rounded-2xl border-2 border-neutral-200 hover:border-neutral-300 overflow-hidden text-left transition-all duration-300 hover:shadow-xl active:scale-[0.98]"
         >
           {/* Illustration */}
@@ -194,7 +199,7 @@ export default function UserTypeSelector({
 
         {/* Pro Side - Tablet */}
         <button
-          onClick={() => onSelect('pro')}
+          onClick={() => onSelect("pro")}
           className="group relative bg-gradient-to-br from-[#1a1a1a] via-[#252525] to-[#1a1a1a] rounded-2xl overflow-hidden text-left transition-all duration-300 hover:shadow-xl active:scale-[0.98]"
         >
           {/* Badge */}
@@ -242,7 +247,7 @@ export default function UserTypeSelector({
       <div className="hidden lg:grid lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
         {/* Client Side - Desktop */}
         <button
-          onClick={() => onSelect('client')}
+          onClick={() => onSelect("client")}
           className="group relative bg-white rounded-3xl border-2 border-neutral-200 hover:border-neutral-300 overflow-hidden text-left transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
         >
           {/* Illustration */}
@@ -286,7 +291,7 @@ export default function UserTypeSelector({
 
         {/* Pro Side - Desktop */}
         <button
-          onClick={() => onSelect('pro')}
+          onClick={() => onSelect("pro")}
           className="group relative bg-gradient-to-br from-[#1a1a1a] via-[#252525] to-[#1a1a1a] rounded-3xl overflow-hidden text-left transition-all duration-500 hover:shadow-2xl hover:shadow-neutral-900/40 hover:-translate-y-1"
         >
           {/* Background effects */}

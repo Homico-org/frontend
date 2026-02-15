@@ -14,7 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { countries, useLanguage } from '@/contexts/LanguageContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
-import { AlertTriangle, Bell, BriefcaseBusiness, Calendar, ChevronDown, CreditCard, EyeOff, Lock, Mail, MessageCircle, RefreshCw, Shield, Smartphone, Trash2, User, X } from 'lucide-react';
+import { AlertTriangle, Bell, BriefcaseBusiness, Calendar, CreditCard, EyeOff, Lock, Mail, MessageCircle, RefreshCw, Shield, Smartphone, Trash2, User, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
@@ -56,7 +56,6 @@ function SettingsPageContent() {
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab") || 'profile';
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [isTabsOpen, setIsTabsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -802,346 +801,101 @@ function SettingsPageContent() {
         />
       )}
 
-      <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-6 sm:pb-8">
+      <div className="max-w-4xl mx-auto">
         <div className="mb-4 sm:mb-8">
           <h1
-            className="text-lg sm:text-2xl font-serif font-medium"
+            className="text-lg sm:text-2xl font-semibold"
             style={{ color: 'var(--color-text-primary)' }}
           >
             {t('settings.title')}
           </h1>
         </div>
 
-        {/* Desktop: Sidebar + Content layout */}
-        <div className="hidden sm:flex flex-col md:flex-row gap-4 sm:gap-6">
-          {/* Sidebar - Vertical tabs */}
-          <div className="md:w-56 flex-shrink-0">
-            <nav className="flex md:flex-col gap-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ease-out whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'bg-[#E07B4F] text-white'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                  }`}
-                >
-                  <tab.icon className="h-4 w-4 flex-shrink-0" />
-                  <span className="md:hidden lg:inline">{tab.label}</span>
-                  <span className="hidden md:inline lg:hidden">{tab.label.split(" ")[0]}</span>
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1">
-            {activeTab === 'profile' && (
-              <ProfileSettings
-                onOpenEmailModal={() => setShowAddEmailModal(true)}
-                onOpenPhoneModal={() => setShowPhoneChangeModal(true)}
-              />
-            )}
-
-            {activeTab === 'notifications' && (
-              <NotificationSettings
-                locale={locale}
-                notificationData={notificationData}
-                isLoading={isLoadingNotifications}
-                message={notificationMessage}
-                onUpdatePreference={updateNotificationPreference}
-                onAddEmail={() => setShowAddEmailModal(true)}
-                onRetry={fetchNotificationPreferences}
-              />
-            )}
-
-            {activeTab === 'security' && (
-              <PasswordChangeForm
-                locale={locale as 'en' | 'ka' | 'ru'}
-                onSubmit={async (currentPassword, newPassword) => {
-                  try {
-                    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-                    const token = localStorage.getItem('access_token');
-
-                    const res = await fetch(`${API_URL}/users/change-password`, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                      },
-                      body: JSON.stringify({ currentPassword, newPassword }),
-                    });
-
-                    if (res.ok) {
-                      return { success: true };
-                    } else {
-                      const data = await res.json();
-                      if (res.status === 409) {
-                        return { success: false, error: t('settings.currentPasswordIsIncorrect') };
-                      }
-                      return { success: false, error: data.message };
-                    }
-                  } catch (error) {
-                    const err = error as { message?: string };
-                    return { success: false, error: err.message };
-                  }
-                }}
-              />
-            )}
-
-            {activeTab === 'payments' && process.env.NODE_ENV === 'development' && (
-              <PaymentSettings onOpenAddCardModal={() => setShowAddCardModal(true)} />
-            )}
-
-            {activeTab === 'account' && (
-              <AccountSettings
-                onOpenDeleteModal={() => setShowDeleteModal(true)}
-                onOpenDeactivateModal={() => setShowDeactivateModal(true)}
-              />
-            )}
-          </div>
+        {/* Horizontal Tabs */}
+        <div className="border-b" style={{ borderColor: 'var(--color-border)' }}>
+          <nav className="flex overflow-x-auto scrollbar-hide -mb-px">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-3 sm:px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 ${
+                  activeTab === tab.id
+                    ? 'border-[#C4735B] text-[#C4735B]'
+                    : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
+                }`}
+              >
+                <tab.icon className="h-4 w-4" />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </nav>
         </div>
 
-        {/* Mobile: Accordion Layout */}
-        <div className="sm:hidden space-y-2">
-          {tabs.map((tab) => {
-            const isOpen = activeTab === tab.id;
-            return (
-              <div
-                key={tab.id}
-                className="rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-900"
-              >
-                <button
-                  onClick={() => setActiveTab(isOpen ? '' : tab.id)}
-                  className="w-full flex items-center justify-between px-3 py-3 text-left active:bg-neutral-50 dark:active:bg-neutral-800/50"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isOpen ? 'bg-[#E07B4F]' : 'bg-neutral-100 dark:bg-neutral-800'}`}>
-                      <tab.icon className={`h-4 w-4 ${isOpen ? 'text-white' : 'text-neutral-600 dark:text-neutral-400'}`} />
-                    </div>
-                    <span className={`text-sm font-medium ${isOpen ? 'text-[#E07B4F]' : 'text-neutral-900 dark:text-white'}`}>
-                      {tab.label}
-                    </span>
-                  </div>
-                  <ChevronDown className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-                </button>
+        {/* Tab Content */}
+        <div className="pt-5 sm:pt-6">
+          {activeTab === 'profile' && (
+            <ProfileSettings
+              onOpenEmailModal={() => setShowAddEmailModal(true)}
+              onOpenPhoneModal={() => setShowPhoneChangeModal(true)}
+            />
+          )}
 
-                {isOpen && (
-                  <div className="px-3 pb-3 border-t border-neutral-100 dark:border-neutral-800">
-                    <div className="pt-3">
-                      {tab.id === 'profile' && (
-                        <ProfileSettings
-                          isMobile
-                          onOpenEmailModal={() => setShowAddEmailModal(true)}
-                          onOpenPhoneModal={() => setShowPhoneChangeModal(true)}
-                        />
-                      )}
+          {activeTab === 'notifications' && (
+            <NotificationSettings
+              locale={locale}
+              notificationData={notificationData}
+              isLoading={isLoadingNotifications}
+              message={notificationMessage}
+              onUpdatePreference={updateNotificationPreference}
+              onAddEmail={() => setShowAddEmailModal(true)}
+              onRetry={fetchNotificationPreferences}
+            />
+          )}
 
-                      {tab.id === 'notifications' && (
-                        <div className="space-y-4">
-                          {isLoadingNotifications || !notificationData ? (
-                            <div className="py-8 flex justify-center">
-                              <LoadingSpinner size="md" color="#9ca3af" />
-                            </div>
-                          ) : (
-                            <>
-                              {/* Email Notifications */}
-                              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
-                                <div className="p-3 flex items-center justify-between" style={{ backgroundColor: 'var(--color-bg-elevated)' }}>
-                                  <div className="flex items-center gap-2">
-                                    <Mail className="w-4 h-4 text-[#E07B4F]" />
-                                    <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                                      {t('common.email')}
-                                    </span>
-                                    {notificationData.email && (
-                                      <Badge variant={notificationData.isEmailVerified ? "success" : "warning"} size="xs">
-                                        {notificationData.isEmailVerified ? (t('common.verified')) : (t('settings.unverified'))}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  {notificationData.email ? (
-                                    <Toggle
-                                      checked={notificationData.preferences.email.enabled}
-                                      onChange={(e) => updateNotificationPreference('email', 'enabled', e.target.checked)}
-                                      size="sm"
-                                      variant="primary"
-                                    />
-                                  ) : (
-                                    <Button
-                                      variant="link"
-                                      size="sm"
-                                      onClick={() => setShowAddEmailModal(true)}
-                                      className="text-xs h-auto p-0"
-                                    >
-                                      {t('common.add')}
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
+          {activeTab === 'security' && (
+            <PasswordChangeForm
+              locale={locale as 'en' | 'ka' | 'ru'}
+              onSubmit={async (currentPassword, newPassword) => {
+                try {
+                  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+                  const token = localStorage.getItem('access_token');
 
-                              {/* Push Notifications */}
-                              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
-                                <div className="p-3 flex items-center justify-between" style={{ backgroundColor: 'var(--color-bg-elevated)' }}>
-                                  <div className="flex items-center gap-2">
-                                    <Bell className="w-4 h-4 text-violet-500" />
-                                    <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                                      {t('settings.pushNotifications')}
-                                    </span>
-                                  </div>
-                                  <Toggle
-                                    checked={notificationData.preferences.push.enabled}
-                                    onChange={(e) => updateNotificationPreference('push', 'enabled', e.target.checked)}
-                                    size="sm"
-                                    variant="primary"
-                                  />
-                                </div>
-                              </div>
+                  const res = await fetch(`${API_URL}/users/change-password`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword }),
+                  });
 
-                              {/* SMS Notifications */}
-                              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
-                                <div className="p-3 flex items-center justify-between" style={{ backgroundColor: 'var(--color-bg-elevated)' }}>
-                                  <div className="flex items-center gap-2">
-                                    <Smartphone className="w-4 h-4 text-green-500" />
-                                    <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                                      {t('settings.smsNotifications')}
-                                    </span>
-                                  </div>
-                                  <Toggle
-                                    checked={notificationData.preferences.sms.enabled}
-                                    onChange={(e) => updateNotificationPreference('sms', 'enabled', e.target.checked)}
-                                    size="sm"
-                                    variant="primary"
-                                  />
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      )}
+                  if (res.ok) {
+                    return { success: true };
+                  } else {
+                    const data = await res.json();
+                    if (res.status === 409) {
+                      return { success: false, error: t('settings.currentPasswordIsIncorrect') };
+                    }
+                    return { success: false, error: data.message };
+                  }
+                } catch (error) {
+                  const err = error as { message?: string };
+                  return { success: false, error: err.message };
+                }
+              }}
+            />
+          )}
 
-                      {tab.id === 'payments' && process.env.NODE_ENV === 'development' && (
-                        <div className="space-y-4">
-                          {isLoadingPayments ? (
-                            <div className="py-8 flex justify-center">
-                              <LoadingSpinner size="md" color="#9ca3af" />
-                            </div>
-                          ) : paymentMethods.length === 0 ? (
-                            <div className="text-center py-6">
-                              <CreditCard className="w-10 h-10 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
-                              <p className="text-sm text-neutral-500 mb-4">
-                                {t('settings.noCardsAddedYet')}
-                              </p>
-                              <Button
-                                onClick={() => setShowAddCardModal(true)}
-                                size="sm"
-                                leftIcon={<CreditCard className="w-4 h-4" />}
-                              >
-                                {t('settings.addCard')}
-                              </Button>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="space-y-2">
-                                {paymentMethods.map((method) => (
-                                  <PaymentMethodCard
-                                    key={method.id}
-                                    method={method}
-                                    locale={locale as 'en' | 'ka' | 'ru'}
-                                    onSetDefault={handleSetDefaultCard}
-                                    onDelete={handleDeleteCard}
-                                  />
-                                ))}
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setShowAddCardModal(true)}
-                                className="w-full border-dashed"
-                                leftIcon={<CreditCard className="w-4 h-4" />}
-                              >
-                                {t('settings.addNewCard')}
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      )}
+          {activeTab === 'payments' && process.env.NODE_ENV === 'development' && (
+            <PaymentSettings onOpenAddCardModal={() => setShowAddCardModal(true)} />
+          )}
 
-                      {tab.id === 'security' && (
-                        <PasswordChangeForm
-                          locale={locale as 'en' | 'ka' | 'ru'}
-                          onSubmit={async (currentPassword, newPassword) => {
-                            try {
-                              const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-                              const token = localStorage.getItem('access_token');
-
-                              const res = await fetch(`${API_URL}/users/change-password`, {
-                                method: 'POST',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                  Authorization: `Bearer ${token}`,
-                                },
-                                body: JSON.stringify({ currentPassword, newPassword }),
-                              });
-
-                              if (res.ok) {
-                                return { success: true };
-                              } else {
-                                const data = await res.json();
-                                if (res.status === 409) {
-                                  return { success: false, error: t('settings.currentPasswordIsIncorrect') };
-                                }
-                                return { success: false, error: data.message };
-                              }
-                            } catch (error) {
-                              const err = error as { message?: string };
-                              return { success: false, error: err.message };
-                            }
-                          }}
-                        />
-                      )}
-
-                      {tab.id === 'account' && (
-                        <div className="space-y-4">
-                          {/* Account Info */}
-                          <div
-                            className="p-4 rounded-xl flex items-start gap-3"
-                            style={{
-                              backgroundColor: 'var(--color-bg-elevated)',
-                              border: '1px solid var(--color-border)',
-                            }}
-                          >
-                            <User className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-text-tertiary)' }} />
-                            <div>
-                              <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                                {user?.name}
-                              </p>
-                              <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-                                {user?.email || user?.phone}
-                              </p>
-                              <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                                {t('settings.accountId')} #{user?.uid || 'N/A'}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Delete Account Button */}
-                          <Button
-                            variant="destructive"
-                            onClick={() => setShowDeleteModal(true)}
-                            className="w-full"
-                            leftIcon={<Trash2 className="w-4 h-4" />}
-                          >
-                            {t('settings.deleteAccount')}
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {activeTab === 'account' && (
+            <AccountSettings
+              onOpenDeleteModal={() => setShowDeleteModal(true)}
+              onOpenDeactivateModal={() => setShowDeactivateModal(true)}
+            />
+          )}
         </div>
       </div>
 
@@ -1491,8 +1245,8 @@ function SettingsPageContent() {
             <div className="p-4 sm:p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 sm:gap-3">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-[#E07B4F]/10">
-                    <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#E07B4F]" />
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-[#C4735B]/10">
+                    <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B]" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>
@@ -1533,7 +1287,7 @@ function SettingsPageContent() {
                   }))}
                   placeholder="0000 0000 0000 0000"
                   maxLength={19}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F] text-sm sm:text-base"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#C4735B] text-sm sm:text-base"
                   style={{
                     backgroundColor: 'var(--color-bg-elevated)',
                     border: '1px solid var(--color-border)',
@@ -1558,7 +1312,7 @@ function SettingsPageContent() {
                     }))}
                     placeholder="MM/YY"
                     maxLength={5}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F] text-sm sm:text-base"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#C4735B] text-sm sm:text-base"
                     style={{
                       backgroundColor: 'var(--color-bg-elevated)',
                       border: '1px solid var(--color-border)',
@@ -1575,7 +1329,7 @@ function SettingsPageContent() {
                     inputMode="numeric"
                     placeholder="***"
                     maxLength={4}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F] text-sm sm:text-base"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#C4735B] text-sm sm:text-base"
                     style={{
                       backgroundColor: 'var(--color-bg-elevated)',
                       border: '1px solid var(--color-border)',
@@ -1598,7 +1352,7 @@ function SettingsPageContent() {
                     cardholderName: e.target.value.toUpperCase()
                   }))}
                   placeholder="JOHN DOE"
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#E07B4F] uppercase text-sm sm:text-base"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#C4735B] uppercase text-sm sm:text-base"
                   style={{
                     backgroundColor: 'var(--color-bg-elevated)',
                     border: '1px solid var(--color-border)',
@@ -1613,7 +1367,7 @@ function SettingsPageContent() {
                   type="checkbox"
                   checked={cardFormData.setAsDefault}
                   onChange={(e) => setCardFormData(prev => ({ ...prev, setAsDefault: e.target.checked }))}
-                  className="w-4 h-4 sm:w-5 sm:h-5 rounded border-neutral-300 text-[#E07B4F] focus:ring-[#E07B4F]"
+                  className="w-4 h-4 sm:w-5 sm:h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
                 />
                 <span className="text-xs sm:text-sm" style={{ color: 'var(--color-text-primary)' }}>
                   {t('settings.setAsDefaultCard')}

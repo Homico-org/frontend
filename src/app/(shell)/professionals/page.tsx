@@ -6,12 +6,12 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import Link from "next/link";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useLikes } from "@/hooks/useLikes";
 import { api } from "@/lib/api";
 import { LikeTargetType, ProProfile } from "@/types";
 import { ArrowRight, Briefcase, Users } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function ProfessionalsPage() {
@@ -114,7 +114,9 @@ export default function ProfessionalsPage() {
         });
       }
       if (selectedCategory) {
-        trackEvent(AnalyticsEvent.CATEGORY_SELECT, { category: selectedCategory });
+        trackEvent(AnalyticsEvent.CATEGORY_SELECT, {
+          category: selectedCategory,
+        });
       }
       if (selectedSubcategories.length > 0) {
         trackEvent(AnalyticsEvent.SUBCATEGORY_SELECT, {
@@ -144,7 +146,12 @@ export default function ProfessionalsPage() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore) {
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !isLoading &&
+          !isLoadingMore
+        ) {
           setPage((prev) => prev + 1);
         }
       },
@@ -215,17 +222,21 @@ export default function ProfessionalsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
-                    {locale === 'ka' ? 'დარეგისტრირდი პროფესიონალად' : 'Register as a Professional'}
+                    {locale === "ka"
+                      ? "დარეგისტრირდი პროფესიონალად"
+                      : "Register as a Professional"}
                   </p>
                   <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
-                    {locale === 'ka' ? 'შემოგვიერთდი და იპოვე კლიენტები' : 'Join and start finding clients'}
+                    {locale === "ka"
+                      ? "შემოგვიერთდი და იპოვე კლიენტები"
+                      : "Join and start finding clients"}
                   </p>
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           )}
-          {isAuthenticated && user?.role === 'client' && (
+          {isAuthenticated && user?.role === "client" && (
             <Link
               href="/post-job"
               className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 rounded-xl sm:rounded-2xl hover:border-[#C4735B]/40 transition-all group"
@@ -236,10 +247,14 @@ export default function ProfessionalsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
-                    {locale === 'ka' ? 'განათავსე პროექტი' : 'Post a Job to Find a Pro'}
+                    {locale === "ka"
+                      ? "განათავსე დავალება"
+                      : "Post a Job to Find a Pro"}
                   </p>
                   <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
-                    {locale === 'ka' ? 'აღწერე პროექტი და მიიღე შეთავაზებები' : 'Describe your project and get proposals'}
+                    {locale === "ka"
+                      ? "აღწერე დავალება და მიიღე შეთავაზებები"
+                      : "Describe your project and get proposals"}
                   </p>
                 </div>
               </div>
