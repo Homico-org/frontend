@@ -1091,6 +1091,7 @@
     "text": "ტექსტი",
     "whatServicesDoYouProvide": "რა სერვისებს თავაზობთ კლიენტებს?",
     "yearsExperience": "წელი",
+    "yearsShort": "წ.",
     "youAreNowAProfessional": "შენ ახლა პროფესიონალი ხარ"
   },
   "premium": {
@@ -2939,5 +2940,25 @@
     "workWillAppear": "მიღებული სამუშაოები და პროექტები აქ გამოჩნდება",
     "noReviewsYet": "შეფასებები ჯერ არ არის",
     "requestReviewsHint": "გააზიარეთ ლინკი ძველ კლიენტებთან შეფასებების მისაღებად"
+  },
+  "feedback": {
+    "title": "უკუკავშირი",
+    "bugReport": "ხარვეზი",
+    "featureRequest": "ფუნქცია",
+    "general": "ზოგადი",
+    "messagePlaceholder": "გვითხარით, რა გაწუხებთ...",
+    "bugPlaceholder": "აღწერეთ აღმოჩენილი ხარვეზი...",
+    "featurePlaceholder": "აღწერეთ სასურველი ფუნქცია...",
+    "email": "თქვენი ელ-ფოსტა (არასავალდებულო)",
+    "submit": "გაგზავნა",
+    "submitted": "გმადლობთ!",
+    "submittedMessage": "თქვენი უკუკავშირი მიღებულია",
+    "selectType": "რა ტიპის უკუკავშირია?",
+    "messageRequired": "გთხოვთ შეიყვანოთ შეტყობინება",
+    "messageTooShort": "შეტყობინება უნდა იყოს მინიმუმ 10 სიმბოლო",
+    "discardTitle": "უკუკავშირის გაუქმება?",
+    "discardMessage": "თქვენ გაქვთ შეუნახავი უკუკავშირი. ნამდვილად გსურთ დახურვა?",
+    "keepEditing": "გაგრძელება",
+    "discard": "გაუქმება"
   }
 }

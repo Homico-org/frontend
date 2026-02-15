@@ -1091,6 +1091,7 @@
     "text": "Text",
     "whatServicesDoYouProvide": "What Services Do You Provide",
     "yearsExperience": "Years Experience",
+    "yearsShort": "yrs",
     "youAreNowAProfessional": "You Are Now A Professional"
   },
   "premium": {
@@ -2940,5 +2941,25 @@
     "workWillAppear": "Accepted jobs and projects will show up here",
     "noReviewsYet": "No reviews yet",
     "requestReviewsHint": "Share your review link with past clients to collect reviews"
+  },
+  "feedback": {
+    "title": "Feedback",
+    "bugReport": "Bug Report",
+    "featureRequest": "Feature Request",
+    "general": "General",
+    "messagePlaceholder": "Tell us what's on your mind...",
+    "bugPlaceholder": "Describe the bug you encountered...",
+    "featurePlaceholder": "Describe the feature you'd like...",
+    "email": "Your email (optional)",
+    "submit": "Send Feedback",
+    "submitted": "Thank you!",
+    "submittedMessage": "Your feedback has been received",
+    "selectType": "What type of feedback?",
+    "messageRequired": "Please enter a message",
+    "messageTooShort": "Message must be at least 10 characters",
+    "discardTitle": "Discard feedback?",
+    "discardMessage": "You have unsaved feedback. Are you sure you want to close?",
+    "keepEditing": "Keep editing",
+    "discard": "Discard"
   }
 }

@@ -3,6 +3,7 @@ import EnvBadge from "@/components/common/EnvBadge";
 import Providers from "@/components/common/Providers";
 import ToastContainer from "@/components/common/Toast";
 import { AiChatWidget } from "@/components/ai-assistant";
+import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import "@/styles/globals.css";
 import type { Metadata, Viewport } from "next";
 
@@ -219,6 +220,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <ClientLayout>{children}</ClientLayout>
           <ToastContainer />
           <AiChatWidget />
+          <FeedbackWidget />
           <EnvBadge />
         </Providers>
       </body>

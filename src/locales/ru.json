@@ -1090,6 +1090,7 @@
     "text": "Текст",
     "whatServicesDoYouProvide": "Какие услуги вы предоставляете",
     "yearsExperience": "Лет опыта",
+    "yearsShort": "лет",
     "youAreNowAProfessional": "Теперь вы специалист"
   },
   "premium": {
@@ -2939,5 +2940,25 @@
     "workWillAppear": "Принятые заказы и проекты появятся здесь",
     "noReviewsYet": "Отзывов пока нет",
     "requestReviewsHint": "Поделитесь ссылкой с бывшими клиентами для сбора отзывов"
+  },
+  "feedback": {
+    "title": "Обратная связь",
+    "bugReport": "Ошибка",
+    "featureRequest": "Функция",
+    "general": "Общее",
+    "messagePlaceholder": "Расскажите, что у вас на уме...",
+    "bugPlaceholder": "Опишите обнаруженную ошибку...",
+    "featurePlaceholder": "Опишите желаемую функцию...",
+    "email": "Ваш email (необязательно)",
+    "submit": "Отправить отзыв",
+    "submitted": "Спасибо!",
+    "submittedMessage": "Ваш отзыв получен",
+    "selectType": "Какой тип обратной связи?",
+    "messageRequired": "Пожалуйста, введите сообщение",
+    "messageTooShort": "Сообщение должно содержать минимум 10 символов",
+    "discardTitle": "Отменить отзыв?",
+    "discardMessage": "У вас есть несохранённый отзыв. Вы уверены, что хотите закрыть?",
+    "keepEditing": "Продолжить",
+    "discard": "Отменить"
   }
 }
