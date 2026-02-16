@@ -123,16 +123,14 @@ export function FeedbackWidget() {
           subject: SUBJECT_MAP[feedbackType],
           category: 'feedback',
           subcategory: feedbackType,
-          message: message.trim(),
+          message: `${message.trim()}\n\n---\nPage: ${pathname}`,
           priority: 'medium',
-          metadata: { pageUrl: pathname },
         });
       } else {
         await api.post('/support/contact', {
           type: 'feedback',
-          message: `[${SUBJECT_MAP[feedbackType]}] ${message.trim()}`,
+          message: `[${SUBJECT_MAP[feedbackType]}] ${message.trim()}\n\n---\nPage: ${pathname}`,
           contactEmail: email.trim() || undefined,
-          metadata: { pageUrl: pathname, feedbackType },
         });
       }
 
