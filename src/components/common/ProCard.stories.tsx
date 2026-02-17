@@ -50,7 +50,6 @@ const baseProfile: ProProfile = {
   cadastralVerified: false,
   certifications: [],
   city: 'Tbilisi',
-  companies: [],
   createdAt: new Date().toISOString(),
   designStyles: [],
   email: 'giorgi@example.com',

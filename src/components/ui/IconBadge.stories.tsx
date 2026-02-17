@@ -30,7 +30,6 @@ const meta: Meta<typeof IconBadge> = {
       control: 'select',
       options: [
         'accent',
-        'company',
         'success',
         'warning',
         'error',
@@ -79,10 +78,6 @@ export const AllVariants: Story = {
       <div className="flex flex-col items-center gap-2">
         <IconBadge icon={Star} variant="accent" />
         <span className="text-xs text-neutral-500">accent</span>
-      </div>
-      <div className="flex flex-col items-center gap-2">
-        <IconBadge icon={Star} variant="company" />
-        <span className="text-xs text-neutral-500">company</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <IconBadge icon={Check} variant="success" />
@@ -139,7 +134,6 @@ export const FilledVariants: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-4">
       <IconBadge icon={Star} variant="accent" filled />
-      <IconBadge icon={Star} variant="company" filled />
       <IconBadge icon={Check} variant="success" filled />
       <IconBadge icon={Bell} variant="warning" filled />
       <IconBadge icon={Heart} variant="error" filled />
@@ -183,7 +177,7 @@ export const InCard: Story = {
   render: () => (
     <div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 w-80">
       <div className="flex items-start gap-4">
-        <IconBadge icon={User} variant="company" size="lg" />
+        <IconBadge icon={User} variant="accent" size="lg" />
         <div>
           <h3 className="font-semibold text-neutral-900 dark:text-white">John Doe</h3>
           <p className="text-sm text-neutral-500">Professional Designer</p>

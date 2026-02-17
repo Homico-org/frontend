@@ -256,7 +256,7 @@ export function FeedbackWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed lg:hidden bottom-36 right-4 z-[39] w-11 h-11 rounded-full shadow-lg flex items-center justify-center cursor-pointer"
+          className="fixed hidden sm:flex lg:hidden bottom-44 right-4 z-[39] w-11 h-11 rounded-full shadow-lg items-center justify-center cursor-pointer"
           style={{ backgroundColor: ACCENT_COLOR, color: '#fff' }}
           aria-label={t('feedback.title')}
         >

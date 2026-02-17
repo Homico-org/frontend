@@ -312,13 +312,6 @@ export default function UserProfilePage() {
                   {profile.name}
                 </h1>
 
-                {/* Company name if organization */}
-                {profile.accountType === 'organization' && profile.companyName && (
-                  <p className="text-sm text-[var(--color-accent)] font-medium mb-1">
-                    {profile.companyName}
-                  </p>
-                )}
-
                 {/* Location */}
                 {profile.city && (
                   <p className="text-sm text-[var(--color-text-tertiary)] flex items-center justify-center gap-1.5">

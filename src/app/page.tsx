@@ -1220,7 +1220,7 @@ export default function HomePage() {
                     ))}
                   </ul>
                   <MagneticButton
-                    href="/register?type=pro"
+                    href="/register/professional"
                     className="mt-5 w-full h-9 text-[12px] font-medium border border-[#C4735B] text-[#C4735B] hover:bg-[#C4735B] hover:text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors group/btn"
                   >
                     {t("howItWorks.registerAsPro")}

@@ -2,11 +2,10 @@
 
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
-import { ACCENT_COLOR, COMPANY_ACCENT, STATUS_COLORS } from '@/constants/theme';
+import { ACCENT_COLOR, STATUS_COLORS } from '@/constants/theme';
 
 export type IconBadgeVariant =
   | 'accent'
-  | 'company'
   | 'success'
   | 'warning'
   | 'error'
@@ -49,7 +48,6 @@ const sizeConfig: Record<IconBadgeSize, { container: string; icon: string }> = {
 // Variant color configurations
 const variantColors: Record<IconBadgeVariant, string> = {
   accent: ACCENT_COLOR,
-  company: COMPANY_ACCENT,
   success: STATUS_COLORS.success,
   warning: STATUS_COLORS.warning,
   error: STATUS_COLORS.error,

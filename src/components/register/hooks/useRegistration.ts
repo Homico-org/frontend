@@ -210,7 +210,12 @@ export interface UseRegistrationReturn {
   submitRegistration: () => Promise<void>;
 }
 
-export function useRegistration(): UseRegistrationReturn {
+export interface UseRegistrationOptions {
+  initialUserType?: "client" | "pro";
+  skipTypeSelection?: boolean;
+}
+
+export function useRegistration(options?: UseRegistrationOptions): UseRegistrationReturn {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading: authLoading, user } = useAuth();
@@ -219,15 +224,15 @@ export function useRegistration(): UseRegistrationReturn {
   const { trackEvent } = useAnalytics();
   const { categories } = useCategories();
 
-  const isProRegistration = searchParams.get("common.type") === "pro";
+  const isProRegistration = options?.initialUserType === "pro" || searchParams.get("common.type") === "pro";
 
   // Multi-step state
   const [currentStep, setCurrentStep] = useState<RegistrationStep>("account");
   const [userType, setUserType] = useState<"client" | "pro">(
-    isProRegistration ? "pro" : "client",
+    options?.initialUserType ?? (isProRegistration ? "pro" : "client"),
   );
   const [showTypeSelection, setShowTypeSelection] =
-    useState(!isProRegistration);
+    useState(options?.skipTypeSelection ? false : !isProRegistration);
 
   // Auth method state
   const [authMethod, setAuthMethod] = useState<AuthMethod>("mobile");
@@ -346,9 +351,7 @@ export function useRegistration(): UseRegistrationReturn {
     if (!authLoading && isAuthenticated && user) {
       // Only redirect if not a pro with incomplete profile
       // Pro users with incomplete profile should be able to stay on register page
-      if (user.role === "company") {
-        router.replace("/company/jobs");
-      } else if (user.role === "admin") {
+      if (user.role === "admin") {
         router.replace("/admin");
       } else if (user.role === "pro" && user.isProfileCompleted === true) {
         // Only redirect completed pro users
@@ -992,7 +995,13 @@ export function useRegistration(): UseRegistrationReturn {
         );
         router.push("/pro/profile-setup");
       } else {
-        router.push("/portfolio");
+        const postRedirect = sessionStorage.getItem('postRegisterRedirect');
+        if (postRedirect) {
+          sessionStorage.removeItem('postRegisterRedirect');
+          router.push(postRedirect);
+        } else {
+          router.push("/portfolio");
+        }
       }
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again.");

@@ -33,6 +33,7 @@ import {
   TrendingUp,
   UserCheck,
   Users,
+  MousePointer,
   Zap
 } from 'lucide-react';
 import Link from 'next/link';
@@ -133,10 +134,32 @@ function AdminDashboardPageContent() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [activeChart, setActiveChart] = useState<'signups' | 'jobs' | 'proposals'>('signups');
+  const [clickAnalyticsDays, setClickAnalyticsDays] = useState<7 | 30 | 90>(7);
+  const [clickOverview, setClickOverview] = useState<{ event: string; count: number }[]>([]);
+  const [topProClicks, setTopProClicks] = useState<{ target: string; label: string; count: number }[]>([]);
+  const [navClicks, setNavClicks] = useState<{ target: string; label: string; count: number }[]>([]);
+  const [registerClicks, setRegisterClicks] = useState<{ target: string; label: string; count: number }[]>([]);
 
   const [error, setError] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const supportRefreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchClickAnalytics = useCallback(async (days: number) => {
+    try {
+      const [overviewRes, proRes, navRes, regRes] = await Promise.all([
+        api.get(`/analytics/overview?days=${days}`),
+        api.get(`/analytics/summary?event=pro_click&days=${days}&limit=10`),
+        api.get(`/analytics/summary?event=nav_click&days=${days}&limit=10`),
+        api.get(`/analytics/summary?event=register_click&days=${days}&limit=10`),
+      ]);
+      setClickOverview(overviewRes.data);
+      setTopProClicks(proRes.data);
+      setNavClicks(navRes.data);
+      setRegisterClicks(regRes.data);
+    } catch {
+      // Non-critical — keep dashboard resilient
+    }
+  }, []);
 
   const fetchDashboardData = useCallback(async (showRefresh = false) => {
     try {
@@ -253,6 +276,12 @@ function AdminDashboardPageContent() {
     }
   }, [isAuthenticated, fetchDashboardData]);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchClickAnalytics(clickAnalyticsDays);
+    }
+  }, [isAuthenticated, clickAnalyticsDays, fetchClickAnalytics]);
+
   // Auto-refresh every 60 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -280,13 +309,13 @@ function AdminDashboardPageContent() {
       case 'user_signup':
         return { name: activity.data.name, action: t('admin.signedUp'), extra: activity.data.role };
       case 'job_created':
-        return { name: activity.data.clientId?.name || 'Client', action: t('admin.posted'), extra: activity.data.title };
+        return { name: activity.data.clientId?.name || t('admin.client'), action: t('admin.posted'), extra: activity.data.title };
       case 'proposal_sent':
-        return { name: activity.data.proId?.name || 'Pro', action: t('admin.sentProposal'), extra: '' };
+        return { name: activity.data.proId?.name || t('admin.pro'), action: t('admin.sentProposal'), extra: '' };
       case 'ticket_created':
-        return { name: activity.data.userId?.name || 'User', action: t('admin.openedTicket'), extra: '' };
+        return { name: activity.data.userId?.name || t('admin.user'), action: t('admin.openedTicket'), extra: '' };
       default:
-        return { name: 'System', action: 'activity', extra: '' };
+        return { name: t('notifications.filters.system'), action: t('admin.liveActivity'), extra: '' };
     }
   };
 
@@ -335,8 +364,30 @@ function AdminDashboardPageContent() {
 
   const chartData = getChartData();
   const maxChartValue = Math.max(...chartData.map(d => d.count), 1);
-  const maxCategoryCount = Math.max(...jobsByCategory.map(c => c.count), 1);
-  const maxLocationCount = Math.max(...jobsByLocation.map(l => l.count), 1);
+
+  // Merge categories that resolve to the same label
+  const mergedCategories = (() => {
+    const labelMap = new Map<string, { _id: string; count: number }>();
+    for (const cat of jobsByCategory) {
+      const label = getSafeCategoryLabel(cat._id);
+      const existing = labelMap.get(label);
+      if (existing) {
+        existing.count += cat.count;
+      } else {
+        labelMap.set(label, { _id: cat._id, count: cat.count });
+      }
+    }
+    return Array.from(labelMap.values()).sort((a, b) => b.count - a.count);
+  })();
+
+  // Filter out meaningless locations
+  const cleanedLocations = jobsByLocation.filter(loc => {
+    const id = (loc._id || '').trim();
+    return id.length > 0 && id !== 'unknown' && id !== 'Unknown';
+  });
+
+  const maxCategoryCount = Math.max(...mergedCategories.map(c => c.count), 1);
+  const maxLocationCount = Math.max(...cleanedLocations.map(l => l.count), 1);
 
   if (authLoading || isLoading) {
     return (
@@ -430,7 +481,7 @@ function AdminDashboardPageContent() {
                 <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full animate-pulse" style={{ background: THEME.success }} />
                   <span className="text-[10px] sm:text-xs" style={{ color: THEME.textMuted, fontFamily: "'JetBrains Mono', monospace" }}>
-                    {lastUpdated ? formatTimeAgoCompact(lastUpdated.toISOString(), locale as 'en' | 'ka' | 'ru') : 'syncing...'}
+                    {lastUpdated ? formatTimeAgoCompact(lastUpdated.toISOString(), locale as 'en' | 'ka' | 'ru') : t('common.loading')}
                   </span>
                 </div>
               </div>
@@ -485,13 +536,14 @@ function AdminDashboardPageContent() {
 
       <main className="max-w-[1800px] mx-auto px-3 py-4 sm:px-6 sm:py-8">
         {/* Quick Actions - Prominent at top */}
-        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-8">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 mb-4 sm:mb-8">
           {[
             { label: t('admin.users'), icon: Users, href: '/admin/users', color: THEME.primary, count: stats?.users.total },
             { label: t('admin.approvals'), icon: UserCheck, href: '/admin/pending-pros', color: '#f59e0b', count: pendingProsCount, badge: pendingProsCount > 0 ? pendingProsCount : undefined },
             { label: t('admin.jobs'), icon: Briefcase, href: '/admin/jobs', color: THEME.info, count: stats?.jobs.total },
             { label: t('admin.support'), icon: MessageCircle, href: '/admin/support', color: THEME.warning, count: stats?.support.open, badge: stats?.support.unread },
             { label: t('admin.activityLogs'), icon: ActivityIcon, href: '/admin/activity-logs', color: THEME.success },
+            { label: t('admin.businessQuotes'), icon: Building2, href: '/admin/business-quotes', color: '#8B5CF6' },
           ].map((action, index) => (
             <Link
               key={action.href}
@@ -979,12 +1031,12 @@ function AdminDashboardPageContent() {
                 </div>
               </div>
               <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3">
-                {jobsByCategory.length === 0 ? (
+                {mergedCategories.length === 0 ? (
                   <p className="text-center py-3 sm:py-4 text-xs sm:text-sm" style={{ color: THEME.textMuted }}>
                     {t('admin.noData')}
                   </p>
                 ) : (
-                  jobsByCategory.slice(0, 5).map((cat, i) => (
+                  mergedCategories.slice(0, 5).map((cat, i) => (
                     <div key={`${cat._id || 'unknown'}-${i}`} className="group">
                       <div className="flex items-center justify-between mb-1 sm:mb-1.5">
                         <span className="text-[10px] sm:text-sm truncate" style={{ color: THEME.textMuted }}>
@@ -1032,16 +1084,16 @@ function AdminDashboardPageContent() {
                 </div>
               </div>
               <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3">
-                {jobsByLocation.length === 0 ? (
+                {cleanedLocations.length === 0 ? (
                   <p className="text-center py-3 sm:py-4 text-xs sm:text-sm" style={{ color: THEME.textMuted }}>
                     {t('admin.noData')}
                   </p>
                 ) : (
-                  jobsByLocation.slice(0, 5).map((loc, i) => (
+                  cleanedLocations.slice(0, 5).map((loc, i) => (
                     <div key={`${loc._id || 'unknown'}-${i}`} className="group">
                       <div className="flex items-center justify-between mb-1 sm:mb-1.5">
                         <span className="text-[10px] sm:text-sm truncate" style={{ color: THEME.textMuted }}>
-                          {loc._id || t('common.unknown')}
+                          {loc._id}
                         </span>
                         <span
                           className="text-[10px] sm:text-xs font-medium ml-1 sm:ml-2"
@@ -1129,7 +1181,7 @@ function AdminDashboardPageContent() {
                                THEME.primary,
                       }}
                     >
-                      {user.role}
+                      {user.role === 'pro' ? t('admin.pro') : user.role === 'client' ? t('admin.client') : user.role}
                     </span>
                   </div>
                 ))
@@ -1218,13 +1270,268 @@ function AdminDashboardPageContent() {
                                  THEME.textDim,
                         }}
                       >
-                        {job.status}
+                        {t(`status.${job.status === 'in_progress' ? 'inProgress' : job.status}`) || job.status}
                       </span>
                     </div>
                   </div>
                   );
                 })
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Click Analytics Section */}
+        <div
+          className="rounded-xl sm:rounded-2xl p-3 sm:p-6 mb-4 sm:mb-8"
+          style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4 sm:mb-6">
+            <div className="flex items-center gap-2">
+              <MousePointer className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: THEME.primary }} />
+              <h3 className="text-sm sm:text-lg font-semibold" style={{ color: THEME.text }}>
+                {t('admin.clickAnalytics')}
+              </h3>
+            </div>
+            <div
+              className="flex items-center gap-0.5 sm:gap-1 p-0.5 sm:p-1 rounded-lg sm:rounded-xl self-start sm:self-auto"
+              style={{ background: THEME.surface }}
+            >
+              {([7, 30, 90] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setClickAnalyticsDays(d)}
+                  className="px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium transition-all"
+                  style={{
+                    background: clickAnalyticsDays === d ? THEME.primary : 'transparent',
+                    color: clickAnalyticsDays === d ? 'white' : THEME.textMuted,
+                  }}
+                >
+                  {d}{t('admin.analyticsDay')}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Overview pills */}
+          {clickOverview.length > 0 && (
+            <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
+              {clickOverview.map((item) => {
+                const colorMap: Record<string, string> = {
+                  pro_click: THEME.primary,
+                  nav_click: THEME.info,
+                  register_click: THEME.warning,
+                };
+                const labelMap: Record<string, string> = {
+                  pro_click: t('admin.proClicks'),
+                  nav_click: t('admin.navClicks'),
+                  register_click: t('admin.registerClicks'),
+                };
+                const color = colorMap[item.event] || THEME.textMuted;
+                return (
+                  <div
+                    key={item.event}
+                    className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl"
+                    style={{ background: `${color}15`, border: `1px solid ${color}30` }}
+                  >
+                    <span className="text-[10px] sm:text-xs font-medium" style={{ color }}>{labelMap[item.event] || item.event}</span>
+                    <span
+                      className="text-xs sm:text-sm font-bold"
+                      style={{ color: THEME.text, fontFamily: "'JetBrains Mono', monospace" }}
+                    >
+                      {item.count.toLocaleString()}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6">
+            {/* Top Clicked Professionals */}
+            <div
+              className="rounded-xl sm:rounded-2xl overflow-hidden"
+              style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+            >
+              <div
+                className="px-3 py-2.5 sm:px-5 sm:py-4 flex items-center justify-between"
+                style={{ borderBottom: `1px solid ${THEME.border}` }}
+              >
+                <h4 className="font-semibold text-xs sm:text-sm" style={{ color: THEME.text }}>
+                  {t('admin.topClickedPros')}
+                </h4>
+              </div>
+              <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3">
+                {topProClicks.length === 0 ? (
+                  <p className="text-center py-3 sm:py-4 text-xs sm:text-sm" style={{ color: THEME.textMuted }}>
+                    {t('admin.noAnalyticsData')}
+                  </p>
+                ) : (
+                  topProClicks.map((item, i) => {
+                    const maxCount = topProClicks[0]?.count || 1;
+                    return (
+                      <div key={item.target} className="group">
+                        <div className="flex items-center justify-between mb-1 sm:mb-1.5">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span
+                              className="text-[10px] sm:text-xs font-medium w-4 text-center"
+                              style={{ color: THEME.textDim }}
+                            >
+                              {i + 1}
+                            </span>
+                            <Link
+                              href={`/professionals/${item.target}`}
+                              className="text-[10px] sm:text-sm truncate hover:underline"
+                              style={{ color: THEME.text }}
+                            >
+                              {item.label || item.target}
+                            </Link>
+                          </div>
+                          <span
+                            className="text-[10px] sm:text-xs font-medium ml-2"
+                            style={{ color: THEME.primary, fontFamily: "'JetBrains Mono', monospace" }}
+                          >
+                            {item.count}
+                          </span>
+                        </div>
+                        <div
+                          className="h-1 sm:h-1.5 rounded-full overflow-hidden"
+                          style={{ background: `${THEME.primary}10` }}
+                        >
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${(item.count / maxCount) * 100}%`,
+                              background: `linear-gradient(90deg, ${THEME.primary}, ${THEME.accent})`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Navigation Clicks */}
+            <div
+              className="rounded-xl sm:rounded-2xl overflow-hidden"
+              style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+            >
+              <div
+                className="px-3 py-2.5 sm:px-5 sm:py-4 flex items-center justify-between"
+                style={{ borderBottom: `1px solid ${THEME.border}` }}
+              >
+                <h4 className="font-semibold text-xs sm:text-sm" style={{ color: THEME.text }}>
+                  {t('admin.navigationClicks')}
+                </h4>
+              </div>
+              <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3">
+                {navClicks.length === 0 ? (
+                  <p className="text-center py-3 sm:py-4 text-xs sm:text-sm" style={{ color: THEME.textMuted }}>
+                    {t('admin.noAnalyticsData')}
+                  </p>
+                ) : (
+                  navClicks.map((item) => {
+                    const maxCount = navClicks[0]?.count || 1;
+                    return (
+                      <div key={item.target} className="group">
+                        <div className="flex items-center justify-between mb-1 sm:mb-1.5">
+                          <span className="text-[10px] sm:text-sm truncate" style={{ color: THEME.text }}>
+                            {item.target}
+                          </span>
+                          <span
+                            className="text-[10px] sm:text-xs font-medium ml-2"
+                            style={{ color: THEME.info, fontFamily: "'JetBrains Mono', monospace" }}
+                          >
+                            {item.count}
+                          </span>
+                        </div>
+                        <div
+                          className="h-1 sm:h-1.5 rounded-full overflow-hidden"
+                          style={{ background: `${THEME.info}10` }}
+                        >
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${(item.count / maxCount) * 100}%`,
+                              background: `linear-gradient(90deg, ${THEME.info}, ${THEME.info}80)`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Register Type Breakdown */}
+            <div
+              className="rounded-xl sm:rounded-2xl overflow-hidden"
+              style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
+            >
+              <div
+                className="px-3 py-2.5 sm:px-5 sm:py-4 flex items-center justify-between"
+                style={{ borderBottom: `1px solid ${THEME.border}` }}
+              >
+                <h4 className="font-semibold text-xs sm:text-sm" style={{ color: THEME.text }}>
+                  {t('admin.registerTypeBreakdown')}
+                </h4>
+              </div>
+              <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3">
+                {registerClicks.length === 0 ? (
+                  <p className="text-center py-3 sm:py-4 text-xs sm:text-sm" style={{ color: THEME.textMuted }}>
+                    {t('admin.noAnalyticsData')}
+                  </p>
+                ) : (
+                  registerClicks.map((item) => {
+                    const totalRegClicks = registerClicks.reduce((s, r) => s + r.count, 0);
+                    const pct = totalRegClicks > 0 ? Math.round((item.count / totalRegClicks) * 100) : 0;
+                    const colorMap: Record<string, string> = {
+                      pro: THEME.info,
+                      client: THEME.primary,
+                      'from-login-modal': THEME.warning,
+                    };
+                    const color = colorMap[item.target] || THEME.textMuted;
+                    return (
+                      <div key={item.target} className="group">
+                        <div className="flex items-center justify-between mb-1 sm:mb-1.5">
+                          <span className="text-[10px] sm:text-sm truncate" style={{ color: THEME.text }}>
+                            {item.target}
+                          </span>
+                          <span className="flex items-center gap-1.5 sm:gap-2">
+                            <span
+                              className="text-[10px] sm:text-xs"
+                              style={{ color: THEME.textDim }}
+                            >
+                              {pct}%
+                            </span>
+                            <span
+                              className="text-[10px] sm:text-xs font-medium"
+                              style={{ color, fontFamily: "'JetBrains Mono', monospace" }}
+                            >
+                              {item.count}
+                            </span>
+                          </span>
+                        </div>
+                        <div
+                          className="h-1 sm:h-1.5 rounded-full overflow-hidden"
+                          style={{ background: `${color}10` }}
+                        >
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${pct}%`,
+                              background: color,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
           </div>
         </div>

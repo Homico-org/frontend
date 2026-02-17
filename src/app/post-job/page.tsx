@@ -203,7 +203,7 @@ function PostJobPageContent() {
 
   // Auth check
   useEffect(() => {
-    const canPostJob = user?.role === "client" || user?.role === "pro" || user?.role === "company" || user?.role === "admin";
+    const canPostJob = user?.role === "client" || user?.role === "pro" || user?.role === "admin";
     if (!authLoading && (!isAuthenticated || !canPostJob)) {
       openLoginModal("/post-job");
     }
@@ -1168,7 +1168,7 @@ function PostJobPageContent() {
 
 export default function PostJobPage() {
   return (
-    <AuthGuard allowedRoles={["client", "pro", "company", "admin"]}>
+    <AuthGuard allowedRoles={["client", "pro", "admin"]}>
       <Suspense
         fallback={
           <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">

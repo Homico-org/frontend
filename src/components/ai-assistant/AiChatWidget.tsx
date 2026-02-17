@@ -132,7 +132,9 @@ export default function AiChatWidget() {
   // Initialize FAB position
   useEffect(() => {
     if (fabPosition === null && typeof window !== 'undefined') {
-      setFabPosition({ x: window.innerWidth - 80, y: window.innerHeight - 160 });
+      const isMobile = window.innerWidth < 1024;
+      const bottomOffset = isMobile ? 240 : 160; // extra space on mobile for bottom nav
+      setFabPosition({ x: window.innerWidth - 80, y: window.innerHeight - bottomOffset });
     }
   }, [fabPosition]);
 
@@ -141,7 +143,9 @@ export default function AiChatWidget() {
     const midX = window.innerWidth / 2;
     const fabSize = 64;
     const margin = 16;
-    const maxY = window.innerHeight - fabSize - margin;
+    const isMobile = window.innerWidth < 1024;
+    const bottomNavHeight = isMobile ? 80 : 0; // account for mobile bottom nav
+    const maxY = window.innerHeight - fabSize - margin - bottomNavHeight;
     const minY = margin + 56; // below header
 
     const clampedY = Math.max(minY, Math.min(maxY, y));
@@ -360,6 +364,9 @@ export default function AiChatWidget() {
   };
 
   const currentPrompts = quickPrompts[locale as keyof typeof quickPrompts] || quickPrompts.en;
+
+  // Hide on admin pages
+  if (pathname?.startsWith('/admin')) return null;
 
   return (
     <>

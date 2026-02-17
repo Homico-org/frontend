@@ -27,7 +27,6 @@ interface User {
   selectedSubcategories?: string[];
   selectedServices?: SelectedService[];
   accountType?: AccountType;
-  companyName?: string;
   isProfileCompleted?: boolean;
   verificationStatus?: 'pending' | 'submitted' | 'verified' | 'rejected';
 }
@@ -90,7 +89,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         selectedSubcategories: userData.selectedSubcategories,
         selectedServices: userData.selectedServices,
         accountType: userData.accountType,
-        companyName: userData.companyName,
         isProfileCompleted: userData.isProfileCompleted,
         verificationStatus: userData.verificationStatus
       };

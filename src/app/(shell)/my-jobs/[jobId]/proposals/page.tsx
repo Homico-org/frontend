@@ -751,7 +751,7 @@ function ProposalCard({
 
 export default function ProposalsPage() {
   return (
-    <AuthGuard allowedRoles={["client", "pro", "company", "admin"]}>
+    <AuthGuard allowedRoles={["client", "pro", "admin"]}>
       <Suspense
         fallback={
           <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">

@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
 import { AnalyticsEvent, useAnalytics } from '@/hooks/useAnalytics';
+import { trackEvent as trackClick } from '@/hooks/useTracker';
 import { Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -99,8 +100,6 @@ export default function LoginModal() {
       if (redirectPath) {
         router.push(redirectPath);
         clearRedirectPath();
-      } else if (data.user.role === 'company') {
-        router.push('/company/jobs');
       } else if (data.user.role === 'admin') {
         router.push('/admin');
       }
@@ -236,7 +235,7 @@ export default function LoginModal() {
                 {locale === 'ka' ? 'არ გაქვს ანგარიში?' : "Don't have an account?"}{' '}
                 <Link
                   href="/register"
-                  onClick={closeLoginModal}
+                  onClick={() => { closeLoginModal(); trackClick('register_click', 'from-login-modal'); }}
                   className="font-semibold text-[#E07B4F] hover:text-[#C4735B] active:opacity-70 transition-colors"
                 >
                   {t('auth.signUp')}

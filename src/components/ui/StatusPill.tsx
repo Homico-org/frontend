@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { BadgeCheck, Star, Sparkles, Clock, AlertTriangle, CheckCircle, Zap } from 'lucide-react';
-import { COMPANY_ACCENT } from '@/constants/theme';
+import { ACCENT_COLOR } from '@/constants/theme';
 
 export type StatusPillVariant =
   | 'verified'
@@ -158,8 +158,8 @@ export function StatusPill({
   const usesThemeColor = variant === 'premium' || variant === 'homico';
   const themeStyle = usesThemeColor
     ? {
-        backgroundColor: `${COMPANY_ACCENT}15`,
-        color: COMPANY_ACCENT,
+        backgroundColor: `${ACCENT_COLOR}15`,
+        color: ACCENT_COLOR,
       }
     : undefined;
 

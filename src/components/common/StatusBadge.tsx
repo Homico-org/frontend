@@ -2,7 +2,7 @@
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ProStatus } from '@/types';
-import { COMPANY_ACCENT } from '@/constants/theme';
+import { ACCENT_COLOR } from '@/constants/theme';
 
 interface StatusBadgeProps {
   status: ProStatus | 'active' | 'busy' | 'away';
@@ -16,14 +16,14 @@ const getStatusConfig = (status: string) => {
   const configs = {
     active: {
       colorClass: '', // Use inline style for theme color
-      colorStyle: { backgroundColor: COMPANY_ACCENT },
+      colorStyle: { backgroundColor: ACCENT_COLOR },
       ring: `ring-2`,
-      ringStyle: { '--tw-ring-color': `${COMPANY_ACCENT}4D` } as React.CSSProperties,
+      ringStyle: { '--tw-ring-color': `${ACCENT_COLOR}4D` } as React.CSSProperties,
       glow: 'shadow-sm',
-      glowStyle: { '--tw-shadow-color': `${COMPANY_ACCENT}66` } as React.CSSProperties,
+      glowStyle: { '--tw-shadow-color': `${ACCENT_COLOR}66` } as React.CSSProperties,
       labelKa: 'აქტიური',
       labelEn: 'Active',
-      textStyle: { color: COMPANY_ACCENT },
+      textStyle: { color: ACCENT_COLOR },
     },
     busy: {
       colorClass: 'bg-amber-500',

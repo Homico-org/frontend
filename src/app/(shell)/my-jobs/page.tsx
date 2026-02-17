@@ -731,7 +731,7 @@ export default function MyJobsPage() {
   const embedded = true;
 
   return (
-    <AuthGuard allowedRoles={["client", "pro", "company", "admin"]}>
+    <AuthGuard allowedRoles={["client", "pro", "admin"]}>
       <Suspense
         fallback={
           <div

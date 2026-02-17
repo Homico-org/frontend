@@ -2,7 +2,7 @@
 export { PRO_STEPS, useRegistration } from './useRegistration';
 export type {
     AuthMethod, FormData,
-    PortfolioProject, RegistrationStep, StepConfig, UseRegistrationReturn, VerificationChannel
+    PortfolioProject, RegistrationStep, StepConfig, UseRegistrationOptions, UseRegistrationReturn, VerificationChannel
 } from './useRegistration';
 
 // New simplified Pro registration hook

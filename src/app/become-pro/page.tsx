@@ -381,7 +381,6 @@ export default function BecomeProPage() {
           phone: data.user.phone,
           selectedCategories: data.user.selectedCategories,
           accountType: data.user.accountType,
-          companyName: data.user.companyName,
         });
 
         // Update avatar in context

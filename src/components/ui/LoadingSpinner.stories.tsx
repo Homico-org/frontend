@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs';
 import { LoadingSpinner, LoadingSpinnerCentered } from './LoadingSpinner';
-import { ACCENT_COLOR, COMPANY_ACCENT } from '@/constants/theme';
+import { ACCENT_COLOR } from '@/constants/theme';
 
 const meta: Meta<typeof LoadingSpinner> = {
   title: 'UI/LoadingSpinner',
@@ -61,13 +61,6 @@ export const AccentColor: Story = {
   args: {
     size: 'lg',
     color: ACCENT_COLOR,
-  },
-};
-
-export const CompanyAccent: Story = {
-  args: {
-    size: 'lg',
-    color: COMPANY_ACCENT,
   },
 };
 

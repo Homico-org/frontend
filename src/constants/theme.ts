@@ -9,9 +9,6 @@ export const ACCENT_HOVER = '#B5624A';
 export const ACCENT_LIGHT = '#E8A593';
 export const ACCENT_DARK = '#A85D4A';
 
-// Company/dashboard variant (warmer orange-terracotta)
-export const COMPANY_ACCENT = '#E07B4F';
-export const COMPANY_ACCENT_HOVER = '#D26B3F';
 
 /**
  * Terracotta color palette for light/general components
@@ -104,8 +101,6 @@ export const SHADOWS = {
     primary: '0 2px 8px rgba(196, 115, 91, 0.3)',
     primaryHover: '0 4px 12px rgba(196, 115, 91, 0.4)',
     secondary: '0 1px 2px rgba(0, 0, 0, 0.05)',
-    company: '0 2px 8px rgba(224, 123, 79, 0.3)',
-    companyHover: '0 4px 12px rgba(224, 123, 79, 0.4)',
   },
   // Card shadows
   card: {
@@ -140,7 +135,6 @@ export const GRADIENTS = {
   // Button/accent gradients
   accent: {
     primary: 'linear-gradient(135deg, #C4735B 0%, #A85D4A 100%)',
-    company: 'linear-gradient(135deg, #E07B4F 0%, #B86349 100%)',
     premium: 'linear-gradient(90deg, #E07B4F 0%, #E8956A 50%, #E07B4F 100%)',
     success: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)',
     error: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',

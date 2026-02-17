@@ -12,7 +12,8 @@ import { motion } from "framer-motion";
 import { Briefcase, CheckCircle2, Clock, Eye, Sparkles, Wallet } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { trackEvent } from "@/hooks/useTracker";
 
 const STATUS_CONFIG = {
   [ProStatus.ACTIVE]: {
@@ -206,10 +207,14 @@ export default function ProCard({
 
   const viewsCount = profile.profileViewCount ?? 0;
 
+  const handleClick = useCallback(() => {
+    trackEvent('pro_click', profile.id, profile.name);
+  }, [profile.id, profile.name]);
+
   // Default/Compact variant
   if (variant === "compact" || variant === "default") {
     return (
-      <Link href={`/professionals/${profile.id}`} className="group block h-full">
+      <Link href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick}>
         {/* Card Container with Premium Effects */}
         <motion.div
           className={`relative transition-all duration-500 h-full ${isPremium ? 'game-card-premium' : ''}`}
@@ -487,7 +492,7 @@ export default function ProCard({
   // Horizontal variant - Enhanced
   if (variant === "horizontal") {
     return (
-      <Link href={`/professionals/${profile.id}`} className="group block h-full">
+      <Link href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick}>
         <motion.div
           className={`relative transition-all duration-500 h-full ${isPremium ? 'game-card-premium' : ''}`}
           initial={{ opacity: 0, x: -20 }}

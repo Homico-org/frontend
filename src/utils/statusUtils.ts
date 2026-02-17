@@ -9,7 +9,7 @@ import type { Locale } from '@/utils/dateUtils';
 export type JobStatus = 'open' | 'pending' | 'assigned' | 'in_progress' | 'review' | 'completed' | 'cancelled' | 'closed';
 
 // User role types
-export type UserRole = 'client' | 'pro' | 'company' | 'admin';
+export type UserRole = 'client' | 'pro' | 'admin';
 
 // Proposal status types
 export type ProposalStatus = 'pending' | 'accepted' | 'rejected' | 'withdrawn';
@@ -164,8 +164,6 @@ export function getAdminRoleColor(role: string): string {
       return ADMIN_THEME.error;
     case 'pro':
       return ADMIN_THEME.info;
-    case 'company':
-      return '#8B5CF6'; // Purple for companies
     case 'client':
     default:
       return ADMIN_THEME.primary;
@@ -179,7 +177,7 @@ export function getAdminRoleLabel(role: string, locale: Locale = 'en'): string {
   const labels: Record<string, { en: string; ka: string; ru: string }> = {
     admin: { en: 'Admin', ka: 'ადმინი', ru: 'Админ' },
     pro: { en: 'Pro', ka: 'პროფესიონალი', ru: 'Специалист' },
-    company: { en: 'Company', ka: 'კომპანია', ru: 'Компания' },
+
     client: { en: 'Client', ka: 'კლიენტი', ru: 'Клиент' },
   };
   return labels[role]?.[locale] || role;

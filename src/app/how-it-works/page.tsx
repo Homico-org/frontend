@@ -327,7 +327,7 @@ export default function HowItWorksPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href={activeTab === 'client' ? '/post-job' : '/auth/register?type=pro'}
+              href={activeTab === 'client' ? '/post-job' : '/register/professional'}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[#C4735B] to-[#A85A45] text-white font-medium shadow-lg shadow-[#C4735B]/20 hover:shadow-xl hover:shadow-[#C4735B]/30 transition-all hover:scale-105"
             >
               {activeTab === 'client'

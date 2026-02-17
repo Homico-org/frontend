@@ -24,7 +24,7 @@ export default function FeedSection({
 }: FeedSectionProps) {
   const { t, locale } = useLanguage();
   const { user, isAuthenticated } = useAuth();
-  const isPro = user?.role === "pro" || user?.role === "company";
+  const isPro = user?.role === "pro";
   const isClient = user?.role === "client";
   const { searchQuery, sortBy, selectedCity, selectedSubcategory } =
     useBrowseContext();

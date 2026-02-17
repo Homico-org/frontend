@@ -46,7 +46,7 @@ interface User {
   name: string;
   email: string;
   phone?: string;
-  role: "client" | "pro" | "company" | "admin";
+  role: "client" | "pro" | "admin";
   avatar?: string;
   isVerified?: boolean;
   isActive?: boolean;
@@ -104,7 +104,6 @@ function AdminUsersPageContent() {
       const id = getUserId(u);
       if (!id) return null;
       if (u.role === "pro") return `/professionals/${id}`;
-      if (u.role === "company") return `/companies/${id}`;
       return `/users/${id}`;
     },
     [getUserId]
@@ -240,7 +239,6 @@ function AdminUsersPageContent() {
       { label: t("admin.totalUsers"), value: stats?.total || 0, icon: Users, color: THEME.primary, role: "all" },
       { label: t("admin.clients"), value: stats?.clients || 0, icon: UserCheck, color: THEME.success, role: "client" },
       { label: t("admin.professionals"), value: stats?.pros || 0, icon: Shield, color: THEME.info, role: "pro" },
-      { label: t("admin.companies"), value: stats?.companies || 0, icon: Building2, color: "#8B5CF6", role: "company" },
     ],
     [stats?.clients, stats?.companies, stats?.pros, stats?.total, t]
   );
@@ -258,7 +256,7 @@ function AdminUsersPageContent() {
       );
     }
 
-    if (user.role === "pro" || user.role === "company") {
+    if (user.role === "pro") {
       if (user.verificationStatus === "submitted") {
         return (
           <button

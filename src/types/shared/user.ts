@@ -27,12 +27,6 @@ export interface PaymentMethod {
   createdAt: string;
 }
 
-export interface CompanyRef {
-  id?: string;
-  name: string;
-  logo?: string;
-  role?: string;
-}
 
 export interface PortfolioProject {
   id: string;
@@ -82,7 +76,7 @@ export interface User extends BaseEntity {
   phone?: string;
   city?: string;
   accountType?: AccountType;
-  companyName?: string;
+
   selectedCategories?: string[];
   selectedSubcategories?: string[];
   whatsapp?: string;
@@ -102,7 +96,7 @@ export interface PublicUserProfile {
   city?: string;
   role: UserRole;
   accountType?: AccountType;
-  companyName?: string;
+
   createdAt: string;
 }
 
@@ -121,7 +115,7 @@ export interface ProProfile extends BaseEntity {
   avatar?: string;
   city?: string;
   accountType: AccountType;
-  companyName?: string;
+
   
   // Pro-specific fields
   title?: string;
@@ -201,10 +195,6 @@ export interface ProProfile extends BaseEntity {
   websiteUrl?: string;
   whatsapp?: string;
   telegram?: string;
-  
-  // Company associations
-  companies: CompanyRef[];
-  companyId?: string;
   
   // Profile management
   profileType: string;

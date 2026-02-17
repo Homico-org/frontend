@@ -34,8 +34,8 @@ const CUSTOM_LAYOUT_PATHS = [
   '/users/',
   '/pro/premium',
   '/pro/profile-setup',
-  '/company/',
   '/projects/new',
+  '/for-business',
 ];
 
 interface AppLayoutProps {

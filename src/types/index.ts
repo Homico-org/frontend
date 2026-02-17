@@ -25,7 +25,6 @@ export * from './shared';
 // These ensure existing code continues to work during migration
 
 import type {
-  CompanyRef,
   ProProfile as NewProProfile,
   PortfolioItem as NewPortfolioItem,
   FeedItem as NewFeedItem,
@@ -45,21 +44,11 @@ import type {
 // These are kept for backward compatibility but should be migrated
 
 /**
- * @deprecated Use Company from shared types with 'id' instead of '_id'
- */
-export interface LegacyCompany {
-  _id: string;
-  name: string;
-  logo?: string;
-}
-
-/**
  * @deprecated Access pro.id instead of pro._id
  */
-export interface LegacyProProfile extends Omit<NewProProfile, 'id' | 'companies' | 'createdAt' | 'lastLoginAt'> {
+export interface LegacyProProfile extends Omit<NewProProfile, 'id' | 'createdAt' | 'lastLoginAt'> {
   _id: string;
   __v: number;
-  companies: LegacyCompany[];
   createdAt: Date;
   lastLoginAt: Date;
 }
@@ -184,5 +173,3 @@ export interface LegacyNotification extends Omit<NewNotification, 'id' | 'create
 // ============== TYPE ALIASES FOR MIGRATION ==============
 // Allow gradual migration by supporting both patterns
 
-/** @see NewProProfile for the new type with 'id' */
-export type Company = CompanyRef;

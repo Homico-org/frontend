@@ -9,7 +9,7 @@
 export enum UserRole {
   CLIENT = 'client',
   PRO = 'pro',
-  COMPANY = 'company',
+
   ADMIN = 'admin',
 }
 

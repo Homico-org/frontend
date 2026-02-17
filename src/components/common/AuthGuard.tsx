@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 interface AuthGuardProps {
   children: React.ReactNode;
   /** Allowed roles. If not specified, any authenticated user is allowed */
-  allowedRoles?: ('client' | 'pro' | 'company' | 'admin')[];
+  allowedRoles?: ('client' | 'pro' | 'admin')[];
   /** Where to redirect if not authenticated. Defaults to showing login modal */
   redirectTo?: string;
   /** Fallback component while checking auth */

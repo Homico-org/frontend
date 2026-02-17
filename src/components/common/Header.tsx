@@ -9,11 +9,13 @@ import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useClickOutside } from "@/hooks/useClickOutside";
-import { ExternalLink, LogIn, Menu, Plus, UserPlus, X } from "lucide-react";
+import { Building2, ExternalLink, LogIn, Menu, Plus, UserPlus, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { trackEvent } from "@/hooks/useTracker";
 import Avatar from "./Avatar";
 import LanguageSelector from "./LanguageSelector";
 
@@ -106,6 +108,22 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
 
         {/* Right side - Actions + Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 min-w-0">
+          {/* For Business link - desktop only */}
+          <Link
+            href="/for-business"
+            onClick={() => trackEvent('nav_click', 'for-business')}
+            className={cn(
+              "hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all",
+              pathname === "/for-business"
+                ? "text-neutral-900 dark:text-white"
+                : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
+            )}
+            style={pathname === "/for-business" ? { color: ACCENT_COLOR } : undefined}
+          >
+            <Building2 className="w-3.5 h-3.5" />
+            {t("nav.forBusiness")}
+          </Link>
+
           {/* Language Selector - hidden on mobile when logged out (shown in burger menu) */}
           <div className={!isAuthenticated ? "hidden sm:block" : ""}>
             <LanguageSelector variant="icon" />
@@ -118,6 +136,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
               {/* Notification Bell */}
               <Link
                 href="/notifications"
+                onClick={() => trackEvent('nav_click', 'notifications')}
                 className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 ${
                   isNotificationsActive
                     ? "bg-neutral-200 dark:bg-neutral-700 ring-2 ring-offset-1"
@@ -452,202 +471,20 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                         </Link>
                       )}
 
-                      {/* Company items */}
-                      {user.role === "company" && (
-                        <>
-                          <Link
-                            href="/company/dashboard"
-                            className="group flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 mx-2 rounded-xl"
-                            style={{
-                              background: `linear-gradient(135deg, ${ACCENT_COLOR}12 0%, ${ACCENT_COLOR}08 100%)`,
-                              border: `1px solid ${ACCENT_COLOR}25`,
-                            }}
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            <div
-                              className="w-8 h-8 rounded-lg flex items-center justify-center"
-                              style={{
-                                background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B8654D 100%)`,
-                              }}
-                            >
-                              <svg
-                                className="w-4 h-4 text-white"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                              >
-                                <rect
-                                  x="3"
-                                  y="3"
-                                  width="7"
-                                  height="9"
-                                  rx="1.5"
-                                  strokeWidth={1.5}
-                                />
-                                <rect
-                                  x="14"
-                                  y="3"
-                                  width="7"
-                                  height="5"
-                                  rx="1.5"
-                                  strokeWidth={1.5}
-                                />
-                                <rect
-                                  x="14"
-                                  y="12"
-                                  width="7"
-                                  height="9"
-                                  rx="1.5"
-                                  strokeWidth={1.5}
-                                />
-                                <rect
-                                  x="3"
-                                  y="16"
-                                  width="7"
-                                  height="5"
-                                  rx="1.5"
-                                  strokeWidth={1.5}
-                                />
-                              </svg>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <span
-                                className="font-semibold block"
-                                style={{ color: ACCENT_COLOR }}
-                              >
-                                {t("header.dashboard")}
-                              </span>
-                              <span
-                                className="text-[10px]"
-                                style={{ color: `${ACCENT_COLOR}99` }}
-                              >
-                                {t("header.companyOverview")}
-                              </span>
-                            </div>
-                          </Link>
-                          <Link
-                            href="/company/jobs"
-                            className="group flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
-                              <svg
-                                className="w-4 h-4"
-                                style={{ color: ACCENT_COLOR }}
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M3 21h18M9 7h1M9 11h1M14 7h1M14 11h1M9 21v-4h6v4"
-                                />
-                              </svg>
-                            </div>
-                            <span>{t("header.jobs")}</span>
-                          </Link>
-                          <Link
-                            href="/company/proposals"
-                            className="group flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
-                              <svg
-                                className="w-4 h-4"
-                                style={{ color: ACCENT_COLOR }}
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                />
-                              </svg>
-                            </div>
-                            <span>{t("header.proposals")}</span>
-                          </Link>
-                          <Link
-                            href="/company/employees"
-                            className="group flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
-                              <svg
-                                className="w-4 h-4"
-                                style={{ color: ACCENT_COLOR }}
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                              >
-                                <circle
-                                  cx="12"
-                                  cy="6"
-                                  r="3"
-                                  strokeWidth={1.5}
-                                />
-                                <circle
-                                  cx="5"
-                                  cy="17"
-                                  r="2.5"
-                                  strokeWidth={1.5}
-                                />
-                                <circle
-                                  cx="19"
-                                  cy="17"
-                                  r="2.5"
-                                  strokeWidth={1.5}
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeWidth={1.5}
-                                  d="M12 9v3M12 12H5v2.5M12 12h7v2.5"
-                                />
-                              </svg>
-                            </div>
-                            <span>{t("header.employees")}</span>
-                          </Link>
-                          <Link
-                            href="/company/settings"
-                            className="group flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
-                              <svg
-                                className="w-4 h-4"
-                                style={{ color: ACCENT_COLOR }}
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
-                              </svg>
-                            </div>
-                            <span>{t("common.settings")}</span>
-                          </Link>
-                        </>
-                      )}
+                      {/* For Business */}
+                      <Link
+                        href="/for-business"
+                        className="group flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
+                        onClick={() => setShowDropdown(false)}
+                      >
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
+                          <Building2
+                            className="w-4 h-4"
+                            style={{ color: ACCENT_COLOR }}
+                          />
+                        </div>
+                        <span>{t("nav.forBusiness")}</span>
+                      </Link>
 
                       <div className="my-2 mx-4 h-px bg-neutral-200 dark:bg-neutral-700" />
 
@@ -655,7 +492,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                       <Link
                         href="/settings"
                         className="group flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
-                        onClick={() => setShowDropdown(false)}
+                        onClick={() => { setShowDropdown(false); trackEvent('nav_click', 'settings'); }}
                       >
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
                           <svg
@@ -730,12 +567,12 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => openLoginModal()}
+                  onClick={() => { openLoginModal(); trackEvent('nav_click', 'login'); }}
                 >
                   {t("common.login")}
                 </Button>
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="/register">{t("header.signUp")}</Link>
+                  <Link href="/register" onClick={() => trackEvent('nav_click', 'register')}>{t("header.signUp")}</Link>
                 </Button>
               </div>
 
@@ -744,13 +581,13 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                 <Button
                   variant="secondary"
                   size="icon-sm"
-                  onClick={() => openLoginModal()}
+                  onClick={() => { openLoginModal(); trackEvent('nav_click', 'login'); }}
                   title={t("common.login")}
                 >
                   <LogIn className="w-4 h-4" />
                 </Button>
                 <Button size="icon-sm" asChild title={t("header.signUp")}>
-                  <Link href="/register">
+                  <Link href="/register" onClick={() => trackEvent('nav_click', 'register')}>
                     <UserPlus className="w-4 h-4" />
                   </Link>
                 </Button>
@@ -930,7 +767,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
               {/* Browse link */}
               <Link
                 href={homeHref}
-                onClick={() => setShowMobileMenu(false)}
+                onClick={() => { setShowMobileMenu(false); trackEvent('nav_click', 'browse'); }}
                 className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-all"
               >
                 <svg
@@ -948,6 +785,18 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                 </svg>
                 <span className="text-sm text-neutral-600 dark:text-neutral-400">
                   {t("header.browseProfessionals")}
+                </span>
+              </Link>
+
+              {/* For Business link */}
+              <Link
+                href="/for-business"
+                onClick={() => { setShowMobileMenu(false); trackEvent('nav_click', 'for-business'); }}
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-all"
+              >
+                <Building2 className="w-5 h-5 text-neutral-500" />
+                <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                  {t("nav.forBusiness")}
                 </span>
               </Link>
             </div>

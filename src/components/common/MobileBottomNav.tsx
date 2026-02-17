@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Briefcase, Calculator, FileText, Images, LayoutDashboard, Plus, Search, Users } from 'lucide-react';
+import { Briefcase, Images, LayoutDashboard, Plus, Search, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
@@ -130,6 +130,7 @@ export default function MobileBottomNav({ extraAction }: MobileBottomNavProps) {
 
   // Determine active tab
   const getActiveKey = () => {
+    // Pro/client routes
     if (pathname.includes('/my-space')) return 'my-space';
     if (pathname.includes('/tools')) return isPro ? 'tools-pro' : '';
     if (pathname.includes('/my-work')) return isPro ? 'my-space' : '';
