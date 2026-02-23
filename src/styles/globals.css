@@ -10115,3 +10115,47 @@ img:not(.loading) {
   border-top: 0px solid transparent;
   border-bottom: 3px solid transparent;
 }
+
+/* Admin Quill dark theme overrides */
+.admin-quill .ql-toolbar.ql-snow {
+  background: #1a1d23;
+  border: none;
+  border-bottom: 1px solid #2a2d35;
+  padding: 4px 8px;
+}
+.admin-quill .ql-container.ql-snow {
+  background: #12141a;
+  border: none;
+  color: #e0e0e0;
+  font-size: 13px;
+  min-height: 80px;
+}
+.admin-quill .ql-editor {
+  min-height: 80px;
+  padding: 8px 12px;
+}
+.admin-quill .ql-editor.ql-blank::before {
+  color: #555;
+  font-style: normal;
+}
+.admin-quill .ql-snow .ql-stroke {
+  stroke: #888;
+}
+.admin-quill .ql-snow .ql-fill {
+  fill: #888;
+}
+.admin-quill .ql-snow .ql-picker-label {
+  color: #888;
+}
+.admin-quill .ql-snow button:hover .ql-stroke,
+.admin-quill .ql-snow button.ql-active .ql-stroke {
+  stroke: #C4735B;
+}
+.admin-quill .ql-snow button:hover .ql-fill,
+.admin-quill .ql-snow button.ql-active .ql-fill {
+  fill: #C4735B;
+}
+.admin-quill .ql-snow .ql-picker-options {
+  background: #1a1d23;
+  border-color: #2a2d35;
+}

@@ -2249,6 +2249,7 @@
     "descEn": "Description (English)",
     "descKa": "Description (Georgian)",
     "descRu": "Description (Russian)",
+    "description": "Description",
     "seedCatalog": "Seed from Mobile Data",
     "seedSuccess": "Catalog seeded successfully",
     "seedConfirmation": "This will populate the database from the mobile app's hardcoded catalog data. Existing categories will be updated.",
