@@ -34,7 +34,7 @@ interface SupportMessage {
     _id: string;
     name: string;
     avatar?: string;
-  };
+  } | string;
   content: string;
   isAdmin: boolean;
   status?: SupportMessageStatus;
@@ -69,6 +69,44 @@ interface TicketStats {
 }
 
 type StatusFilter = 'all' | 'open' | 'in_progress' | 'resolved' | 'closed';
+
+function normalizeSupportMessage(raw: any, fallbackUser?: SupportTicket['userId']): SupportMessage {
+  const senderRaw = raw?.senderId;
+  const senderId =
+    typeof senderRaw === 'string'
+      ? { _id: senderRaw, name: raw?.isAdmin ? 'Admin' : (fallbackUser?.name || 'User') }
+      : {
+          _id: senderRaw?._id?.toString?.() || senderRaw?.toString?.() || '',
+          name: senderRaw?.name || (raw?.isAdmin ? 'Admin' : (fallbackUser?.name || 'User')),
+          avatar: senderRaw?.avatar,
+        };
+
+  return {
+    _id: raw?._id?.toString?.() || raw?.id?.toString?.() || undefined,
+    senderId,
+    content: raw?.content || '',
+    isAdmin: Boolean(raw?.isAdmin),
+    status: raw?.status,
+    createdAt: raw?.createdAt || new Date().toISOString(),
+  };
+}
+
+function normalizeSupportTicket(raw: any): SupportTicket {
+  const normalizedMessages = Array.isArray(raw?.messages)
+    ? raw.messages.map((msg: any) => normalizeSupportMessage(msg, raw?.userId))
+    : [];
+
+  return {
+    ...raw,
+    _id: raw?._id?.toString?.() || raw?.id?.toString?.(),
+    userId: typeof raw?.userId === 'object' ? raw.userId : { _id: String(raw?.userId || ''), name: 'User', email: '', role: 'client' },
+    messages: normalizedMessages,
+  };
+}
+
+function matchesStatusFilter(ticket: SupportTicket, filter: StatusFilter): boolean {
+  return filter === 'all' || ticket.status === filter;
+}
 
 function AdminSupportPageContent() {
   const { user, isAuthenticated, isLoading: authLoading, token } = useAuth();
@@ -109,6 +147,9 @@ function AdminSupportPageContent() {
       console.log('Admin connected to support WebSocket');
       // Join admin support room for ticket updates
       socketRef.current?.emit("joinAdminSupport");
+      if (previousTicketIdRef.current) {
+        socketRef.current?.emit('joinSupportTicket', previousTicketIdRef.current);
+      }
     });
 
     socketRef.current.on('disconnect', () => {
@@ -117,7 +158,12 @@ function AdminSupportPageContent() {
 
     // Handle new tickets
     socketRef.current.on('supportNewTicket', (ticket: SupportTicket) => {
-      setTickets(prev => [ticket, ...prev]);
+      const normalizedTicket = normalizeSupportTicket(ticket);
+      setTickets(prev => {
+        const next = prev.filter((t) => t._id !== normalizedTicket._id);
+        if (!matchesStatusFilter(normalizedTicket, statusFilter)) return next;
+        return [normalizedTicket, ...next];
+      });
       setStats(prev => prev ? {
         ...prev,
         total: prev.total + 1,
@@ -128,27 +174,43 @@ function AdminSupportPageContent() {
 
     // Handle ticket updates (new messages, status changes)
     socketRef.current.on('supportTicketUpdate', ({ ticketId, ticket }: { ticketId: string; ticket: SupportTicket }) => {
+      const normalizedTicket = normalizeSupportTicket(ticket);
       setTickets(prev => {
         const existing = prev.find(t => t._id === ticketId);
-        if (!existing) return [ticket, ...prev];
-        const merged = { ...existing, ...ticket };
+        if (!existing) {
+          if (!matchesStatusFilter(normalizedTicket, statusFilter)) return prev;
+          return [normalizedTicket, ...prev];
+        }
+        const merged = {
+          ...existing,
+          ...normalizedTicket,
+          messages: normalizedTicket.messages?.length ? normalizedTicket.messages : existing.messages,
+        };
+        if (!matchesStatusFilter(merged, statusFilter)) {
+          return prev.filter((t) => t._id !== ticketId);
+        }
         return [merged, ...prev.filter(t => t._id !== ticketId)];
       });
-      setSelectedTicket(prev => prev?._id === ticketId ? { ...prev, ...ticket } : prev);
+      setSelectedTicket(prev => prev?._id === ticketId ? {
+        ...prev,
+        ...normalizedTicket,
+        messages: normalizedTicket.messages?.length ? normalizedTicket.messages : prev.messages,
+      } : prev);
     });
 
     // Handle new messages in real-time
     socketRef.current.on('supportNewMessage', ({ ticketId, message }: { ticketId: string; message: SupportMessage }) => {
       const isCurrentlyOpen = previousTicketIdRef.current === ticketId;
+      const normalizedMessage = normalizeSupportMessage(message);
 
       setSelectedTicket(prev => {
         if (prev?._id !== ticketId) return prev;
         // Check if message already exists
-        if (prev.messages.some(m => m._id === message._id)) return prev;
+        if (prev.messages.some(m => m._id === normalizedMessage._id)) return prev;
         return {
           ...prev,
-          messages: [...prev.messages, message],
-          hasUnreadUserMessages: message.isAdmin ? prev.hasUnreadUserMessages : false,
+          messages: [...prev.messages, normalizedMessage],
+          hasUnreadUserMessages: normalizedMessage.isAdmin ? prev.hasUnreadUserMessages : false,
         };
       });
 
@@ -157,14 +219,14 @@ function AdminSupportPageContent() {
         let shouldIncrementUnread = false;
         const next = prev.map(t => {
           if (t._id !== ticketId) return t;
-          const nextUnread = message.isAdmin ? t.hasUnreadUserMessages : !isCurrentlyOpen;
-          if (!message.isAdmin && !t.hasUnreadUserMessages && nextUnread) {
+          const nextUnread = normalizedMessage.isAdmin ? t.hasUnreadUserMessages : !isCurrentlyOpen;
+          if (!normalizedMessage.isAdmin && !t.hasUnreadUserMessages && nextUnread) {
             shouldIncrementUnread = true;
           }
           return {
             ...t,
             hasUnreadUserMessages: nextUnread,
-            lastMessageAt: message.createdAt,
+            lastMessageAt: normalizedMessage.createdAt,
           };
         });
         if (shouldIncrementUnread) {
@@ -212,7 +274,7 @@ function AdminSupportPageContent() {
       socketRef.current?.emit("leaveAdminSupport");
       socketRef.current?.disconnect();
     };
-  }, [token, user?.role]);
+  }, [token, user?.role, statusFilter]);
 
   // Join/leave ticket room when selected ticket changes
   useEffect(() => {
