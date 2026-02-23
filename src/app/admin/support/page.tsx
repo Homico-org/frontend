@@ -99,10 +99,10 @@ function AdminSupportPageContent() {
 
     socketRef.current = io(`${backendUrl}/chat`, {
       auth: { token },
-      transports: ['websocket', 'polling'],
+      transports: ['websocket'],
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
+      reconnectionAttempts: 20,
+      reconnectionDelay: 500,
     });
 
     socketRef.current.on('connect', () => {
@@ -128,15 +128,17 @@ function AdminSupportPageContent() {
 
     // Handle ticket updates (new messages, status changes)
     socketRef.current.on('supportTicketUpdate', ({ ticketId, ticket }: { ticketId: string; ticket: SupportTicket }) => {
-      setTickets(prev => prev.map(t => t._id === ticketId ? { ...t, ...ticket } : t));
+      setTickets(prev => {
+        const existing = prev.find(t => t._id === ticketId);
+        if (!existing) return [ticket, ...prev];
+        const merged = { ...existing, ...ticket };
+        return [merged, ...prev.filter(t => t._id !== ticketId)];
+      });
       setSelectedTicket(prev => prev?._id === ticketId ? { ...prev, ...ticket } : prev);
     });
 
     // Handle new messages in real-time
     socketRef.current.on('supportNewMessage', ({ ticketId, message }: { ticketId: string; message: SupportMessage }) => {
-      // Skip if it's our own message (already added optimistically)
-      if (message.isAdmin) return;
-
       const isCurrentlyOpen = previousTicketIdRef.current === ticketId;
 
       setSelectedTicket(prev => {
@@ -146,8 +148,7 @@ function AdminSupportPageContent() {
         return {
           ...prev,
           messages: [...prev.messages, message],
-          // If the admin is viewing the chat, don't let it appear unread locally
-          hasUnreadUserMessages: false,
+          hasUnreadUserMessages: message.isAdmin ? prev.hasUnreadUserMessages : false,
         };
       });
 
@@ -156,8 +157,8 @@ function AdminSupportPageContent() {
         let shouldIncrementUnread = false;
         const next = prev.map(t => {
           if (t._id !== ticketId) return t;
-          const nextUnread = !isCurrentlyOpen;
-          if (!t.hasUnreadUserMessages && nextUnread) {
+          const nextUnread = message.isAdmin ? t.hasUnreadUserMessages : !isCurrentlyOpen;
+          if (!message.isAdmin && !t.hasUnreadUserMessages && nextUnread) {
             shouldIncrementUnread = true;
           }
           return {
@@ -169,7 +170,9 @@ function AdminSupportPageContent() {
         if (shouldIncrementUnread) {
           setStats(s => s ? { ...s, unread: (s.unread || 0) + 1 } : s);
         }
-        return next;
+        const updated = next.find(t => t._id === ticketId);
+        if (!updated) return next;
+        return [updated, ...next.filter(t => t._id !== ticketId)];
       });
 
       // If the admin is currently viewing this ticket, mark it as read on the backend as well

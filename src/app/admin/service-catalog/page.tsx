@@ -18,11 +18,17 @@ import {
   Package,
   Plus,
   Save,
+  Search,
   Trash2,
   X,
 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import 'react-quill-new/dist/quill.snow.css';
+
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -247,6 +253,570 @@ const labelStyle: React.CSSProperties = {
   display: 'block',
 };
 
+// ─── Icon names list (all valid lucide-react icon component names) ────────────
+
+const ALL_ICON_NAMES: string[] = Object.keys(LucideIcons).filter(
+  (key) => {
+    const val = (LucideIcons as Record<string, unknown>)[key];
+    return (
+      typeof val === 'object' &&
+      val !== null &&
+      key[0] === key[0].toUpperCase() &&
+      key !== 'default' &&
+      key !== 'Icon' &&
+      !key.startsWith('Lucide') &&
+      key !== 'createLucideIcon' &&
+      key !== 'icons'
+    );
+  },
+);
+
+function renderLucideIcon(name: string, size = 20, color = THEME.text) {
+  const IconComp = (LucideIcons as Record<string, unknown>)[name] as React.ComponentType<{ size?: number; color?: string }> | undefined;
+  if (!IconComp) return null;
+  return <IconComp size={size} color={color} />;
+}
+
+// ─── IconPickerModal ──────────────────────────────────────────────────────────
+
+function IconPickerModal({
+  open,
+  onClose,
+  onSelect,
+  current,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSelect: (name: string) => void;
+  current: string;
+}) {
+  const [search, setSearch] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) {
+      setSearch('');
+      setTimeout(() => searchRef.current?.focus(), 50);
+    }
+  }, [open]);
+
+  const filtered = useMemo(() => {
+    if (!search) return ALL_ICON_NAMES;
+    const q = search.toLowerCase();
+    return ALL_ICON_NAMES.filter((n) => n.toLowerCase().includes(q));
+  }, [search]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,0.6)',
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: THEME.surfaceLight,
+          border: `1px solid ${THEME.border}`,
+          borderRadius: 12,
+          width: 560,
+          maxWidth: '95vw',
+          maxHeight: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '14px 16px',
+            borderBottom: `1px solid ${THEME.border}`,
+          }}
+        >
+          <span style={{ fontSize: 15, fontWeight: 600, color: THEME.text }}>
+            Select Icon
+          </span>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: THEME.textMuted,
+              padding: 4,
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Search */}
+        <div style={{ padding: '10px 16px', borderBottom: `1px solid ${THEME.border}` }}>
+          <div style={{ position: 'relative' }}>
+            <Search
+              size={15}
+              color={THEME.textDim}
+              style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }}
+            />
+            <input
+              ref={searchRef}
+              style={{ ...inputStyle, paddingLeft: 32 }}
+              placeholder="Search icons..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div style={{ fontSize: 11, color: THEME.textDim, marginTop: 6 }}>
+            {filtered.length} icons {search && `matching "${search}"`}
+          </div>
+        </div>
+
+        {/* Grid */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: 12,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
+            gap: 4,
+            alignContent: 'start',
+          }}
+        >
+          {filtered.map((name) => (
+            <button
+              key={name}
+              onClick={() => {
+                onSelect(name);
+                onClose();
+              }}
+              title={name}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 3,
+                padding: '8px 4px',
+                borderRadius: 8,
+                border: name === current ? `2px solid ${THEME.primary}` : `1px solid transparent`,
+                background: name === current ? `${THEME.primary}20` : 'transparent',
+                cursor: 'pointer',
+                color: THEME.text,
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                if (name !== current) {
+                  e.currentTarget.style.background = THEME.surfaceHover;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (name !== current) {
+                  e.currentTarget.style.background = 'transparent';
+                }
+              }}
+            >
+              {renderLucideIcon(name, 20)}
+              <span
+                style={{
+                  fontSize: 9,
+                  color: THEME.textDim,
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  textAlign: 'center',
+                }}
+              >
+                {name}
+              </span>
+            </button>
+          ))}
+          {filtered.length === 0 && (
+            <div
+              style={{
+                gridColumn: '1 / -1',
+                textAlign: 'center',
+                padding: 32,
+                color: THEME.textDim,
+                fontSize: 13,
+              }}
+            >
+              No icons found
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── IconPickerButton ─────────────────────────────────────────────────────────
+
+function IconPickerButton({
+  value,
+  onChange,
+  label,
+}: {
+  value: string;
+  onChange: (name: string) => void;
+  label?: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div>
+      {label && <label style={labelStyle}>{label}</label>}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        style={{
+          ...inputStyle,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          cursor: 'pointer',
+          textAlign: 'left',
+        }}
+      >
+        {value ? renderLucideIcon(value, 16) : null}
+        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {value || 'Select icon...'}
+        </span>
+        <ChevronDown size={14} color={THEME.textDim} />
+      </button>
+      <IconPickerModal
+        open={open}
+        onClose={() => setOpen(false)}
+        onSelect={onChange}
+        current={value}
+      />
+    </div>
+  );
+}
+
+// ─── ColorPickerModal ─────────────────────────────────────────────────────────
+
+const PROJECT_COLORS: { hex: string; name: string; group: string }[] = [
+  // Category colors
+  { hex: '#3B82F6', name: 'Blue', group: 'Category' },
+  { hex: '#0EA5E9', name: 'Sky', group: 'Category' },
+  { hex: '#EF4444', name: 'Red', group: 'Category' },
+  { hex: '#C4735B', name: 'Terracotta', group: 'Category' },
+  { hex: '#8B5CF6', name: 'Purple', group: 'Category' },
+  { hex: '#F59E0B', name: 'Amber', group: 'Category' },
+  { hex: '#6366F1', name: 'Indigo', group: 'Category' },
+  { hex: '#10B981', name: 'Emerald', group: 'Category' },
+  { hex: '#06B6D4', name: 'Cyan', group: 'Category' },
+  { hex: '#2563EB', name: 'Royal Blue', group: 'Category' },
+  { hex: '#D97706', name: 'Dark Amber', group: 'Category' },
+  // Brand
+  { hex: '#B5624A', name: 'Brand Hover', group: 'Brand' },
+  { hex: '#A85D4A', name: 'Brand Dark', group: 'Brand' },
+  { hex: '#E8A593', name: 'Brand Light', group: 'Brand' },
+  { hex: '#D98B74', name: 'Brand Accent', group: 'Brand' },
+  // Status
+  { hex: '#22C55E', name: 'Success', group: 'Status' },
+  { hex: '#16A34A', name: 'Success Dark', group: 'Status' },
+  { hex: '#DC2626', name: 'Error Dark', group: 'Status' },
+  // Neutral
+  { hex: '#64748B', name: 'Slate', group: 'Neutral' },
+  { hex: '#475569', name: 'Slate Dark', group: 'Neutral' },
+  { hex: '#94A3B8', name: 'Slate Light', group: 'Neutral' },
+  { hex: '#1E293B', name: 'Slate 800', group: 'Neutral' },
+];
+
+function ColorPickerModal({
+  open,
+  onClose,
+  onSelect,
+  current,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSelect: (hex: string) => void;
+  current?: string;
+}) {
+  if (!open) return null;
+
+  const groups = PROJECT_COLORS.reduce<Record<string, typeof PROJECT_COLORS>>((acc, c) => {
+    (acc[c.group] ||= []).push(c);
+    return acc;
+  }, {});
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 10000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,0.6)',
+        backdropFilter: 'blur(4px)',
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: THEME.surface,
+          borderRadius: 12,
+          border: `1px solid ${THEME.border}`,
+          width: 400,
+          maxHeight: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '14px 16px',
+            borderBottom: `1px solid ${THEME.border}`,
+          }}
+        >
+          <span style={{ fontWeight: 600, color: THEME.text, fontSize: 15 }}>Select Color</span>
+          <button
+            onClick={onClose}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: THEME.textDim, padding: 4 }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Color groups */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+          {Object.entries(groups).map(([group, colors]) => (
+            <div key={group} style={{ marginBottom: 16 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: THEME.textDim,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  marginBottom: 8,
+                }}
+              >
+                {group}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: 6 }}>
+                {colors.map((c) => {
+                  const selected = current?.toLowerCase() === c.hex.toLowerCase();
+                  return (
+                    <button
+                      key={c.hex}
+                      onClick={() => {
+                        onSelect(c.hex);
+                        onClose();
+                      }}
+                      title={`${c.name} — ${c.hex}`}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 4,
+                        padding: '8px 4px',
+                        borderRadius: 8,
+                        border: selected ? `2px solid ${THEME.primary}` : `1px solid ${THEME.border}`,
+                        background: selected ? `${THEME.primary}15` : 'transparent',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!selected) e.currentTarget.style.background = THEME.surfaceHover;
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!selected) e.currentTarget.style.background = 'transparent';
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 8,
+                          background: c.hex,
+                          border: selected ? `2px solid white` : `1px solid rgba(255,255,255,0.15)`,
+                          boxShadow: selected ? `0 0 0 2px ${THEME.primary}` : 'none',
+                        }}
+                      />
+                      <span style={{ fontSize: 9, color: THEME.textDim, whiteSpace: 'nowrap' }}>{c.name}</span>
+                      <span style={{ fontSize: 8, color: THEME.textDim, opacity: 0.7, fontFamily: 'monospace' }}>
+                        {c.hex}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ColorPickerButton ────────────────────────────────────────────────────────
+
+function ColorPickerButton({
+  value,
+  onChange,
+  label,
+}: {
+  value: string;
+  onChange: (hex: string) => void;
+  label?: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div>
+      {label && <label style={labelStyle}>{label}</label>}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        style={{
+          ...inputStyle,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          cursor: 'pointer',
+          textAlign: 'left',
+        }}
+      >
+        <div
+          style={{
+            width: 18,
+            height: 18,
+            borderRadius: 4,
+            background: value || '#C4735B',
+            border: '1px solid rgba(255,255,255,0.2)',
+            flexShrink: 0,
+          }}
+        />
+        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: 12 }}>
+          {value || '#C4735B'}
+        </span>
+        <ChevronDown size={14} color={THEME.textDim} />
+      </button>
+      <ColorPickerModal open={open} onClose={() => setOpen(false)} onSelect={onChange} current={value} />
+    </div>
+  );
+}
+
+// ─── LocalizedRichText ────────────────────────────────────────────────────────
+
+const QUILL_MODULES = {
+  toolbar: [
+    ['bold', 'italic', 'underline'],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['clean'],
+  ],
+};
+
+const QUILL_FORMATS = ['bold', 'italic', 'underline', 'list'];
+
+function LocalizedRichText({
+  value,
+  onChange,
+  label,
+}: {
+  value: LocalizedText;
+  onChange: (val: LocalizedText) => void;
+  label?: string;
+}) {
+  const [tab, setTab] = useState<'en' | 'ka' | 'ru'>('en');
+  const valueRef = useRef(value);
+  valueRef.current = value;
+  const langs: Array<{ key: 'en' | 'ka' | 'ru'; label: string }> = [
+    { key: 'en', label: 'EN' },
+    { key: 'ka', label: 'KA' },
+    { key: 'ru', label: 'RU' },
+  ];
+
+  return (
+    <div style={{ marginBottom: 8 }}>
+      {label && <label style={labelStyle}>{label}</label>}
+      <div style={{ display: 'flex', gap: 0, marginBottom: 0 }}>
+        {langs.map((l) => (
+          <button
+            key={l.key}
+            type="button"
+            onClick={() => setTab(l.key)}
+            style={{
+              padding: '4px 12px',
+              fontSize: 11,
+              fontWeight: 600,
+              border: `1px solid ${THEME.border}`,
+              borderBottom: tab === l.key ? 'none' : `1px solid ${THEME.border}`,
+              borderRadius: tab === l.key ? '6px 6px 0 0' : '6px 6px 0 0',
+              background: tab === l.key ? THEME.surfaceLight : 'transparent',
+              color: tab === l.key ? THEME.primary : THEME.textDim,
+              cursor: 'pointer',
+              position: 'relative',
+              zIndex: tab === l.key ? 1 : 0,
+              marginBottom: tab === l.key ? -1 : 0,
+            }}
+          >
+            {l.label}
+            {value[l.key] && value[l.key].replace(/<[^>]*>/g, '').trim() ? (
+              <span style={{ marginLeft: 4, width: 5, height: 5, borderRadius: '50%', background: THEME.success, display: 'inline-block' }} />
+            ) : null}
+          </button>
+        ))}
+      </div>
+      <div
+        className="admin-quill"
+        style={{
+          border: `1px solid ${THEME.border}`,
+          borderRadius: '0 6px 6px 6px',
+          overflow: 'hidden',
+        }}
+      >
+        {langs.map((l) => (
+          <div key={l.key} style={{ display: tab === l.key ? 'block' : 'none' }}>
+            <ReactQuill
+              theme="snow"
+              value={value[l.key] || ''}
+              onChange={(content: string) => {
+                const stripped = content.replace(/<[^>]*>/g, '').trim();
+                onChange({ ...valueRef.current, [l.key]: stripped ? content : '' });
+              }}
+              modules={QUILL_MODULES}
+              formats={QUILL_FORMATS}
+              style={{ minHeight: 100 }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Strip empty description before sending to API */
+function cleanDescription(desc: LocalizedText): LocalizedText | undefined {
+  const hasContent = (s: string) => s && s.replace(/<[^>]*>/g, '').trim().length > 0;
+  if (!hasContent(desc.en) && !hasContent(desc.ka) && !hasContent(desc.ru)) return undefined;
+  return desc;
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function SectionHeader({ title, count }: { title: string; count?: number }) {
@@ -282,6 +852,7 @@ function ServiceRow({
   onDelete: (key: string) => void;
   t: (key: string) => string;
 }) {
+  const { locale } = useLanguage();
   return (
     <div style={{
       display: 'grid',
@@ -295,7 +866,7 @@ function ServiceRow({
       fontSize: 12,
     }}>
       <div>
-        <span style={{ color: THEME.text, fontWeight: 500 }}>{service.label.en}</span>
+        <span style={{ color: THEME.text, fontWeight: 500 }}>{service.label[locale as 'en' | 'ka' | 'ru'] || service.label.en}</span>
         <span style={{ color: THEME.textDim, marginLeft: 6, fontSize: 11 }}>({service.key})</span>
       </div>
       <span style={{ color: THEME.textMuted }}>{service.basePrice}</span>
@@ -332,6 +903,7 @@ function AddonRow({
   onDelete: (key: string) => void;
   t: (key: string) => string;
 }) {
+  const { locale } = useLanguage();
   return (
     <div style={{
       display: 'grid',
@@ -345,7 +917,7 @@ function AddonRow({
       fontSize: 12,
     }}>
       <div>
-        <span style={{ color: THEME.text, fontWeight: 500 }}>{addon.label.en}</span>
+        <span style={{ color: THEME.text, fontWeight: 500 }}>{addon.label[locale as 'en' | 'ka' | 'ru'] || addon.label.en}</span>
         <span style={{ color: THEME.textDim, marginLeft: 6, fontSize: 11 }}>({addon.key})</span>
       </div>
       <span style={{ color: THEME.textMuted }}>{addon.basePrice}</span>
@@ -548,10 +1120,7 @@ function AddonEditForm({
           <label style={labelStyle}>{t('admin.basePrice')}</label>
           <input style={inputStyle} type="number" value={value.basePrice} onChange={e => set('basePrice', e.target.value)} />
         </div>
-        <div>
-          <label style={labelStyle}>{t('admin.iconName')}</label>
-          <input style={inputStyle} value={value.iconName} onChange={e => set('iconName', e.target.value)} />
-        </div>
+        <IconPickerButton value={value.iconName} onChange={v => set('iconName', v)} label={t('admin.iconName')} />
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <button onClick={onCancel} style={{ padding: '6px 14px', borderRadius: 6, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 13 }}>
@@ -801,6 +1370,7 @@ function VariantPanel({
   onDelete: () => void;
   t: (key: string) => string;
 }) {
+  const { locale } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editLabel, setEditLabel] = useState<LocalizedText>(variant.label);
@@ -841,7 +1411,7 @@ function VariantPanel({
       >
         {expanded ? <ChevronDown size={14} color={THEME.textMuted} /> : <ChevronRight size={14} color={THEME.textMuted} />}
         <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: THEME.text }}>
-          {variant.label.en} <span style={{ color: THEME.textDim, fontSize: 11 }}>({variant.key})</span>
+          {variant.label[locale as 'en' | 'ka' | 'ru'] || variant.label.en} <span style={{ color: THEME.textDim, fontSize: 11 }}>({variant.key})</span>
         </span>
         <div style={{ display: 'flex', gap: 6 }} onClick={e => e.stopPropagation()}>
           <button
@@ -1001,6 +1571,7 @@ function SubcategoryDetail({
   onReload: () => void;
   t: (key: string) => string;
 }) {
+  const { locale } = useLanguage();
   const toast = useToast();
   const [editing, setEditing] = useState<EditingSubcategory>({
     key: sub.key,
@@ -1021,7 +1592,7 @@ function SubcategoryDetail({
     try {
       await api.put(`/service-catalog/${catKey}/subcategories/${sub.key}`, {
         label: editing.label,
-        description: editing.description,
+        description: cleanDescription(editing.description),
         iconName: editing.iconName,
         priceRange: { min: editing.priceRangeMin, max: editing.priceRangeMax !== '' ? editing.priceRangeMax : undefined },
         sortOrder: editing.sortOrder,
@@ -1092,25 +1663,13 @@ function SubcategoryDetail({
             <input style={inputStyle} value={editing.label.ru} onChange={e => setEditing(p => ({ ...p, label: { ...p.label, ru: e.target.value } }))} />
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
-          <div>
-            <label style={labelStyle}>{t('admin.descEn')}</label>
-            <input style={inputStyle} value={editing.description.en} onChange={e => setEditing(p => ({ ...p, description: { ...p.description, en: e.target.value } }))} />
-          </div>
-          <div>
-            <label style={labelStyle}>{t('admin.descKa')}</label>
-            <input style={inputStyle} value={editing.description.ka} onChange={e => setEditing(p => ({ ...p, description: { ...p.description, ka: e.target.value } }))} />
-          </div>
-          <div>
-            <label style={labelStyle}>{t('admin.descRu')}</label>
-            <input style={inputStyle} value={editing.description.ru} onChange={e => setEditing(p => ({ ...p, description: { ...p.description, ru: e.target.value } }))} />
-          </div>
-        </div>
+        <LocalizedRichText
+          value={editing.description}
+          onChange={(desc) => setEditing(p => ({ ...p, description: desc }))}
+          label={t('admin.description')}
+        />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
-          <div>
-            <label style={labelStyle}>{t('admin.iconName')}</label>
-            <input style={inputStyle} value={editing.iconName} onChange={e => setEditing(p => ({ ...p, iconName: e.target.value }))} />
-          </div>
+          <IconPickerButton value={editing.iconName} onChange={v => setEditing(p => ({ ...p, iconName: v }))} label={t('admin.iconName')} />
           <div>
             <label style={labelStyle}>{t('admin.priceRange')} Min</label>
             <input style={inputStyle} type="number" value={editing.priceRangeMin} onChange={e => setEditing(p => ({ ...p, priceRangeMin: Number(e.target.value) }))} />
@@ -1157,7 +1716,7 @@ function SubcategoryDetail({
                   fontWeight: activeVariant === v.key ? 600 : 400,
                 }}
               >
-                {v.label.en}
+                {v.label[locale as 'en' | 'ka' | 'ru'] || v.label.en}
               </button>
             ))}
           </div>
@@ -1277,7 +1836,7 @@ function CategoryDetail({
     try {
       await api.patch(`/service-catalog/${category.key}`, {
         label: editingCat.label,
-        description: editingCat.description,
+        description: cleanDescription(editingCat.description),
         iconName: editingCat.iconName,
         color: editingCat.color,
         minPrice: editingCat.minPrice,
@@ -1299,7 +1858,7 @@ function CategoryDetail({
     try {
       await api.put(`/service-catalog/${category.key}/subcategories/${newSub.key}`, {
         label: newSub.label,
-        description: newSub.description,
+        description: cleanDescription(newSub.description),
         iconName: newSub.iconName,
         priceRange: { min: newSub.priceRangeMin, max: newSub.priceRangeMax !== '' ? newSub.priceRangeMax : undefined },
         sortOrder: newSub.sortOrder,
@@ -1423,33 +1982,14 @@ function CategoryDetail({
             <input style={inputStyle} value={editingCat.label.ru} onChange={e => setEditingCat(p => ({ ...p, label: { ...p.label, ru: e.target.value } }))} />
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
-          <div>
-            <label style={labelStyle}>{t('admin.descEn')}</label>
-            <input style={inputStyle} value={editingCat.description.en} onChange={e => setEditingCat(p => ({ ...p, description: { ...p.description, en: e.target.value } }))} />
-          </div>
-          <div>
-            <label style={labelStyle}>{t('admin.descKa')}</label>
-            <input style={inputStyle} value={editingCat.description.ka} onChange={e => setEditingCat(p => ({ ...p, description: { ...p.description, ka: e.target.value } }))} />
-          </div>
-          <div>
-            <label style={labelStyle}>{t('admin.descRu')}</label>
-            <input style={inputStyle} value={editingCat.description.ru} onChange={e => setEditingCat(p => ({ ...p, description: { ...p.description, ru: e.target.value } }))} />
-          </div>
-        </div>
+        <LocalizedRichText
+          value={editingCat.description}
+          onChange={(desc) => setEditingCat(p => ({ ...p, description: desc }))}
+          label={t('admin.description')}
+        />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
-          <div>
-            <label style={labelStyle}>{t('admin.iconName')}</label>
-            <input style={inputStyle} value={editingCat.iconName} onChange={e => setEditingCat(p => ({ ...p, iconName: e.target.value }))} />
-          </div>
-          <div>
-            <label style={labelStyle}>{t('admin.colorCode')}</label>
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <input type="color" value={editingCat.color || '#C4735B'} onChange={e => setEditingCat(p => ({ ...p, color: e.target.value }))}
-                style={{ width: 30, height: 30, border: 'none', borderRadius: 4, cursor: 'pointer', background: 'none', padding: 0 }} />
-              <input style={{ ...inputStyle, flex: 1 }} value={editingCat.color} onChange={e => setEditingCat(p => ({ ...p, color: e.target.value }))} />
-            </div>
-          </div>
+          <IconPickerButton value={editingCat.iconName} onChange={v => setEditingCat(p => ({ ...p, iconName: v }))} label={t('admin.iconName')} />
+          <ColorPickerButton value={editingCat.color} onChange={v => setEditingCat(p => ({ ...p, color: v }))} label={t('admin.colorCode')} />
           <div>
             <label style={labelStyle}>{t('admin.minPrice')}</label>
             <input style={inputStyle} type="number" value={editingCat.minPrice} onChange={e => setEditingCat(p => ({ ...p, minPrice: Number(e.target.value) }))} />
@@ -1615,7 +2155,7 @@ function AddCategoryForm({
       await api.post('/service-catalog', {
         key: form.key,
         label: form.label,
-        description: form.description,
+        description: cleanDescription(form.description),
         iconName: form.iconName,
         color: form.color,
         minPrice: form.minPrice,
@@ -1657,19 +2197,14 @@ function AddCategoryForm({
           <input style={inputStyle} value={form.label.ru} onChange={e => setForm(p => ({ ...p, label: { ...p.label, ru: e.target.value } }))} />
         </div>
       </div>
+      <LocalizedRichText
+        value={form.description}
+        onChange={(desc) => setForm(p => ({ ...p, description: desc }))}
+        label={t('admin.description')}
+      />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
-        <div>
-          <label style={labelStyle}>{t('admin.iconName')}</label>
-          <input style={inputStyle} value={form.iconName} onChange={e => setForm(p => ({ ...p, iconName: e.target.value }))} />
-        </div>
-        <div>
-          <label style={labelStyle}>{t('admin.colorCode')}</label>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <input type="color" value={form.color} onChange={e => setForm(p => ({ ...p, color: e.target.value }))}
-              style={{ width: 30, height: 30, border: 'none', borderRadius: 4, cursor: 'pointer', padding: 0 }} />
-            <input style={{ ...inputStyle, flex: 1 }} value={form.color} onChange={e => setForm(p => ({ ...p, color: e.target.value }))} />
-          </div>
-        </div>
+        <IconPickerButton value={form.iconName} onChange={v => setForm(p => ({ ...p, iconName: v }))} label={t('admin.iconName')} />
+        <ColorPickerButton value={form.color} onChange={v => setForm(p => ({ ...p, color: v }))} label={t('admin.colorCode')} />
       </div>
       <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
         <button onClick={onCancel} style={{ padding: '6px 14px', borderRadius: 6, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 13 }}>
