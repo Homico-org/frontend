@@ -13,6 +13,7 @@ import {
   Database,
   Edit2,
   FolderOpen,
+  GripVertical,
   Layers,
   Loader2,
   Package,
@@ -23,6 +24,7 @@ import {
   X,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import { Reorder } from 'framer-motion';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -866,7 +868,7 @@ function ServiceRow({
       fontSize: 12,
     }}>
       <div>
-        <span style={{ color: THEME.text, fontWeight: 500 }}>{service.label[locale as 'en' | 'ka' | 'ru'] || service.label.en}</span>
+        <span style={{ color: THEME.text, fontWeight: 500 }}>{service.label?.[locale as 'en' | 'ka' | 'ru'] || service.label?.en || service.key}</span>
         <span style={{ color: THEME.textDim, marginLeft: 6, fontSize: 11 }}>({service.key})</span>
       </div>
       <span style={{ color: THEME.textMuted }}>{service.basePrice}</span>
@@ -917,7 +919,7 @@ function AddonRow({
       fontSize: 12,
     }}>
       <div>
-        <span style={{ color: THEME.text, fontWeight: 500 }}>{addon.label[locale as 'en' | 'ka' | 'ru'] || addon.label.en}</span>
+        <span style={{ color: THEME.text, fontWeight: 500 }}>{addon.label?.[locale as 'en' | 'ka' | 'ru'] || addon.label?.en || addon.key}</span>
         <span style={{ color: THEME.textDim, marginLeft: 6, fontSize: 11 }}>({addon.key})</span>
       </div>
       <span style={{ color: THEME.textMuted }}>{addon.basePrice}</span>
@@ -1151,11 +1153,12 @@ function ServiceAddonPanel({
 }: {
   title: string;
   itemType: 'service' | 'addon' | 'additionalService';
-  items: (CatalogService | CatalogAddon)[];
+  items?: (CatalogService | CatalogAddon)[];
   context: ServiceAddonContext;
   onReload: () => void;
   t: (key: string) => string;
 }) {
+  const safeItems = items ?? [];
   const toast = useToast();
   const [addingNew, setAddingNew] = useState(false);
   const [newService, setNewService] = useState<EditingService>(emptyEditingService);
@@ -1164,8 +1167,38 @@ function ServiceAddonPanel({
   const [editService, setEditService] = useState<EditingService>(emptyEditingService);
   const [editAddon, setEditAddon] = useState<EditingAddon>(emptyEditingAddon);
   const [saving, setSaving] = useState(false);
+  const [orderedItems, setOrderedItems] = useState(safeItems);
+  const reorderTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => { setOrderedItems(safeItems); }, [safeItems]);
 
   const isAddon = itemType === 'addon';
+
+  const persistItemOrder = useCallback(async (reordered: (CatalogService | CatalogAddon)[]) => {
+    const fieldKey = itemType === 'service' ? 'services' : itemType === 'additionalService' ? 'additionalServices' : 'addons';
+    try {
+      if (context.type === 'variant') {
+        await api.put(`/service-catalog/${context.catKey}/subcategories/${context.subKey}/variants/${context.variantKey}`, {
+          [fieldKey]: reordered,
+        });
+      } else {
+        await api.put(`/service-catalog/${context.catKey}/subcategories/${context.subKey}`, {
+          [fieldKey]: reordered,
+        });
+      }
+      toast.success(t('admin.reorderSaved'));
+      onReload();
+    } catch {
+      setOrderedItems(safeItems);
+      toast.error(t('common.error'));
+    }
+  }, [context, itemType, safeItems, onReload, t, toast]);
+
+  const handleItemReorder = useCallback((reordered: (CatalogService | CatalogAddon)[]) => {
+    setOrderedItems(reordered);
+    if (reorderTimeoutRef.current) clearTimeout(reorderTimeoutRef.current);
+    reorderTimeoutRef.current = setTimeout(() => persistItemOrder(reordered), 600);
+  }, [persistItemOrder]);
 
   const buildSubcatBody = (payload: CatalogService | CatalogAddon, sub: CatalogSubcategory | null) => {
     // For subcategory-level, we send the full updated subcategory payload
@@ -1195,7 +1228,7 @@ function ServiceAddonPanel({
       } else {
         await api.put(`/service-catalog/${context.catKey}/subcategories/${context.subKey}`, {
           [itemType === 'service' ? 'services' : itemType === 'additionalService' ? 'additionalServices' : 'addons']:
-            items.filter(i => i.key !== key),
+            safeItems.filter(i => i.key !== key),
         });
       }
       onReload();
@@ -1229,7 +1262,7 @@ function ServiceAddonPanel({
     try {
       const payload = isAddon ? editingToAddonPayload(editAddon) : editingToServicePayload(editService);
       // Replace the item in the current list and re-PUT the full array
-      const updatedItems = items.map(i => i.key === editingKey ? payload : i);
+      const updatedItems = safeItems.map(i => i.key === editingKey ? payload : i);
       if (context.type === 'variant') {
         await api.put(`/service-catalog/${context.catKey}/subcategories/${context.subKey}/variants/${context.variantKey}`, {
           [itemType === 'service' ? 'services' : itemType === 'additionalService' ? 'additionalServices' : 'addons']: updatedItems,
@@ -1270,51 +1303,60 @@ function ServiceAddonPanel({
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <SectionHeader title={title} count={items.length} />
-      {items.length > 0 && tableHeader}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 }}>
-        {items.map(item =>
+      <SectionHeader title={title} count={safeItems.length} />
+      {orderedItems.length > 0 && tableHeader}
+      <Reorder.Group axis="y" values={orderedItems} onReorder={handleItemReorder} as="div" style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8, listStyle: 'none', padding: 0, margin: 0 }}>
+        {orderedItems.map(item =>
           editingKey === item.key ? (
-            isAddon ? (
-              <AddonEditForm
-                key={item.key}
-                value={editAddon}
-                onChange={setEditAddon}
-                onSave={saveEdit}
-                onCancel={() => setEditingKey(null)}
-                saving={saving}
-                t={t}
-              />
-            ) : (
-              <ServiceEditForm
-                key={item.key}
-                value={editService}
-                onChange={setEditService}
-                onSave={saveEdit}
-                onCancel={() => setEditingKey(null)}
-                saving={saving}
-                t={t}
-              />
-            )
-          ) : isAddon ? (
-            <AddonRow
-              key={item.key}
-              addon={item as CatalogAddon}
-              onEdit={a => { setEditingKey(a.key); setEditAddon(addonToEditing(a)); }}
-              onDelete={deleteItem}
-              t={t}
-            />
+            <Reorder.Item key={item.key} value={item} dragListener={false} as="div" style={{ listStyle: 'none' }}>
+              {isAddon ? (
+                <AddonEditForm
+                  value={editAddon}
+                  onChange={setEditAddon}
+                  onSave={saveEdit}
+                  onCancel={() => setEditingKey(null)}
+                  saving={saving}
+                  t={t}
+                />
+              ) : (
+                <ServiceEditForm
+                  value={editService}
+                  onChange={setEditService}
+                  onSave={saveEdit}
+                  onCancel={() => setEditingKey(null)}
+                  saving={saving}
+                  t={t}
+                />
+              )}
+            </Reorder.Item>
           ) : (
-            <ServiceRow
-              key={item.key}
-              service={item as CatalogService}
-              onEdit={s => { setEditingKey(s.key); setEditService(serviceToEditing(s)); }}
-              onDelete={deleteItem}
-              t={t}
-            />
+            <Reorder.Item key={item.key} value={item} as="div" style={{ listStyle: 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ cursor: 'grab', color: THEME.textDim, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                  <GripVertical size={14} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {isAddon ? (
+                    <AddonRow
+                      addon={item as CatalogAddon}
+                      onEdit={a => { setEditingKey(a.key); setEditAddon(addonToEditing(a)); }}
+                      onDelete={deleteItem}
+                      t={t}
+                    />
+                  ) : (
+                    <ServiceRow
+                      service={item as CatalogService}
+                      onEdit={s => { setEditingKey(s.key); setEditService(serviceToEditing(s)); }}
+                      onDelete={deleteItem}
+                      t={t}
+                    />
+                  )}
+                </div>
+              </div>
+            </Reorder.Item>
           )
         )}
-      </div>
+      </Reorder.Group>
 
       {addingNew ? (
         isAddon ? (
@@ -1411,7 +1453,7 @@ function VariantPanel({
       >
         {expanded ? <ChevronDown size={14} color={THEME.textMuted} /> : <ChevronRight size={14} color={THEME.textMuted} />}
         <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: THEME.text }}>
-          {variant.label[locale as 'en' | 'ka' | 'ru'] || variant.label.en} <span style={{ color: THEME.textDim, fontSize: 11 }}>({variant.key})</span>
+          {variant.label?.[locale as 'en' | 'ka' | 'ru'] || variant.label?.en || variant.key} <span style={{ color: THEME.textDim, fontSize: 11 }}>({variant.key})</span>
         </span>
         <div style={{ display: 'flex', gap: 6 }} onClick={e => e.stopPropagation()}>
           <button
@@ -1575,17 +1617,17 @@ function SubcategoryDetail({
   const toast = useToast();
   const [editing, setEditing] = useState<EditingSubcategory>({
     key: sub.key,
-    label: { ...sub.label },
+    label: sub.label ? { ...sub.label } : emptyLocalized(),
     description: sub.description ? { ...sub.description } : emptyLocalized(),
-    iconName: sub.iconName,
-    priceRangeMin: sub.priceRange.min,
-    priceRangeMax: sub.priceRange.max ?? '',
-    sortOrder: sub.sortOrder,
-    isActive: sub.isActive,
+    iconName: sub.iconName ?? '',
+    priceRangeMin: sub.priceRange?.min ?? '',
+    priceRangeMax: sub.priceRange?.max ?? '',
+    sortOrder: sub.sortOrder ?? 0,
+    isActive: sub.isActive ?? true,
   });
   const [saving, setSaving] = useState(false);
   const [addingVariant, setAddingVariant] = useState(false);
-  const [activeVariant, setActiveVariant] = useState<string>(sub.variants[0]?.key ?? '');
+  const [activeVariant, setActiveVariant] = useState<string>(sub.variants?.[0]?.key ?? '');
 
   const saveSubcategory = async () => {
     setSaving(true);
@@ -1619,7 +1661,8 @@ function SubcategoryDetail({
   };
 
   const context: ServiceAddonContext = { type: 'subcategory', catKey, subKey: sub.key };
-  const currentVariant = sub.variants.find(v => v.key === activeVariant);
+  const variants = sub.variants ?? [];
+  const currentVariant = variants.find(v => v.key === activeVariant);
 
   return (
     <div>
@@ -1699,12 +1742,12 @@ function SubcategoryDetail({
       </div>
 
       {/* Variants section */}
-      {sub.variants.length > 0 && (
+      {variants.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <SectionHeader title={t('admin.variants')} count={sub.variants.length} />
+          <SectionHeader title={t('admin.variants')} count={variants.length} />
           {/* Variant tabs */}
           <div style={{ display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' }}>
-            {sub.variants.map(v => (
+            {variants.map(v => (
               <button
                 key={v.key}
                 onClick={() => setActiveVariant(v.key)}
@@ -1716,7 +1759,7 @@ function SubcategoryDetail({
                   fontWeight: activeVariant === v.key ? 600 : 400,
                 }}
               >
-                {v.label[locale as 'en' | 'ka' | 'ru'] || v.label.en}
+                {v.label?.[locale as 'en' | 'ka' | 'ru'] || v.label?.en || v.key}
               </button>
             ))}
           </div>
@@ -1758,7 +1801,7 @@ function SubcategoryDetail({
       )}
 
       {/* Subcategory-level services (when no variants) */}
-      {sub.variants.length === 0 && (
+      {variants.length === 0 && (
         <ServiceAddonPanel
           title={t('admin.services')}
           itemType="service"
@@ -1779,7 +1822,7 @@ function SubcategoryDetail({
         t={t}
       />
 
-      {sub.variants.length === 0 && (
+      {variants.length === 0 && (
         <ServiceAddonPanel
           title={t('admin.additionalServices')}
           itemType="additionalService"
@@ -1828,8 +1871,31 @@ function CategoryDetail({
     iconName: '', priceRangeMin: 0, priceRangeMax: '', sortOrder: 0, isActive: true,
   });
   const [savingNewSub, setSavingNewSub] = useState(false);
+  const [orderedSubs, setOrderedSubs] = useState(category.subcategories);
+  const subReorderTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => { setOrderedSubs(category.subcategories); }, [category.subcategories]);
 
   const selectedSub = category.subcategories.find(s => s.key === selectedSubKey);
+
+  const persistSubOrder = useCallback(async (reordered: CatalogSubcategory[]) => {
+    try {
+      await api.patch(`/service-catalog/${category.key}/reorder`, {
+        keys: reordered.map(s => s.key),
+      });
+      toast.success(t('admin.reorderSaved'));
+      onReload();
+    } catch {
+      setOrderedSubs(category.subcategories);
+      toast.error(t('common.error'));
+    }
+  }, [category.key, category.subcategories, onReload, t, toast]);
+
+  const handleSubReorder = useCallback((reordered: CatalogSubcategory[]) => {
+    setOrderedSubs(reordered);
+    if (subReorderTimeoutRef.current) clearTimeout(subReorderTimeoutRef.current);
+    subReorderTimeoutRef.current = setTimeout(() => persistSubOrder(reordered), 600);
+  }, [persistSubOrder]);
 
   const saveCategory = async () => {
     setSaving(true);
@@ -1901,8 +1967,8 @@ function CategoryDetail({
   };
 
   const totalServices = category.subcategories.reduce((acc, sub) => {
-    const direct = sub.services.length + sub.additionalServices.length;
-    const fromVariants = sub.variants.reduce((va, v) => va + v.services.length + v.additionalServices.length, 0);
+    const direct = (sub.services?.length ?? 0) + (sub.additionalServices?.length ?? 0);
+    const fromVariants = (sub.variants ?? []).reduce((va, v) => va + (v.services?.length ?? 0) + (v.additionalServices?.length ?? 0), 0);
     return acc + direct + fromVariants;
   }, 0);
 
@@ -1918,7 +1984,7 @@ function CategoryDetail({
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 14, height: 14, borderRadius: '50%', background: editingCat.color || THEME.primary }} />
             <span style={{ fontSize: 15, fontWeight: 600, color: THEME.text }}>
-              {category.label[locale as 'en' | 'ka' | 'ru'] || category.label.en}
+              {category.label?.[locale as 'en' | 'ka' | 'ru'] || category.label?.en || category.key}
             </span>
             <span style={{ fontSize: 11, color: THEME.textDim }}>({category.key})</span>
           </div>
@@ -2029,39 +2095,44 @@ function CategoryDetail({
             </span>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            {category.subcategories.length === 0 ? (
+            {orderedSubs.length === 0 ? (
               <p style={{ padding: 16, fontSize: 12, color: THEME.textDim, textAlign: 'center' }}>{t('admin.noSubcategories')}</p>
             ) : (
-              category.subcategories.map(sub => (
-                <div key={sub.key}>
-                  <div
-                    onClick={() => setSelectedSubKey(selectedSubKey === sub.key ? null : sub.key)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px',
-                      cursor: 'pointer', fontSize: 12, borderBottom: `1px solid ${THEME.border}`,
-                      background: selectedSubKey === sub.key ? `${THEME.primary}15` : 'transparent',
-                      borderLeft: selectedSubKey === sub.key ? `2px solid ${THEME.primary}` : '2px solid transparent',
-                    }}
-                    onMouseEnter={e => { if (selectedSubKey !== sub.key) e.currentTarget.style.background = THEME.surfaceHover; }}
-                    onMouseLeave={e => { if (selectedSubKey !== sub.key) e.currentTarget.style.background = 'transparent'; }}
-                  >
-                    <span style={{ flex: 1, color: selectedSubKey === sub.key ? THEME.primary : THEME.text, fontWeight: selectedSubKey === sub.key ? 600 : 400, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {sub.label[locale as 'en' | 'ka' | 'ru'] || sub.label.en}
-                    </span>
-                    {!sub.isActive && (
-                      <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: `${THEME.error}20`, color: THEME.error }}>
-                        {t('admin.inactive')}
-                      </span>
-                    )}
-                    <button
-                      onClick={e => { e.stopPropagation(); deleteSubcategory(sub.key); }}
-                      style={{ padding: 2, border: 'none', background: 'transparent', cursor: 'pointer', color: THEME.error, opacity: 0.6, flexShrink: 0 }}
+              <Reorder.Group axis="y" values={orderedSubs} onReorder={handleSubReorder} as="div" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {orderedSubs.map(sub => (
+                  <Reorder.Item key={sub.key} value={sub} as="div" style={{ listStyle: 'none' }}>
+                    <div
+                      onClick={() => setSelectedSubKey(selectedSubKey === sub.key ? null : sub.key)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 4, padding: '9px 12px',
+                        cursor: 'pointer', fontSize: 12, borderBottom: `1px solid ${THEME.border}`,
+                        background: selectedSubKey === sub.key ? `${THEME.primary}15` : 'transparent',
+                        borderLeft: selectedSubKey === sub.key ? `2px solid ${THEME.primary}` : '2px solid transparent',
+                      }}
+                      onMouseEnter={e => { if (selectedSubKey !== sub.key) e.currentTarget.style.background = THEME.surfaceHover; }}
+                      onMouseLeave={e => { if (selectedSubKey !== sub.key) e.currentTarget.style.background = 'transparent'; }}
                     >
-                      <X size={11} />
-                    </button>
-                  </div>
-                </div>
-              ))
+                      <div onPointerDown={e => e.stopPropagation()} style={{ cursor: 'grab', color: THEME.textDim, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                        <GripVertical size={12} />
+                      </div>
+                      <span style={{ flex: 1, color: selectedSubKey === sub.key ? THEME.primary : THEME.text, fontWeight: selectedSubKey === sub.key ? 600 : 400, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {sub.label?.[locale as 'en' | 'ka' | 'ru'] || sub.label?.en || sub.key}
+                      </span>
+                      {sub.isActive === false && (
+                        <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: `${THEME.error}20`, color: THEME.error }}>
+                          {t('admin.inactive')}
+                        </span>
+                      )}
+                      <button
+                        onClick={e => { e.stopPropagation(); deleteSubcategory(sub.key); }}
+                        style={{ padding: 2, border: 'none', background: 'transparent', cursor: 'pointer', color: THEME.error, opacity: 0.6, flexShrink: 0 }}
+                      >
+                        <X size={11} />
+                      </button>
+                    </div>
+                  </Reorder.Item>
+                ))}
+              </Reorder.Group>
             )}
           </div>
           <div style={{ padding: 10, borderTop: `1px solid ${THEME.border}` }}>
@@ -2227,11 +2298,13 @@ function ServiceCatalogPageContent() {
   const toast = useToast();
 
   const [categories, setCategories] = useState<ServiceCatalogCategory[]>([]);
+  const [orderedCategories, setOrderedCategories] = useState<ServiceCatalogCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCatKey, setSelectedCatKey] = useState<string | null>(null);
   const [addingCategory, setAddingCategory] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const catReorderTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedCategory = categories.find(c => c.key === selectedCatKey) ?? null;
 
@@ -2241,6 +2314,7 @@ function ServiceCatalogPageContent() {
       setError(null);
       const res = await api.get('/service-catalog/admin/all');
       setCategories(res.data);
+      setOrderedCategories(res.data);
     } catch {
       setError(t('admin.failedToLoadCatalog'));
     } finally {
@@ -2277,11 +2351,30 @@ function ServiceCatalogPageContent() {
     }
   };
 
+  const persistCatOrder = useCallback(async (reordered: ServiceCatalogCategory[]) => {
+    try {
+      await api.patch('/service-catalog/reorder-categories', {
+        keys: reordered.map(c => c.key),
+      });
+      toast.success(t('admin.reorderSaved'));
+      loadCatalog();
+    } catch {
+      setOrderedCategories(categories);
+      toast.error(t('common.error'));
+    }
+  }, [categories, loadCatalog, t, toast]);
+
+  const handleCatReorder = useCallback((reordered: ServiceCatalogCategory[]) => {
+    setOrderedCategories(reordered);
+    if (catReorderTimeoutRef.current) clearTimeout(catReorderTimeoutRef.current);
+    catReorderTimeoutRef.current = setTimeout(() => persistCatOrder(reordered), 600);
+  }, [persistCatOrder]);
+
   const totalSubcategories = categories.reduce((acc, c) => acc + c.subcategories.length, 0);
   const totalServices = categories.reduce((acc, c) =>
-    acc + c.subcategories.reduce((sa, sub) => {
-      const direct = sub.services.length + sub.additionalServices.length;
-      const fromVariants = sub.variants.reduce((va, v) => va + v.services.length + v.additionalServices.length, 0);
+    acc + (c.subcategories ?? []).reduce((sa, sub) => {
+      const direct = (sub.services?.length ?? 0) + (sub.additionalServices?.length ?? 0);
+      const fromVariants = (sub.variants ?? []).reduce((va, v) => va + (v.services?.length ?? 0) + (v.additionalServices?.length ?? 0), 0);
       return sa + direct + fromVariants;
     }, 0), 0);
 
@@ -2409,50 +2502,56 @@ function ServiceCatalogPageContent() {
 
           {/* Category list */}
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            {categories.length === 0 ? (
+            {orderedCategories.length === 0 ? (
               <div style={{ padding: 24, textAlign: 'center' }}>
                 <Package size={40} color={THEME.textDim} style={{ margin: '0 auto 8px' }} />
                 <p style={{ color: THEME.textMuted, fontSize: 13 }}>{t('admin.noCategoriesFound')}</p>
               </div>
             ) : (
-              categories.map(cat => (
-                <div
-                  key={cat.key}
-                  onClick={() => setSelectedCatKey(selectedCatKey === cat.key ? null : cat.key)}
-                  style={{
-                    padding: '11px 16px',
-                    cursor: 'pointer',
-                    borderBottom: `1px solid ${THEME.border}`,
-                    borderLeft: selectedCatKey === cat.key ? `3px solid ${cat.color || THEME.primary}` : '3px solid transparent',
-                    background: selectedCatKey === cat.key ? `${THEME.primary}10` : 'transparent',
-                    transition: 'all 0.15s',
-                  }}
-                  onMouseEnter={e => { if (selectedCatKey !== cat.key) e.currentTarget.style.background = THEME.surfaceHover; }}
-                  onMouseLeave={e => { if (selectedCatKey !== cat.key) e.currentTarget.style.background = 'transparent'; }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: cat.color || THEME.primary, flexShrink: 0 }} />
-                    <span style={{
-                      flex: 1, fontSize: 13, fontWeight: selectedCatKey === cat.key ? 600 : 400,
-                      color: selectedCatKey === cat.key ? THEME.text : THEME.textMuted,
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>
-                      {cat.label[locale as 'en' | 'ka' | 'ru'] || cat.label.en}
-                    </span>
-                    <span style={{ fontSize: 10, color: THEME.textDim, flexShrink: 0 }}>{cat.subcategories.length}</span>
-                    {!cat.isActive && (
-                      <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: `${THEME.error}20`, color: THEME.error, flexShrink: 0 }}>
-                        {t('admin.inactive')}
-                      </span>
-                    )}
-                    {cat.isActive && (
-                      <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: `${THEME.success}20`, color: THEME.success, flexShrink: 0 }}>
-                        {t('admin.active')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))
+              <Reorder.Group axis="y" values={orderedCategories} onReorder={handleCatReorder} as="div" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {orderedCategories.map(cat => (
+                  <Reorder.Item key={cat.key} value={cat} as="div" style={{ listStyle: 'none' }}>
+                    <div
+                      onClick={() => setSelectedCatKey(selectedCatKey === cat.key ? null : cat.key)}
+                      style={{
+                        padding: '11px 16px',
+                        cursor: 'pointer',
+                        borderBottom: `1px solid ${THEME.border}`,
+                        borderLeft: selectedCatKey === cat.key ? `3px solid ${cat.color || THEME.primary}` : '3px solid transparent',
+                        background: selectedCatKey === cat.key ? `${THEME.primary}10` : 'transparent',
+                        transition: 'all 0.15s',
+                      }}
+                      onMouseEnter={e => { if (selectedCatKey !== cat.key) e.currentTarget.style.background = THEME.surfaceHover; }}
+                      onMouseLeave={e => { if (selectedCatKey !== cat.key) e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ cursor: 'grab', color: THEME.textDim, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                          <GripVertical size={14} />
+                        </div>
+                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: cat.color || THEME.primary, flexShrink: 0 }} />
+                        <span style={{
+                          flex: 1, fontSize: 13, fontWeight: selectedCatKey === cat.key ? 600 : 400,
+                          color: selectedCatKey === cat.key ? THEME.text : THEME.textMuted,
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
+                          {cat.label?.[locale as 'en' | 'ka' | 'ru'] || cat.label?.en || cat.key}
+                        </span>
+                        <span style={{ fontSize: 10, color: THEME.textDim, flexShrink: 0 }}>{cat.subcategories.length}</span>
+                        {cat.isActive === false && (
+                          <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: `${THEME.error}20`, color: THEME.error, flexShrink: 0 }}>
+                            {t('admin.inactive')}
+                          </span>
+                        )}
+                        {cat.isActive !== false && (
+                          <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: `${THEME.success}20`, color: THEME.success, flexShrink: 0 }}>
+                            {t('admin.active')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </Reorder.Item>
+                ))}
+              </Reorder.Group>
             )}
           </div>
 
