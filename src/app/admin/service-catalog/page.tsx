@@ -48,6 +48,7 @@ interface CatalogService {
   unit: string;
   unitLabel: LocalizedText;
   maxQuantity?: number;
+  discountTiers?: { minQuantity: number; percent: number }[];
 }
 
 interface CatalogAddon {
@@ -80,6 +81,7 @@ interface CatalogSubcategory {
   services: CatalogService[];
   addons: CatalogAddon[];
   additionalServices: CatalogService[];
+  orderDiscountTiers?: { minQuantity: number; percent: number }[];
 }
 
 interface ServiceCatalogCategory {
@@ -122,6 +124,7 @@ type EditingSubcategory = {
   priceRangeMax: number | '';
   sortOrder: number;
   isActive: boolean;
+  orderDiscountTiers: { minQuantity: number | ''; percent: number | '' }[];
 };
 
 type EditingService = {
@@ -135,6 +138,7 @@ type EditingService = {
   unitLabelKa: string;
   unitLabelRu: string;
   maxQuantity: number | '';
+  discountTiers: { minQuantity: number | ''; percent: number | '' }[];
 };
 
 type EditingAddon = {
@@ -164,6 +168,7 @@ const emptyEditingService = (): EditingService => ({
   unitLabelKa: '',
   unitLabelRu: '',
   maxQuantity: '',
+  discountTiers: [],
 });
 
 const emptyEditingAddon = (): EditingAddon => ({
@@ -193,6 +198,7 @@ const serviceToEditing = (s: CatalogService): EditingService => ({
   unitLabelKa: s.unitLabel.ka,
   unitLabelRu: s.unitLabel.ru,
   maxQuantity: s.maxQuantity ?? '',
+  discountTiers: (s.discountTiers ?? []).map(t => ({ minQuantity: t.minQuantity, percent: t.percent })),
 });
 
 const addonToEditing = (a: CatalogAddon): EditingAddon => ({
@@ -211,14 +217,21 @@ const addonToEditing = (a: CatalogAddon): EditingAddon => ({
   iconName: a.iconName ?? '',
 });
 
-const editingToServicePayload = (e: EditingService): CatalogService => ({
-  key: e.key,
-  label: { en: e.labelEn, ka: e.labelKa, ru: e.labelRu },
-  basePrice: Number(e.basePrice) || 0,
-  unit: e.unit,
-  unitLabel: { en: e.unitLabelEn, ka: e.unitLabelKa, ru: e.unitLabelRu },
-  maxQuantity: e.maxQuantity !== '' ? Number(e.maxQuantity) : undefined,
-});
+const editingToServicePayload = (e: EditingService): CatalogService => {
+  const tiers = e.discountTiers
+    .filter(t => t.minQuantity !== '' && t.percent !== '')
+    .map(t => ({ minQuantity: Number(t.minQuantity), percent: Number(t.percent) }))
+    .sort((a, b) => a.minQuantity - b.minQuantity);
+  return {
+    key: e.key,
+    label: { en: e.labelEn, ka: e.labelKa, ru: e.labelRu },
+    basePrice: Number(e.basePrice) || 0,
+    unit: e.unit,
+    unitLabel: { en: e.unitLabelEn, ka: e.unitLabelKa, ru: e.unitLabelRu },
+    maxQuantity: e.maxQuantity !== '' ? Number(e.maxQuantity) : undefined,
+    ...(tiers.length > 0 ? { discountTiers: tiers } : {}),
+  };
+};
 
 const editingToAddonPayload = (e: EditingAddon): CatalogAddon => ({
   key: e.key,
@@ -858,7 +871,7 @@ function ServiceRow({
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: '1fr 80px 80px 70px 72px',
+      gridTemplateColumns: '1fr 80px 80px 70px 60px 72px',
       gap: 8,
       alignItems: 'center',
       padding: '8px 10px',
@@ -874,6 +887,7 @@ function ServiceRow({
       <span style={{ color: THEME.textMuted }}>{service.basePrice}</span>
       <span style={{ color: THEME.textMuted }}>{service.unit}</span>
       <span style={{ color: THEME.textMuted }}>{service.maxQuantity ?? '—'}</span>
+      <span style={{ color: THEME.textMuted }}>{service.discountTiers?.length || '—'}</span>
       <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
         <button
           onClick={() => onEdit(service)}
@@ -1020,6 +1034,52 @@ function ServiceEditForm({
         <div>
           <label style={labelStyle}>{t('admin.maxQuantity')}</label>
           <input style={inputStyle} type="number" value={value.maxQuantity} onChange={e => set('maxQuantity', e.target.value)} />
+        </div>
+      </div>
+      {/* Discount Tiers */}
+      <div>
+        <label style={labelStyle}>{t('admin.discountTiers')}</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {value.discountTiers.map((tier, i) => (
+            <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 32px', gap: 8, alignItems: 'end' }}>
+              <div>
+                <label style={labelStyle}>{t('admin.minQuantity')}</label>
+                <input style={inputStyle} type="number" value={tier.minQuantity} onChange={e => {
+                  const tiers = [...value.discountTiers];
+                  tiers[i] = { ...tiers[i], minQuantity: e.target.value === '' ? '' : Number(e.target.value) };
+                  onChange({ ...value, discountTiers: tiers });
+                }} />
+              </div>
+              <div>
+                <label style={labelStyle}>{t('admin.discountPercent')}</label>
+                <input style={inputStyle} type="number" value={tier.percent} onChange={e => {
+                  const tiers = [...value.discountTiers];
+                  tiers[i] = { ...tiers[i], percent: e.target.value === '' ? '' : Number(e.target.value) };
+                  onChange({ ...value, discountTiers: tiers });
+                }} />
+              </div>
+              <button
+                onClick={() => {
+                  const tiers = value.discountTiers.filter((_, j) => j !== i);
+                  onChange({ ...value, discountTiers: tiers });
+                }}
+                style={{ padding: '6px', borderRadius: 4, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error, height: 32 }}
+              >
+                <X size={12} />
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => onChange({ ...value, discountTiers: [...value.discountTiers, { minQuantity: '', percent: '' }] })}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px',
+              borderRadius: 5, border: `1px dashed ${THEME.border}`, background: 'transparent',
+              color: THEME.textMuted, cursor: 'pointer', fontSize: 11, width: 'fit-content',
+            }}
+          >
+            <Plus size={10} />
+            {t('admin.addTier')}
+          </button>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
@@ -1284,7 +1344,7 @@ function ServiceAddonPanel({
   const tableHeader = (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: isAddon ? '1fr 80px 80px 72px' : '1fr 80px 80px 70px 72px',
+      gridTemplateColumns: isAddon ? '1fr 80px 80px 72px' : '1fr 80px 80px 70px 60px 72px',
       gap: 8,
       padding: '4px 10px',
       fontSize: 11,
@@ -1297,6 +1357,7 @@ function ServiceAddonPanel({
       <span>{t('admin.basePrice')}</span>
       <span>{t('admin.unit')}</span>
       {!isAddon && <span>{t('admin.maxQuantity')}</span>}
+      {!isAddon && <span>Tiers</span>}
       <span style={{ textAlign: 'right' }}>Actions</span>
     </div>
   );
@@ -1624,6 +1685,7 @@ function SubcategoryDetail({
     priceRangeMax: sub.priceRange?.max ?? '',
     sortOrder: sub.sortOrder ?? 0,
     isActive: sub.isActive ?? true,
+    orderDiscountTiers: (sub.orderDiscountTiers ?? []).map(t => ({ minQuantity: t.minQuantity, percent: t.percent })),
   });
   const [saving, setSaving] = useState(false);
   const [addingVariant, setAddingVariant] = useState(false);
@@ -1632,6 +1694,10 @@ function SubcategoryDetail({
   const saveSubcategory = async () => {
     setSaving(true);
     try {
+      const validOrderTiers = editing.orderDiscountTiers
+        .filter(t => t.minQuantity !== '' && t.percent !== '')
+        .map(t => ({ minQuantity: Number(t.minQuantity), percent: Number(t.percent) }))
+        .sort((a, b) => a.minQuantity - b.minQuantity);
       await api.put(`/service-catalog/${catKey}/subcategories/${sub.key}`, {
         label: editing.label,
         description: cleanDescription(editing.description),
@@ -1639,6 +1705,7 @@ function SubcategoryDetail({
         priceRange: { min: editing.priceRangeMin, max: editing.priceRangeMax !== '' ? editing.priceRangeMax : undefined },
         sortOrder: editing.sortOrder,
         isActive: editing.isActive,
+        ...(validOrderTiers.length > 0 && { orderDiscountTiers: validOrderTiers }),
       });
       toast.success(t('admin.subcategoryUpdated'));
       onReload();
@@ -1738,6 +1805,53 @@ function SubcategoryDetail({
             {saving ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={13} />}
             {t('common.save')}
           </button>
+        </div>
+        {/* Order Discount Tiers */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ ...labelStyle, fontSize: 12, fontWeight: 600, marginBottom: 6 }}>{t('admin.orderDiscountTiers')}</label>
+          <p style={{ fontSize: 11, color: THEME.textDim, marginBottom: 8 }}>{t('admin.orderDiscountHint')}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {editing.orderDiscountTiers.map((tier, i) => (
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 32px', gap: 8, alignItems: 'end' }}>
+                <div>
+                  <label style={labelStyle}>{t('admin.minQuantity')}</label>
+                  <input style={inputStyle} type="number" value={tier.minQuantity} onChange={e => {
+                    const tiers = [...editing.orderDiscountTiers];
+                    tiers[i] = { ...tiers[i], minQuantity: e.target.value === '' ? '' : Number(e.target.value) };
+                    setEditing(p => ({ ...p, orderDiscountTiers: tiers }));
+                  }} />
+                </div>
+                <div>
+                  <label style={labelStyle}>{t('admin.discountPercent')}</label>
+                  <input style={inputStyle} type="number" value={tier.percent} onChange={e => {
+                    const tiers = [...editing.orderDiscountTiers];
+                    tiers[i] = { ...tiers[i], percent: e.target.value === '' ? '' : Number(e.target.value) };
+                    setEditing(p => ({ ...p, orderDiscountTiers: tiers }));
+                  }} />
+                </div>
+                <button
+                  onClick={() => {
+                    const tiers = editing.orderDiscountTiers.filter((_, j) => j !== i);
+                    setEditing(p => ({ ...p, orderDiscountTiers: tiers }));
+                  }}
+                  style={{ padding: '6px', borderRadius: 4, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error, height: 32 }}
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => setEditing(p => ({ ...p, orderDiscountTiers: [...p.orderDiscountTiers, { minQuantity: '', percent: '' }] }))}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px',
+                borderRadius: 5, border: `1px dashed ${THEME.border}`, background: 'transparent',
+                color: THEME.textMuted, cursor: 'pointer', fontSize: 11, width: 'fit-content',
+              }}
+            >
+              <Plus size={10} />
+              {t('admin.addTier')}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1868,7 +1982,7 @@ function CategoryDetail({
   const [addingSubcategory, setAddingSubcategory] = useState(false);
   const [newSub, setNewSub] = useState<EditingSubcategory>({
     key: '', label: emptyLocalized(), description: emptyLocalized(),
-    iconName: '', priceRangeMin: 0, priceRangeMax: '', sortOrder: 0, isActive: true,
+    iconName: '', priceRangeMin: 0, priceRangeMax: '', sortOrder: 0, isActive: true, orderDiscountTiers: [],
   });
   const [savingNewSub, setSavingNewSub] = useState(false);
   const [orderedSubs, setOrderedSubs] = useState(category.subcategories);
@@ -1936,7 +2050,7 @@ function CategoryDetail({
       });
       toast.success(t('admin.subcategoryUpdated'));
       setAddingSubcategory(false);
-      setNewSub({ key: '', label: emptyLocalized(), description: emptyLocalized(), iconName: '', priceRangeMin: 0, priceRangeMax: '', sortOrder: 0, isActive: true });
+      setNewSub({ key: '', label: emptyLocalized(), description: emptyLocalized(), iconName: '', priceRangeMin: 0, priceRangeMax: '', sortOrder: 0, isActive: true, orderDiscountTiers: [] });
       onReload();
     } catch {
       toast.error(t('common.error'));
