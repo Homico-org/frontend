@@ -1691,6 +1691,19 @@ function SubcategoryDetail({
   const [addingVariant, setAddingVariant] = useState(false);
   const [activeVariant, setActiveVariant] = useState<string>(sub.variants?.[0]?.key ?? '');
 
+  const toggleActive = async () => {
+    const newActive = !editing.isActive;
+    setEditing(p => ({ ...p, isActive: newActive }));
+    try {
+      await api.put(`/service-catalog/${catKey}/subcategories/${sub.key}`, { isActive: newActive });
+      toast.success(newActive ? t('admin.activated') : t('admin.deactivated'));
+      onReload();
+    } catch {
+      setEditing(p => ({ ...p, isActive: !newActive }));
+      toast.error(t('common.error'));
+    }
+  };
+
   const saveSubcategory = async () => {
     setSaving(true);
     try {
@@ -1744,9 +1757,8 @@ function SubcategoryDetail({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: THEME.text }}>{t('admin.editSubcategory')}</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 12, color: THEME.textMuted }}>{t('admin.active')}</span>
             <div
-              onClick={() => setEditing(p => ({ ...p, isActive: !p.isActive }))}
+              onClick={toggleActive}
               style={{
                 width: 36, height: 20, borderRadius: 10, cursor: 'pointer', position: 'relative',
                 background: editing.isActive ? THEME.success : THEME.border, transition: 'background 0.2s',
@@ -1757,6 +1769,9 @@ function SubcategoryDetail({
                 width: 16, height: 16, borderRadius: '50%', background: 'white', transition: 'left 0.2s',
               }} />
             </div>
+            <span style={{ fontSize: 12, color: THEME.textMuted }}>
+              {editing.isActive ? t('admin.active') : t('admin.inactive')}
+            </span>
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
@@ -2011,6 +2026,19 @@ function CategoryDetail({
     subReorderTimeoutRef.current = setTimeout(() => persistSubOrder(reordered), 600);
   }, [persistSubOrder]);
 
+  const toggleCatActive = async () => {
+    const newActive = !editingCat.isActive;
+    setEditingCat(p => ({ ...p, isActive: newActive }));
+    try {
+      await api.patch(`/service-catalog/${category.key}`, { isActive: newActive });
+      toast.success(newActive ? t('admin.activated') : t('admin.deactivated'));
+      onReload();
+    } catch {
+      setEditingCat(p => ({ ...p, isActive: !newActive }));
+      toast.error(t('common.error'));
+    }
+  };
+
   const saveCategory = async () => {
     setSaving(true);
     try {
@@ -2132,7 +2160,7 @@ function CategoryDetail({
         {/* Active toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <div
-            onClick={() => setEditingCat(p => ({ ...p, isActive: !p.isActive }))}
+            onClick={toggleCatActive}
             style={{
               width: 36, height: 20, borderRadius: 10, cursor: 'pointer', position: 'relative',
               background: editingCat.isActive ? THEME.success : THEME.border, transition: 'background 0.2s',

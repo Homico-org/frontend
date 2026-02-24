@@ -2249,6 +2249,8 @@
     "sortOrder": "Sort Order",
     "active": "Active",
     "inactive": "Inactive",
+    "activated": "Activated successfully",
+    "deactivated": "Deactivated successfully",
     "nameEn": "Name (English)",
     "nameKa": "Name (Georgian)",
     "nameRu": "Name (Russian)",
