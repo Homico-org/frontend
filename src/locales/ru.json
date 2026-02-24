@@ -2234,6 +2234,7 @@
     "colorCode": "Код цвета",
     "minPrice": "Мин. цена",
     "basePrice": "Базовая цена",
+    "maxPrice": "Макс. цена",
     "unit": "Единица",
     "unitLabel": "Метка единицы",
     "maxQuantity": "Макс. количество",

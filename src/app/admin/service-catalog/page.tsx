@@ -45,6 +45,7 @@ interface CatalogService {
   label: LocalizedText;
   description?: LocalizedText;
   basePrice: number;
+  maxPrice?: number;
   unit: string;
   unitLabel: LocalizedText;
   maxQuantity?: number;
@@ -56,6 +57,7 @@ interface CatalogAddon {
   label: LocalizedText;
   promptLabel: LocalizedText;
   basePrice: number;
+  maxPrice?: number;
   unit: string;
   unitLabel: LocalizedText;
   iconName?: string;
@@ -133,6 +135,7 @@ type EditingService = {
   labelKa: string;
   labelRu: string;
   basePrice: number | '';
+  maxPrice: number | '';
   unit: string;
   unitLabelEn: string;
   unitLabelKa: string;
@@ -163,6 +166,7 @@ const emptyEditingService = (): EditingService => ({
   labelKa: '',
   labelRu: '',
   basePrice: '',
+  maxPrice: '',
   unit: 'piece',
   unitLabelEn: '',
   unitLabelKa: '',
@@ -193,6 +197,7 @@ const serviceToEditing = (s: CatalogService): EditingService => ({
   labelKa: s.label.ka,
   labelRu: s.label.ru,
   basePrice: s.basePrice,
+  maxPrice: s.maxPrice ?? '',
   unit: s.unit,
   unitLabelEn: s.unitLabel.en,
   unitLabelKa: s.unitLabel.ka,
@@ -226,6 +231,7 @@ const editingToServicePayload = (e: EditingService): CatalogService => {
     key: e.key,
     label: { en: e.labelEn, ka: e.labelKa, ru: e.labelRu },
     basePrice: Number(e.basePrice) || 0,
+    maxPrice: e.maxPrice !== '' ? Number(e.maxPrice) : undefined,
     unit: e.unit,
     unitLabel: { en: e.unitLabelEn, ka: e.unitLabelKa, ru: e.unitLabelRu },
     maxQuantity: e.maxQuantity !== '' ? Number(e.maxQuantity) : undefined,
@@ -871,7 +877,7 @@ function ServiceRow({
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: '1fr 80px 80px 70px 60px 72px',
+      gridTemplateColumns: '1fr 80px 80px 80px 70px 60px 72px',
       gap: 8,
       alignItems: 'center',
       padding: '8px 10px',
@@ -885,6 +891,7 @@ function ServiceRow({
         <span style={{ color: THEME.textDim, marginLeft: 6, fontSize: 11 }}>({service.key})</span>
       </div>
       <span style={{ color: THEME.textMuted }}>{service.basePrice}</span>
+      <span style={{ color: THEME.textMuted }}>{service.maxPrice ?? '—'}</span>
       <span style={{ color: THEME.textMuted }}>{service.unit}</span>
       <span style={{ color: THEME.textMuted }}>{service.maxQuantity ?? '—'}</span>
       <span style={{ color: THEME.textMuted }}>{service.discountTiers?.length || '—'}</span>
@@ -1026,10 +1033,14 @@ function ServiceEditForm({
           <input style={inputStyle} value={value.unitLabelRu} onChange={e => set('unitLabelRu', e.target.value)} />
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
         <div>
           <label style={labelStyle}>{t('admin.basePrice')}</label>
           <input style={inputStyle} type="number" value={value.basePrice} onChange={e => set('basePrice', e.target.value)} />
+        </div>
+        <div>
+          <label style={labelStyle}>{t('admin.maxPrice')}</label>
+          <input style={inputStyle} type="number" value={value.maxPrice} onChange={e => set('maxPrice', e.target.value)} />
         </div>
         <div>
           <label style={labelStyle}>{t('admin.maxQuantity')}</label>
@@ -1344,7 +1355,7 @@ function ServiceAddonPanel({
   const tableHeader = (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: isAddon ? '1fr 80px 80px 72px' : '1fr 80px 80px 70px 60px 72px',
+      gridTemplateColumns: isAddon ? '1fr 80px 80px 72px' : '1fr 80px 80px 80px 70px 60px 72px',
       gap: 8,
       padding: '4px 10px',
       fontSize: 11,
@@ -1355,6 +1366,7 @@ function ServiceAddonPanel({
     }}>
       <span>Name / Key</span>
       <span>{t('admin.basePrice')}</span>
+      {!isAddon && <span>{t('admin.maxPrice')}</span>}
       <span>{t('admin.unit')}</span>
       {!isAddon && <span>{t('admin.maxQuantity')}</span>}
       {!isAddon && <span>Tiers</span>}

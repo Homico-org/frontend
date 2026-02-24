@@ -2235,6 +2235,7 @@
     "colorCode": "Color Code",
     "minPrice": "Min Price",
     "basePrice": "Base Price",
+    "maxPrice": "Max Price",
     "unit": "Unit",
     "unitLabel": "Unit Label",
     "maxQuantity": "Max Quantity",
