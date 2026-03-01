@@ -170,7 +170,10 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
           setIsInitialLoading(true);
         }
         const response = await api.get(`/jobs/my-jobs`);
-        const jobsData = response.data;
+        // Filter out mobile-created orders (those with services populated)
+        const jobsData = (response.data as (Job & { services?: unknown[] })[]).filter(
+          (j) => !j.services || j.services.length === 0
+        );
 
         // Fetch project tracking data for in_progress jobs
         const jobsWithTracking = await Promise.all(
