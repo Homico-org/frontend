@@ -245,7 +245,9 @@ function MySpaceContent() {
       }
       if (myJobsRes.status === "fulfilled") {
         const raw = myJobsRes.value.data;
-        setMyPostedJobs(Array.isArray(raw) ? raw : raw?.data || raw?.jobs || []);
+        const allJobs: (Job & { services?: unknown[] })[] = Array.isArray(raw) ? raw : raw?.data || raw?.jobs || [];
+        // Filter out mobile-created orders (those with services populated)
+        setMyPostedJobs(allJobs.filter((j) => !j.services || j.services.length === 0));
       }
     } catch {
       // silently fail
