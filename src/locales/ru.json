@@ -690,6 +690,9 @@
     "beFirstToReachOut": "Будьте первым, кто свяжется с клиентом"
   },
   "jobDetail": {
+    "guestCtaTitle": "Присоединяйтесь — получайте заказы как этот",
+    "guestCtaBecomePro": "Стать специалистом",
+    "guestCtaSignIn": "Войти",
     "propertyType": {
       "apartment": "Квартира",
       "house": "Дом",

@@ -28,6 +28,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ConfirmModal, Modal } from "@/components/ui/Modal";
 import { ACCENT_COLOR as ACCENT, ACCENT_LIGHT } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useToast } from "@/contexts/ToastContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
@@ -694,6 +695,7 @@ export default function JobDetailClient() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { openLoginModal } = useAuthModal();
 
   const { t } = useLanguage();
   const { getCategoryLabel, locale } = useCategoryLabels();
@@ -3908,6 +3910,37 @@ export default function JobDetailClient() {
           </div>
         </div>
       </Modal>
+
+      {/* Guest Sticky CTA — non-authenticated visitors from Facebook / shared links */}
+      {!user && job && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 animate-slide-up">
+          <div className="bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] safe-area-bottom">
+            <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+              {/* Value proposition text */}
+              <p className="hidden sm:block flex-1 text-sm text-neutral-600 dark:text-neutral-400 leading-snug">
+                {t("jobDetail.guestCtaTitle")}
+              </p>
+              {/* CTAs */}
+              <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                <Link
+                  href="/become-pro"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+                  style={{ backgroundColor: ACCENT }}
+                >
+                  <Zap className="w-4 h-4" />
+                  {t("jobDetail.guestCtaBecomePro")}
+                </Link>
+                <button
+                  onClick={() => openLoginModal()}
+                  className="flex-1 sm:flex-none flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all active:scale-[0.98]"
+                >
+                  {t("jobDetail.guestCtaSignIn")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Animations */}
       <style jsx>{`

@@ -691,6 +691,9 @@
     "beFirstToReachOut": "Be the first to reach out to the client"
   },
   "jobDetail": {
+    "guestCtaTitle": "Join Homico — get hired for projects like this",
+    "guestCtaBecomePro": "Become a Pro",
+    "guestCtaSignIn": "Sign In",
     "propertyType": {
       "apartment": "Apartment",
       "house": "House",

@@ -691,6 +691,9 @@
     "beFirstToReachOut": "იყავი პირველი ვინც დაეკონტაქტება დამკვეთს"
   },
   "jobDetail": {
+    "guestCtaTitle": "შემოგვიერთდი — დასაქმდი ასეთ პროექტებზე",
+    "guestCtaBecomePro": "გახდი სპეციალისტი",
+    "guestCtaSignIn": "შესვლა",
     "propertyType": {
       "apartment": "ბინა",
       "house": "სახლი",
