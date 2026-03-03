@@ -3913,34 +3913,84 @@ export default function JobDetailClient() {
 
       {/* Guest Sticky CTA — non-authenticated visitors from Facebook / shared links */}
       {!user && job && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 animate-slide-up">
-          <div className="bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] safe-area-bottom">
-            <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-              {/* Value proposition text */}
-              <p className="hidden sm:block flex-1 text-sm text-neutral-600 dark:text-neutral-400 leading-snug">
-                {t("jobDetail.guestCtaTitle")}
-              </p>
-              {/* CTAs */}
-              <div className="flex items-center gap-2.5 w-full sm:w-auto">
-                <Link
-                  href="/become-pro"
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
-                  style={{ backgroundColor: ACCENT }}
-                >
-                  <Zap className="w-4 h-4" />
-                  {t("jobDetail.guestCtaBecomePro")}
-                </Link>
-                <button
-                  onClick={() => openLoginModal()}
-                  className="flex-1 sm:flex-none flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all active:scale-[0.98]"
-                >
-                  {t("jobDetail.guestCtaSignIn")}
-                </button>
+        <div className="fixed bottom-0 left-0 right-0 z-50 animate-slide-up safe-area-bottom">
+          {/* Glassmorphism backdrop */}
+          <div className="relative overflow-hidden">
+            {/* Gradient glow line at top */}
+            <div
+              className="absolute top-0 left-0 right-0 h-[2px]"
+              style={{
+                background: `linear-gradient(90deg, transparent 0%, ${ACCENT} 30%, #E8A87C 70%, transparent 100%)`,
+              }}
+            />
+            {/* Main bar */}
+            <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border-t border-white/20 dark:border-neutral-800/50 shadow-[0_-8px_32px_rgba(0,0,0,0.12)]">
+              <div className="max-w-6xl mx-auto px-4 py-3.5 sm:py-3 flex items-center gap-4">
+                {/* Desktop: value text with animated dot */}
+                <div className="hidden sm:flex items-center gap-3 flex-1 min-w-0">
+                  <span
+                    className="w-2 h-2 rounded-full flex-shrink-0 animate-pulse"
+                    style={{ backgroundColor: ACCENT }}
+                  />
+                  <p className="text-sm text-neutral-600 dark:text-neutral-300 truncate">
+                    {t("jobDetail.guestCtaTitle")}
+                  </p>
+                </div>
+
+                {/* CTA buttons */}
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                  {/* Primary: Become a Pro */}
+                  <Link
+                    href="/register/professional"
+                    className="guest-cta-primary flex-1 sm:flex-none relative flex items-center justify-center gap-2 px-6 py-3 sm:py-2.5 rounded-xl text-sm font-bold text-white overflow-hidden transition-all duration-300 hover:shadow-lg active:scale-[0.97]"
+                    style={{
+                      background: `linear-gradient(135deg, ${ACCENT} 0%, #D4937B 50%, #E8A87C 100%)`,
+                      boxShadow: `0 4px 16px ${ACCENT}40`,
+                    }}
+                  >
+                    {/* Shimmer effect */}
+                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent guest-cta-shimmer" />
+                    <Zap className="w-4 h-4 relative z-10" />
+                    <span className="relative z-10">{t("jobDetail.guestCtaBecomePro")}</span>
+                  </Link>
+
+                  {/* Secondary: Sign In */}
+                  <button
+                    onClick={() => openLoginModal()}
+                    className="flex-1 sm:flex-none flex items-center justify-center px-6 py-3 sm:py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-[0.97]"
+                    style={{
+                      border: `1.5px solid ${ACCENT}30`,
+                      color: ACCENT,
+                      backgroundColor: `${ACCENT}08`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = `${ACCENT}15`;
+                      e.currentTarget.style.borderColor = `${ACCENT}50`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = `${ACCENT}08`;
+                      e.currentTarget.style.borderColor = `${ACCENT}30`;
+                    }}
+                  >
+                    {t("jobDetail.guestCtaSignIn")}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Guest CTA shimmer animation */}
+      <style jsx>{`
+        @keyframes guest-shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .guest-cta-shimmer {
+          animation: guest-shimmer 3s ease-in-out infinite;
+        }
+      `}</style>
 
       {/* Animations */}
       <style jsx>{`
