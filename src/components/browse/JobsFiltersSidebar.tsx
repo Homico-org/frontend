@@ -1,11 +1,14 @@
 'use client';
 
-import { useLanguage } from '@/contexts/LanguageContext';
-import { JobFilters } from '@/contexts/JobsContext';
-import { RotateCcw, Bookmark, ChevronDown } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
-import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
+import { CategoryIcon } from '@/components/categories';
 import { Badge } from '@/components/ui/badge';
+import { useCategories } from '@/contexts/CategoriesContext';
+import { JobFilters } from '@/contexts/JobsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
+import { Bookmark, ChevronDown, RotateCcw } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 
 // Re-export JobFilters for convenience
 export type { JobFilters } from '@/contexts/JobsContext';
@@ -32,6 +35,7 @@ interface JobsFiltersSidebarProps {
   filters: JobFilters;
   onFiltersChange: (filters: JobFilters) => void;
   savedCount?: number;
+  isAuthenticated?: boolean;
 }
 
 // Custom checkbox component
@@ -167,12 +171,16 @@ function CollapsibleSection({
   );
 }
 
-export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCount = 0 }: JobsFiltersSidebarProps) {
+export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCount = 0, isAuthenticated = true }: JobsFiltersSidebarProps) {
   const { t, locale } = useLanguage();
+  const { categories, getSubcategoriesForCategory } = useCategories();
 
   // Local state for budget inputs (to allow typing without immediate filtering)
   const [minInput, setMinInput] = useState<string>(filters.budgetMin?.toString() || '');
   const [maxInput, setMaxInput] = useState<string>(filters.budgetMax?.toString() || '');
+
+  // Track expanded category accordions
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   // Sync local state when filters change externally
   useEffect(() => {
@@ -180,8 +188,52 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
     setMaxInput(filters.budgetMax?.toString() || '');
   }, [filters.budgetMin, filters.budgetMax]);
 
+  // Auto-expand parent category when subcategory is selected
+  useEffect(() => {
+    if (filters.subcategory) {
+      for (const category of categories) {
+        const subs = getSubcategoriesForCategory(category.key);
+        if (subs.some(s => s.key === filters.subcategory)) {
+          setExpandedCategories(prev => ({ ...prev, [category.key]: true }));
+          break;
+        }
+      }
+    } else if (filters.category) {
+      setExpandedCategories(prev => {
+        if (prev[filters.category!]) return prev;
+        return { ...prev, [filters.category!]: true };
+      });
+    }
+  }, [filters.category, filters.subcategory, categories, getSubcategoriesForCategory]);
+
   const updateFilter = <K extends keyof JobFilters>(key: K, value: JobFilters[K]) => {
     onFiltersChange({ ...filters, [key]: value });
+  };
+
+  const handleCategorySelect = (categoryKey: string) => {
+    if (filters.category === categoryKey && !filters.subcategory) {
+      // Deselect category
+      onFiltersChange({ ...filters, category: null, subcategory: null });
+    } else {
+      // Select category, clear subcategory
+      onFiltersChange({ ...filters, category: categoryKey, subcategory: null });
+    }
+  };
+
+  const handleSubcategorySelect = (categoryKey: string, subcategoryKey: string) => {
+    if (filters.subcategory === subcategoryKey) {
+      // Deselect subcategory, keep category
+      onFiltersChange({ ...filters, subcategory: null });
+    } else {
+      onFiltersChange({ ...filters, category: categoryKey, subcategory: subcategoryKey });
+    }
+  };
+
+  const toggleCategoryExpand = (categoryKey: string) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryKey]: !prev[categoryKey],
+    }));
   };
 
   const handleBudgetChange = () => {
@@ -199,6 +251,8 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
     setMaxInput('');
     onFiltersChange({
       ...filters,
+      category: null,
+      subcategory: null,
       budgetMin: null,
       budgetMax: null,
       propertyType: 'all',
@@ -210,6 +264,8 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
   };
 
   const hasActiveFilters =
+    filters.category !== null ||
+    filters.subcategory !== null ||
     filters.budgetMin !== null ||
     filters.budgetMax !== null ||
     filters.propertyType !== 'all' ||
@@ -235,37 +291,143 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
           </div>
         )}
 
-        {/* Saved Jobs Toggle */}
-        <label
-          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition-all mb-3 ${
-            filters.showFavoritesOnly
-              ? 'text-white'
-              : 'bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-          }`}
-          style={filters.showFavoritesOnly ? { backgroundColor: ACCENT } : {}}
-        >
-          <Bookmark className={`w-4 h-4 ${filters.showFavoritesOnly ? 'fill-white' : ''}`} />
-          <span className="text-[13px] font-medium flex-1">
-            {t('browse.saved')}
-          </span>
-          <input
-            type="checkbox"
-            checked={filters.showFavoritesOnly}
-            onChange={() => updateFilter('showFavoritesOnly', !filters.showFavoritesOnly)}
-            className="sr-only"
-          />
-          {savedCount > 0 && (
-            <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded ${
+        {/* Saved Jobs Toggle — only for authenticated users */}
+        {isAuthenticated && (
+          <label
+            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition-all mb-3 ${
               filters.showFavoritesOnly
-                ? 'bg-white/20'
-                : ''
+                ? 'text-white'
+                : 'bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800'
             }`}
-            style={!filters.showFavoritesOnly ? { backgroundColor: `${ACCENT}15`, color: ACCENT } : {}}
-            >
-              {savedCount}
+            style={filters.showFavoritesOnly ? { backgroundColor: ACCENT } : {}}
+          >
+            <Bookmark className={`w-4 h-4 ${filters.showFavoritesOnly ? 'fill-white' : ''}`} />
+            <span className="text-[13px] font-medium flex-1">
+              {t('browse.saved')}
             </span>
-          )}
-        </label>
+            <input
+              type="checkbox"
+              checked={filters.showFavoritesOnly}
+              onChange={() => updateFilter('showFavoritesOnly', !filters.showFavoritesOnly)}
+              className="sr-only"
+            />
+            {savedCount > 0 && (
+              <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded ${
+                filters.showFavoritesOnly
+                  ? 'bg-white/20'
+                  : ''
+              }`}
+              style={!filters.showFavoritesOnly ? { backgroundColor: `${ACCENT}15`, color: ACCENT } : {}}
+              >
+                {savedCount}
+              </span>
+            )}
+          </label>
+        )}
+
+        {/* Category Section */}
+        <CollapsibleSection
+          title={t('browse.categoryFilter')}
+          defaultOpen
+          activeCount={(filters.category ? 1 : 0) + (filters.subcategory ? 1 : 0)}
+        >
+          <div className="space-y-1">
+            {categories.map((category) => {
+              const isSelected = filters.category === category.key;
+              const isExpanded = expandedCategories[category.key] ?? false;
+              const subcategories = getSubcategoriesForCategory(category.key);
+              const categoryLabel = getCategoryLabelStatic(category.key, locale);
+              const hasSelectedSub = subcategories.some(s => s.key === filters.subcategory);
+
+              return (
+                <div key={category.key}>
+                  <button
+                    onClick={() => {
+                      handleCategorySelect(category.key);
+                      if (!isExpanded) toggleCategoryExpand(category.key);
+                    }}
+                    className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg transition-all text-left group ${
+                      isSelected || hasSelectedSub
+                        ? 'bg-[#C4735B]/10'
+                        : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                    }`}
+                  >
+                    <span
+                      className="transition-transform duration-200 group-hover:scale-110 flex-shrink-0"
+                      style={{ color: isSelected || hasSelectedSub ? ACCENT : undefined }}
+                    >
+                      <CategoryIcon type={category.key} className="w-4 h-4" />
+                    </span>
+                    <span className={`text-[13px] flex-1 transition-colors ${
+                      isSelected || hasSelectedSub
+                        ? 'font-semibold text-neutral-900 dark:text-white'
+                        : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-300'
+                    }`}>
+                      {categoryLabel}
+                    </span>
+                    {subcategories.length > 0 && (
+                      <ChevronDown
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCategoryExpand(category.key);
+                        }}
+                        className={`w-3.5 h-3.5 text-neutral-400 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer hover:text-neutral-600 ${
+                          isExpanded ? 'rotate-180' : 'rotate-0'
+                        }`}
+                      />
+                    )}
+                  </button>
+
+                  {/* Subcategories */}
+                  {subcategories.length > 0 && isExpanded && (
+                    <div className="ml-6 mt-0.5 space-y-0.5 pb-1">
+                      {subcategories.map((sub) => {
+                        const isSubSelected = filters.subcategory === sub.key;
+                        const subLabel = getCategoryLabelStatic(sub.key, locale);
+                        return (
+                          <button
+                            key={sub.key}
+                            onClick={() => handleSubcategorySelect(category.key, sub.key)}
+                            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-all ${
+                              isSubSelected
+                                ? 'bg-[#C4735B]/10'
+                                : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                            }`}
+                          >
+                            <div
+                              className={`w-3.5 h-3.5 rounded border-[1.5px] flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
+                                isSubSelected
+                                  ? 'border-transparent'
+                                  : 'border-neutral-300 dark:border-neutral-600'
+                              }`}
+                              style={isSubSelected ? { backgroundColor: ACCENT } : {}}
+                            >
+                              {isSubSelected && (
+                                <svg className="w-2 h-2 text-white" viewBox="0 0 12 12" fill="none">
+                                  <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              )}
+                            </div>
+                            <span className={`text-[12px] transition-colors ${
+                              isSubSelected
+                                ? 'font-medium text-neutral-900 dark:text-white'
+                                : 'text-neutral-500 dark:text-neutral-400'
+                            }`}>
+                              {subLabel}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </CollapsibleSection>
+
+        {/* Divider */}
+        <div className="h-px bg-neutral-100 dark:bg-neutral-800" />
 
         {/* Budget Section - Range Inputs */}
         <CollapsibleSection

@@ -6,6 +6,7 @@ import MyJobCard from "@/components/common/MyJobCard";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
@@ -19,24 +20,16 @@ import {
   Plus,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function JobsPage() {
-  const { t, locale } = useLanguage();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { t } = useLanguage();
+  const { user, isLoading: isAuthLoading, isAuthenticated } = useAuth();
+  const { openLoginModal } = useAuthModal();
   const { trackEvent } = useAnalytics();
-  const router = useRouter();
   const { filters, savedJobIds, handleSaveJob, appliedJobIds } = useJobsContext();
 
   const isPro = user?.role === "pro" || user?.role === "admin";
-
-  // Redirect non-pro users to portfolio page
-  useEffect(() => {
-    if (!isAuthLoading && !isPro) {
-      router.replace("/portfolio");
-    }
-  }, [isAuthLoading, isPro, router]);
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,18 +38,15 @@ export default function JobsPage() {
   const [hasMore, setHasMore] = useState(true);
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  // User's own posted jobs
+  // User's own posted jobs (only for authenticated users)
   const [myJobs, setMyJobs] = useState<Job[]>([]);
-  const [isLoadingMyJobs, setIsLoadingMyJobs] = useState(true);
+  const [isLoadingMyJobs, setIsLoadingMyJobs] = useState(false);
   const [showMyJobs, setShowMyJobs] = useState(true);
 
-  // Jobs are filtered on the backend when showFavoritesOnly is true
   const displayedJobs = jobs;
 
   const fetchJobs = useCallback(
     async (pageNum: number, reset = false) => {
-      if (!isPro) return;
-
       try {
         if (reset) setIsLoading(true);
         else setIsLoadingMore(true);
@@ -65,14 +55,16 @@ export default function JobsPage() {
         params.append("page", pageNum.toString());
         params.append("limit", "12");
 
-        // Pros browse only open jobs; admins should be able to see all jobs (all statuses)
+        // Always show open jobs (admins can see all statuses)
         if (user?.role !== "admin") {
           params.append("status", "open");
         }
 
-        // Filter by pro's selected subcategories only (admins should see ALL jobs)
+        // For pros, filter by their selected subcategories (unless specific filter is applied)
         if (
-          user?.role === "pro" &&
+          isPro &&
+          !filters.category &&
+          !filters.subcategory &&
           user?.selectedSubcategories &&
           user.selectedSubcategories.length > 0
         ) {
@@ -81,7 +73,9 @@ export default function JobsPage() {
           });
         }
 
+        // Apply sidebar filters
         if (filters.category) params.append("category", filters.category);
+        if (filters.subcategory) params.append("subcategories", filters.subcategory);
         if (filters.budgetMin !== null)
           params.append("budgetMin", filters.budgetMin.toString());
         if (filters.budgetMax !== null)
@@ -113,6 +107,7 @@ export default function JobsPage() {
       user?.selectedSubcategories,
       user?.role,
       filters.category,
+      filters.subcategory,
       filters.budgetMin,
       filters.budgetMax,
       filters.propertyType,
@@ -123,7 +118,7 @@ export default function JobsPage() {
     ],
   );
 
-  // Fetch user's own posted jobs (regardless of subcategory)
+  // Fetch user's own posted jobs (only for authenticated users)
   const fetchMyJobs = useCallback(async () => {
     if (!user?.id) return;
 
@@ -150,10 +145,12 @@ export default function JobsPage() {
 
   // Reset and fetch when filters change
   useEffect(() => {
-    if (!isPro) return;
+    // Wait for auth to finish before first fetch (to know role/subcategories)
+    if (isAuthLoading) return;
 
     const filterKey = JSON.stringify({
       category: filters.category,
+      subcategory: filters.subcategory,
       budgetMin: filters.budgetMin,
       budgetMax: filters.budgetMax,
       propertyType: filters.propertyType,
@@ -184,8 +181,9 @@ export default function JobsPage() {
     setPage(1);
     fetchJobs(1, true);
   }, [
-    isPro,
+    isAuthLoading,
     filters.category,
+    filters.subcategory,
     filters.budgetMin,
     filters.budgetMax,
     filters.propertyType,
@@ -217,12 +215,22 @@ export default function JobsPage() {
     if (page > 1) fetchJobs(page);
   }, [page, fetchJobs]);
 
+  // Handle save — require auth
+  const onSaveJob = useCallback((jobId: string) => {
+    if (!isAuthenticated) {
+      openLoginModal();
+      return;
+    }
+    handleSaveJob(jobId);
+  }, [isAuthenticated, openLoginModal, handleSaveJob]);
+
   const JobsSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-5">
       {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800"
+          className="rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800"
+          style={{ backgroundColor: 'var(--color-bg-elevated, white)' }}
         >
           <div className="aspect-[16/10] sm:aspect-[16/9] bg-neutral-200 dark:bg-neutral-700 animate-pulse" />
           <div className="p-2.5 sm:p-4">
@@ -238,28 +246,19 @@ export default function JobsPage() {
   const JobsEmptyState = () => (
     <EmptyState
       icon={filters.showFavoritesOnly ? Bookmark : Briefcase}
-      title={filters.showFavoritesOnly ? "No saved jobs" : "No jobs found"}
-      titleKa={
-        filters.showFavoritesOnly
-          ? "შენახული სამუშაოები არ არის"
-          : "სამუშაოები არ მოიძებნა"
-      }
+      title={filters.showFavoritesOnly ? t("browse.noSavedJobs") : t("browse.noJobsFound")}
       description={
         filters.showFavoritesOnly
-          ? "Save jobs by clicking the bookmark icon"
-          : "Try adjusting your filters to find more jobs"
-      }
-      descriptionKa={
-        filters.showFavoritesOnly
-          ? "შეინახეთ სამუშაოები მონიშვნით"
-          : "სცადეთ ფილტრების შეცვლა"
+          ? t("browse.noSavedJobsDescription")
+          : t("browse.noJobsFoundDescription")
       }
       variant="illustrated"
       size="lg"
     />
   );
 
-  if (isAuthLoading || !isPro) {
+  // Show loading while auth initializes (only brief)
+  if (isAuthLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <LoadingSpinner size="lg" variant="border" color={ACCENT_COLOR} />
@@ -269,27 +268,33 @@ export default function JobsPage() {
 
   return (
     <div className="space-y-4 sm:space-y-8">
-      {/* Add Job CTA */}
-      <Link
-        href="/post-job"
-        className="flex items-center gap-3 p-3 sm:p-4 bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 hover:border-[#C4735B]/50 hover:bg-[#C4735B]/5 transition-all group"
-      >
-        <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#C4735B]/10 group-hover:bg-[#C4735B]/20 flex items-center justify-center transition-colors">
-          <Plus className="w-5 h-5 text-[#C4735B]" />
-        </div>
-        <div>
-          <p className="font-semibold text-sm sm:text-base text-neutral-900 dark:text-white group-hover:text-[#C4735B] transition-colors">
-            {locale === "ka" ? "სამუშაოს დამატება" : "Post a Job"}
-          </p>
-          <p className="text-[11px] sm:text-xs text-neutral-400">
-            {locale === "ka" ? "იპოვე სპეციალისტი შენი პროექტისთვის" : "Find the right professional for your project"}
-          </p>
-        </div>
-      </Link>
+      {/* Add Job CTA — show for all authenticated users */}
+      {isAuthenticated && (
+        <Link
+          href="/post-job"
+          className="flex items-center gap-3 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 hover:border-[#C4735B]/50 hover:bg-[#C4735B]/5 transition-all group"
+          style={{ backgroundColor: 'var(--color-bg-elevated, white)' }}
+        >
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#C4735B]/10 group-hover:bg-[#C4735B]/20 flex items-center justify-center transition-colors">
+            <Plus className="w-5 h-5 text-[#C4735B]" />
+          </div>
+          <div>
+            <p className="font-semibold text-sm sm:text-base text-neutral-900 dark:text-white group-hover:text-[#C4735B] transition-colors">
+              {t("browse.postAJobCta")}
+            </p>
+            <p className="text-[11px] sm:text-xs text-neutral-400">
+              {t("browse.postAJobCtaDescription")}
+            </p>
+          </div>
+        </Link>
+      )}
 
-      {/* User's Own Posted Jobs Section */}
-      {!filters.showFavoritesOnly && myJobs.length > 0 && (
-        <div className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl border border-neutral-200/60 dark:border-neutral-800 p-3 sm:p-4 shadow-sm">
+      {/* User's Own Posted Jobs Section — authenticated users only */}
+      {isAuthenticated && !filters.showFavoritesOnly && myJobs.length > 0 && (
+        <div
+          className="rounded-xl sm:rounded-2xl border border-neutral-200/60 dark:border-neutral-800 p-3 sm:p-4 shadow-sm"
+          style={{ backgroundColor: 'var(--color-bg-elevated, white)' }}
+        >
           <button
             onClick={() => setShowMyJobs(!showMyJobs)}
             className="w-full flex items-center justify-between group"
@@ -300,10 +305,10 @@ export default function JobsPage() {
               </div>
               <div className="text-left">
                 <h3 className="font-semibold text-neutral-900 dark:text-white text-xs sm:text-sm">
-                  {locale === "ka" ? "თქვენი განცხადებები" : "Your Posted Jobs"}
+                  {t("browse.yourPostedJobs")}
                 </h3>
                 <p className="text-[10px] sm:text-xs text-neutral-400">
-                  {myJobs.length} {locale === "ka" ? "აქტიური" : "active"}
+                  {myJobs.length} {t("job.active").toLowerCase()}
                 </p>
               </div>
             </div>
@@ -314,7 +319,7 @@ export default function JobsPage() {
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#C4735B] bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
-                {locale === "ka" ? "ახალი" : "New"}
+                {t("browse.newest")}
               </Link>
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
                 {showMyJobs ? (
@@ -346,27 +351,25 @@ export default function JobsPage() {
       ) : displayedJobs.length === 0 ? (
         <div className="text-center py-12 text-neutral-500">
           <p className="text-sm">
-            {locale === "ka"
-              ? "თქვენი სერვისების მიხედვით სამუშაოები არ მოიძებნა"
-              : "No jobs found matching your services"}
+            {t("browse.noMatchingJobs")}
           </p>
         </div>
       ) : (
         <>
-          {/* Section Header */}
-          {myJobs.length > 0 && (
+          {/* Section Header — only shown when my jobs section is visible above */}
+          {isAuthenticated && myJobs.length > 0 && isPro && (
             <div className="flex items-center justify-between pb-2 sm:pb-3 border-b border-neutral-100 dark:border-neutral-800 mb-3 sm:mb-4">
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="w-1 h-4 sm:h-5 rounded-full bg-[#C4735B]" />
                 <h3 className="font-semibold text-sm sm:text-base text-neutral-900 dark:text-white">
-                  {locale === "ka" ? "შესაფერისი სამუშაოები" : "Jobs for You"}
+                  {t("browse.jobsForYou")}
                 </h3>
                 <span className="text-[10px] sm:text-xs text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 sm:px-2 py-0.5 rounded-full">
                   {displayedJobs.length}+
                 </span>
               </div>
               <span className="hidden sm:block text-xs text-neutral-400">
-                {locale === "ka" ? "თქვენი სერვისების მიხედვით" : "Based on your services"}
+                {t("browse.basedOnServices")}
               </span>
             </div>
           )}
@@ -380,7 +383,7 @@ export default function JobsPage() {
               >
                 <JobCard
                   job={job}
-                  onSave={handleSaveJob}
+                  onSave={onSaveJob}
                   isSaved={savedJobIds.has(job.id)}
                   hasApplied={appliedJobIds.has(job.id)}
                 />
@@ -403,4 +406,3 @@ export default function JobsPage() {
     </div>
   );
 }
-

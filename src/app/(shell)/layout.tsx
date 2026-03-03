@@ -76,7 +76,7 @@ const TABS: Array<{
     labelKa: "სამუშაოები",
     labelRu: "Работы",
     icon: Briefcase,
-    showFor: "pro" as const,
+    showFor: "all" as const,
   },
   {
     key: "portfolio",
@@ -100,11 +100,13 @@ const TABS: Array<{
 
 function JobsSidebar() {
   const { filters, setFilters, savedJobIds } = useJobsContext();
+  const { isAuthenticated } = useAuth();
   return (
     <JobsFiltersSidebar
       filters={filters}
       onFiltersChange={setFilters}
       savedCount={savedJobIds.size}
+      isAuthenticated={isAuthenticated}
     />
   );
 }
@@ -112,10 +114,9 @@ function JobsSidebar() {
 function useJobsFilterCount() {
   const { filters } = useJobsContext();
   let count = 0;
-  if (filters.category) count++;
   if (filters.subcategory) count++;
-  if (filters.budgetMin !== null) count++;
-  if (filters.budgetMax !== null) count++;
+  else if (filters.category) count++;
+  if (filters.budgetMin !== null || filters.budgetMax !== null) count++;
   if (filters.propertyType && filters.propertyType !== "all") count++;
   if (filters.location && filters.location !== "all") count++;
   if (filters.deadline && filters.deadline !== "all") count++;
