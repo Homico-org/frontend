@@ -96,8 +96,12 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
       const formDataUpload = new FormData();
       formDataUpload.append('file', croppedBlob, 'avatar.jpg');
 
+      const token = localStorage.getItem('access_token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/avatar`, {
         method: 'POST',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: formDataUpload,
       });
 
@@ -177,7 +181,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
 
       <div className="space-y-6">
         <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
-          {t('common.title')}
+          {t('settings.profile')}
         </h2>
 
         {message && (

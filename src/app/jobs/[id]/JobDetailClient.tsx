@@ -694,7 +694,7 @@ const getCategoryIllustration = (
 export default function JobDetailClient() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isAuthValidated } = useAuth();
   const { openLoginModal } = useAuthModal();
 
   const { t } = useLanguage();
@@ -719,6 +719,7 @@ export default function JobDetailClient() {
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(
     null,
   );
+  const [selectedRefImageIndex, setSelectedRefImageIndex] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showInviteProsModal, setShowInviteProsModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -1841,9 +1842,9 @@ export default function JobDetailClient() {
 
       {/* Header / Hero */}
       <section className="relative bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-2 sm:py-3">
           {/* Back button + Edit/Delete buttons row (only when job is not hired) */}
-          <div className="flex items-center justify-between mb-4 sm:mb-5">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
             <BackButton href="/jobs" />
             {isOwner && !isHired && (
               <div className="flex items-center gap-1.5 sm:gap-2">
@@ -1869,9 +1870,9 @@ export default function JobDetailClient() {
           {/* Conditional Layout: With images = 2 columns, Without images = single column compact */}
           {allMedia.length > 0 ? (
             /* WITH IMAGES: Side-by-side layout */
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 pb-2 sm:pb-0">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-3 lg:gap-5 pb-1 sm:pb-0">
               {/* Left: Image Gallery */}
-              <div className="space-y-2 relative">
+              <div className="space-y-1.5 relative">
                 {/* Edit Media Button for Owner */}
                 {isOwner && !isHired && (
                   <Link
@@ -1882,10 +1883,10 @@ export default function JobDetailClient() {
                     <Edit3 className="w-4 h-4" />
                   </Link>
                 )}
-                {/* Main Image */}
+                {/* Main Image — capped height on desktop to keep everything in viewport */}
                 <button
                   onClick={() => setSelectedMediaIndex(activeImageIndex)}
-                  className="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group"
+                  className="relative w-full aspect-[16/10] lg:aspect-auto lg:h-[min(280px,35vh)] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group"
                 >
                   <img
                     src={storage.getFileUrl(allMedia[activeImageIndex]?.url)}
@@ -1904,14 +1905,14 @@ export default function JobDetailClient() {
 
                 {/* Thumbnail strip */}
                 {allMedia.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                  <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
                     {allMedia.map((media, idx) => (
                       <button
                         key={idx}
                         onClick={() => setActiveImageIndex(idx)}
-                        className={`relative flex-shrink-0 w-16 h-12 md:w-20 md:h-14 rounded-lg overflow-hidden transition-all ${
+                        className={`relative flex-shrink-0 w-14 h-10 md:w-16 md:h-11 rounded-lg overflow-hidden transition-all ${
                           idx === activeImageIndex
-                            ? "ring-2 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900"
+                            ? "ring-2 ring-offset-1 ring-offset-white dark:ring-offset-neutral-900"
                             : "opacity-60 hover:opacity-100"
                         }`}
                         style={
@@ -1939,7 +1940,7 @@ export default function JobDetailClient() {
               {/* Right: Job Info */}
               <div className="flex flex-col justify-center">
                 {/* Status badges */}
-                <div className="flex flex-wrap items-center gap-2 mb-3">
+                <div className="flex flex-wrap items-center gap-2 mb-1.5">
                   {isOpen && (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -1974,12 +1975,12 @@ export default function JobDetailClient() {
                 </div>
 
                 {/* Title */}
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-3 sm:mb-4 leading-tight">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-neutral-900 dark:text-white mb-1 sm:mb-1.5 leading-tight">
                   {job.title}
                 </h1>
 
                 {/* Quick stats */}
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-3 sm:mb-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-1.5 sm:mb-2">
                   {job.location && (
                     <span className="flex items-center gap-1 sm:gap-1.5">
                       <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
@@ -1995,27 +1996,27 @@ export default function JobDetailClient() {
                 </div>
 
                 {/* Budget highlight */}
-                <div className="flex items-center gap-2.5 sm:gap-3 p-3 sm:p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 mb-3 sm:mb-4">
+                <div className="flex items-center gap-2 sm:gap-2.5 p-2 sm:p-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 mb-1.5 sm:mb-2">
                   <div
-                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                    className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
                     style={{ backgroundColor: `${ACCENT}15` }}
                   >
-                    <span className="text-base sm:text-lg" style={{ color: ACCENT }}>
+                    <span className="text-sm" style={{ color: ACCENT }}>
                       ₾
                     </span>
                   </div>
                   <div>
-                    <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    <p className="text-[10px] text-neutral-500 dark:text-neutral-400 uppercase tracking-wider leading-none mb-0.5">
                       {t("common.budget")}
                     </p>
-                    <p className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white">
+                    <p className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white leading-none">
                       {budgetDisplay}
                     </p>
                   </div>
                 </div>
 
                 {/* Stats row */}
-                <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm mb-3">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm mb-1.5">
                   <div className="flex items-center gap-1.5 sm:gap-2 text-neutral-600 dark:text-neutral-400">
                     <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span>
@@ -2245,7 +2246,7 @@ export default function JobDetailClient() {
 
       {/* Main Content */}
       <main className="relative z-10 bg-[#FAFAFA] dark:bg-[#0A0A0A]">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-3">
           {/* Submit Proposal button for pro - only for design/architecture categories */}
           {isPro &&
             !isOwner &&
@@ -2253,6 +2254,7 @@ export default function JobDetailClient() {
             !isHired &&
             !myProposal &&
             !isCheckingProposal &&
+            isAuthValidated &&
             isHighLevelCategory(job?.category) && (
               <div className="flex justify-end mb-4">
                 {user?.verificationStatus === "verified" ? (
@@ -2280,7 +2282,7 @@ export default function JobDetailClient() {
                 )}
               </div>
             )}
-          {isPro && !isOwner && isOpen && !isHired && isCheckingProposal && (
+          {isPro && !isOwner && isOpen && !isHired && (isCheckingProposal || !isAuthValidated) && (
             <div className="flex justify-end mb-4">
               <div className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-neutral-400">
                 <LoadingSpinner size="sm" color="#737373" />
@@ -2728,7 +2730,10 @@ export default function JobDetailClient() {
                   )}
 
                   {/* References */}
-                  {job.references && job.references.length > 0 && (
+                  {job.references && job.references.length > 0 && (() => {
+                    const refImages = job.references.filter((r) => r.type === "image");
+                    const refLinks = job.references.filter((r) => r.type !== "image");
+                    return (
                     <section
                       className={`bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[900ms] ${
                         isVisible
@@ -2739,8 +2744,34 @@ export default function JobDetailClient() {
                       <h2 className="font-display text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white mb-3 sm:mb-4">
                         {t("jobDetail.references")}
                       </h2>
+
+                      {/* Reference Images — grid with lightbox preview */}
+                      {refImages.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-3">
+                          {refImages.map((ref, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setSelectedRefImageIndex(idx)}
+                              className="relative aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group"
+                            >
+                              <img
+                                src={storage.getFileUrl(ref.url)}
+                                alt={ref.title || ""}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                              <div className="absolute top-2 right-2 p-1.5 rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Maximize2 className="w-3.5 h-3.5" />
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Reference Links */}
+                      {refLinks.length > 0 && (
                       <div className="space-y-2">
-                        {job.references.map((ref, idx) => (
+                        {refLinks.map((ref, idx) => (
                           <a
                             key={idx}
                             href={ref.url}
@@ -2785,8 +2816,10 @@ export default function JobDetailClient() {
                           </a>
                         ))}
                       </div>
+                      )}
                     </section>
-                  )}
+                    );
+                  })()}
 
                   {/* My Proposal - only show when not hired (pending/rejected/withdrawn) */}
                   {myProposal &&
@@ -3332,6 +3365,7 @@ export default function JobDetailClient() {
         !isHired &&
         !myProposal &&
         !isCheckingProposal &&
+        isAuthValidated &&
         user?.verificationStatus === "verified" &&
         isHighLevelCategory(job?.category) && (
           <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 p-4 safe-area-bottom">
@@ -3446,6 +3480,24 @@ export default function JobDetailClient() {
         showThumbnails={false}
         showInfo={false}
       />
+
+      {/* Reference Images Lightbox */}
+      {job?.references && (() => {
+        const refImages = job.references.filter((r) => r.type === "image");
+        return refImages.length > 0 ? (
+          <MediaLightbox
+            items={refImages.map((r) => ({ url: r.url, type: "image" as const }))}
+            currentIndex={selectedRefImageIndex ?? 0}
+            isOpen={selectedRefImageIndex !== null}
+            onClose={() => setSelectedRefImageIndex(null)}
+            onIndexChange={setSelectedRefImageIndex}
+            getImageUrl={(url) => storage.getFileUrl(url)}
+            locale={locale as "en" | "ka" | "ru"}
+            showThumbnails={refImages.length > 1}
+            showInfo={false}
+          />
+        ) : null;
+      })()}
 
       {/* Review Modal */}
       <ReviewModal

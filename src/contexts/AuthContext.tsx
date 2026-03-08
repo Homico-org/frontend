@@ -36,6 +36,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAuthValidated: boolean;
   login: (accessToken: string, user: User) => void;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
@@ -55,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthValidated, setIsAuthValidated] = useState(false);
   const router = useRouter();
 
   // Ref to prevent duplicate auth initialization (React Strict Mode)
@@ -109,6 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!accessToken) {
         setIsLoading(false);
+        setIsAuthValidated(true);
         return;
       }
 
@@ -143,6 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null);
             setToken(null);
           }
+          setIsAuthValidated(true);
         });
       } else {
         // No cached user, must validate synchronously
@@ -155,6 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           clearAuthData();
         }
         setIsLoading(false);
+        setIsAuthValidated(true);
       }
     };
 
@@ -208,10 +213,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     token,
     isAuthenticated: !!user,
     isLoading,
+    isAuthValidated,
     login,
     logout,
     updateUser,
-  }), [user, token, isLoading, login, logout, updateUser]);
+  }), [user, token, isLoading, isAuthValidated, login, logout, updateUser]);
 
   return (
     <AuthContext.Provider value={contextValue}>

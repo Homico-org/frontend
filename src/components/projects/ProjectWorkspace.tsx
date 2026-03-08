@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Avatar from '@/components/common/Avatar';
+import MediaLightbox from '@/components/common/MediaLightbox';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Input, Textarea } from '@/components/ui/input';
@@ -128,6 +129,15 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
   // Comment state
   const [activeCommentItem, setActiveCommentItem] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
+
+  // Image lightbox state
+  const [lightboxImages, setLightboxImages] = useState<{ url: string; type: 'image' }[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const openImageLightbox = (images: SectionAttachment[], clickedIndex: number) => {
+    setLightboxImages(images.map(a => ({ url: a.fileUrl, type: 'image' as const })));
+    setLightboxIndex(clickedIndex);
+  };
 
   // Fetch workspace data
   const fetchWorkspace = useCallback(async () => {
@@ -348,6 +358,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
                 commentText={commentText}
                 setCommentText={setCommentText}
                 onAddComment={(itemId) => handleAddComment(getId(section), itemId)}
+                onOpenImageLightbox={openImageLightbox}
               />
             ))}
           </div>
@@ -387,6 +398,19 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
           onSave={(itemData) => handleCreateItem(showItemModal!, itemData)}
         />
       )}
+
+      {/* Image Lightbox */}
+      <MediaLightbox
+        items={lightboxImages}
+        currentIndex={lightboxIndex ?? 0}
+        isOpen={lightboxIndex !== null}
+        onClose={() => setLightboxIndex(null)}
+        onIndexChange={setLightboxIndex}
+        getImageUrl={(url) => storage.getFileUrl(url)}
+        locale={locale as "en" | "ka" | "ru"}
+        showThumbnails={lightboxImages.length > 1}
+        showInfo={false}
+      />
     </>
   );
 
@@ -462,6 +486,7 @@ function SectionCard({
   commentText,
   setCommentText,
   onAddComment,
+  onOpenImageLightbox,
 }: {
   section: WorkspaceSection;
   locale: string;
@@ -478,6 +503,7 @@ function SectionCard({
   commentText: string;
   setCommentText: (text: string) => void;
   onAddComment: (itemId: string) => void;
+  onOpenImageLightbox: (images: SectionAttachment[], clickedIndex: number) => void;
 }) {
   const { t } = useLanguage();
   const [showMenu, setShowMenu] = useState(false);
@@ -581,25 +607,26 @@ function SectionCard({
                 </span>
               </div>
               {/* Image Grid */}
-              {section.attachments.filter(a => a.fileType === 'image').length > 0 && (
+              {(() => {
+                const imageAtts = section.attachments.filter(a => a.fileType === 'image');
+                return imageAtts.length > 0 ? (
                 <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-3">
-                  {section.attachments.filter(a => a.fileType === 'image').map((att) => (
-                    <a
+                  {imageAtts.map((att, idx) => (
+                    <button
                       key={getId(att)}
-                      href={storage.getFileUrl(att.fileUrl)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="aspect-square rounded-lg overflow-hidden bg-[var(--color-bg-primary)] border border-[var(--color-border)] hover:border-[#E07B4F] transition-colors group"
+                      onClick={() => onOpenImageLightbox(imageAtts, idx)}
+                      className="aspect-square rounded-lg overflow-hidden bg-[var(--color-bg-primary)] border border-[var(--color-border)] hover:border-[#E07B4F] transition-colors group cursor-pointer"
                     >
                       <img
                         src={storage.getFileUrl(att.fileUrl)}
                         alt={att.fileName}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
-                    </a>
+                    </button>
                   ))}
                 </div>
-              )}
+              ) : null;
+              })()}
               {/* Document List */}
               {section.attachments.filter(a => a.fileType !== 'image').length > 0 && (
                 <div className="flex flex-wrap gap-2">

@@ -396,8 +396,9 @@ export default function ProfessionalDetailClient({
       (profile.categories?.length
         ? profile.categories
         : profile.selectedCategories) || [];
-    return cats.filter(Boolean);
-  }, [profile]);
+    const knownKeys = new Set(CATEGORIES.map((c) => c.key));
+    return cats.filter((c) => c && knownKeys.has(c));
+  }, [profile, CATEGORIES]);
 
   const proSubcategories = useMemo(() => {
     if (!profile) return [];
@@ -405,8 +406,19 @@ export default function ProfessionalDetailClient({
       (profile.subcategories?.length
         ? profile.subcategories
         : profile.selectedSubcategories) || [];
-    return subcats.filter(Boolean);
-  }, [profile]);
+    const knownSubKeys = new Set<string>();
+    for (const cat of CATEGORIES) {
+      for (const sub of cat.subcategories) {
+        knownSubKeys.add(sub.key);
+        if (sub.children) {
+          for (const child of sub.children) {
+            knownSubKeys.add(child.key);
+          }
+        }
+      }
+    }
+    return subcats.filter((s) => s && (knownSubKeys.has(s) || s.startsWith("custom:")));
+  }, [profile, CATEGORIES]);
 
   // Fetch my open jobs to decide whether to show "Invite to job" CTA
   useEffect(() => {
