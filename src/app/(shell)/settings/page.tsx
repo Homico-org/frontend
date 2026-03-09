@@ -4,6 +4,7 @@ import AuthGuard from '@/components/common/AuthGuard';
 import AvatarCropper from '@/components/common/AvatarCropper';
 import Select from '@/components/common/Select';
 import { AccountSettings, EmailChangeModal, NotificationSettings, PasswordChangeForm, PaymentSettings, PhoneChangeModal, ProfileSettings } from '@/components/settings';
+import ScheduleSettings from '@/components/settings/ScheduleSettings';
 import PaymentMethodCard, { type PaymentMethod } from '@/components/settings/PaymentMethodCard';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/badge';
@@ -786,6 +787,7 @@ function SettingsPageContent() {
     { id: 'security', label: t('common.password'), icon: Lock },
     // Payments tab - only visible in development
     ...(process.env.NODE_ENV === 'development' ? [{ id: 'payments', label: t("settings.payments"), icon: CreditCard }] : []),
+    ...(user?.role === 'pro' ? [{ id: 'schedule', label: t('settings.schedule'), icon: Calendar }] : []),
     { id: 'account', label: t('settings.account'), icon: Shield },
   ];
 
@@ -888,6 +890,10 @@ function SettingsPageContent() {
 
           {activeTab === 'payments' && process.env.NODE_ENV === 'development' && (
             <PaymentSettings onOpenAddCardModal={() => setShowAddCardModal(true)} />
+          )}
+
+          {activeTab === 'schedule' && (
+            <ScheduleSettings />
           )}
 
           {activeTab === 'account' && (

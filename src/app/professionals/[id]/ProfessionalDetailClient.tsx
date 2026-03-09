@@ -4,6 +4,7 @@ import AddressPicker from "@/components/common/AddressPicker";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import Select from "@/components/common/Select";
 import AboutTab from "@/components/professionals/AboutTab";
+import BookingModal from "@/components/professionals/BookingModal";
 import ContactModal from "@/components/professionals/ContactModal";
 import InviteProToJobModal from "@/components/professionals/InviteProToJobModal";
 import PortfolioTab from "@/components/professionals/PortfolioTab";
@@ -153,6 +154,7 @@ export default function ProfessionalDetailClient({
   const [isLoading, setIsLoading] = useState(!initialProfile);
   const [error, setError] = useState<string | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
   const [reviews, setReviews] = useState<PageReview[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
 
@@ -2186,6 +2188,23 @@ export default function ProfessionalDetailClient({
                           {t("professional.inviteToJob")}
                         </motion.button>
                       )}
+                      {!canEdit && (
+                        <motion.button
+                          whileHover={{ scale: 1.02, y: -1 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => {
+                            if (!user) {
+                              openLoginModal(`/professionals/${profile?.id || (profile as any)?._id}`);
+                              return;
+                            }
+                            setShowBookingModal(true);
+                          }}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-neutral-700 dark:text-neutral-200 font-medium text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-colors"
+                        >
+                          <Calendar className="w-4 h-4" />
+                          {t("booking.bookAppointment")}
+                        </motion.button>
+                      )}
                     </div>
                   )}
                 </motion.div>
@@ -3123,6 +3142,16 @@ export default function ProfessionalDetailClient({
         avatar={avatarUrl}
         locale={locale as "en" | "ka" | "ru"}
       />
+
+      {/* ========== BOOKING MODAL ========== */}
+      {profile && (
+        <BookingModal
+          isOpen={showBookingModal}
+          onClose={() => setShowBookingModal(false)}
+          professionalId={profile.id || (profile as any)._id}
+          professionalName={profile.name || ""}
+        />
+      )}
 
       {/* ========== ADD/EDIT PROJECT MODAL ========== */}
       {(showAddProjectModal || editingProject) && (

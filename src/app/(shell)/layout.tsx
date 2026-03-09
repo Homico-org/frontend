@@ -13,6 +13,7 @@ import { JobsProvider, useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Briefcase,
+  Calendar,
   ChevronLeft,
   ChevronRight,
   Facebook,
@@ -40,7 +41,7 @@ const SIDEBAR_COLLAPSED_WIDTH = 56;
 
 type TabShowFor = "all" | "pro" | "client" | "auth";
 
-type TabKey = "my-space" | "my-jobs" | "jobs" | "portfolio" | "professionals";
+type TabKey = "my-space" | "my-jobs" | "bookings" | "jobs" | "portfolio" | "professionals";
 
 const TABS: Array<{
   key: TabKey;
@@ -68,6 +69,15 @@ const TABS: Array<{
     labelRu: "Мои заказы",
     icon: Hammer,
     showFor: "client" as const,
+  },
+  {
+    key: "bookings",
+    route: "/bookings",
+    label: "Bookings",
+    labelKa: "ჯავშნები",
+    labelRu: "Бронирования",
+    icon: Calendar,
+    showFor: "auth" as const,
   },
   {
     key: "jobs",

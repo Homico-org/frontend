@@ -33,3 +33,6 @@ export * from './project';
 
 // ============== SOCIAL TYPES ==============
 export * from './social';
+
+// ============== BOOKING TYPES ==============
+export * from './booking';
