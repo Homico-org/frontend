@@ -4,7 +4,6 @@ import AuthGuard from '@/components/common/AuthGuard';
 import AvatarCropper from '@/components/common/AvatarCropper';
 import Select from '@/components/common/Select';
 import { AccountSettings, EmailChangeModal, NotificationSettings, PasswordChangeForm, PaymentSettings, PhoneChangeModal, ProfileSettings } from '@/components/settings';
-import ScheduleSettings from '@/components/settings/ScheduleSettings';
 import PaymentMethodCard, { type PaymentMethod } from '@/components/settings/PaymentMethodCard';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +14,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { countries, useLanguage } from '@/contexts/LanguageContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
+import DatePicker from '@/components/common/DatePicker';
+import Checkbox from '@/components/ui/Checkbox';
 import { AlertTriangle, Bell, BriefcaseBusiness, Calendar, CreditCard, EyeOff, Lock, Mail, MessageCircle, RefreshCw, Shield, Smartphone, Trash2, User, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
@@ -47,6 +48,15 @@ interface NotificationSettingsData {
   phone: string | null;
   isPhoneVerified: boolean;
   preferences: NotificationPreferences;
+}
+
+function SectionHeader({ icon: Icon, label }: { icon: typeof User; label: string }) {
+  return (
+    <div className="flex items-center gap-2 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+      <Icon className="w-4 h-4 text-[#C4735B]" />
+      <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">{label}</h2>
+    </div>
+  );
 }
 
 function SettingsPageContent() {
@@ -787,7 +797,6 @@ function SettingsPageContent() {
     { id: 'security', label: t('common.password'), icon: Lock },
     // Payments tab - only visible in development
     ...(process.env.NODE_ENV === 'development' ? [{ id: 'payments', label: t("settings.payments"), icon: CreditCard }] : []),
-    ...(user?.role === 'pro' ? [{ id: 'schedule', label: t('settings.schedule'), icon: Calendar }] : []),
     { id: 'account', label: t('settings.account'), icon: Shield },
   ];
 
@@ -803,46 +812,22 @@ function SettingsPageContent() {
         />
       )}
 
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-4 sm:mb-8">
-          <h1
-            className="text-lg sm:text-2xl font-semibold"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
-            {t('settings.title')}
-          </h1>
-        </div>
-
-        {/* Horizontal Tabs */}
-        <div className="border-b" style={{ borderColor: 'var(--color-border)' }}>
-          <nav className="flex overflow-x-auto scrollbar-hide -mb-px">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 ${
-                  activeTab === tab.id
-                    ? 'border-[#C4735B] text-[#C4735B]'
-                    : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
-                }`}
-              >
-                <tab.icon className="h-4 w-4" />
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Tab Content */}
-        <div className="pt-5 sm:pt-6">
-          {activeTab === 'profile' && (
+      <div className="max-w-2xl mx-auto space-y-6">
+        {/* Profile */}
+        <section className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+          <SectionHeader icon={User} label={t('common.profile')} />
+          <div className="p-4">
             <ProfileSettings
               onOpenEmailModal={() => setShowAddEmailModal(true)}
               onOpenPhoneModal={() => setShowPhoneChangeModal(true)}
             />
-          )}
+          </div>
+        </section>
 
-          {activeTab === 'notifications' && (
+        {/* Notifications */}
+        <section className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+          <SectionHeader icon={Bell} label={t('common.notifications')} />
+          <div className="p-4">
             <NotificationSettings
               locale={locale}
               notificationData={notificationData}
@@ -852,57 +837,57 @@ function SettingsPageContent() {
               onAddEmail={() => setShowAddEmailModal(true)}
               onRetry={fetchNotificationPreferences}
             />
-          )}
+          </div>
+        </section>
 
-          {activeTab === 'security' && (
+        {/* Security */}
+        <section className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+          <SectionHeader icon={Lock} label={t('common.password')} />
+          <div className="p-4">
             <PasswordChangeForm
               locale={locale as 'en' | 'ka' | 'ru'}
               onSubmit={async (currentPassword, newPassword) => {
                 try {
                   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
                   const token = localStorage.getItem('access_token');
-
                   const res = await fetch(`${API_URL}/users/change-password`, {
                     method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      Authorization: `Bearer ${token}`,
-                    },
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                     body: JSON.stringify({ currentPassword, newPassword }),
                   });
-
-                  if (res.ok) {
-                    return { success: true };
-                  } else {
-                    const data = await res.json();
-                    if (res.status === 409) {
-                      return { success: false, error: t('settings.currentPasswordIsIncorrect') };
-                    }
-                    return { success: false, error: data.message };
-                  }
+                  if (res.ok) return { success: true };
+                  const data = await res.json();
+                  if (res.status === 409) return { success: false, error: t('settings.currentPasswordIsIncorrect') };
+                  return { success: false, error: data.message };
                 } catch (error) {
                   const err = error as { message?: string };
                   return { success: false, error: err.message };
                 }
               }}
             />
-          )}
+          </div>
+        </section>
 
-          {activeTab === 'payments' && process.env.NODE_ENV === 'development' && (
-            <PaymentSettings onOpenAddCardModal={() => setShowAddCardModal(true)} />
-          )}
+        {/* Payments — dev only */}
+        {process.env.NODE_ENV === 'development' && (
+          <section className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+            <SectionHeader icon={CreditCard} label={t('settings.payments')} />
+            <div className="p-4">
+              <PaymentSettings onOpenAddCardModal={() => setShowAddCardModal(true)} />
+            </div>
+          </section>
+        )}
 
-          {activeTab === 'schedule' && (
-            <ScheduleSettings />
-          )}
-
-          {activeTab === 'account' && (
+        {/* Account */}
+        <section className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+          <SectionHeader icon={Shield} label={t('settings.account')} />
+          <div className="p-4">
             <AccountSettings
               onOpenDeleteModal={() => setShowDeleteModal(true)}
               onOpenDeactivateModal={() => setShowDeactivateModal(true)}
             />
-          )}
-        </div>
+          </div>
+        </section>
       </div>
 
       {/* Delete Account Confirmation Modal */}
@@ -1087,31 +1072,12 @@ function SettingsPageContent() {
                 <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>
                   {t('settings.returnDateOptional')}
                 </label>
-                <div className="relative">
-                  <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
-                  </div>
-                  {!deactivateUntilInput && (
-                    <div
-                      className="absolute left-10 sm:left-12 top-1/2 -translate-y-1/2 pointer-events-none text-xs sm:text-sm"
-                      style={{ color: 'var(--color-text-tertiary)' }}
-                    >
-                      {t('settings.selectDate')}
-                    </div>
-                  )}
-                  <input
-                    type="date"
-                    value={deactivateUntilInput}
-                    onChange={(e) => setDeactivateUntilInput(e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
-                    className={`w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-yellow-500/50 text-sm sm:text-base ${!deactivateUntilInput ? 'text-transparent' : ''}`}
-                    style={{
-                      backgroundColor: 'var(--color-bg-elevated)',
-                      border: '1px solid var(--color-border)',
-                      color: deactivateUntilInput ? 'var(--color-text-primary)' : 'transparent',
-                    }}
-                  />
-                </div>
+                <DatePicker
+                  value={deactivateUntilInput}
+                  onChange={setDeactivateUntilInput}
+                  min={new Date().toISOString().split("T")[0]}
+                  placeholder={t('settings.selectDate')}
+                />
                 <p className="text-[10px] sm:text-xs mt-1 sm:mt-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
                   {t('settings.ifNotSetYouCan')}
                 </p>
@@ -1368,17 +1334,13 @@ function SettingsPageContent() {
               </div>
 
               {/* Set as default checkbox */}
-              <label className="flex items-center gap-2.5 sm:gap-3 cursor-pointer p-2.5 sm:p-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
-                <input
-                  type="checkbox"
+              <div className="p-2.5 sm:p-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+                <Checkbox
                   checked={cardFormData.setAsDefault}
-                  onChange={(e) => setCardFormData(prev => ({ ...prev, setAsDefault: e.target.checked }))}
-                  className="w-4 h-4 sm:w-5 sm:h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+                  onChange={(v) => setCardFormData(prev => ({ ...prev, setAsDefault: v }))}
+                  label={t('settings.setAsDefaultCard')}
                 />
-                <span className="text-xs sm:text-sm" style={{ color: 'var(--color-text-primary)' }}>
-                  {t('settings.setAsDefaultCard')}
-                </span>
-              </label>
+              </div>
 
               {/* Submit Button */}
               <Button

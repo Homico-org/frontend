@@ -108,22 +108,6 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
 
         {/* Right side - Actions + Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 min-w-0">
-          {/* For Business link - desktop only */}
-          <Link
-            href="/for-business"
-            onClick={() => trackEvent('nav_click', 'for-business')}
-            className={cn(
-              "hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all",
-              pathname === "/for-business"
-                ? "text-neutral-900 dark:text-white"
-                : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
-            )}
-            style={pathname === "/for-business" ? { color: ACCENT_COLOR } : undefined}
-          >
-            <Building2 className="w-3.5 h-3.5" />
-            {t("nav.forBusiness")}
-          </Link>
-
           {/* Language Selector - hidden on mobile when logged out (shown in burger menu) */}
           <div className={!isAuthenticated ? "hidden sm:block" : ""}>
             <LanguageSelector variant="icon" />
@@ -471,23 +455,6 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                         </Link>
                       )}
 
-                      {/* For Business */}
-                      <Link
-                        href="/for-business"
-                        className="group flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
-                        onClick={() => setShowDropdown(false)}
-                      >
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
-                          <Building2
-                            className="w-4 h-4"
-                            style={{ color: ACCENT_COLOR }}
-                          />
-                        </div>
-                        <span>{t("nav.forBusiness")}</span>
-                      </Link>
-
-                      <div className="my-2 mx-4 h-px bg-neutral-200 dark:bg-neutral-700" />
-
                       {/* Settings */}
                       <Link
                         href="/settings"
@@ -788,17 +755,6 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                 </span>
               </Link>
 
-              {/* For Business link */}
-              <Link
-                href="/for-business"
-                onClick={() => { setShowMobileMenu(false); trackEvent('nav_click', 'for-business'); }}
-                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-all"
-              >
-                <Building2 className="w-5 h-5 text-neutral-500" />
-                <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                  {t("nav.forBusiness")}
-                </span>
-              </Link>
             </div>
 
             {/* Footer */}

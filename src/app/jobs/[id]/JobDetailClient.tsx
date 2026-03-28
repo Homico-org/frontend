@@ -1886,7 +1886,7 @@ export default function JobDetailClient() {
                 {/* Main Image — capped height on desktop to keep everything in viewport */}
                 <button
                   onClick={() => setSelectedMediaIndex(activeImageIndex)}
-                  className="relative w-full aspect-[16/10] lg:aspect-auto lg:h-[min(280px,35vh)] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group"
+                  className="relative w-full aspect-[16/9] lg:aspect-auto lg:h-[min(220px,28vh)] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group"
                 >
                   <img
                     src={storage.getFileUrl(allMedia[activeImageIndex]?.url)}
@@ -1910,7 +1910,7 @@ export default function JobDetailClient() {
                       <button
                         key={idx}
                         onClick={() => setActiveImageIndex(idx)}
-                        className={`relative flex-shrink-0 w-14 h-10 md:w-16 md:h-11 rounded-lg overflow-hidden transition-all ${
+                        className={`relative flex-shrink-0 w-12 h-9 md:w-14 md:h-10 rounded-lg overflow-hidden transition-all ${
                           idx === activeImageIndex
                             ? "ring-2 ring-offset-1 ring-offset-white dark:ring-offset-neutral-900"
                             : "opacity-60 hover:opacity-100"
@@ -1975,7 +1975,7 @@ export default function JobDetailClient() {
                 </div>
 
                 {/* Title */}
-                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-neutral-900 dark:text-white mb-1 sm:mb-1.5 leading-tight">
+                <h1 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white mb-1 leading-tight">
                   {job.title}
                 </h1>
 
@@ -1995,30 +1995,14 @@ export default function JobDetailClient() {
                   </span>
                 </div>
 
-                {/* Budget highlight */}
-                <div className="flex items-center gap-2 sm:gap-2.5 p-2 sm:p-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 mb-1.5 sm:mb-2">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: `${ACCENT}15` }}
-                  >
-                    <span className="text-sm" style={{ color: ACCENT }}>
-                      ₾
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-neutral-500 dark:text-neutral-400 uppercase tracking-wider leading-none mb-0.5">
-                      {t("common.budget")}
-                    </p>
-                    <p className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white leading-none">
-                      {budgetDisplay}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Stats row */}
-                <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm mb-1.5">
-                  <div className="flex items-center gap-1.5 sm:gap-2 text-neutral-600 dark:text-neutral-400">
-                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                {/* Budget + Stats row */}
+                <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm mb-1.5 sm:mb-2">
+                  <span className="font-bold text-sm sm:text-base text-neutral-900 dark:text-white" style={{ color: ACCENT }}>
+                    {budgetDisplay}
+                  </span>
+                  <span className="w-px h-4 bg-neutral-200 dark:bg-neutral-700" />
+                  <div className="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
+                    <Eye className="w-3.5 h-3.5" />
                     <span>
                       {job.viewCount || 0} {t("jobDetail.views")}
                     </span>
@@ -2102,7 +2086,7 @@ export default function JobDetailClient() {
               </div>
 
               {/* Title */}
-              <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white leading-tight">
+              <h1 className="text-lg md:text-xl font-bold text-neutral-900 dark:text-white leading-tight">
                 {job.title}
               </h1>
 
@@ -2147,76 +2131,44 @@ export default function JobDetailClient() {
                   ))}
               </div>
 
-              {/* Budget + Quick Specs Row */}
-              <div className="flex flex-wrap items-stretch gap-3 pt-2">
-                {/* Budget Card */}
-                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: `${ACCENT}15` }}
-                  >
-                    <span
-                      className="text-base font-semibold"
-                      style={{ color: ACCENT }}
-                    >
-                      ₾
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                      {t("common.budget")}
-                    </p>
-                    <p className="text-lg font-bold text-neutral-900 dark:text-white leading-tight">
-                      {budgetDisplay}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Quick Specs - show key info inline */}
-                {(job.areaSize != null ||
-                  job.roomCount != null ||
-                  job.deadline ||
-                  job.propertyType) && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    {job.propertyType && (
-                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
-                        <Home className="w-4 h-4 text-neutral-500" />
-                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              {/* Budget + Quick Specs — compact inline row */}
+              <div className="flex flex-wrap items-center gap-3 text-sm pt-1">
+                <span className="font-bold text-base" style={{ color: ACCENT }}>
+                  {budgetDisplay}
+                </span>
+                {(job.propertyType || job.areaSize != null || job.roomCount != null || job.deadline) && (
+                  <>
+                    <span className="w-px h-4 bg-neutral-200 dark:bg-neutral-700" />
+                    <div className="flex flex-wrap items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                      {job.propertyType && (
+                        <span className="flex items-center gap-1">
+                          <Home className="w-3.5 h-3.5" />
                           {getPropertyTypeLabel(job.propertyType)}
                         </span>
-                      </div>
-                    )}
-                    {job.areaSize != null && (
-                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
-                        <Ruler className="w-4 h-4 text-neutral-500" />
-                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      )}
+                      {job.areaSize != null && (
+                        <span className="flex items-center gap-1">
+                          <Ruler className="w-3.5 h-3.5" />
                           {job.areaSize} მ²
                         </span>
-                      </div>
-                    )}
-                    {job.roomCount != null && (
-                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
-                        <DoorOpen className="w-4 h-4 text-neutral-500" />
-                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      )}
+                      {job.roomCount != null && (
+                        <span className="flex items-center gap-1">
+                          <DoorOpen className="w-3.5 h-3.5" />
                           {job.roomCount} {t("jobDetail.rooms")}
                         </span>
-                      </div>
-                    )}
-                    {job.deadline && (
-                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50">
-                        <Calendar className="w-4 h-4 text-neutral-500" />
-                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      )}
+                      {job.deadline && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5" />
                           {(() => {
                             const date = new Date(job.deadline);
-                            return formatDateMonthDay(
-                              date.toISOString(),
-                              locale,
-                            );
+                            return formatDateMonthDay(date.toISOString(), locale);
                           })()}
                         </span>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -2505,14 +2457,14 @@ export default function JobDetailClient() {
                 <>
                   {/* Description */}
                   <section
-                    className={`bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
+                    className={`bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
                       isVisible
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-4"
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-3 sm:mb-4">
-                      <h2 className="font-display text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
                         {t("common.description")}
                       </h2>
                       {isOwner && !isHired && (
@@ -2544,14 +2496,14 @@ export default function JobDetailClient() {
                     job.landArea != null ||
                     job.pointsCount != null) && (
                     <section
-                      className={`bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-600 ${
+                      className={`bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-600 ${
                         isVisible
                           ? "opacity-100 translate-y-0"
                           : "opacity-0 translate-y-4"
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-4 sm:mb-6">
-                        <h2 className="font-display text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">
+                      <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
                           {t("jobDetail.propertyDetails")}
                         </h2>
                         {isOwner && !isHired && (
@@ -2564,7 +2516,7 @@ export default function JobDetailClient() {
                           </button>
                         )}
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {job.propertyType && (
                           <SpecCard
                             icon={<Home className="w-5 h-5" />}
@@ -2637,14 +2589,14 @@ export default function JobDetailClient() {
                   {/* Work Types */}
                   {job.workTypes && job.workTypes.length > 0 && (
                     <section
-                      className={`bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-700 ${
+                      className={`bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-700 ${
                         isVisible
                           ? "opacity-100 translate-y-0"
                           : "opacity-0 translate-y-4"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-3 sm:mb-4">
-                        <h2 className="font-display text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">
+                        <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
                           {t("jobDetail.workTypes")}
                         </h2>
                         {isOwner && !isHired && (
@@ -2680,14 +2632,14 @@ export default function JobDetailClient() {
                     job.materialsProvided ||
                     job.occupiedDuringWork) && (
                     <section
-                      className={`bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[800ms] ${
+                      className={`bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[800ms] ${
                         isVisible
                           ? "opacity-100 translate-y-0"
                           : "opacity-0 translate-y-4"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-3 sm:mb-4">
-                        <h2 className="font-display text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white">
+                        <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
                           {t("jobDetail.requirements")}
                         </h2>
                         {isOwner && !isHired && (
@@ -2735,13 +2687,13 @@ export default function JobDetailClient() {
                     const refLinks = job.references.filter((r) => r.type !== "image");
                     return (
                     <section
-                      className={`bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[900ms] ${
+                      className={`bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[900ms] ${
                         isVisible
                           ? "opacity-100 translate-y-0"
                           : "opacity-0 translate-y-4"
                       }`}
                     >
-                      <h2 className="font-display text-lg sm:text-xl font-semibold text-neutral-900 dark:text-white mb-3 sm:mb-4">
+                      <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3 sm:mb-4">
                         {t("jobDetail.references")}
                       </h2>
 
@@ -3135,20 +3087,22 @@ export default function JobDetailClient() {
             {/* Sidebar - visible on all screens, stacked on mobile */}
             <div className="lg:col-span-1 order-first lg:order-last">
               <div className="lg:sticky lg:top-24 space-y-4 sm:space-y-6">
-                {/* Client Card */}
-                <ClientCard
-                  client={{
-                    _id: job.clientId?.id || "",
-                    name: job.clientId?.name || "Client",
-                    avatar: job.clientId?.avatar,
-                    city: job.clientId?.city,
-                    accountType: job.clientId?.accountType,
-                    companyName: job.clientId?.companyName,
-                  }}
-                  label={t("common.client")}
-                  organizationLabel={t("jobDetail.organization")}
-                  isVisible={isVisible}
-                />
+                {/* Client Card — hidden when hired pro sees the job (avoid duplicate with hired banner below) */}
+                {!(isHired && isHiredPro) && (
+                  <ClientCard
+                    client={{
+                      _id: job.clientId?.id || "",
+                      name: job.clientId?.name || "Client",
+                      avatar: job.clientId?.avatar,
+                      city: job.clientId?.city,
+                      accountType: job.clientId?.accountType,
+                      companyName: job.clientId?.companyName,
+                    }}
+                    label={t("common.client")}
+                    organizationLabel={t("jobDetail.organization")}
+                    isVisible={isVisible}
+                  />
+                )}
 
                 {/* Hired Professional Card - with phone for client */}
                 {isHired && job.hiredPro && isOwner && (

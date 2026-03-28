@@ -103,8 +103,6 @@ export default function ReviewStep({
 
   const getPricingLabel = () => {
     switch (formData.pricingModel) {
-      case "byAgreement":
-        return t("common.negotiable");
       case "per_sqm":
         return t("professional.perSqm");
       case "fixed":
@@ -127,11 +125,11 @@ export default function ReviewStep({
       required: true,
     },
     pricing: {
-      complete: formData.pricingModel === 'byAgreement'
-        ? true
-        : formData.pricingModel === 'fixed'
-          ? !!formData.basePrice && Number(formData.basePrice) > 0
-          : !!formData.basePrice && !!formData.maxPrice && Number(formData.maxPrice) >= Number(formData.basePrice) && Number(formData.basePrice) > 0,
+      complete: formData.pricingModel === 'fixed' || formData.pricingModel === 'per_sqm'
+        ? !!formData.basePrice && Number(formData.basePrice) > 0
+        : formData.pricingModel === 'range'
+          ? !!formData.basePrice && !!formData.maxPrice && Number(formData.maxPrice) >= Number(formData.basePrice) && Number(formData.basePrice) > 0
+          : false,
       required: true,
     },
     areas: {

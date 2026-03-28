@@ -87,14 +87,13 @@ function RegisterContent() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8">
-        <div className="w-full max-w-3xl">
-          {/* Title - Mobile optimized */}
-          <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900 mb-1 sm:mb-2">
+      <main className="flex-1 flex items-center justify-center px-3 sm:px-4 py-8 sm:py-12">
+        <div className="w-full">
+          <div className="text-center mb-6">
+            <h1 className="text-lg sm:text-xl font-bold text-neutral-900 mb-1">
               {t('register.joinHomico')}
             </h1>
-            <p className="text-sm sm:text-base text-neutral-500">
+            <p className="text-xs sm:text-sm text-neutral-500">
               {t('register.chooseHowYouWantTo')}
             </p>
           </div>

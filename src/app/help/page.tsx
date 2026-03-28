@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatDateShort } from '@/utils/dateUtils';
-import { ArrowRight, ChevronDown, ChevronRight, Clock, Mail, MessageCircle, Plus, Send } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, Mail, MessageCircle, Plus, Send } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
@@ -212,44 +212,26 @@ export default function HelpPage() {
       <Header />
       <HeaderSpacer />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#C4735B] via-[#B8654D] to-[#A85A45]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.1),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(0,0,0,0.1),transparent_60%)]" />
-
-        {/* Decorative geometric elements */}
-        <div className="absolute top-1/4 left-8 w-px h-24 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
-        <div className="absolute top-1/3 right-12 w-px h-32 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
-        <div className="absolute bottom-8 left-1/4 w-16 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-          <div className="text-center">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white/80 text-xs font-medium mb-6">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-              {t('help.badge')}
-            </span>
-
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-medium text-white mb-4 tracking-tight">
-              {t('help.title')}
-            </h1>
-            <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
-              {t('help.subtitle')}
-            </p>
-          </div>
+      {/* Compact Hero */}
+      <div className="bg-gradient-to-r from-[#C4735B] to-[#A85A45] px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-xl sm:text-2xl font-bold text-white mb-1.5">
+            {t('help.title')}
+          </h1>
+          <p className="text-sm text-white/70 max-w-lg mx-auto">
+            {t('help.subtitle')}
+          </p>
         </div>
-      </section>
+      </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
 
-        {/* Quick Actions for Authenticated Users */}
+        {/* Support Tickets */}
         {isAuthenticated && (
-          <section className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-serif font-medium text-neutral-900 dark:text-neutral-50">
-                {t('help.title')}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                {t('help.categories.support')}
               </h2>
               <Button
                 onClick={() => {
@@ -415,79 +397,68 @@ export default function HelpPage() {
           </section>
         )}
 
-        {/* FAQ Section */}
-        <section className="mb-12">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-serif font-medium text-neutral-900 dark:text-neutral-50 mb-2">
-              {t('help.title')}
-            </h2>
-            <p className="text-neutral-500 dark:text-neutral-400">
+        {/* FAQ */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
               {t('help.faq.subtitle')}
-            </p>
-          </div>
-
-          {/* Category Pills */}
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
-            {categories.map((cat) => (
-              <Button
-                key={cat.id}
-                variant={activeCategory === cat.id ? 'premium' : 'secondary'}
-                size="sm"
-                onClick={() => setActiveCategory(cat.id)}
-                className="rounded-full"
-              >
-                {cat.label}
-              </Button>
-            ))}
-          </div>
-
-          {/* FAQ Items */}
-          <Card variant="elevated" size="sm" className="overflow-hidden">
-            <div className="-m-3 sm:-m-4">
-              {filteredFaqs.map((faq, index) => (
-                <div
-                  key={index}
-                  className={`${index !== filteredFaqs.length - 1 ? 'border-b border-neutral-100 dark:border-dark-border' : ''}`}
+            </h2>
+            {/* Category filter */}
+            <div className="flex gap-1">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                    activeCategory === cat.id
+                      ? 'bg-[#C4735B] text-white'
+                      : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  }`}
                 >
-                  <Button
-                    variant="ghost"
-                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                    className="w-full flex items-center justify-between p-5 text-left hover:bg-cream-50 dark:hover:bg-dark-elevated rounded-none h-auto"
-                  >
-                    <span className="font-medium text-neutral-900 dark:text-neutral-50 pr-8">
-                      {faq.question}
-                    </span>
-                    <div className={`w-8 h-8 rounded-lg bg-cream-100 dark:bg-dark-elevated flex items-center justify-center flex-shrink-0 transition-transform duration-200 ${openFaq === index ? 'rotate-180' : ''}`}>
-                      <ChevronDown className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
-                    </div>
-                  </Button>
-                  <div className={`overflow-hidden transition-all duration-300 ${openFaq === index ? 'max-h-96' : 'max-h-0'}`}>
-                    <div className="px-5 pb-5">
-                      <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                  {cat.label}
+                </button>
               ))}
             </div>
-          </Card>
+          </div>
+
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+            {filteredFaqs.map((faq, index) => (
+              <div
+                key={index}
+                className={index !== filteredFaqs.length - 1 ? 'border-b border-neutral-100 dark:border-neutral-800' : ''}
+              >
+                <button
+                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
+                >
+                  <span className="text-sm font-medium text-neutral-900 dark:text-white pr-4">
+                    {faq.question}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-neutral-400 flex-shrink-0 transition-transform duration-200 ${openFaq === index ? 'rotate-180' : ''}`} />
+                </button>
+                <div className={`overflow-hidden transition-all duration-300 ${openFaq === index ? 'max-h-96' : 'max-h-0'}`}>
+                  <div className="px-4 pb-3">
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                      {faq.answer}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
-        {/* Contact Section - For non-authenticated users */}
+        {/* Contact Form - For non-authenticated users */}
         {!isAuthenticated && (
-          <section className="mb-12">
-            <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border overflow-hidden">
-              <div className="p-6 sm:p-8 border-b border-neutral-100 dark:border-dark-border">
-                <h2 className="text-xl font-serif font-medium text-neutral-900 dark:text-neutral-50 mb-2">
-                  {t('help.title')}
-                </h2>
-                <p className="text-neutral-500 dark:text-neutral-400">
+          <section>
+            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+              <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
+                <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
                   {t('help.contact.subtitle')}
-                </p>
+                </h2>
               </div>
 
-              <form onSubmit={handleContactSubmit} className="p-6 sm:p-8 space-y-5">
+              <form onSubmit={handleContactSubmit} className="p-4 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                     {t('common.type')}
@@ -565,60 +536,45 @@ export default function HelpPage() {
               </form>
             </div>
 
-            {/* Alternative: Sign in prompt */}
-            <div className="mt-6 p-5 bg-cream-100 dark:bg-dark-elevated rounded-xl text-center">
-              <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+            {/* Sign in prompt */}
+            <div className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
+              <p className="text-xs text-neutral-500 mb-1.5">
                 {t('help.signInPrompt')}
               </p>
-              <Button
-                variant="link"
+              <button
                 onClick={() => openLoginModal()}
-                rightIcon={<ArrowRight className="w-4 h-4" />}
+                className="text-xs font-semibold text-[#C4735B] hover:underline"
               >
-                {t('auth.signIn')}
-              </Button>
+                {t('auth.signIn')} →
+              </button>
             </div>
           </section>
         )}
 
-        {/* Contact Info Cards */}
+        {/* Contact Info */}
         <section>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <a href="mailto:info@homico.ge">
-              <Card variant="interactive" size="lg" hover className="group h-full">
-                <div className="flex items-start gap-4">
-                  <IconBadge icon={Mail} variant="accent" size="lg" className="group-hover:scale-105 transition-transform duration-300" />
-                  <div>
-                    <h3 className="font-medium text-neutral-900 dark:text-neutral-50 mb-1">
-                      {t('common.title')}
-                    </h3>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-2">
-                      {t('common.description')}
-                    </p>
-                    <span className="text-[#C4735B] dark:text-[#E8956A] font-medium text-sm">
-                      info@homico.ge
-                    </span>
-                  </div>
-                </div>
-              </Card>
-            </a>
-
-            <Card variant="default" size="lg">
-              <div className="flex items-start gap-4">
-                <IconBadge icon={Clock} variant="accent" size="lg" />
-                <div>
-                  <h3 className="font-medium text-neutral-900 dark:text-neutral-50 mb-1">
-                    {t('common.title')}
-                  </h3>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-2">
-                    {t('common.description')}
-                  </p>
-                  <span className="text-[#C4735B] dark:text-[#E8956A] font-medium text-sm">
-                    {t('common.time')}
-                  </span>
-                </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <a
+              href="mailto:info@homico.ge"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-[#C4735B]/30 transition-colors group"
+            >
+              <div className="w-9 h-9 rounded-lg bg-[#C4735B]/10 flex items-center justify-center flex-shrink-0">
+                <Mail className="w-4 h-4 text-[#C4735B]" />
               </div>
-            </Card>
+              <div className="min-w-0">
+                <p className="text-xs text-neutral-500">Email</p>
+                <p className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-[#C4735B] transition-colors">info@homico.ge</p>
+              </div>
+            </a>
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+              <div className="w-9 h-9 rounded-lg bg-[#C4735B]/10 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-4 h-4 text-[#C4735B]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-neutral-500">{t('help.categories.support')}</p>
+                <p className="text-sm font-medium text-neutral-900 dark:text-white">09:00 – 18:00</p>
+              </div>
+            </div>
           </div>
         </section>
       </div>

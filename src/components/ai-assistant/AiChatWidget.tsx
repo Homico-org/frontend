@@ -398,21 +398,12 @@ export default function AiChatWidget() {
             ref={fabRef}
             key="ai-fab"
             initial={{ scale: 0, opacity: 0 }}
-            animate={{
-              scale: isDragging ? 1.15 : 1,
-              opacity: 1,
-              boxShadow: isDragging
-                ? '0 12px 40px rgba(196, 115, 91, 0.5)'
-                : '0 4px 16px rgba(196, 115, 91, 0.3)',
-            }}
+            animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            transition={{
-              scale: { type: 'spring', stiffness: 400, damping: 25 },
-              opacity: { duration: 0.2 },
-            }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onMouseDown={(e) => { e.preventDefault(); handleDragStart(e.clientX, e.clientY); }}
             onTouchStart={(e) => { if (e.touches[0]) handleDragStart(e.touches[0].clientX, e.touches[0].clientY); }}
-            className="fixed z-40 group touch-none rounded-full"
+            className="fixed z-40 group touch-none"
             style={{
               left: fabPosition.x,
               top: fabPosition.y,
@@ -421,39 +412,41 @@ export default function AiChatWidget() {
             }}
             aria-label="Open AI Assistant"
           >
-            {/* Pulse animation ring */}
-            {showPulse && !isDragging && (
-              <motion.span
-                className="absolute inset-0 rounded-full bg-[#C4735B]"
-                animate={{ scale: [1, 1.8], opacity: [0.4, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
-              />
-            )}
+            {/* Outer ring — subtle glow, not flashing */}
+            <div
+              className={`absolute -inset-1 rounded-full transition-all duration-300 ${
+                isDragging
+                  ? 'bg-[#C4735B]/20 scale-110'
+                  : 'bg-transparent group-hover:bg-[#C4735B]/10 group-hover:scale-105'
+              }`}
+            />
 
-            {/* Mascot Button */}
-            <motion.div
-              className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden shadow-lg"
-              whileHover={!isDragging ? { scale: 1.1 } : undefined}
-              whileTap={!isDragging ? { scale: 0.95 } : undefined}
+            {/* Mascot avatar */}
+            <div
+              className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 transition-all duration-200 ${
+                isDragging
+                  ? 'border-[#C4735B] shadow-xl shadow-[#C4735B]/30 scale-110'
+                  : 'border-white dark:border-neutral-700 shadow-lg group-hover:border-[#C4735B]/50 group-hover:shadow-xl'
+              }`}
             >
-              <motion.div
-                className="w-full h-full"
-                animate={isDragging ? { scale: [1.15, 1.2, 1.15] } : { scale: [1.15, 1.18, 1.15] }}
-                transition={isDragging
-                  ? { duration: 0.4, repeat: Infinity, ease: 'easeInOut' }
-                  : { duration: 3, repeat: Infinity, ease: 'easeInOut' }
-                }
-              >
-                <Image
-                  src="/AI-mascot.png"
-                  alt="Homico AI"
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover"
-                  priority
-                />
-              </motion.div>
-            </motion.div>
+              <Image
+                src="/AI-mascot.png"
+                alt="Homico AI"
+                width={64}
+                height={64}
+                className="w-full h-full object-cover scale-[1.15]"
+                priority
+              />
+            </div>
+
+            {/* Drag handle dots — visible on hover to hint draggability */}
+            <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 transition-opacity duration-200 ${
+              isDragging ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            }`}>
+              <span className="w-1 h-1 rounded-full bg-neutral-400" />
+              <span className="w-1 h-1 rounded-full bg-neutral-400" />
+              <span className="w-1 h-1 rounded-full bg-neutral-400" />
+            </div>
 
             {/* X dismiss badge */}
             {!isDragging && (
@@ -464,7 +457,7 @@ export default function AiChatWidget() {
                 onMouseDown={(e) => e.stopPropagation()}
                 onTouchStart={(e) => e.stopPropagation()}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); setIsHidden(true); } }}
-                className="absolute -top-1 -right-1 w-5 h-5 bg-neutral-700 hover:bg-red-500 rounded-full flex items-center justify-center shadow-md transition-colors z-10 cursor-pointer"
+                className="absolute -top-1 -right-1 w-5 h-5 bg-neutral-700/80 hover:bg-red-500 rounded-full flex items-center justify-center shadow-md transition-colors z-10 cursor-pointer opacity-0 group-hover:opacity-100"
                 aria-label="Hide AI Assistant"
               >
                 <X className="w-3 h-3 text-white" />
@@ -472,19 +465,10 @@ export default function AiChatWidget() {
             )}
 
             {/* Tooltip */}
-            <AnimatePresence>
-              {!isDragging && (
-                <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 0 }}
-                  exit={{ opacity: 0 }}
-                  className={`hidden sm:block absolute bottom-full mb-2 px-3 py-1.5 bg-neutral-900 text-white text-sm rounded-lg group-hover:!opacity-100 transition-opacity whitespace-nowrap pointer-events-none ${fabSide === 'right' ? 'right-0' : 'left-0'}`}
-                >
-                  Homico AI
-                  <div className={`absolute top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-neutral-900 ${fabSide === 'right' ? 'right-4' : 'left-4'}`} />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <div className={`hidden sm:block absolute bottom-full mb-2 px-3 py-1.5 bg-neutral-900 text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none ${fabSide === 'right' ? 'right-0' : 'left-0'}`}>
+              Homico AI · {isDragging ? '↕' : locale === 'ka' ? 'გადაიტანე' : locale === 'ru' ? 'перетащи' : 'drag to move'}
+              <div className={`absolute top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-neutral-900 ${fabSide === 'right' ? 'right-4' : 'left-4'}`} />
+            </div>
           </motion.button>
         )}
       </AnimatePresence>
@@ -492,6 +476,16 @@ export default function AiChatWidget() {
       {/* Chat Panel - fullscreen on mobile, positioned panel on desktop */}
       <AnimatePresence>
         {isOpen && (
+          <>
+          {/* Backdrop — click outside to close (desktop only) */}
+          <motion.div
+            key="ai-chat-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[49] hidden sm:block"
+            onClick={() => setIsOpen(false)}
+          />
           <motion.div
             key="ai-chat-panel"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -645,6 +639,7 @@ export default function AiChatWidget() {
             </p>
           </div>
         </motion.div>
+        </>
         )}
       </AnimatePresence>
     </>

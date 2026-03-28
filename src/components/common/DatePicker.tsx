@@ -1,32 +1,73 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useClickOutside } from '@/hooks/useClickOutside';
+"use client";
 
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+
 interface DatePickerProps {
   value: string;
   onChange: (value: string) => void;
   min?: string;
   max?: string;
   placeholder?: string;
-  locale?: 'ka' | 'en' | 'ru';
+  locale?: "ka" | "en" | "ru";
   className?: string;
+  size?: "sm" | "md";
 }
 
-const MONTHS_KA = [
-  'იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი',
-  'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი'
-];
+const MONTHS = {
+  ka: [
+    "იანვარი",
+    "თებერვალი",
+    "მარტი",
+    "აპრილი",
+    "მაისი",
+    "ივნისი",
+    "ივლისი",
+    "აგვისტო",
+    "სექტემბერი",
+    "ოქტომბერი",
+    "ნოემბერი",
+    "დეკემბერი",
+  ],
+  en: [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ],
+  ru: [
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
+  ],
+};
 
-const MONTHS_EN = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-];
+const WEEKDAYS = {
+  ka: ["ორშ", "სამ", "ოთხ", "ხუთ", "პარ", "შაბ", "კვი"],
+  en: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+  ru: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+};
 
-const WEEKDAYS_KA = ['ორშ', 'სამ', 'ოთხ', 'ხუთ', 'პარ', 'შაბ', 'კვი'];
-const WEEKDAYS_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const ACCENT = "#C4735B";
 
 export default function DatePicker({
   value,
@@ -34,227 +75,275 @@ export default function DatePicker({
   min,
   max,
   placeholder,
-  locale = 'ka',
-  className = ''
+  locale: localeProp,
+  className = "",
+  size = "md",
 }: DatePickerProps) {
+  const { t, locale: contextLocale } = useLanguage();
+  const locale = (localeProp || contextLocale) as "ka" | "en" | "ru";
+
   const [isOpen, setIsOpen] = useState(false);
-
-  const { t } = useLanguage();
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const containerRef = useClickOutside<HTMLDivElement>(() => setIsOpen(false), isOpen);
+  const [dropdownPos, setDropdownPos] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  const months = locale === 'ka' ? MONTHS_KA : MONTHS_EN;
-  const weekdays = locale === 'ka' ? WEEKDAYS_KA : WEEKDAYS_EN;
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
 
-  // Parse the value to Date
+  useEffect(() => setMounted(true), []);
+
   const selectedDate = value ? new Date(value) : null;
 
-  // Set current month to selected date or today
   useEffect(() => {
     if (selectedDate) {
-      setCurrentMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+      setCurrentMonth(
+        new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+      );
     }
-  }, [value]);
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const formatDisplayDate = (dateStr: string) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
+  // Click outside — close only if click is outside BOTH trigger and calendar
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (triggerRef.current?.contains(target)) return;
+      if (calendarRef.current?.contains(target)) return;
+      setIsOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [isOpen]);
+
+  const updatePosition = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const calHeight = 330;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const openUp = spaceBelow < calHeight && rect.top > calHeight;
+
+    setDropdownPos({
+      top: openUp ? rect.top - calHeight - 4 : rect.bottom + 4,
+      left: Math.min(rect.left, window.innerWidth - 288),
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+      return () => {
+        window.removeEventListener("scroll", updatePosition, true);
+        window.removeEventListener("resize", updatePosition);
+      };
+    }
+  }, [isOpen, updatePosition]);
+
+  const formatDisplay = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return `${d.getDate().toString().padStart(2, "0")}.${(d.getMonth() + 1).toString().padStart(2, "0")}.${d.getFullYear()}`;
   };
 
-  const getDaysInMonth = (date: Date) => {
+  const getDays = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-
-    // Get the day of week (0 = Sunday, convert to Monday = 0)
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
     let startDay = firstDay.getDay() - 1;
     if (startDay < 0) startDay = 6;
 
     const days: (Date | null)[] = [];
-
-    // Add empty cells for days before the first of the month
-    for (let i = 0; i < startDay; i++) {
-      days.push(null);
-    }
-
-    // Add all days of the month
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(new Date(year, month, i));
-    }
-
+    for (let i = 0; i < startDay; i++) days.push(null);
+    for (let i = 1; i <= daysInMonth; i++) days.push(new Date(year, month, i));
     return days;
   };
 
-  const isDateDisabled = (date: Date) => {
-    const dateStr = date.toISOString().split("T")[0];
-    if (min && dateStr < min) return true;
-    if (max && dateStr > max) return true;
-    return false;
+  const isDisabled = (d: Date) => {
+    const s = d.toISOString().split("T")[0];
+    return (min && s < min) || (max && s > max) || false;
   };
 
-  const isToday = (date: Date) => {
-    const today = new Date();
-    return date.toDateString() === today.toDateString();
-  };
+  const isToday = (d: Date) => d.toDateString() === new Date().toDateString();
+  const isSelected = (d: Date) =>
+    selectedDate?.toDateString() === d.toDateString();
 
-  const isSelected = (date: Date) => {
-    if (!selectedDate) return false;
-    return date.toDateString() === selectedDate.toDateString();
-  };
-
-  const handleDateClick = (date: Date) => {
-    if (isDateDisabled(date)) return;
-    onChange(date.toISOString().split("T")[0]);
+  const handleSelect = (d: Date) => {
+    if (isDisabled(d)) return;
+    onChange(d.toISOString().split("T")[0]);
     setIsOpen(false);
   };
 
-  const goToPrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-  };
-
-  const goToNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
-  };
-
-  const days = getDaysInMonth(currentMonth);
+  const months = MONTHS[locale] || MONTHS.en;
+  const weekdays = WEEKDAYS[locale] || WEEKDAYS.en;
+  const days = getDays(currentMonth);
+  const isSm = size === "sm";
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
-      {/* Input field */}
-      <div
+    <div ref={triggerRef} className={`relative ${className}`}>
+      {/* Trigger */}
+      <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 w-full sm:w-64 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 focus-within:ring-2 focus-within:ring-forest-500 dark:focus-within:ring-primary-400"
-        style={{
-          backgroundColor: 'var(--color-bg-secondary)',
-          border: '1px solid var(--color-border)',
-        }}
+        className={`flex items-center gap-2 w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 transition-all text-left ${
+          isOpen
+            ? "border-[#C4735B]/40 ring-2 ring-[#C4735B]/10"
+            : "hover:border-neutral-300 dark:hover:border-neutral-600"
+        } ${isSm ? "px-2.5 py-1.5 text-xs" : "px-3 py-2 text-sm"}`}
       >
-        <Calendar className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }} />
+        <Calendar
+          className={`flex-shrink-0 text-neutral-400 ${isSm ? "w-3.5 h-3.5" : "w-4 h-4"}`}
+        />
         <span
-          className="flex-1 text-base"
-          style={{ color: value ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }}
+          className={`flex-1 truncate ${value ? "text-neutral-900 dark:text-white" : "text-neutral-400"}`}
         >
-          {value ? formatDisplayDate(value) : (placeholder || (t('common.ddmmyyyy')))}
+          {value ? formatDisplay(value) : placeholder || t("common.ddmmyyyy")}
         </span>
         {value && (
-          <button
+          <span
             onClick={(e) => {
               e.stopPropagation();
-              onChange('');
+              onChange("");
             }}
-            className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-            style={{ color: 'var(--color-text-tertiary)' }}
+            className="p-0.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 hover:text-neutral-600"
           >
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
-              <path d="M4 4l8 8m0-8l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </button>
+            <X className="w-3 h-3" />
+          </span>
         )}
-      </div>
+      </button>
 
-      {/* Calendar dropdown - opens on top */}
-      {isOpen && (
-        <div
-          className="absolute bottom-full left-0 mb-2 p-4 rounded-xl shadow-xl z-50 w-72"
-          style={{
-            backgroundColor: 'var(--color-bg-secondary)',
-            border: '1px solid var(--color-border)',
-          }}
-        >
-          {/* Month navigation */}
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={goToPrevMonth}
-              className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-              {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-            </span>
-            <button
-              onClick={goToNextMonth}
-              className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Weekday headers */}
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {weekdays.map((day) => (
-              <div
-                key={day}
-                className="h-8 flex items-center justify-center text-xs font-medium"
-                style={{ color: 'var(--color-text-tertiary)' }}
-              >
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Days grid */}
-          <div className="grid grid-cols-7 gap-1">
-            {days.map((day, idx) => (
-              <div key={idx} className="aspect-square">
-                {day ? (
-                  <button
-                    onClick={() => handleDateClick(day)}
-                    disabled={isDateDisabled(day)}
-                    className={`
-                      w-full h-full rounded-lg text-sm font-medium
-                      flex items-center justify-center
-                      transition-all duration-150
-                      ${isSelected(day)
-                        ? 'bg-forest-600 dark:bg-primary-500 text-white'
-                        : isToday(day)
-                        ? 'ring-1 ring-forest-500 dark:ring-primary-400'
-                        : ''
-                      }
-                      ${isDateDisabled(day)
-                        ? 'opacity-30 cursor-not-allowed'
-                        : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                      }
-                    `}
-                    style={{
-                      color: isSelected(day) ? undefined : 'var(--color-text-primary)'
-                    }}
-                  >
-                    {day.getDate()}
-                  </button>
-                ) : (
-                  <div />
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Today button */}
-          <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--color-border)' }}>
-            <button
-              onClick={() => {
-                const today = new Date();
-                if (!isDateDisabled(today)) {
-                  onChange(today.toISOString().split("T")[0]);
-                  setIsOpen(false);
+      {/* Calendar dropdown — portal */}
+      {isOpen &&
+        dropdownPos &&
+        mounted &&
+        createPortal(
+          <div
+            ref={calendarRef}
+            className="fixed z-[200] w-[272px] rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden"
+            style={{ top: dropdownPos.top, left: dropdownPos.left }}
+          >
+            {/* Month nav */}
+            <div className="flex items-center justify-between px-3 py-2.5 border-b border-neutral-100 dark:border-neutral-800">
+              <button
+                type="button"
+                onClick={() =>
+                  setCurrentMonth(
+                    new Date(
+                      currentMonth.getFullYear(),
+                      currentMonth.getMonth() - 1,
+                      1,
+                    ),
+                  )
                 }
-              }}
-              className="w-full py-2 text-sm font-medium rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              {t('common.today')}
-            </button>
-          </div>
-        </div>
-      )}
+                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-xs font-semibold text-neutral-900 dark:text-white">
+                {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setCurrentMonth(
+                    new Date(
+                      currentMonth.getFullYear(),
+                      currentMonth.getMonth() + 1,
+                      1,
+                    ),
+                  )
+                }
+                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Weekday headers */}
+            <div className="grid grid-cols-7 px-2 pt-2">
+              {weekdays.map((wd) => (
+                <div
+                  key={wd}
+                  className="h-7 flex items-center justify-center text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase"
+                >
+                  {wd}
+                </div>
+              ))}
+            </div>
+
+            {/* Days */}
+            <div className="grid grid-cols-7 gap-0.5 px-2 pb-2">
+              {days.map((day, idx) => (
+                <div key={idx} className="flex items-center justify-center">
+                  {day ? (
+                    <button
+                      type="button"
+                      onClick={() => handleSelect(day)}
+                      disabled={isDisabled(day)}
+                      className={`w-8 h-8 rounded-lg text-xs font-medium flex items-center justify-center transition-all ${
+                        isSelected(day)
+                          ? "text-white shadow-sm"
+                          : isToday(day)
+                            ? "font-bold"
+                            : ""
+                      } ${
+                        isDisabled(day)
+                          ? "opacity-25 cursor-not-allowed"
+                          : isSelected(day)
+                            ? ""
+                            : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                      }`}
+                      style={
+                        isSelected(day)
+                          ? { backgroundColor: ACCENT }
+                          : isToday(day)
+                            ? { color: ACCENT }
+                            : { color: "var(--color-text-primary)" }
+                      }
+                    >
+                      {day.getDate()}
+                    </button>
+                  ) : (
+                    <div className="w-8 h-8" />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between px-3 py-2 border-t border-neutral-100 dark:border-neutral-800">
+              <button
+                type="button"
+                onClick={() => {
+                  onChange("");
+                  setIsOpen(false);
+                }}
+                className="text-[11px] font-medium text-neutral-400 hover:text-neutral-600 transition-colors"
+              >
+                {t("browse.clearAll")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const today = new Date();
+                  if (!isDisabled(today)) {
+                    onChange(today.toISOString().split("T")[0]);
+                    setIsOpen(false);
+                  }
+                }}
+                className="text-[11px] font-semibold transition-colors hover:opacity-80"
+                style={{ color: ACCENT }}
+              >
+                {t("common.today")}
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

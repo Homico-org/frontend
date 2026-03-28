@@ -2,25 +2,27 @@
 
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Toggle } from "@/components/ui/Toggle";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/lib/api";
 import type { DaySchedule, ScheduleOverride } from "@/types/shared";
-import { Clock, Plus, X } from "lucide-react";
+import DatePicker from "@/components/common/DatePicker";
+import Checkbox from "@/components/ui/Checkbox";
+import TimePicker from "@/components/ui/TimePicker";
+import { Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
-const DAY_KEYS: Array<{ key: string; dayOfWeek: number }> = [
-  { key: "dayMonday", dayOfWeek: 0 },
-  { key: "dayTuesday", dayOfWeek: 1 },
-  { key: "dayWednesday", dayOfWeek: 2 },
-  { key: "dayThursday", dayOfWeek: 3 },
-  { key: "dayFriday", dayOfWeek: 4 },
-  { key: "daySaturday", dayOfWeek: 5 },
-  { key: "daySunday", dayOfWeek: 6 },
+const DAY_KEYS: Array<{ key: string; dayOfWeek: number; short: string; shortKa: string; shortRu: string }> = [
+  { key: "dayMonday", dayOfWeek: 0, short: "Mon", shortKa: "ორშ", shortRu: "Пн" },
+  { key: "dayTuesday", dayOfWeek: 1, short: "Tue", shortKa: "სამ", shortRu: "Вт" },
+  { key: "dayWednesday", dayOfWeek: 2, short: "Wed", shortKa: "ოთხ", shortRu: "Ср" },
+  { key: "dayThursday", dayOfWeek: 3, short: "Thu", shortKa: "ხუთ", shortRu: "Чт" },
+  { key: "dayFriday", dayOfWeek: 4, short: "Fri", shortKa: "პარ", shortRu: "Пт" },
+  { key: "daySaturday", dayOfWeek: 5, short: "Sat", shortKa: "შაბ", shortRu: "Сб" },
+  { key: "daySunday", dayOfWeek: 6, short: "Sun", shortKa: "კვი", shortRu: "Вс" },
 ];
 
-const HOURS = Array.from({ length: 17 }, (_, i) => i + 6); // 6:00 to 22:00
+const HOURS = Array.from({ length: 17 }, (_, i) => i + 6);
 
 function formatHour(h: number): string {
   return `${h.toString().padStart(2, "0")}:00`;
@@ -28,13 +30,13 @@ function formatHour(h: number): string {
 
 const DEFAULT_SCHEDULE: DaySchedule[] = DAY_KEYS.map((d) => ({
   dayOfWeek: d.dayOfWeek,
-  isAvailable: d.dayOfWeek < 5, // Mon-Fri default
+  isAvailable: d.dayOfWeek < 5,
   startHour: 9,
   endHour: 18,
 }));
 
 export default function ScheduleSettings() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,12 +48,8 @@ export default function ScheduleSettings() {
   const loadSchedule = useCallback(async () => {
     try {
       const { data } = await api.get("/users/me/schedule");
-      if (data.weeklySchedule?.length > 0) {
-        setSchedule(data.weeklySchedule);
-      }
-      if (data.scheduleOverrides) {
-        setOverrides(data.scheduleOverrides);
-      }
+      if (data.weeklySchedule?.length > 0) setSchedule(data.weeklySchedule);
+      if (data.scheduleOverrides) setOverrides(data.scheduleOverrides);
     } catch {
       // Use defaults
     } finally {
@@ -59,9 +57,7 @@ export default function ScheduleSettings() {
     }
   }, []);
 
-  useEffect(() => {
-    loadSchedule();
-  }, [loadSchedule]);
+  useEffect(() => { loadSchedule(); }, [loadSchedule]);
 
   const updateDay = (dayOfWeek: number, updates: Partial<DaySchedule>) => {
     setSchedule((prev) =>
@@ -72,11 +68,7 @@ export default function ScheduleSettings() {
   const addOverride = () => {
     if (!newOverrideDate) return;
     if (overrides.some((o) => o.date === newOverrideDate)) return;
-
-    setOverrides((prev) => [
-      ...prev,
-      { date: newOverrideDate, isBlocked: newOverrideBlocked },
-    ]);
+    setOverrides((prev) => [...prev, { date: newOverrideDate, isBlocked: newOverrideBlocked }]);
     setNewOverrideDate("");
   };
 
@@ -87,16 +79,19 @@ export default function ScheduleSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.put("/users/me/schedule", {
-        weeklySchedule: schedule,
-        scheduleOverrides: overrides,
-      });
+      await api.put("/users/me/schedule", { weeklySchedule: schedule, scheduleOverrides: overrides });
       toast.success(t("settings.scheduleSaved"));
     } catch {
       toast.error(t("common.error"));
     } finally {
       setSaving(false);
     }
+  };
+
+  const getDayLabel = (d: typeof DAY_KEYS[number]) => {
+    if (locale === "ka") return d.shortKa;
+    if (locale === "ru") return d.shortRu;
+    return d.short;
   };
 
   if (loading) {
@@ -108,216 +103,143 @@ export default function ScheduleSettings() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2
-          className="text-lg font-semibold mb-1"
-          style={{ color: "var(--color-text-primary)" }}
-        >
-          {t("settings.schedule")}
-        </h2>
-        <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
-          {t("settings.scheduleDescription")}
-        </p>
-      </div>
+    <div className="space-y-5">
+      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+        {t("settings.scheduleDescription")}
+      </p>
 
       {/* Weekly Schedule */}
-      <div
-        className="rounded-xl border p-4 space-y-3"
-        style={{
-          backgroundColor: "var(--color-bg-elevated)",
-          borderColor: "var(--color-border)",
-        }}
-      >
-        <div className="flex items-center gap-2 mb-4">
-          <Clock size={18} style={{ color: "#C4735B" }} />
-          <h3
-            className="font-medium"
-            style={{ color: "var(--color-text-primary)" }}
-          >
-            {t("settings.availability")}
-          </h3>
-        </div>
+      <div className="space-y-1">
+        <h3 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
+          {t("settings.availability")}
+        </h3>
 
-        {DAY_KEYS.map(({ key, dayOfWeek }) => {
-          const day = schedule.find((d) => d.dayOfWeek === dayOfWeek);
-          if (!day) return null;
+        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+          {DAY_KEYS.map(( dayInfo, idx) => {
+            const day = schedule.find((d) => d.dayOfWeek === dayInfo.dayOfWeek);
+            if (!day) return null;
+            const isLast = idx === DAY_KEYS.length - 1;
 
-          return (
-            <div
-              key={dayOfWeek}
-              className="flex items-center gap-3 py-2 border-b last:border-b-0"
-              style={{ borderColor: "var(--color-border-subtle)" }}
-            >
-              <div className="w-28 shrink-0">
-                <Toggle
-                  checked={day.isAvailable}
-                  onChange={() =>
-                    updateDay(dayOfWeek, { isAvailable: !day.isAvailable })
-                  }
-                  size="sm"
-                  label={t(`settings.${key}`)}
-                />
-              </div>
-
-              {day.isAvailable ? (
-                <div className="flex items-center gap-2 flex-1">
-                  <select
-                    value={day.startHour}
-                    onChange={(e) =>
-                      updateDay(dayOfWeek, {
-                        startHour: Number(e.target.value),
-                      })
-                    }
-                    className="rounded-lg px-2 py-1.5 text-sm border"
-                    style={{
-                      backgroundColor: "var(--color-bg-primary)",
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-text-primary)",
-                    }}
-                  >
-                    {HOURS.map((h) => (
-                      <option key={h} value={h}>
-                        {formatHour(h)}
-                      </option>
-                    ))}
-                  </select>
-                  <span
-                    className="text-xs"
-                    style={{ color: "var(--color-text-secondary)" }}
-                  >
-                    —
-                  </span>
-                  <select
-                    value={day.endHour}
-                    onChange={(e) =>
-                      updateDay(dayOfWeek, { endHour: Number(e.target.value) })
-                    }
-                    className="rounded-lg px-2 py-1.5 text-sm border"
-                    style={{
-                      backgroundColor: "var(--color-bg-primary)",
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-text-primary)",
-                    }}
-                  >
-                    {HOURS.filter((h) => h > day.startHour).map((h) => (
-                      <option key={h} value={h}>
-                        {formatHour(h)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ) : (
-                <span
-                  className="text-sm italic"
-                  style={{ color: "var(--color-text-tertiary)" }}
+            return (
+              <div
+                key={dayInfo.dayOfWeek}
+                className={`flex items-center gap-2 px-3 py-2 ${!isLast ? "border-b border-neutral-100 dark:border-neutral-800" : ""} ${
+                  day.isAvailable ? "bg-white dark:bg-neutral-900" : "bg-neutral-50 dark:bg-neutral-900/50"
+                }`}
+              >
+                {/* Toggle */}
+                <button
+                  onClick={() => updateDay(dayInfo.dayOfWeek, { isAvailable: !day.isAvailable })}
+                  className={`w-8 h-[18px] rounded-full relative transition-colors flex-shrink-0 ${
+                    day.isAvailable ? "bg-[#C4735B]" : "bg-neutral-300 dark:bg-neutral-600"
+                  }`}
                 >
-                  {t("booking.closed")}
+                  <span
+                    className={`absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white shadow-sm transition-transform ${
+                      day.isAvailable ? "left-[17px]" : "left-[2px]"
+                    }`}
+                  />
+                </button>
+
+                {/* Day name */}
+                <span className={`w-10 text-xs font-semibold flex-shrink-0 ${
+                  day.isAvailable ? "text-neutral-900 dark:text-white" : "text-neutral-400 dark:text-neutral-500"
+                }`}>
+                  {getDayLabel(dayInfo)}
                 </span>
-              )}
-            </div>
-          );
-        })}
+
+                {/* Time selectors or closed */}
+                {day.isAvailable ? (
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <TimePicker
+                      value={day.startHour}
+                      onChange={(h) => updateDay(dayInfo.dayOfWeek, { startHour: h })}
+                      hours={HOURS}
+                    />
+                    <span className="text-neutral-300 text-xs">–</span>
+                    <TimePicker
+                      value={day.endHour}
+                      onChange={(h) => updateDay(dayInfo.dayOfWeek, { endHour: h })}
+                      hours={HOURS.filter((h) => h > day.startHour)}
+                    />
+                  </div>
+                ) : (
+                  <span className="text-[11px] text-neutral-400 dark:text-neutral-500 italic ml-auto">
+                    {t("booking.closed")}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Date Overrides */}
-      <div
-        className="rounded-xl border p-4 space-y-3"
-        style={{
-          backgroundColor: "var(--color-bg-elevated)",
-          borderColor: "var(--color-border)",
-        }}
-      >
-        <h3
-          className="font-medium mb-3"
-          style={{ color: "var(--color-text-primary)" }}
-        >
+      <div className="space-y-2">
+        <h3 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
           {t("settings.dateOverrides")}
         </h3>
 
         {overrides.length > 0 && (
-          <div className="space-y-2 mb-3">
+          <div className="space-y-1">
             {overrides.map((o) => (
               <div
                 key={o.date}
-                className="flex items-center justify-between rounded-lg px-3 py-2 border"
-                style={{
-                  borderColor: "var(--color-border-subtle)",
-                  backgroundColor: "var(--color-bg-primary)",
-                }}
+                className="flex items-center justify-between rounded-lg px-3 py-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
               >
                 <div className="flex items-center gap-2">
-                  <span
-                    className="text-sm font-medium"
-                    style={{ color: "var(--color-text-primary)" }}
-                  >
+                  <span className="text-xs font-medium text-neutral-900 dark:text-white">
                     {o.date}
                   </span>
                   <span
-                    className="text-xs px-2 py-0.5 rounded-full"
+                    className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
                     style={{
-                      backgroundColor: o.isBlocked
-                        ? "rgba(239,68,68,0.1)"
-                        : "rgba(34,197,94,0.1)",
+                      backgroundColor: o.isBlocked ? "rgba(239,68,68,0.1)" : "rgba(34,197,94,0.1)",
                       color: o.isBlocked ? "#ef4444" : "#22c55e",
                     }}
                   >
-                    {o.isBlocked
-                      ? t("settings.blocked")
-                      : t("settings.customHours")}
+                    {o.isBlocked ? t("settings.blocked") : t("settings.customHours")}
                   </span>
                 </div>
                 <button
                   onClick={() => removeOverride(o.date)}
-                  className="p-1 rounded hover:bg-red-50"
+                  className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-neutral-400 hover:text-red-500 transition-colors"
                 >
-                  <X size={14} className="text-red-500" />
+                  <Trash2 className="w-3 h-3" />
                 </button>
               </div>
             ))}
           </div>
         )}
 
-        <div className="flex items-end gap-2">
-          <div className="flex-1">
-            <input
-              type="date"
-              value={newOverrideDate}
-              onChange={(e) => setNewOverrideDate(e.target.value)}
-              min={new Date().toISOString().split("T")[0]}
-              className="w-full rounded-lg px-3 py-2 text-sm border"
-              style={{
-                backgroundColor: "var(--color-bg-primary)",
-                borderColor: "var(--color-border)",
-                color: "var(--color-text-primary)",
-              }}
-            />
-          </div>
-          <label className="flex items-center gap-2 text-sm whitespace-nowrap">
-            <input
-              type="checkbox"
-              checked={newOverrideBlocked}
-              onChange={(e) => setNewOverrideBlocked(e.target.checked)}
-              className="rounded"
-            />
-            <span style={{ color: "var(--color-text-secondary)" }}>
-              {t("settings.blockDate")}
-            </span>
-          </label>
-          <Button
-            variant="outline"
+        <div className="flex items-center gap-2">
+          <DatePicker
+            value={newOverrideDate}
+            onChange={setNewOverrideDate}
+            min={new Date().toISOString().split("T")[0]}
+            locale={locale as 'ka' | 'en' | 'ru'}
             size="sm"
+            className="flex-1"
+          />
+          <Checkbox
+            checked={newOverrideBlocked}
+            onChange={setNewOverrideBlocked}
+            label={t("settings.blockDate")}
+            size="sm"
+          />
+          <button
             onClick={addOverride}
             disabled={!newOverrideDate}
+            className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#C4735B] text-white disabled:opacity-40 hover:bg-[#B5624A] transition-colors flex-shrink-0"
           >
-            <Plus size={14} className="mr-1" />
-            {t("settings.addOverride")}
-          </Button>
+            <Plus className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saving}>
+      {/* Save */}
+      <div className="pt-2 border-t border-neutral-200 dark:border-neutral-800">
+        <Button onClick={handleSave} disabled={saving} className="w-full">
           {saving ? <LoadingSpinner size="xs" className="mr-2" /> : null}
           {t("common.save")}
         </Button>

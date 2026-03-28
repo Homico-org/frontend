@@ -34,7 +34,6 @@ const budgetTypes: {
 }[] = [
   { value: 'fixed', labelEn: 'Fixed', labelKa: 'ფიქსირებული' },
   { value: 'range', labelEn: 'Range', labelKa: 'დიაპაზონი' },
-  { value: 'negotiable', labelEn: 'Negotiable', labelKa: 'შეთანხმებით' },
 ];
 
 export default function BudgetSelector({

@@ -1,5 +1,6 @@
 "use client";
 
+import Checkbox from "@/components/ui/Checkbox";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -339,14 +340,11 @@ export default function StepAccount({
         </div>
 
         {/* Terms - Better touch target */}
-        <label className="flex items-start gap-2.5 sm:gap-3 cursor-pointer p-2 -mx-2 rounded-lg active:bg-neutral-50 transition-colors">
-          <input
-            type="checkbox"
-            checked={agreedToTerms}
-            onChange={(e) => setAgreedToTerms(e.target.checked)}
-            className="mt-0.5 w-4 h-4 sm:w-5 sm:h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
-          />
-          <span className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
+        <Checkbox
+          checked={agreedToTerms}
+          onChange={setAgreedToTerms}
+          className="p-2 -mx-2 rounded-lg active:bg-neutral-50 transition-colors"
+        >
             {locale === "ka" ? (
               <>
                 ვეთანხმები{" "}
@@ -405,8 +403,7 @@ export default function StepAccount({
                 </Link>
               </>
             )}
-          </span>
-        </label>
+        </Checkbox>
 
         {/* Submit Button - Sticky on mobile for better UX */}
         {showFooter && (

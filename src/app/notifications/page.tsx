@@ -139,7 +139,7 @@ function SwipeableNotificationCard({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl">
+    <div className="relative overflow-hidden rounded-xl">
       {/* Delete background */}
       <div
         className="absolute inset-y-0 right-0 w-24 flex items-center justify-center bg-red-500"
@@ -161,13 +161,13 @@ function SwipeableNotificationCard({
           transition: isDragging ? 'none' : 'transform 0.2s ease-out',
         }}
       >
-        <div className="p-4 flex items-start gap-3">
+        <div className="px-3 py-2.5 flex items-start gap-2.5">
           {/* Icon */}
           <div
-            className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+            className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center mt-0.5"
             style={{ backgroundColor: config.bgColor }}
           >
-            <Icon className="w-5 h-5" style={{ color: config.color }} />
+            <Icon className="w-4 h-4" style={{ color: config.color }} />
           </div>
 
           {/* Content */}
@@ -350,15 +350,15 @@ function NotificationsPageContent() {
       <div className="sticky top-14 z-40 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-2xl mx-auto">
           {/* Title Row */}
-          <div className="px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-neutral-900 dark:text-white">
+          <div className="px-4 py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-bold text-neutral-900 dark:text-white">
                 {t('common.notifications')}
               </h1>
               {unreadCount > 0 && (
-                <Badge variant="premium" size="xs">
+                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-[#C4735B] text-white">
                   {unreadCount}
-                </Badge>
+                </span>
               )}
             </div>
 
@@ -505,16 +505,16 @@ function NotificationsPageContent() {
           </div>
         ) : filteredNotifications.length === 0 ? (
           /* Empty State */
-          <div className="px-4 py-16 text-center">
-            <div className="flex justify-center mb-4">
-              <IconBadge icon={Bell} variant="neutral" size="xl" />
+          <div className="px-4 py-12 text-center">
+            <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
+              <Bell className="w-5 h-5 text-neutral-400" />
             </div>
-            <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-1">
               {activeFilter === 'unread'
                 ? t('notifications.allCaughtUp')
                 : t('notifications.noNotifications')}
             </h3>
-            <p className="text-sm text-neutral-500 dark:text-neutral-500 max-w-xs mx-auto">
+            <p className="text-xs text-neutral-500 max-w-xs mx-auto">
               {activeFilter === 'unread'
                 ? locale === 'ka' ? 'ყველა შეტყობინება წაკითხულია' : "You've read all your notifications"
                 : locale === 'ka' ? 'ახალი შეტყობინებები აქ გამოჩნდება' : "New notifications will appear here"}

@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import SchedulePanel from "@/components/settings/SchedulePanel";
+import SidePanel from "@/components/ui/SidePanel";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -84,55 +86,6 @@ const cardVariants = {
 };
 
 /* ── Slide-in Modal (framer-motion) ── */
-function SlideModal({
-  open,
-  onClose,
-  title,
-  children,
-}: {
-  open: boolean;
-  onClose: () => void;
-  title: string;
-  children: ReactNode;
-}) {
-  useEffect(() => {
-    if (open) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
-    return () => { document.body.style.overflow = ""; };
-  }, [open]);
-
-  return (
-    <AnimatePresence>
-      {open && (
-        <div className="fixed inset-0 z-[60]">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={onClose}
-          />
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="absolute right-0 top-0 bottom-0 w-full sm:w-[520px] lg:w-[600px] bg-white dark:bg-neutral-950 shadow-2xl flex flex-col"
-          >
-            <div className="flex items-center justify-between px-4 sm:px-5 h-14 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0">
-              <h2 className="text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>{title}</h2>
-              <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
-                <X className="w-4 h-4 text-neutral-500" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 sm:p-5">{children}</div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
-  );
-}
 
 /* ── Section header with optional "View all" ── */
 function SectionHeader({
@@ -210,6 +163,7 @@ function MySpaceContent() {
 
   // Modal states
   const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
   const copyTimeoutRef = useRef<NodeJS.Timeout>();
 
   /* ── Initial data fetch ── */
@@ -418,6 +372,14 @@ function MySpaceContent() {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={() => setShowSchedule(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: `${ACCENT_COLOR}15`, color: ACCENT_COLOR }}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{t("settings.availability")}</span>
+          </button>
           <Link
             href="/pro/profile-setup"
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white hover:opacity-90 transition-opacity"
@@ -571,7 +533,7 @@ function MySpaceContent() {
       </motion.section>
 
       {/* ── Modals ── */}
-      <SlideModal open={showReviewsModal} onClose={() => setShowReviewsModal(false)} title={t("mySpace.manageReviews")}>
+      <SidePanel isOpen={showReviewsModal} onClose={() => setShowReviewsModal(false)} title={t("mySpace.manageReviews")}>
         <div className="space-y-4">
           {/* Request Reviews section */}
           {reviewLink && (
@@ -668,7 +630,9 @@ function MySpaceContent() {
             </div>
           )}
         </div>
-      </SlideModal>
+      </SidePanel>
+
+      <SchedulePanel isOpen={showSchedule} onClose={() => setShowSchedule(false)} />
     </motion.div>
   );
 }

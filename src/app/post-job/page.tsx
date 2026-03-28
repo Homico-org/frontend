@@ -52,6 +52,23 @@ interface MediaFile {
 const STEP_IDS: Step[] = ["category", "location", "details", "review"];
 
 // Category icons - Custom illustrated style
+function ReviewRow({ label, onEdit, editLabel, children }: { label: string; onEdit: () => void; editLabel: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-3 px-4 py-3">
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">{label}</p>
+        {children}
+      </div>
+      <button
+        onClick={onEdit}
+        className="flex-shrink-0 text-[11px] font-medium text-[#C4735B] hover:underline mt-0.5"
+      >
+        {editLabel}
+      </button>
+    </div>
+  );
+}
+
 function PostJobPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
@@ -266,6 +283,11 @@ function PostJobPageContent() {
 
   const canProceedFromCategory = () => {
     if (!selectedCategory || !selectedSubcategory || !formData.propertyType) return false;
+    // Also validate required category-specific fields shown on this step
+    const activeFields = getActiveFields();
+    for (const field of activeFields) {
+      if (field.required && !formData[field.key as keyof typeof formData]) return false;
+    }
     return true;
   };
   const canProceedFromLocation = () => {
@@ -282,16 +304,9 @@ function PostJobPageContent() {
     return true;
   };
   const canProceedFromDetails = () => {
-    // Check basic required fields
+    // Check basic required fields — title, description, at least 1 photo
     if (!formData.title.trim() || !formData.description.trim() || (existingMedia.length + mediaFiles.length) === 0) {
       return false;
-    }
-    // Check required category-specific fields
-    const activeFields = getActiveFields();
-    for (const field of activeFields) {
-      if (field.required && !formData[field.key as keyof typeof formData]) {
-        return false;
-      }
     }
     return true;
   };
@@ -458,25 +473,67 @@ function PostJobPageContent() {
 
   return (
     <div className="flex flex-col min-h-screen pb-28 lg:pb-14">
-      {/* Progress Header */}
-      <div className="bg-white border-b border-neutral-100 sticky top-14 z-40">
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex items-center gap-3 sm:gap-6">
-            <div className="flex items-center gap-2 sm:gap-3 text-sm text-neutral-600 flex-shrink-0">
-              <span className="font-semibold text-[#C4735B]">{getCurrentStepIndex() + 1}/{STEP_IDS.length}</span>
-              <span className="hidden sm:inline text-neutral-300">•</span>
-              <span className="hidden sm:inline font-medium">{getStepLabel(currentStep)}</span>
-            </div>
-            <Progress value={progressPercent} size="default" className="flex-1" />
-            <span className="text-xs sm:text-sm font-semibold text-[#C4735B] flex-shrink-0">
-              {Math.round(progressPercent)}%
+      {/* Page Title + Progress */}
+      <div className="bg-white dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-800 sticky top-14 z-40">
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pt-3 pb-2">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <Plus className="w-4 h-4 text-[#C4735B]" />
+              {isEditMode ? t('job.editJob') : t('browse.postAJob')}
+            </h1>
+            <span className="text-[11px] text-neutral-400">
+              {getCurrentStepIndex() + 1}/{STEP_IDS.length}
             </span>
+          </div>
+          {/* Step labels */}
+          <div className="flex mb-1.5">
+            {STEP_IDS.map((step, index) => {
+              const currentIndex = getCurrentStepIndex();
+              const isCompleted = index < currentIndex;
+              const isCurrent = index === currentIndex;
+              return (
+                <button
+                  key={step}
+                  type="button"
+                  onClick={() => isCompleted ? goToStep(step) : undefined}
+                  disabled={!isCompleted}
+                  className={`flex-1 text-center text-[10px] sm:text-[11px] font-medium transition-colors ${
+                    isCurrent
+                      ? 'text-[#C4735B]'
+                      : isCompleted
+                        ? 'text-neutral-600 dark:text-neutral-400 cursor-pointer hover:text-[#C4735B]'
+                        : 'text-neutral-300 dark:text-neutral-600'
+                  }`}
+                >
+                  <span className="hidden sm:inline">{getStepLabel(step)}</span>
+                  <span className="sm:hidden">{index + 1}</span>
+                </button>
+              );
+            })}
+          </div>
+          {/* Progress segments */}
+          <div className="flex gap-1">
+            {STEP_IDS.map((step, index) => {
+              const currentIndex = getCurrentStepIndex();
+              return (
+                <div
+                  key={step}
+                  className={`flex-1 h-1 rounded-full transition-colors duration-300 ${
+                    index < currentIndex
+                      ? 'bg-[#C4735B]'
+                      : index === currentIndex
+                        ? 'bg-[#C4735B]/40'
+                        : 'bg-neutral-100 dark:bg-neutral-800'
+                  }`}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
 
-      <main className={`flex-1 py-4 sm:py-6 lg:py-8 transition-opacity duration-500 ${isVisible ? "opacity-100" : "opacity-0"}`}>
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8">
+      <main className={`flex-1 py-4 sm:py-6 transition-opacity duration-500 ${isVisible ? "opacity-100" : "opacity-0"}`}>
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
           {error && (
             <Alert variant="error" size="sm" className="mb-4">
               {error}
@@ -485,17 +542,15 @@ function PostJobPageContent() {
 
           {/* STEP 1: Category Selection */}
           {currentStep === "category" && (
-            <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {/* Left: Main Content */}
-              <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-                <div>
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 mb-1 sm:mb-2">
-                    {t('job.projectDetails')}
-                  </h1>
-                  <p className="text-sm sm:text-base text-neutral-500">
-                    {t('job.selectPropertyTypeCategoryAnd')}
-                  </p>
-                </div>
+            <div className="max-w-2xl mx-auto space-y-4">
+              <div>
+                <h1 className="text-lg font-bold text-neutral-900 dark:text-white mb-0.5">
+                  {t('job.projectDetails')}
+                </h1>
+                <p className="text-xs text-neutral-500">
+                  {t('job.selectPropertyTypeCategoryAnd')}
+                </p>
+              </div>
 
                 {/* Property Type Selection with Icons */}
                 <div>
@@ -529,7 +584,7 @@ function PostJobPageContent() {
 
                 {/* Category-specific fields */}
                 {selectedSubcategory && getActiveFields().length > 0 && (
-                  <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                  <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <h3 className="text-sm sm:text-base font-semibold text-neutral-900 mb-3 sm:mb-4">
                       {t('job.additionalDetails')}
                     </h3>
@@ -573,7 +628,7 @@ function PostJobPageContent() {
 
                 {/* Cadastral Code Input - Only for architecture/design */}
                 {(selectedCategory === "architecture" || selectedCategory === "design") && (
-                  <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                  <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <label className="block text-sm sm:text-base font-semibold text-neutral-900 mb-2 sm:mb-3">
                       {t('job.cadastralCode')} <span className="text-neutral-400 font-normal text-xs sm:text-sm">({t('common.optional')})</span>
                     </label>
@@ -591,7 +646,7 @@ function PostJobPageContent() {
 
                 {/* Land Area Input - Only for house/building with architecture/design */}
                 {(formData.propertyType === "house" || formData.propertyType === "building") && (selectedCategory === "architecture" || selectedCategory === "design") && (
-                  <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                  <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <label className="block text-sm sm:text-base font-semibold text-neutral-900 mb-2 sm:mb-3">
                       {t('job.landArea')}
                     </label>
@@ -621,7 +676,7 @@ function PostJobPageContent() {
 
                 {/* Property Condition Selector - For relevant categories */}
                 {selectedCategory && categoriesNeedingCondition.includes(selectedCategory) && (
-                  <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5 lg:p-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                  <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <label className="block text-sm sm:text-base font-semibold text-neutral-900 mb-3 sm:mb-4">
                       {t('job.propertyCondition')}
                     </label>
@@ -636,38 +691,15 @@ function PostJobPageContent() {
                     </p>
                   </div>
                 )}
-              </div>
 
-              {/* Right: Hints Panel */}
-              <div className="lg:col-span-1">
-                <div className="sticky top-[140px] space-y-4">
-                  {/* Hint Card */}
-                  <div className="bg-gradient-to-br from-[#C4735B]/5 to-[#C4735B]/10 rounded-2xl border border-[#C4735B]/20 p-4 sm:p-5 lg:p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-xl bg-[#C4735B] flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <h3 className="font-semibold text-base text-[#C4735B]">
-                        {t('job.tip')}
-                      </h3>
-                    </div>
-                    <p className="text-sm text-neutral-600 leading-relaxed">
-                      {getActiveHint()}
-                    </p>
-                  </div>
-
-                </div>
-              </div>
             </div>
           )}
 
           {/* STEP 2: Location & Budget */}
           {currentStep === "location" && (
-            <div className="max-w-3xl mx-auto">
-              <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-6 lg:p-8">
-                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 mb-1 sm:mb-2">
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5">
+                <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-0.5">
                   {t('job.locationBudget')}
                 </h2>
                 <p className="text-sm sm:text-base text-neutral-500 mb-4 sm:mb-6">
@@ -729,17 +761,17 @@ function PostJobPageContent() {
 
           {/* STEP 3: Details */}
           {currentStep === "details" && (
-            <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
+            <div className="max-w-2xl mx-auto space-y-4">
               <div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 mb-1 sm:mb-2">
+                <h1 className="text-lg font-bold text-neutral-900 dark:text-white mb-0.5">
                   {t("job.projectDetails")}
                 </h1>
-                <p className="text-sm sm:text-base text-neutral-500">
+                <p className="text-xs text-neutral-500">
                   {t('job.describeWhatNeedsToBe')}
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
+              <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 space-y-4">
                 {/* Title */}
                 <div>
                   <label className="block text-sm font-semibold text-neutral-700 mb-2">
@@ -898,267 +930,168 @@ function PostJobPageContent() {
 
           {/* STEP 4: Review */}
           {currentStep === "review" && (
-            <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4">
-              <div className="mb-3 sm:mb-4">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 mb-1 sm:mb-2">
+            <div className="max-w-2xl mx-auto space-y-3">
+              <div className="mb-2">
+                <h1 className="text-lg font-bold text-neutral-900 dark:text-white mb-0.5">
                   {t('job.reviewYourJobPost')}
                 </h1>
-                <p className="text-sm sm:text-base text-neutral-500">
+                <p className="text-xs text-neutral-500">
                   {t('job.pleaseEnsureAllDetailsAre')}
                 </p>
               </div>
 
-              {/* Service Details */}
-              <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
-                      <CategoryIcon type={selectedCategoryData?.icon || ""} className="w-4 h-4 text-[#C4735B]" />
-                    </div>
-                    {t('job.service')}
-                  </h3>
-                  <Button variant="ghost" size="sm" onClick={() => goToStep("category")} className="text-[#C4735B]">
-                    <Pencil className="w-4 h-4 mr-1" />
-                    {t("common.edit")}
-                  </Button>
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-neutral-400 mb-1">{t('job.category')}</p>
-                    <p className="font-semibold text-neutral-900 text-base">
-                      {locale === "ka" ? selectedCategoryData?.nameKa : selectedCategoryData?.name}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-neutral-400 mb-1">{t('common.type')}</p>
-                    <p className="font-semibold text-neutral-900 text-base">
-                      {(() => {
-                        const sub = selectedCategoryData?.subcategories.find((s) => s.key === selectedSubcategory);
-                        return locale === "ka" ? sub?.nameKa : sub?.name;
-                      })()}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              {/* All review items in a single card */}
+              <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
+                {/* Service */}
+                <ReviewRow
+                  label={t('job.service')}
+                  onEdit={() => goToStep("category")}
+                  editLabel={t("common.edit")}
+                >
+                  <span className="text-sm font-medium text-neutral-900 dark:text-white">
+                    {locale === "ka" ? selectedCategoryData?.nameKa : selectedCategoryData?.name}
+                    {" · "}
+                    {(() => {
+                      const sub = selectedCategoryData?.subcategories.find((s) => s.key === selectedSubcategory);
+                      return locale === "ka" ? sub?.nameKa : sub?.name;
+                    })()}
+                  </span>
+                </ReviewRow>
 
-              {/* Location & Budget - Combined */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
-                        <MapPin className="w-4 h-4 text-[#C4735B]" />
-                      </div>
-                      {t('common.location')}
-                    </h3>
-                    <Button variant="ghost" size="sm" onClick={() => goToStep("location")} className="text-[#C4735B] h-8 w-8 p-0">
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <p className="text-sm font-medium text-neutral-900 line-clamp-2 mb-2">{formData.location}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <Badge variant="secondary" size="sm">
-                      {formData.propertyType === "apartment" && (t('job.apartment'))}
-                      {formData.propertyType === "house" && (t('job.house'))}
-                      {formData.propertyType === "office" && (t('job.office'))}
-                      {formData.propertyType === "building" && (t('job.building'))}
-                      {formData.propertyType === "other" && (t('common.other'))}
-                    </Badge>
+                {/* Location */}
+                <ReviewRow label={t('common.location')} onEdit={() => goToStep("location")} editLabel={t("common.edit")}>
+                  <p className="text-sm font-medium text-neutral-900 dark:text-white line-clamp-1">{formData.location}</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                      {formData.propertyType === "apartment" && t('job.apartment')}
+                      {formData.propertyType === "house" && t('job.house')}
+                      {formData.propertyType === "office" && t('job.office')}
+                      {formData.propertyType === "building" && t('job.building')}
+                      {formData.propertyType === "other" && t('common.other')}
+                    </span>
                     {formData.propertyCondition && (
-                      <Badge variant="premium" size="sm">
-                        {formData.propertyCondition === "shell" && (t('job.shell'))}
-                        {formData.propertyCondition === "black-frame" && (t('job.blackFrame'))}
-                        {formData.propertyCondition === "needs-renovation" && (t('job.fullRenovation'))}
-                        {formData.propertyCondition === "partial-renovation" && (t('job.partial'))}
-                        {formData.propertyCondition === "good" && (t('job.good'))}
-                      </Badge>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#C4735B]/10 text-[#C4735B]">
+                        {formData.propertyCondition === "shell" && t('job.shell')}
+                        {formData.propertyCondition === "black-frame" && t('job.blackFrame')}
+                        {formData.propertyCondition === "needs-renovation" && t('job.fullRenovation')}
+                        {formData.propertyCondition === "partial-renovation" && t('job.partial')}
+                        {formData.propertyCondition === "good" && t('job.good')}
+                      </span>
                     )}
                   </div>
-                </div>
+                </ReviewRow>
 
                 {/* Budget */}
-                <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
-                        <svg className="w-4 h-4 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      {t("common.budget")}
-                    </h3>
-                    <Button variant="ghost" size="sm" onClick={() => goToStep("location")} className="text-[#C4735B] h-8 w-8 p-0">
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <p className="text-lg font-bold text-neutral-900">
-                    {formData.budgetType === "negotiable"
-                      ? (t('common.negotiable'))
-                      : formData.budgetType === "range"
-                      ? `${formData.budgetMin} - ${formData.budgetMax} GEL`
-                      : `${formData.budgetMin} GEL`}
-                  </p>
-                </div>
+                <ReviewRow label={t("common.budget")} onEdit={() => goToStep("location")} editLabel={t("common.edit")}>
+                  <span className="text-sm font-bold" style={{ color: '#C4735B' }}>
+                    {formData.budgetType === "range"
+                      ? `${formData.budgetMin} – ${formData.budgetMax} ₾`
+                      : `${formData.budgetMin} ₾`}
+                  </span>
+                </ReviewRow>
 
                 {/* Timing */}
-                <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
-                        <Clock className="w-4 h-4 text-[#C4735B]" />
-                      </div>
-                      {t('job.whenNeeded')}
-                    </h3>
-                    <Button variant="ghost" size="sm" onClick={() => goToStep("location")} className="text-[#C4735B] h-8 w-8 p-0">
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                  </div>
+                <ReviewRow label={t('job.whenNeeded')} onEdit={() => goToStep("location")} editLabel={t("common.edit")}>
                   <Badge
                     variant={formData.timing === "asap" ? "danger" : formData.timing === "this_week" ? "warning" : "default"}
-                    size="default"
+                    size="sm"
                   >
-                    {formData.timing === "flexible" && (t('job.flexible'))}
-                    {formData.timing === "asap" && (t('job.asap'))}
-                    {formData.timing === "this_week" && (t('common.thisWeek'))}
-                    {formData.timing === "this_month" && (t('common.thisMonth'))}
+                    {formData.timing === "flexible" && t('job.flexible')}
+                    {formData.timing === "asap" && t('job.asap')}
+                    {formData.timing === "this_week" && t('common.thisWeek')}
+                    {formData.timing === "this_month" && t('common.thisMonth')}
                   </Badge>
-                </div>
-              </div>
+                </ReviewRow>
 
-              {/* Category-specific fields - Show if any are filled */}
-              {(formData.areaSize || formData.roomCount || formData.pointsCount || formData.cadastralId || formData.landArea) && (
-                <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
-                        <Ruler className="w-4 h-4 text-[#C4735B]" />
-                      </div>
-                      {t('common.details')}
-                    </h3>
-                    <Button variant="ghost" size="sm" onClick={() => goToStep("details")} className="text-[#C4735B] h-8 w-8 p-0">
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.areaSize && (
-                      <Badge variant="secondary" size="default">
-                        {t('job.area')}: {formData.areaSize} m²
-                      </Badge>
-                    )}
-                    {formData.roomCount && (
-                      <Badge variant="secondary" size="default">
-                        {t('job.rooms')}: {formData.roomCount}
-                      </Badge>
-                    )}
-                    {formData.pointsCount && (
-                      <Badge variant="secondary" size="default">
-                        {t('job.points')}: {formData.pointsCount}
-                      </Badge>
-                    )}
-                    {formData.cadastralId && (
-                      <Badge variant="secondary" size="default">
-                        {t('job.cadastral')}: {formData.cadastralId}
-                      </Badge>
-                    )}
-                    {formData.landArea && (
-                      <Badge variant="secondary" size="default">
-                        {t('job.land')}: {formData.landArea} m²
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Description */}
-              <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                      </svg>
+                {/* Specs */}
+                {(formData.areaSize || formData.roomCount || formData.pointsCount || formData.landArea) && (
+                  <ReviewRow label={t('common.details')} onEdit={() => goToStep("details")} editLabel={t("common.edit")}>
+                    <div className="flex flex-wrap gap-1">
+                      {formData.areaSize && <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">{formData.areaSize} m²</span>}
+                      {formData.roomCount && <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">{formData.roomCount} {t('job.rooms')}</span>}
+                      {formData.pointsCount && <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">{formData.pointsCount} {t('job.points')}</span>}
+                      {formData.landArea && <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">{formData.landArea} m² {t('job.land')}</span>}
                     </div>
-                    {t("common.description")}
-                  </h3>
-                  <Button variant="ghost" size="sm" onClick={() => goToStep("details")} className="text-[#C4735B] h-8 w-8 p-0">
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                </div>
-                <h4 className="text-base font-semibold text-neutral-900 mb-2">{formData.title}</h4>
-                <p className="text-neutral-600 text-sm leading-relaxed line-clamp-3">{formData.description}</p>
+                  </ReviewRow>
+                )}
+
+                {/* Description */}
+                <ReviewRow label={t("common.description")} onEdit={() => goToStep("details")} editLabel={t("common.edit")}>
+                  <p className="text-sm font-medium text-neutral-900 dark:text-white">{formData.title}</p>
+                  <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{formData.description}</p>
+                </ReviewRow>
+
+                {/* Photos */}
+                {(existingMedia.length > 0 || mediaFiles.length > 0) && (
+                  <ReviewRow label={`${t('common.photos')} (${existingMedia.length + mediaFiles.length})`} onEdit={() => goToStep("details")} editLabel={t("common.edit")}>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {existingMedia.map((media, idx) => (
+                        <div key={`re-${idx}`} className="relative w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                          <Image src={storage.getFileUrl(media.url)} alt="" fill className="object-cover" sizes="56px" />
+                        </div>
+                      ))}
+                      {mediaFiles.map((media, idx) => (
+                        <div key={`rn-${idx}`} className="relative w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                          <Image src={media.preview} alt="" fill className="object-cover" sizes="56px" unoptimized />
+                        </div>
+                      ))}
+                    </div>
+                  </ReviewRow>
+                )}
               </div>
 
-              {/* Photos */}
-              {(existingMedia.length > 0 || mediaFiles.length > 0) && (
-                <div className="bg-white rounded-2xl border border-neutral-200 p-4 sm:p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
-                        <ImageIcon className="w-4 h-4 text-[#C4735B]" />
-                      </div>
-                      {t('common.photos')} ({existingMedia.length + mediaFiles.length})
-                    </h3>
-                    <Button variant="ghost" size="sm" onClick={() => goToStep("details")} className="text-[#C4735B] h-8 w-8 p-0">
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="flex gap-3 flex-wrap">
-                    {existingMedia.map((media, idx) => (
-                      <div key={`review-existing-${idx}`} className="relative w-20 h-20 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0">
-                        <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="80px" />
-                      </div>
-                    ))}
-                    {mediaFiles.map((media, idx) => (
-                      <div key={`review-new-${idx}`} className="relative w-20 h-20 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0">
-                        <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="80px" unoptimized />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Info Note */}
-              <div className="flex items-center justify-center gap-2 text-sm text-neutral-400 py-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
+              <p className="text-center text-[11px] text-neutral-400 pt-1">
                 {t('job.willBeReviewedByAdmins')}
-              </div>
+              </p>
             </div>
           )}
         </div>
       </main>
 
       {/* Footer Navigation */}
-      <footer className="fixed bottom-14 lg:bottom-0 left-0 right-0 bg-white border-t border-neutral-100 z-40 shadow-lg shadow-neutral-900/5">
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-3">
-            <Button
-              variant="ghost"
-              size="default"
-              onClick={handleBack}
-              leftIcon={<ArrowLeft className="w-4 h-4" />}
-              className="text-sm sm:text-base"
-            >
-              {t('common.back')}
-            </Button>
+      <footer className="fixed bottom-14 lg:bottom-0 left-0 right-0 z-40">
+        <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-t border-neutral-200/50 dark:border-neutral-800/50">
+          <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center justify-between gap-3">
+              {getCurrentStepIndex() > 0 ? (
+                <button
+                  onClick={handleBack}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  {t('common.back')}
+                </button>
+              ) : (
+                <button
+                  onClick={() => router.back()}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                  {t('common.cancel')}
+                </button>
+              )}
 
-            <Button
-              size="lg"
-              onClick={handleNext}
-              loading={isSubmitting}
-              disabled={
-                (currentStep === "category" && !canProceedFromCategory()) ||
-                (currentStep === "location" && !canProceedFromLocation()) ||
-                (currentStep === "details" && !canProceedFromDetails())
-              }
-              rightIcon={currentStep === "review" ? <Check className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}
-              className="text-sm sm:text-base px-5 sm:px-8"
-            >
-              {currentStep === "review"
-                ? (t('job.postJob'))
-                : (t('common.continue'))}
-            </Button>
+              <button
+                onClick={handleNext}
+                disabled={
+                  isSubmitting ||
+                  (currentStep === "category" && !canProceedFromCategory()) ||
+                  (currentStep === "location" && !canProceedFromLocation()) ||
+                  (currentStep === "details" && !canProceedFromDetails())
+                }
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#C4735B] hover:bg-[#B5624A] disabled:bg-neutral-200 dark:disabled:bg-neutral-700 disabled:text-neutral-400 disabled:cursor-not-allowed transition-all shadow-lg shadow-[#C4735B]/20 disabled:shadow-none"
+              >
+                {isSubmitting ? (
+                  <LoadingSpinner size="xs" color="white" />
+                ) : null}
+                {currentStep === "review" ? t('job.postJob') : t('common.continue')}
+                {currentStep === "review" ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <ArrowRight className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </footer>

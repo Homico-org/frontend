@@ -15,7 +15,8 @@ import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
 import type { Booking, BookingStatus } from '@/types/shared';
-import { Calendar, Check, Clock, User, X } from 'lucide-react';
+import SchedulePanel from '@/components/settings/SchedulePanel';
+import { Calendar, Check, Clock, Settings2, User, X } from 'lucide-react';
 import Link from 'next/link';
 
 function formatHour(h: number): string {
@@ -44,6 +45,7 @@ function BookingsContent() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
+  const [showSchedule, setShowSchedule] = useState(false);
   const [cancelModalId, setCancelModalId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -122,8 +124,8 @@ function BookingsContent() {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="mb-6">
+    <div className="max-w-3xl">
+      <div className="flex items-center justify-between mb-6">
         <h1
           className="text-lg sm:text-2xl font-semibold flex items-center gap-2"
           style={{ color: 'var(--color-text-primary)' }}
@@ -131,6 +133,15 @@ function BookingsContent() {
           <Calendar size={22} style={{ color: '#C4735B' }} />
           {t('booking.title')}
         </h1>
+        {user?.role === 'pro' && (
+          <button
+            onClick={() => setShowSchedule(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[#C4735B] bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-colors"
+          >
+            <Settings2 className="w-4 h-4" />
+            {t('settings.availability')}
+          </button>
+        )}
       </div>
 
       <div className="mb-6">
@@ -325,6 +336,8 @@ function BookingsContent() {
           </div>
         </ConfirmModal>
       )}
+
+      <SchedulePanel isOpen={showSchedule} onClose={() => setShowSchedule(false)} />
     </div>
   );
 }

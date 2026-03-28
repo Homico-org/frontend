@@ -38,8 +38,8 @@ function PriceTypeSelector({
   onChange,
   locale,
 }: {
-  value: "byAgreement" | "fixed" | "range";
-  onChange: (type: "byAgreement" | "fixed" | "range") => void;
+  value: "byAgreement" | "fixed" | "range"; // byAgreement kept for backward compat
+  onChange: (type: "fixed" | "range") => void;
   locale: string;
 }) {
   const { t } = useLanguage();
@@ -56,16 +56,10 @@ function PriceTypeSelector({
       icon: FolderKanban,
       description: t("common.priceRange"),
     },
-    {
-      id: "byAgreement" as const,
-      label: t("common.negotiable"),
-      icon: Handshake,
-      description: t("common.negotiable"),
-    },
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       {types.map((type) => {
         const Icon = type.icon;
         const isSelected = value === type.id;
@@ -163,23 +157,7 @@ export default function PricingAreasStep({
           />
 
           {/* Price Inputs - Conditional based on price type */}
-          {formData.priceType === "byAgreement" ? (
-            /* By Agreement - Modern styled placeholder */
-            <div className="p-4 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border-subtle)] text-center">
-              <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-elevated)] shadow-sm flex items-center justify-center mx-auto mb-2">
-                <Handshake
-                  className="w-5 h-5 text-[#C4735B]"
-                  strokeWidth={1.5}
-                />
-              </div>
-              <p className="text-sm text-[var(--color-text-secondary)] font-medium">
-                {t("common.priceWillBeDeterminedBy")}
-              </p>
-              <p className="text-xs text-[var(--color-text-muted)] mt-1">
-                {t("common.flexiblePricing")}
-              </p>
-            </div>
-          ) : formData.priceType === "fixed" ? (
+          {formData.priceType === "fixed" ? (
             /* Fixed Price - Single input */
             <div className="flex-1">
               <Input

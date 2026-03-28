@@ -5,6 +5,7 @@ import Header, { HeaderSpacer } from "@/components/common/Header";
 import Select from "@/components/common/Select";
 import AboutTab from "@/components/professionals/AboutTab";
 import BookingModal from "@/components/professionals/BookingModal";
+import SchedulePanel from "@/components/settings/SchedulePanel";
 import ContactModal from "@/components/professionals/ContactModal";
 import InviteProToJobModal from "@/components/professionals/InviteProToJobModal";
 import PortfolioTab from "@/components/professionals/PortfolioTab";
@@ -155,6 +156,7 @@ export default function ProfessionalDetailClient({
   const [error, setError] = useState<string | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showSchedulePanel, setShowSchedulePanel] = useState(false);
   const [reviews, setReviews] = useState<PageReview[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
 
@@ -1759,13 +1761,9 @@ export default function ProfessionalDetailClient({
                     value: PricingModel.PER_SQUARE_METER,
                     label: t("professional.perSqm"),
                   },
-                  {
-                    value: PricingModel.BY_AGREEMENT,
-                    label: t("common.negotiable"),
-                  },
                 ]}
               />
-              {editedPricingModel !== PricingModel.BY_AGREEMENT && (
+              {editedPricingModel && (
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
@@ -1860,52 +1858,7 @@ export default function ProfessionalDetailClient({
         </div>
       </motion.div>
 
-      {/* ========== MOBILE TAB NAVIGATION ========== */}
-      <div className="lg:hidden sticky top-[56px] sm:top-[60px] z-30 bg-[var(--color-bg-app)]/95 dark:bg-[#0A0A0A]/95 backdrop-blur-lg border-b border-neutral-200/50 dark:border-neutral-800/50 px-3 sm:px-6">
-        <nav
-          className="flex gap-6 overflow-x-auto scrollbar-hide"
-          aria-label="Profile sections"
-        >
-          {[
-            {
-              key: "portfolio" as ProfileSidebarTab,
-              label: locale === "ka" ? "ნამუშევრები" : "Portfolio",
-              count: portfolioProjects.length,
-            },
-            {
-              key: "about" as ProfileSidebarTab,
-              label: locale === "ka" ? "შესახებ" : "About",
-            },
-            {
-              key: "reviews" as ProfileSidebarTab,
-              label: locale === "ka" ? "შეფასებები" : "Reviews",
-              count: profile.totalReviews,
-            },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`relative whitespace-nowrap pb-3 pt-3 text-sm font-medium transition-colors ${activeTab === tab.key ? "text-neutral-900 dark:text-white" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
-            >
-              <span className="flex items-center gap-2">
-                {tab.label}
-                {tab.count !== undefined && tab.count > 0 && (
-                  <span className="text-xs text-neutral-400">{tab.count}</span>
-                )}
-              </span>
-              {activeTab === tab.key && (
-                <motion.span
-                  layoutId="mobile-tab-indicator"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C4735B] rounded-full"
-                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                />
-              )}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* ========== MAIN LAYOUT: SIDEBAR + CONTENT (Behance-style) ========== */}
+      {/* ========== MAIN LAYOUT: SIDEBAR + CONTENT ========== */}
       <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 pb-32 sm:pb-32 lg:pb-12">
         <div className="flex gap-6 lg:gap-8">
           {/* ====== DESKTOP SIDEBAR (Behance-style) ====== */}
@@ -2100,6 +2053,21 @@ export default function ProfessionalDetailClient({
                     </div>
                   )}
 
+                  {/* Schedule button for owner */}
+                  {canEdit && (
+                    <div className="w-full mb-1">
+                      <motion.button
+                        whileHover={{ scale: 1.02, y: -1 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => setShowSchedulePanel(true)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[#C4735B] font-medium text-sm bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-colors"
+                      >
+                        <Calendar className="w-4 h-4" />
+                        {t("settings.availability")}
+                      </motion.button>
+                    </div>
+                  )}
+
                   {/* CTA Buttons */}
                   {!isOwner && (
                     <div className="w-full space-y-2 mb-1">
@@ -2205,6 +2173,17 @@ export default function ProfessionalDetailClient({
                           {t("booking.bookAppointment")}
                         </motion.button>
                       )}
+                      {canEdit && (
+                        <motion.button
+                          whileHover={{ scale: 1.02, y: -1 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => setShowSchedulePanel(true)}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[#C4735B] font-medium text-sm bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-colors"
+                        >
+                          <Calendar className="w-4 h-4" />
+                          {t("settings.availability")}
+                        </motion.button>
+                      )}
                     </div>
                   )}
                 </motion.div>
@@ -2261,13 +2240,9 @@ export default function ProfessionalDetailClient({
                               value: PricingModel.PER_SQUARE_METER,
                               label: t("professional.perSqm"),
                             },
-                            {
-                              value: PricingModel.BY_AGREEMENT,
-                              label: t("common.negotiable"),
-                            },
                           ]}
                         />
-                        {editedPricingModel !== PricingModel.BY_AGREEMENT && (
+                        {editedPricingModel && (
                           <div className="flex items-center gap-2">
                             <div className="relative flex-1">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
@@ -2596,11 +2571,15 @@ export default function ProfessionalDetailClient({
                       className="text-[10px] text-neutral-400 uppercase tracking-wider"
                       suppressHydrationWarning
                     >
-                      {locale === "ka" ? "წევრია" : "Member since"}:{" "}
-                      {new Date(profile.createdAt).toLocaleDateString(
-                        locale === "ka" ? "ka-GE" : "en-US",
-                        { month: "long", year: "numeric" },
-                      )}
+                      {locale === "ka" ? "წევრია" : locale === "ru" ? "Участник с" : "Member since"}:{" "}
+                      {(() => {
+                        const d = new Date(profile.createdAt);
+                        const monthsKa = ["იანვარი", "თებერვალი", "მარტი", "აპრილი", "მაისი", "ივნისი", "ივლისი", "აგვისტო", "სექტემბერი", "ოქტომბერი", "ნოემბერი", "დეკემბერი"];
+                        const monthsRu = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+                        if (locale === "ka") return `${monthsKa[d.getMonth()]} ${d.getFullYear()}`;
+                        if (locale === "ru") return `${monthsRu[d.getMonth()]} ${d.getFullYear()}`;
+                        return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+                      })()}
                     </p>
                   </motion.div>
                 )}
@@ -2615,162 +2594,112 @@ export default function ProfessionalDetailClient({
             transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
             className="flex-1 min-w-0"
           >
-            {/* Desktop Tab Navigation - Behance style horizontal underline tabs */}
-            <div className="hidden lg:block border-b border-neutral-200 dark:border-neutral-800 mb-6">
-              <nav className="flex gap-8" aria-label="Profile sections">
-                {[
-                  {
-                    key: "portfolio" as ProfileSidebarTab,
-                    label: locale === "ka" ? "ნამუშევრები" : "Portfolio",
-                    count: portfolioProjects.length,
-                  },
-                  {
-                    key: "about" as ProfileSidebarTab,
-                    label: locale === "ka" ? "შესახებ" : "About",
-                  },
-                  {
-                    key: "reviews" as ProfileSidebarTab,
-                    label: locale === "ka" ? "შეფასებები" : "Reviews",
-                    count: reviews.length || profile.totalReviews,
-                  },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={`relative pb-3 text-sm font-medium transition-colors ${activeTab === tab.key ? "text-neutral-900 dark:text-white" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
-                  >
-                    <span className="flex items-center gap-2">
-                      {tab.label}
-                      {tab.count !== undefined && tab.count > 0 && (
-                        <span className="text-xs text-neutral-400">
-                          {tab.count}
-                        </span>
-                      )}
-                    </span>
-                    {activeTab === tab.key && (
-                      <motion.span
-                        layoutId="desktop-tab-indicator"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C4735B] rounded-full"
-                        transition={{
-                          type: "spring",
-                          stiffness: 500,
-                          damping: 35,
-                        }}
-                      />
+            {/* All sections stacked — no tabs */}
+            <div className="space-y-8 sm:space-y-10">
+              {/* PORTFOLIO SECTION */}
+              {(portfolioProjects.length > 0 || isOwner) && (
+                <section>
+                  <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
+                    {locale === "ka" ? "ნამუშევრები" : locale === "ru" ? "Портфолио" : "Portfolio"}
+                    {portfolioProjects.length > 0 && (
+                      <span className="text-xs font-normal text-neutral-400">{portfolioProjects.length}</span>
                     )}
-                  </button>
-                ))}
-              </nav>
+                  </h2>
+                  <PortfolioTab
+                    projects={getUnifiedProjects().map((p) => ({
+                      id: p.id,
+                      title: p.title,
+                      description: p.description,
+                      location: p.location,
+                      images: p.images,
+                      videos: p.videos,
+                      beforeAfter: p.beforeAfter,
+                      isEditable: p.source !== "homico",
+                    }))}
+                    onProjectClick={setSelectedProject}
+                    locale={locale as "en" | "ka" | "ru"}
+                    isOwner={isOwner}
+                    onAddProject={() => setShowAddProjectModal(true)}
+                    onEditProject={(project) =>
+                      setEditingProject({
+                        id: project.id,
+                        title: project.title,
+                        description: project.description,
+                        location: project.location,
+                        images: project.images,
+                        videos: project.videos,
+                        beforeAfter: project.beforeAfter,
+                      })
+                    }
+                    onDeleteProject={(projectId) =>
+                      setDeleteProjectId(projectId)
+                    }
+                  />
+                </section>
+              )}
+
+              {/* ABOUT SECTION */}
+              <section>
+                <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">
+                  {locale === "ka" ? "შესახებ" : locale === "ru" ? "О специалисте" : "About"}
+                </h2>
+                <AboutTab
+                  bio={profile.bio}
+                  customServices={profile.customServices}
+                  groupedServices={groupedServices}
+                  selectedServices={profile.selectedServices}
+                  getCategoryLabel={getCategoryLabel}
+                  getSubcategoryLabel={getSubcategoryLabel}
+                  getExperienceLabel={getExperienceLabel}
+                  whatsapp={profile.whatsapp}
+                  telegram={profile.telegram}
+                  facebookUrl={profile.facebookUrl}
+                  instagramUrl={profile.instagramUrl}
+                  linkedinUrl={profile.linkedinUrl}
+                  websiteUrl={profile.websiteUrl}
+                  locale={locale as "en" | "ka" | "ru"}
+                  isAuthenticated={!!user}
+                  onRequireAuth={() => openLoginModal(pathname)}
+                  isOwner={canEdit}
+                  onSaveBio={async (bio) => {
+                    await api.patch("/users/me/pro-profile", { bio });
+                    setProfile((prev) => (prev ? { ...prev, bio } : prev));
+                    toast.success(t("professional.saved"));
+                  }}
+                  onSaveServices={async (customServices) => {
+                    await api.patch("/users/me/pro-profile", { customServices });
+                    setProfile((prev) => prev ? { ...prev, customServices } : prev);
+                    toast.success(t("common.saved"));
+                  }}
+                  onSaveSocialLinks={async (socialLinks) => {
+                    await api.patch("/users/me/pro-profile", socialLinks);
+                    setProfile((prev) => prev ? { ...prev, ...socialLinks } : prev);
+                    toast.success(t("common.saved"));
+                  }}
+                />
+              </section>
+
+              {/* REVIEWS SECTION */}
+              <section>
+                <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
+                  {locale === "ka" ? "შეფასებები" : locale === "ru" ? "Отзывы" : "Reviews"}
+                  {(reviews.length || profile.totalReviews) > 0 && (
+                    <span className="text-xs font-normal text-neutral-400">{reviews.length || profile.totalReviews}</span>
+                  )}
+                </h2>
+                <ReviewsTab
+                  reviews={reviews}
+                  avgRating={profile.avgRating}
+                  totalReviews={reviews.length || profile.totalReviews}
+                  locale={locale as "en" | "ka" | "ru"}
+                  isOwner={isOwner}
+                  proId={profile.id}
+                  proName={profile.name}
+                  onReviewSubmitted={fetchReviews}
+                />
+              </section>
             </div>
-
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
-                className="space-y-6 sm:space-y-8"
-              >
-                {/* ABOUT TAB */}
-                {activeTab === "about" && (
-                  <div className="min-h-[300px]">
-                    <AboutTab
-                      bio={profile.bio}
-                      customServices={profile.customServices}
-                      groupedServices={groupedServices}
-                      selectedServices={profile.selectedServices}
-                      getCategoryLabel={getCategoryLabel}
-                      getSubcategoryLabel={getSubcategoryLabel}
-                      getExperienceLabel={getExperienceLabel}
-                      whatsapp={profile.whatsapp}
-                      telegram={profile.telegram}
-                      facebookUrl={profile.facebookUrl}
-                      instagramUrl={profile.instagramUrl}
-                      linkedinUrl={profile.linkedinUrl}
-                      websiteUrl={profile.websiteUrl}
-                      locale={locale as "en" | "ka" | "ru"}
-                      isAuthenticated={!!user}
-                      onRequireAuth={() => openLoginModal(pathname)}
-                      isOwner={canEdit}
-                      onSaveBio={async (bio) => {
-                        await api.patch("/users/me/pro-profile", { bio });
-                        setProfile((prev) => (prev ? { ...prev, bio } : prev));
-                        toast.success(t("professional.saved"));
-                      }}
-                      onSaveServices={async (customServices) => {
-                        await api.patch("/users/me/pro-profile", {
-                          customServices,
-                        });
-                        setProfile((prev) =>
-                          prev ? { ...prev, customServices } : prev,
-                        );
-                        toast.success(t("common.saved"));
-                      }}
-                      onSaveSocialLinks={async (socialLinks) => {
-                        await api.patch("/users/me/pro-profile", socialLinks);
-                        setProfile((prev) =>
-                          prev ? { ...prev, ...socialLinks } : prev,
-                        );
-                        toast.success(t("common.saved"));
-                      }}
-                    />
-                  </div>
-                )}
-
-                {/* PORTFOLIO TAB */}
-                {activeTab === "portfolio" && (
-                  <div className="min-h-[300px]">
-                    <PortfolioTab
-                      projects={getUnifiedProjects().map((p) => ({
-                        id: p.id,
-                        title: p.title,
-                        description: p.description,
-                        location: p.location,
-                        images: p.images,
-                        videos: p.videos,
-                        beforeAfter: p.beforeAfter,
-                        isEditable: p.source !== "homico",
-                      }))}
-                      onProjectClick={setSelectedProject}
-                      locale={locale as "en" | "ka" | "ru"}
-                      isOwner={isOwner}
-                      onAddProject={() => setShowAddProjectModal(true)}
-                      onEditProject={(project) =>
-                        setEditingProject({
-                          id: project.id,
-                          title: project.title,
-                          description: project.description,
-                          location: project.location,
-                          images: project.images,
-                          videos: project.videos,
-                          beforeAfter: project.beforeAfter,
-                        })
-                      }
-                      onDeleteProject={(projectId) =>
-                        setDeleteProjectId(projectId)
-                      }
-                    />
-                  </div>
-                )}
-
-                {/* REVIEWS TAB */}
-                {activeTab === "reviews" && (
-                  <div className="min-h-[300px]">
-                    <ReviewsTab
-                      reviews={reviews}
-                      avgRating={profile.avgRating}
-                      totalReviews={reviews.length || profile.totalReviews}
-                      locale={locale as "en" | "ka" | "ru"}
-                      isOwner={isOwner}
-                      proId={profile.id}
-                      proName={profile.name}
-                      onReviewSubmitted={fetchReviews}
-                    />
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
+            {/* End of stacked sections */}
           </motion.div>
         </div>
       </main>
@@ -3152,6 +3081,9 @@ export default function ProfessionalDetailClient({
           professionalName={profile.name || ""}
         />
       )}
+
+      {/* ========== SCHEDULE PANEL (owner only) ========== */}
+      <SchedulePanel isOpen={showSchedulePanel} onClose={() => setShowSchedulePanel(false)} />
 
       {/* ========== ADD/EDIT PROJECT MODAL ========== */}
       {(showAddProjectModal || editingProject) && (

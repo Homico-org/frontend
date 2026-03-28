@@ -42,6 +42,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
   // Cities
   const georgianCities = countries.GE.citiesLocal;
   const englishCities = countries.GE.cities;
+  const allValidCities = [...georgianCities, ...englishCities];
   const cityOptions = georgianCities.map((cityKa, index) => ({
     value: locale === 'ka' ? cityKa : englishCities[index],
     label: locale === 'ka' ? cityKa : englishCities[index],
@@ -53,7 +54,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
         name: user.name || '',
         email: user.email || '',
         phone: user.phone || '',
-        city: user.city || '',
+        city: user.city && allValidCities.includes(user.city) ? user.city : '',
         avatar: user.avatar || '',
       });
     }

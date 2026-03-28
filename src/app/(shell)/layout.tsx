@@ -1,7 +1,6 @@
 "use client";
 
-import BrowseFiltersSidebar from "@/components/browse/BrowseFiltersSidebar";
-import JobsFiltersSidebar from "@/components/browse/JobsFiltersSidebar";
+import { CategoryIcon } from "@/components/categories";
 import Header from "@/components/common/Header";
 import MobileBottomNav from "@/components/common/MobileBottomNav";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -9,23 +8,28 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
+import { useCategories } from "@/contexts/CategoriesContext";
 import { JobsProvider, useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getCategoryLabelStatic } from "@/hooks/useCategoryLabels";
+import api from "@/lib/api";
 import {
   Briefcase,
   Calendar,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Facebook,
   FileText,
-  Filter,
   Hammer,
   HelpCircle,
   Images,
   LayoutDashboard,
   Mail,
   Plus,
+  RotateCcw,
   Search,
+  Sparkles,
   Settings,
   Users,
   Wrench,
@@ -42,6 +46,7 @@ const SIDEBAR_COLLAPSED_WIDTH = 56;
 type TabShowFor = "all" | "pro" | "client" | "auth";
 
 type TabKey = "my-space" | "my-jobs" | "bookings" | "jobs" | "portfolio" | "professionals";
+
 
 const TABS: Array<{
   key: TabKey;
@@ -108,67 +113,72 @@ const TABS: Array<{
   },
 ];
 
-function JobsSidebar() {
-  const { filters, setFilters, savedJobIds } = useJobsContext();
-  const { isAuthenticated } = useAuth();
+// AI search hook: debounces query, calls backend, returns matching subcategory keys
+function useAiCategorySearch(query: string, locale: string) {
+  const [isSearching, setIsSearching] = useState(false);
+  const [results, setResults] = useState<{ key: string; category: string }[]>([]);
+  const debounceRef = useRef<NodeJS.Timeout>();
+  const lastQueryRef = useRef("");
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
+      setResults([]);
+      setIsSearching(false);
+      lastQueryRef.current = "";
+      return;
+    }
+
+    if (trimmed === lastQueryRef.current) return;
+
+    setIsSearching(true);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await api.get(`/categories/ai-search?q=${encodeURIComponent(trimmed)}&locale=${locale}`);
+        lastQueryRef.current = trimmed;
+        setResults(res.data?.subcategories || []);
+      } catch {
+        setResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500);
+
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [query, locale]);
+
+  return { isSearching, results };
+}
+
+function AiSearchIndicator({ isSearching }: { isSearching: boolean }) {
+  if (!isSearching) return null;
   return (
-    <JobsFiltersSidebar
-      filters={filters}
-      onFiltersChange={setFilters}
-      savedCount={savedJobIds.size}
-      isAuthenticated={isAuthenticated}
-    />
+    <div className="absolute right-10 top-1/2 -translate-y-1/2 flex items-center gap-1">
+      <Sparkles className="w-3.5 h-3.5 text-[#C4735B] animate-pulse" />
+    </div>
   );
 }
 
-function useJobsFilterCount() {
-  const { filters } = useJobsContext();
-  let count = 0;
-  if (filters.subcategory) count++;
-  else if (filters.category) count++;
-  if (filters.budgetMin !== null || filters.budgetMax !== null) count++;
-  if (filters.propertyType && filters.propertyType !== "all") count++;
-  if (filters.location && filters.location !== "all") count++;
-  if (filters.deadline && filters.deadline !== "all") count++;
-  if (filters.showFavoritesOnly) count++;
-  return count;
-}
-
-function useBrowseFilterCount(includeProOnlyFilters: boolean) {
-  const {
-    selectedCategory,
-    selectedSubcategories,
-    minRating,
-    budgetMin,
-    budgetMax,
-    selectedCity,
-    selectedBudget,
-  } = useBrowseContext();
-
-  let count = 0;
-  if (selectedSubcategories.length > 0) {
-    count += selectedSubcategories.length;
-  } else if (selectedCategory) {
-    count++;
-  }
-  if (includeProOnlyFilters && minRating > 0) count++;
-  if (includeProOnlyFilters && (budgetMin !== null || budgetMax !== null)) count++;
-  if (selectedCity && selectedCity !== "all") count++;
-  if (
-    selectedBudget &&
-    selectedBudget !== "all" &&
-    selectedBudget !== "common.all"
-  )
-    count++;
-  return count;
-}
-
 function JobsSearchInput() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { filters, setFilters } = useJobsContext();
   const [localSearch, setLocalSearch] = useState(filters.searchQuery);
   const [isFocused, setIsFocused] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout>();
+
+  const { isSearching, results: aiResults } = useAiCategorySearch(localSearch, locale);
+
+  // Auto-apply AI category match
+  useEffect(() => {
+    if (aiResults.length > 0) {
+      const match = aiResults[0];
+      if (match.key !== filters.subcategory) {
+        setFilters({ ...filters, category: match.category, subcategory: match.key });
+      }
+    }
+  }, [aiResults]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setLocalSearch(filters.searchQuery);
@@ -203,6 +213,7 @@ function JobsSearchInput() {
           placeholder={t("browse.searchJobs")}
           className="flex-1 h-10 pr-9 bg-transparent text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none pl-10"
         />
+        <AiSearchIndicator isSearching={isSearching} />
         {localSearch ? (
           <button
             onClick={() => handleSearchChange("")}
@@ -218,10 +229,27 @@ function JobsSearchInput() {
 }
 
 function BrowseSearchInput({ placeholder }: { placeholder: string }) {
-  const { searchQuery, setSearchQuery } = useBrowseContext();
+  const { locale } = useLanguage();
+  const {
+    searchQuery,
+    setSearchQuery,
+    setSelectedCategory,
+    setSelectedSubcategories,
+  } = useBrowseContext();
   const [localSearch, setLocalSearch] = useState(searchQuery);
   const [isFocused, setIsFocused] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout>();
+
+  const { isSearching, results: aiResults } = useAiCategorySearch(localSearch, locale);
+
+  // Auto-apply AI category match
+  useEffect(() => {
+    if (aiResults.length > 0) {
+      const match = aiResults[0];
+      setSelectedCategory(match.category);
+      setSelectedSubcategories([match.key]);
+    }
+  }, [aiResults]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setLocalSearch(searchQuery);
@@ -256,6 +284,7 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
           placeholder={placeholder}
           className="flex-1 h-10 pr-9 bg-transparent text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none pl-10"
         />
+        <AiSearchIndicator isSearching={isSearching} />
         {localSearch ? (
           <button
             onClick={() => handleSearchChange("")}
@@ -267,73 +296,6 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
         ) : null}
       </div>
     </div>
-  );
-}
-
-function MobileFilterButton({
-  onClick,
-  filterCount,
-}: {
-  onClick: () => void;
-  filterCount: number;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="relative flex items-center justify-center w-10 h-11 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
-      style={filterCount > 0 ? { borderColor: ACCENT_COLOR, color: ACCENT_COLOR } : {}}
-      aria-label="Open filters"
-      title="Filters"
-    >
-      <Filter className="w-4 h-4" />
-      {filterCount > 0 && (
-        <span
-          className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white rounded-full border-2 border-white dark:border-neutral-950"
-          style={{ backgroundColor: ACCENT_COLOR }}
-        >
-          {filterCount}
-        </span>
-      )}
-    </button>
-  );
-}
-
-function DesktopFilterButton({
-  isActive,
-  onToggle,
-  filterCount,
-  label,
-}: {
-  isActive: boolean;
-  onToggle: () => void;
-  filterCount: number;
-  label: string;
-}) {
-  return (
-    <button
-      onClick={onToggle}
-      className={`relative flex items-center gap-2 px-3 h-11 rounded-xl border transition-colors ${
-        isActive
-          ? "border-[#C4735B]/40 bg-[#C4735B]/5"
-          : filterCount > 0
-            ? "border-[#C4735B]/40 bg-[#C4735B]/5"
-            : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
-      }`}
-      style={isActive || filterCount > 0 ? { color: ACCENT_COLOR } : {}}
-    >
-      <Filter className="w-4 h-4" />
-      <span className="text-sm font-medium">{label}</span>
-      {filterCount > 0 ? (
-        <span
-          className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-bold text-white rounded-full"
-          style={{ backgroundColor: ACCENT_COLOR }}
-        >
-          {filterCount}
-        </span>
-      ) : (
-        <ChevronRight className="w-4 h-4 opacity-60" />
-      )}
-    </button>
   );
 }
 
@@ -367,13 +329,298 @@ function useSidebarState() {
   return { isCollapsed, toggleSidebar, isHydrated };
 }
 
+// Sidebar categories for Browse pages (professionals, portfolio)
+function BrowseSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
+  const { locale } = useLanguage();
+  const { categories, getSubcategoriesForCategory } = useCategories();
+  const {
+    selectedCategory,
+    setSelectedCategory,
+    selectedSubcategories,
+    toggleSubcategory,
+    setSelectedSubcategories,
+  } = useBrowseContext();
+
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (selectedSubcategories.length > 0) {
+      const toExpand: string[] = [];
+      for (const subKey of selectedSubcategories) {
+        for (const cat of categories) {
+          if (getSubcategoriesForCategory(cat.key).some(s => s.key === subKey)) {
+            if (!toExpand.includes(cat.key)) toExpand.push(cat.key);
+            break;
+          }
+        }
+      }
+      if (toExpand.length > 0) {
+        setExpandedCategories(prev => {
+          const next = { ...prev };
+          toExpand.forEach(k => { next[k] = true; });
+          return next;
+        });
+      }
+    } else if (selectedCategory) {
+      setExpandedCategories(prev => prev[selectedCategory] ? prev : { ...prev, [selectedCategory]: true });
+    }
+  }, [selectedCategory, selectedSubcategories, categories, getSubcategoriesForCategory]);
+
+  const hasActive = selectedCategory !== null || selectedSubcategories.length > 0;
+
+  const handleSubToggle = (catKey: string, subKey: string) => {
+    toggleSubcategory(subKey);
+    if (selectedSubcategories.includes(subKey) && selectedSubcategories.length === 1) {
+      setSelectedCategory(null);
+    } else if (!selectedSubcategories.includes(subKey)) {
+      setSelectedCategory(catKey);
+    }
+  };
+
+  const handleClear = () => {
+    setSelectedCategory(null);
+    setSelectedSubcategories([]);
+  };
+
+  return (
+    <SidebarCategoriesUI
+      isCollapsed={isCollapsed}
+      categories={categories}
+      getSubcategoriesForCategory={getSubcategoriesForCategory}
+      locale={locale}
+      expandedCategories={expandedCategories}
+      setExpandedCategories={setExpandedCategories}
+      hasActive={hasActive}
+      onClear={handleClear}
+      isCategoryActive={(catKey) => selectedCategory === catKey || selectedSubcategories.some(s =>
+        getSubcategoriesForCategory(catKey).some(sub => sub.key === s)
+      )}
+      isSubSelected={(subKey) => selectedSubcategories.includes(subKey)}
+      onCategoryClick={(catKey) => {
+        setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }));
+      }}
+      onSubClick={handleSubToggle}
+    />
+  );
+}
+
+// Sidebar categories for Jobs page
+function JobsSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
+  const { locale } = useLanguage();
+  const { categories, getSubcategoriesForCategory } = useCategories();
+  const { filters, setFilters } = useJobsContext();
+
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (filters.subcategory) {
+      for (const cat of categories) {
+        if (getSubcategoriesForCategory(cat.key).some(s => s.key === filters.subcategory)) {
+          setExpandedCategories(prev => ({ ...prev, [cat.key]: true }));
+          break;
+        }
+      }
+    } else if (filters.category) {
+      setExpandedCategories(prev => prev[filters.category!] ? prev : { ...prev, [filters.category!]: true });
+    }
+  }, [filters.category, filters.subcategory, categories, getSubcategoriesForCategory]);
+
+  const hasActive = filters.category !== null || filters.subcategory !== null;
+
+  return (
+    <SidebarCategoriesUI
+      isCollapsed={isCollapsed}
+      categories={categories}
+      getSubcategoriesForCategory={getSubcategoriesForCategory}
+      locale={locale}
+      expandedCategories={expandedCategories}
+      setExpandedCategories={setExpandedCategories}
+      hasActive={hasActive}
+      onClear={() => setFilters({ ...filters, category: null, subcategory: null })}
+      isCategoryActive={(catKey) => filters.category === catKey}
+      isSubSelected={(subKey) => filters.subcategory === subKey}
+      onCategoryClick={(catKey) => {
+        setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }));
+      }}
+      onSubClick={(catKey, subKey) => {
+        if (filters.subcategory === subKey) {
+          setFilters({ ...filters, subcategory: null });
+        } else {
+          setFilters({ ...filters, category: catKey, subcategory: subKey });
+        }
+      }}
+    />
+  );
+}
+
+// Shared UI for sidebar categories
+function SidebarCategoriesUI({
+  isCollapsed,
+  categories,
+  getSubcategoriesForCategory,
+  locale,
+  expandedCategories,
+  setExpandedCategories,
+  hasActive,
+  onClear,
+  isCategoryActive,
+  isSubSelected,
+  onCategoryClick,
+  onSubClick,
+}: {
+  isCollapsed: boolean;
+  categories: { key: string }[];
+  getSubcategoriesForCategory: (key: string) => { key: string; name: string; nameKa: string }[];
+  locale: string;
+  expandedCategories: Record<string, boolean>;
+  setExpandedCategories: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  hasActive: boolean;
+  onClear: () => void;
+  isCategoryActive: (catKey: string) => boolean;
+  isSubSelected: (subKey: string) => boolean;
+  onCategoryClick: (catKey: string) => void;
+  onSubClick: (catKey: string, subKey: string) => void;
+}) {
+  const { t } = useLanguage();
+
+  if (isCollapsed) {
+    return (
+      <div className="flex flex-col items-center gap-1 py-1">
+        {categories.map((cat) => {
+          const active = isCategoryActive(cat.key);
+          return (
+            <button
+              key={cat.key}
+              onClick={() => onCategoryClick(cat.key)}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
+                active ? "shadow-sm" : "hover:bg-neutral-50 dark:hover:bg-neutral-800"
+              }`}
+              style={active ? { backgroundColor: `${ACCENT_COLOR}15`, color: ACCENT_COLOR } : {}}
+              title={getCategoryLabelStatic(cat.key, locale)}
+            >
+              <CategoryIcon type={cat.key} className="w-4 h-4" />
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-0.5">
+      {hasActive && (
+        <div className="flex justify-end px-1 mb-1">
+          <button
+            onClick={onClear}
+            className="flex items-center gap-1 text-[10px] font-medium text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+          >
+            <RotateCcw className="w-2.5 h-2.5" />
+            {t("browse.clearAll")}
+          </button>
+        </div>
+      )}
+      {categories.map((cat) => {
+        const catKey = cat.key;
+        const active = isCategoryActive(catKey);
+        const subcategories = getSubcategoriesForCategory(catKey);
+        const isExpanded = expandedCategories[catKey] ?? false;
+        const label = getCategoryLabelStatic(catKey, locale);
+        const hasSelectedSub = subcategories.some(s => isSubSelected(s.key));
+
+        return (
+          <div key={catKey}>
+            <button
+              onClick={() => onCategoryClick(catKey)}
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all text-left group ${
+                active || hasSelectedSub
+                  ? "bg-[#C4735B]/10"
+                  : "hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+              }`}
+            >
+              <span
+                className="transition-transform duration-200 group-hover:scale-110 flex-shrink-0"
+                style={{ color: active || hasSelectedSub ? ACCENT_COLOR : undefined }}
+              >
+                <CategoryIcon type={catKey} className="w-4 h-4" />
+              </span>
+              <span
+                className={`text-[12px] flex-1 truncate transition-colors ${
+                  active || hasSelectedSub
+                    ? "font-semibold text-neutral-900 dark:text-white"
+                    : "text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-300"
+                }`}
+              >
+                {label}
+              </span>
+              {subcategories.length > 0 && (
+                <ChevronDown
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }));
+                  }}
+                  className={`w-3 h-3 text-neutral-400 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer hover:text-neutral-600 flex-shrink-0 ${
+                    isExpanded ? "rotate-180" : "rotate-0"
+                  }`}
+                />
+              )}
+            </button>
+
+            {subcategories.length > 0 && isExpanded && (
+              <div className="ml-5 mt-0.5 space-y-0.5 pb-0.5">
+                {subcategories.map((sub) => {
+                  const selected = isSubSelected(sub.key);
+                  const subLabel = getCategoryLabelStatic(sub.key, locale);
+                  return (
+                    <button
+                      key={sub.key}
+                      onClick={() => onSubClick(catKey, sub.key)}
+                      className={`w-full flex items-center gap-2 px-2 py-1 rounded-md text-left transition-all ${
+                        selected
+                          ? "bg-[#C4735B]/10"
+                          : "hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                      }`}
+                    >
+                      <div
+                        className={`w-3.5 h-3.5 rounded border-[1.5px] flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
+                          selected
+                            ? "border-transparent"
+                            : "border-neutral-300 dark:border-neutral-600"
+                        }`}
+                        style={selected ? { backgroundColor: ACCENT_COLOR } : {}}
+                      >
+                        {selected && (
+                          <svg className="w-2 h-2 text-white" viewBox="0 0 12 12" fill="none">
+                            <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </div>
+                      <span
+                        className={`text-[11px] truncate transition-colors ${
+                          selected
+                            ? "font-medium text-neutral-900 dark:text-white"
+                            : "text-neutral-500 dark:text-neutral-400"
+                        }`}
+                      >
+                        {subLabel}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function ShellContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { t, locale } = useLanguage();
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [showFiltersOverlay, setShowFiltersOverlay] = useState(false);
+  const [showMobileCategories, setShowMobileCategories] = useState(false);
   const { isCollapsed, toggleSidebar, isHydrated } = useSidebarState();
 
   const isPro = user?.role === "pro" || user?.role === "admin";
@@ -390,20 +637,23 @@ function ShellContent({ children }: { children: ReactNode }) {
   const isSettingsPage = pathname.startsWith("/settings");
   const isMyWorkPage = pathname.startsWith("/my-work");
   const isMyJobsPage = pathname.startsWith("/my-jobs");
+  const isBookingsPage = pathname.startsWith("/bookings");
 
   const activeTab: TabKey | null = isMySpacePage
     ? "my-space"
     : isMyJobsPage
       ? "my-jobs"
-      : isJobsPage
-        ? "jobs"
-        : isPortfolioPage
-          ? "portfolio"
-          : isProfessionalsPage
-            ? "professionals"
-            : isMyWorkPage || pathname.startsWith("/settings") || pathname.startsWith("/tools")
-              ? null
-              : "portfolio";
+      : isBookingsPage
+        ? "bookings"
+        : isJobsPage
+          ? "jobs"
+          : isPortfolioPage
+            ? "portfolio"
+            : isProfessionalsPage
+              ? "professionals"
+              : isMyWorkPage || pathname.startsWith("/settings") || pathname.startsWith("/tools")
+                ? null
+                : null;
 
   const visibleTabs = TABS.filter((tab) => {
     if (tab.showFor === "all") return true;
@@ -440,12 +690,8 @@ function ShellContent({ children }: { children: ReactNode }) {
 
   const HeaderIcon = pageHeader.icon;
 
-  const showHeaderRow = !isToolsSubpage && !isMySpacePage && !isSettingsPage;
-  const showSearchFilters = !isToolsSubpage && !isToolsPage && !isMyJobsPage && !isMyWorkPage && !isMySpacePage && !isSettingsPage;
-
-  const jobsFilterCount = useJobsFilterCount();
-  const browseFilterCount = useBrowseFilterCount(isProfessionalsPage);
-  const filterCount = isJobsPage ? jobsFilterCount : browseFilterCount;
+  const showHeaderRow = !isToolsSubpage && !isMySpacePage && !isSettingsPage && !isBookingsPage;
+  const showSearchFilters = !isToolsSubpage && !isToolsPage && !isMyJobsPage && !isMyWorkPage && !isMySpacePage && !isSettingsPage && !isBookingsPage;
 
   useEffect(() => setMounted(true), []);
 
@@ -465,7 +711,33 @@ function ShellContent({ children }: { children: ReactNode }) {
               : SIDEBAR_EXPANDED_WIDTH,
           }}
         >
-          <div className={`pt-4 pb-3 ${isCollapsed ? "px-2" : "px-3"}`}>
+          {/* Post Job — top of sidebar */}
+          <div className={`pt-4 pb-2 flex-shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}>
+            <Link
+              href="/post-job"
+              className={`group flex items-center justify-center border-2 border-dashed transition-all mb-3 ${
+                isCollapsed
+                  ? "w-10 h-10 rounded-xl mx-auto"
+                  : "w-full gap-2 py-2.5 rounded-xl"
+              } hover:border-solid hover:shadow-md`}
+              style={{
+                borderColor: ACCENT_COLOR,
+                color: ACCENT_COLOR,
+              }}
+              title={isCollapsed ? t("browse.postAJob") : undefined}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = ACCENT_COLOR;
+                e.currentTarget.style.color = '#fff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = ACCENT_COLOR;
+              }}
+            >
+              <Plus className="w-4 h-4 flex-shrink-0 transition-transform group-hover:rotate-90" />
+              {!isCollapsed && <span className="text-sm font-semibold">{t("browse.postAJob")}</span>}
+            </Link>
+
             <nav className="space-y-1">
               {visibleTabs.map((tab) => {
                 const isActive = activeTab === tab.key;
@@ -496,35 +768,21 @@ function ShellContent({ children }: { children: ReactNode }) {
             </nav>
           </div>
 
-          {/* Post Job — visually separated */}
-          <div className={`pb-3 ${isCollapsed ? "px-2" : "px-3"}`}>
-            <div className="border-t border-neutral-100 dark:border-neutral-800 pt-3">
-              <Link
-                href="/post-job"
-                className={`group flex items-center justify-center border-2 border-dashed transition-all ${
-                  isCollapsed
-                    ? "w-10 h-10 rounded-xl mx-auto"
-                    : "w-full gap-2 py-2.5 rounded-xl"
-                } hover:border-solid hover:shadow-md`}
-                style={{
-                  borderColor: ACCENT_COLOR,
-                  color: ACCENT_COLOR,
-                }}
-                title={isCollapsed ? t("browse.postAJob") : undefined}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = ACCENT_COLOR;
-                  e.currentTarget.style.color = '#fff';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = ACCENT_COLOR;
-                }}
-              >
-                <Plus className="w-4 h-4 flex-shrink-0 transition-transform group-hover:rotate-90" />
-                {!isCollapsed && <span className="text-sm font-semibold">{t("browse.postAJob")}</span>}
-              </Link>
+          {/* Categories — scrollable section between nav and post-job */}
+          {showSearchFilters && (
+            <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden border-t border-neutral-100 dark:border-neutral-800 ${isCollapsed ? "px-1.5 py-2" : "px-3 py-2"}`}>
+              {!isCollapsed && (
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5 px-1">
+                  {t("browse.categoryFilter")}
+                </p>
+              )}
+              {isJobsPage ? (
+                <JobsSidebarCategories isCollapsed={isCollapsed} />
+              ) : (
+                <BrowseSidebarCategories isCollapsed={isCollapsed} />
+              )}
             </div>
-          </div>
+          )}
 
           {/* Footer area (My pages + Support + Social) */}
           <div className={`mt-auto pb-4 ${isCollapsed ? "px-2" : "px-3"}`}>
@@ -659,7 +917,7 @@ function ShellContent({ children }: { children: ReactNode }) {
 
             {showSearchFilters && (
               <div className="flex items-center gap-2 px-3 pt-2 pb-3">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   {isJobsPage ? (
                     <JobsSearchInput />
                   ) : isProfessionalsPage ? (
@@ -668,10 +926,12 @@ function ShellContent({ children }: { children: ReactNode }) {
                     <BrowseSearchInput placeholder={t("browse.searchPortfolio")} />
                   )}
                 </div>
-                <MobileFilterButton
-                  onClick={() => setShowMobileFilters(true)}
-                  filterCount={filterCount}
-                />
+                <button
+                  onClick={() => setShowMobileCategories(true)}
+                  className="flex-shrink-0 w-10 h-11 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center justify-center text-neutral-500 hover:text-neutral-700 transition-colors"
+                >
+                  <Hammer className="w-4 h-4" />
+                </button>
               </div>
             )}
           </div>
@@ -693,54 +953,15 @@ function ShellContent({ children }: { children: ReactNode }) {
 
               {showSearchFilters && (
                 <div className="hidden lg:block mb-4 sm:mb-5">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 max-w-xl">
-                      {isJobsPage ? (
-                        <JobsSearchInput />
-                      ) : isProfessionalsPage ? (
-                        <BrowseSearchInput placeholder={t("browse.searchProfessionals")} />
-                      ) : (
-                        <BrowseSearchInput placeholder={t("browse.searchPortfolio")} />
-                      )}
-                    </div>
-                    <div className="relative">
-                      <DesktopFilterButton
-                        isActive={showFiltersOverlay}
-                        onToggle={() => setShowFiltersOverlay(!showFiltersOverlay)}
-                        filterCount={filterCount}
-                        label={t("common.filters")}
-                      />
-                      {showFiltersOverlay && (
-                        <div className="absolute top-full left-0 mt-2 w-80 bg-white dark:bg-[#0a0a0a] rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-800 z-50 overflow-hidden">
-                          <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-800">
-                            <h3 className="font-semibold text-sm text-neutral-900 dark:text-white">
-                              {t("common.filters")}
-                            </h3>
-                            <button
-                              onClick={() => setShowFiltersOverlay(false)}
-                              className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                            >
-                              <X className="w-4 h-4 text-neutral-500" />
-                            </button>
-                          </div>
-                          <div className="max-h-[50vh] overflow-y-auto">
-                            {isJobsPage ? (
-                              <JobsSidebar />
-                            ) : (
-                              <BrowseFiltersSidebar
-                                showSearch={false}
-                                showRatingFilter={isProfessionalsPage}
-                                showBudgetFilter={isProfessionalsPage}
-                              />
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                  <div className="max-w-xl">
+                    {isJobsPage ? (
+                      <JobsSearchInput />
+                    ) : isProfessionalsPage ? (
+                      <BrowseSearchInput placeholder={t("browse.searchProfessionals")} />
+                    ) : (
+                      <BrowseSearchInput placeholder={t("browse.searchPortfolio")} />
+                    )}
                   </div>
-                  {showFiltersOverlay && (
-                    <div className="fixed inset-0 z-40" onClick={() => setShowFiltersOverlay(false)} />
-                  )}
                 </div>
               )}
 
@@ -752,33 +973,30 @@ function ShellContent({ children }: { children: ReactNode }) {
 
       <MobileBottomNav />
 
-      {showMobileFilters && showSearchFilters && (
+      {/* Mobile Categories Panel */}
+      {showMobileCategories && showSearchFilters && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowMobileFilters(false)}
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowMobileCategories(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-72 max-w-[80vw] bg-white dark:bg-[#0a0a0a] shadow-2xl">
-            <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-800">
-              <h3 className="font-semibold text-sm text-neutral-900 dark:text-white">
-                {t("common.filters")}
+          <div className="absolute bottom-0 left-0 right-0 max-h-[70vh] bg-white dark:bg-neutral-900 rounded-t-2xl shadow-2xl flex flex-col animate-slide-up">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                {t("browse.categoryFilter")}
               </h3>
               <button
-                onClick={() => setShowMobileFilters(false)}
-                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                onClick={() => setShowMobileCategories(false)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400"
               >
-                <X className="w-4 h-4 text-neutral-500" />
+                <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="h-[calc(100%-52px)] min-h-0">
+            <div className="flex-1 overflow-y-auto px-3 py-3">
               {isJobsPage ? (
-                <JobsSidebar />
+                <JobsSidebarCategories isCollapsed={false} />
               ) : (
-                <BrowseFiltersSidebar
-                  showSearch={false}
-                  showRatingFilter={isProfessionalsPage}
-                  showBudgetFilter={isProfessionalsPage}
-                />
+                <BrowseSidebarCategories isCollapsed={false} />
               )}
             </div>
           </div>
@@ -792,6 +1010,13 @@ function ShellContent({ children }: { children: ReactNode }) {
         .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;
+        }
+        @keyframes slide-up {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        .animate-slide-up {
+          animation: slide-up 0.25s ease-out;
         }
       `}</style>
     </div>

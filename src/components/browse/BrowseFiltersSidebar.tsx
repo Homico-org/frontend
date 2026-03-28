@@ -1,130 +1,16 @@
 'use client';
 
-import { CategoryIcon } from '@/components/categories';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useBrowseContext } from '@/contexts/BrowseContext';
-import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
 import { ChevronDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-
-// Muted terracotta color matching design
-const ACCENT_COLOR = '#C47B65';
 
 // Budget range constants
 const MIN_BUDGET = 0;
 const MAX_BUDGET = 5000;
-
-// Category Accordion with smooth animation
-function CategoryAccordion({
-  categoryKey,
-  categoryLabel,
-  categoryIcon,
-  isExpanded,
-  onToggle,
-  subcategories,
-  selectedSubcategories,
-  onSubcategoryToggle,
-  locale,
-}: {
-  categoryKey: string;
-  categoryLabel: string;
-  categoryIcon: React.ReactNode;
-  isExpanded: boolean;
-  onToggle: () => void;
-  subcategories: { key: string; name: string; nameKa: string }[];
-  selectedSubcategories: string[];
-  onSubcategoryToggle: (categoryKey: string, subcategoryKey: string) => void;
-  locale: string;
-}) {
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState(0);
-
-  useEffect(() => {
-    if (contentRef.current) {
-      setHeight(contentRef.current.scrollHeight);
-    }
-  }, [subcategories, isExpanded]);
-
-  return (
-    <div className="bg-white rounded-lg border border-neutral-100 shadow-sm overflow-hidden">
-      {/* Category Header */}
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-neutral-50 transition-colors group"
-      >
-        <div className="flex items-center gap-2">
-          <span style={{ color: ACCENT_COLOR }} className="transition-transform duration-200 group-hover:scale-110">
-            {categoryIcon}
-          </span>
-          <span className="text-xs font-medium text-neutral-800">
-            {categoryLabel}
-          </span>
-        </div>
-        <ChevronDown
-          className={`w-3.5 h-3.5 text-neutral-400 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-            isExpanded ? 'rotate-180 text-neutral-600' : 'rotate-0'
-          }`}
-        />
-      </button>
-
-      {/* Subcategories (animated content) */}
-      <div
-        className="overflow-hidden overflow-y-auto transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-        style={{
-          // Let the sidebar scroll handle long lists (avoid nested scroll containers)
-          maxHeight: isExpanded ? height : 0,
-          opacity: isExpanded ? 1 : 0,
-        }}
-      >
-        <div
-          ref={contentRef}
-          className="px-3 pb-2.5 space-y-1.5"
-        >
-          {subcategories.map((sub, index) => {
-            const isSelected = selectedSubcategories.includes(sub.key);
-            const subLabel = getCategoryLabelStatic(sub.key, locale);
-
-            return (
-              <button
-                key={sub.key}
-                onClick={() => onSubcategoryToggle(categoryKey, sub.key)}
-                className="flex items-center gap-2 w-full text-left group pl-6 transition-all duration-200"
-                style={{
-                  transitionDelay: isExpanded ? `${index * 30}ms` : '0ms',
-                  opacity: isExpanded ? 1 : 0,
-                  transform: isExpanded ? 'translateX(0)' : 'translateX(-8px)',
-                }}
-              >
-                {/* Rounded Square Checkbox */}
-                <div
-                  className={`w-4 h-4 rounded border-[1.5px] flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
-                    isSelected
-                      ? 'scale-105'
-                      : 'border-neutral-300 group-hover:border-neutral-400 bg-white group-hover:scale-105'
-                  }`}
-                  style={isSelected ? { borderColor: ACCENT_COLOR, backgroundColor: ACCENT_COLOR } : {}}
-                >
-                  {isSelected && (
-                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </div>
-                <span className={`text-xs transition-colors duration-200 ${isSelected ? 'font-medium text-neutral-900' : 'text-neutral-600 group-hover:text-neutral-900'}`}>
-                  {subLabel}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // Collapsible Section Component
 function CollapsibleCard({
@@ -211,13 +97,7 @@ export default function BrowseFiltersSidebar({
   showRatingFilter = true,
 }: BrowseFiltersSidebarProps) {
   const { t, locale } = useLanguage();
-  const { categories, getSubcategoriesForCategory } = useCategories();
   const {
-    selectedCategory,
-    setSelectedCategory,
-    selectedSubcategories,
-    toggleSubcategory,
-    setSelectedSubcategories,
     minRating,
     setMinRating,
     budgetMin,
@@ -227,75 +107,14 @@ export default function BrowseFiltersSidebar({
     clearAllFilters,
   } = useBrowseContext();
 
-  // Only count filters that are actually visible on this page
+  // Only count filters that are actually visible on this page (categories are in sidebar now)
   const hasActiveFiltersLocal =
-    selectedCategory !== null ||
-    selectedSubcategories.length > 0 ||
     (showRatingFilter && minRating > 0) ||
     (showBudgetFilter && (budgetMin !== null || budgetMax !== null));
-
-  // Track which category accordions are expanded
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
-
-  // Auto-expand parent categories when subcategories are selected
-  useEffect(() => {
-    // Find and expand parent categories for all selected subcategories
-    if (selectedSubcategories.length > 0) {
-      const categoriesToExpand: string[] = [];
-      
-      for (const subcategoryKey of selectedSubcategories) {
-        for (const category of categories) {
-          const subcats = getSubcategoriesForCategory(category.key);
-          const found = subcats.find(sub => sub.key === subcategoryKey);
-          if (found && !categoriesToExpand.includes(category.key)) {
-            categoriesToExpand.push(category.key);
-            break;
-          }
-        }
-      }
-      
-      if (categoriesToExpand.length > 0) {
-        setExpandedCategories(prev => {
-          const newExpanded = { ...prev };
-          categoriesToExpand.forEach(cat => {
-            newExpanded[cat] = true;
-          });
-          return newExpanded;
-        });
-      }
-    }
-    // If category is set, make sure it's expanded
-    else if (selectedCategory) {
-      setExpandedCategories(prev => {
-        if (prev[selectedCategory]) return prev;
-        return { ...prev, [selectedCategory]: true };
-      });
-    }
-  }, [selectedCategory, selectedSubcategories, categories, getSubcategoriesForCategory]);
 
   // Local state for price inputs
   const [localMinPrice, setLocalMinPrice] = useState<string>(budgetMin?.toString() || '');
   const [localMaxPrice, setLocalMaxPrice] = useState<string>(budgetMax?.toString() || '');
-
-  const toggleCategoryExpand = (categoryKey: string) => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [categoryKey]: !prev[categoryKey],
-    }));
-  };
-
-  const handleSubcategoryToggle = (categoryKey: string, subcategoryKey: string) => {
-    // Toggle the subcategory
-    toggleSubcategory(subcategoryKey);
-    
-    // If this was the only subcategory and we're removing it, clear category too
-    if (selectedSubcategories.includes(subcategoryKey) && selectedSubcategories.length === 1) {
-      setSelectedCategory(null);
-    } else if (!selectedSubcategories.includes(subcategoryKey)) {
-      // Set the category when adding a subcategory
-      setSelectedCategory(categoryKey);
-    }
-  };
 
   const handleMinPriceChange = (value: string) => {
     const numValue = value === '' ? '' : value.replace(/\D/g, '');
@@ -352,32 +171,6 @@ export default function BrowseFiltersSidebar({
             </Button>
           </div>
         )}
-
-        {/* Category Accordions Zone */}
-        <div className="space-y-2">
-          {categories.map((category) => {
-            const categoryKey = category.key;
-            // Only expand if manually toggled - don't auto-expand on selection
-            const isExpanded = expandedCategories[categoryKey] ?? false;
-            const subcategories = getSubcategoriesForCategory(categoryKey);
-            const categoryLabel = getCategoryLabelStatic(categoryKey, locale);
-
-            return (
-              <CategoryAccordion
-                key={categoryKey}
-                categoryKey={categoryKey}
-                categoryLabel={categoryLabel}
-                categoryIcon={<CategoryIcon type={categoryKey} className="w-4 h-4" />}
-                isExpanded={isExpanded}
-                onToggle={() => toggleCategoryExpand(categoryKey)}
-                subcategories={subcategories}
-                selectedSubcategories={selectedSubcategories}
-                onSubcategoryToggle={handleSubcategoryToggle}
-                locale={locale}
-              />
-            );
-          })}
-        </div>
 
         {/* Price Range Zone */}
         {showBudgetFilter && (

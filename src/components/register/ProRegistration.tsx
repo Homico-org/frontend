@@ -4,7 +4,6 @@ import { useProRegistration } from './hooks/useProRegistration';
 import { StepPhone, StepProfile, StepSelectServices, StepComplete } from './steps';
 import AvatarCropper from '@/components/common/AvatarCropper';
 import LanguageSelector from '@/components/common/LanguageSelector';
-import { Progress } from '@/components/ui/progress';
 import { Alert } from '@/components/ui/Alert';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowLeft, HelpCircle } from 'lucide-react';
@@ -66,60 +65,48 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
 
   return (
     <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
-      {/* Header - Mobile optimized */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-neutral-100">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-neutral-100">
         <div className="max-w-lg mx-auto px-3 sm:px-4">
-          {/* Top row */}
-          <div className="h-12 sm:h-14 flex items-center justify-between">
-            {/* Back / Logo */}
+          <div className="h-12 flex items-center justify-between">
             {reg.currentStep !== 'phone' ? (
               <button
                 onClick={reg.handleBack}
-                className="flex items-center gap-1.5 sm:gap-2 text-neutral-500 hover:text-neutral-900 transition-colors -ml-1 p-1"
+                className="flex items-center gap-1.5 text-neutral-500 hover:text-neutral-900 transition-colors -ml-1 p-1"
               >
-                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-xs sm:text-sm font-medium">{t('common.back')}</span>
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-xs font-medium">{t('common.back')}</span>
               </button>
             ) : (
-              <Link href="/" className="flex items-center">
-                <span className="flex items-center gap-2">
-                  <Image src="/favicon.png" alt="Homico" width={24} height={24} className="h-6 w-6 rounded-[7px]" />
-                  <span className="text-base font-semibold tracking-wide text-neutral-900 dark:text-white">
-                    Homico
-                  </span>
-                </span>
+              <Link href="/" className="flex items-center gap-2">
+                <Image src="/favicon.png" alt="Homico" width={22} height={22} className="rounded-[6px]" />
+                <span className="text-sm font-semibold text-neutral-900">Homico</span>
               </Link>
             )}
-
-            {/* Language & Help */}
             <div className="flex items-center gap-2">
               <LanguageSelector variant="compact" />
-              <Link
-                href="/help"
-                className="hidden sm:block text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
-              >
+              <Link href="/help" className="text-xs text-neutral-400 hover:text-neutral-700 transition-colors">
                 {t('common.help')}
-              </Link>
-              <Link
-                href="/help"
-                className="sm:hidden w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-500"
-              >
-                <HelpCircle className="w-4 h-4" />
               </Link>
             </div>
           </div>
 
-          {/* Progress - Compact on mobile */}
-          <div className="pb-2.5 sm:pb-3">
-            <div className="flex items-center justify-between mb-1 sm:mb-1.5">
-              <span className="text-[9px] sm:text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
-                {currentStepConfig.index + 1}/{totalSteps}
-              </span>
-              <span className="text-[9px] sm:text-[10px] font-semibold text-[#C4735B] uppercase tracking-wider">
-                {getStepTitle()}
-              </span>
+          {/* Segmented progress */}
+          <div className="pb-2">
+            <div className="flex gap-1">
+              {Object.entries(STEP_CONFIG).filter(([k]) => k !== 'complete').map(([key, config]) => (
+                <div
+                  key={key}
+                  className={`flex-1 h-1 rounded-full transition-colors duration-300 ${
+                    config.index < currentStepConfig.index
+                      ? 'bg-[#C4735B]'
+                      : config.index === currentStepConfig.index
+                        ? 'bg-[#C4735B]/40'
+                        : 'bg-neutral-100'
+                  }`}
+                />
+              ))}
             </div>
-            <Progress value={progressPercent} size="sm" indicatorVariant="gradient" />
           </div>
         </div>
       </header>

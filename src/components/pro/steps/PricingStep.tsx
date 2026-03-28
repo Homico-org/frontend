@@ -133,13 +133,6 @@ export default function PricingStep({
       suffix: `₾${t("timeUnits.perSqm")}`,
       Icon: PricingIcons.per_sqm,
     },
-    {
-      key: "byAgreement",
-      label: "By Agreement",
-      labelKa: "შეთანხმებით",
-      suffix: "",
-      Icon: PricingIcons.byAgreement,
-    },
   ] as const;
 
   const selectedOption = pricingOptions.find((o) => o.key === formData.pricingModel);
@@ -225,16 +218,7 @@ export default function PricingStep({
           )}
         </div>
 
-        {formData.pricingModel === "byAgreement" ? (
-          <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-tertiary)] p-4">
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              {t("common.negotiable")}
-            </p>
-            <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
-              {t("common.negotiable")}
-            </p>
-          </div>
-        ) : (
+        {formData.pricingModel && formData.pricingModel !== "byAgreement" && (
           <div className="flex items-center gap-4">
             {/* Min Price */}
             <div className="flex-1">
@@ -320,7 +304,7 @@ export default function PricingStep({
         )}
 
         {/* Preview */}
-        {(formData.basePrice || formData.pricingModel === "byAgreement") && (
+        {formData.basePrice && (
           <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-[#E07B4F]/5 to-[#E8956A]/5 border border-[#E07B4F]/10">
             <p className="text-sm text-[var(--color-text-secondary)]">
               {t("common.clientsWillSee")}

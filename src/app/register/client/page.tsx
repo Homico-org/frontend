@@ -97,30 +97,20 @@ function ClientRegisterContent() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-neutral-100">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-neutral-100">
         <div className="max-w-lg mx-auto px-3 sm:px-4">
-          <div className="h-12 sm:h-14 flex items-center justify-between">
+          <div className="h-12 flex items-center justify-between">
             <button
               onClick={() => router.push('/register')}
-              className="flex items-center gap-1.5 sm:gap-2 text-neutral-500 hover:text-neutral-900 transition-colors"
+              className="flex items-center gap-1.5 text-neutral-500 hover:text-neutral-900 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="text-xs sm:text-sm font-medium">{t('common.back')}</span>
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-xs font-medium">{t('common.back')}</span>
             </button>
-
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2">
               <LanguageSelector variant="compact" />
-              <Link
-                href="/help"
-                className="hidden sm:block text-xs text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
+              <Link href="/help" className="text-xs text-neutral-400 hover:text-neutral-700 transition-colors">
                 {t('common.help')}
-              </Link>
-              <Link
-                href="/help"
-                className="sm:hidden w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-500"
-              >
-                <HelpCircle className="w-4 h-4" />
               </Link>
             </div>
           </div>

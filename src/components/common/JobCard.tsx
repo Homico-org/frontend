@@ -148,24 +148,17 @@ const JobCard = React.memo(function JobCard({
     <Link href={`/jobs/${job.id}`} className="group block h-full">
       <motion.div
         ref={cardRef}
-        className={`
-          relative h-full flex flex-col bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden
-          border border-neutral-200/70 dark:border-neutral-800
-          shadow-sm hover:shadow-lg hover:shadow-neutral-900/[0.08] dark:hover:shadow-black/30
-          transition-all duration-300
-        `}
-        initial={{ opacity: 0, y: 20 }}
+        className="relative h-full flex flex-col bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-200"
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        whileHover={{ scale: 1.02, y: -2 }}
-        whileTap={{ scale: 0.98 }}
+        transition={{ duration: 0.3 }}
       >
         {/* Main card layout */}
         <div className="flex flex-col flex-1">
 
           {/* Image section - only if has images */}
           {hasImages && (
-            <div className="relative aspect-[16/10] sm:aspect-[16/9] bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+            <div className="relative aspect-[16/9] bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
               {/* Shimmer loading */}
               <div
                 className={`absolute inset-0 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 dark:from-neutral-800 dark:via-neutral-700 dark:to-neutral-800 animate-shimmer bg-[length:200%_100%] transition-opacity duration-500 ${
@@ -225,10 +218,10 @@ const JobCard = React.memo(function JobCard({
           )}
 
           {/* Content section */}
-          <div className="p-2.5 sm:p-4 flex flex-col gap-2 sm:gap-3 flex-1">
+          <div className="p-2.5 sm:p-3 flex flex-col gap-1.5 sm:gap-2 flex-1">
             {/* Top row: Category + badges + time */}
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-              <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold rounded bg-[#C4735B]/10 text-[#C4735B]">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-[#C4735B]/10 text-[#C4735B]">
                 {getCategoryLabel(job.category)}
               </span>
               {isNew && !hasApplied && (
@@ -249,7 +242,7 @@ const JobCard = React.memo(function JobCard({
             </div>
 
             {/* Title */}
-            <h3 className="font-semibold text-[13px] sm:text-[15px] text-neutral-900 dark:text-white leading-snug line-clamp-2 group-hover:text-[#C4735B] transition-colors">
+            <h3 className="font-semibold text-[13px] sm:text-sm text-neutral-900 dark:text-white leading-snug line-clamp-2 group-hover:text-[#C4735B] transition-colors">
               {job.title}
             </h3>
 
@@ -305,7 +298,7 @@ const JobCard = React.memo(function JobCard({
                 </div>
 
                 {/* Budget badge */}
-                <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-[13px] font-bold rounded-md sm:rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white">
+                <span className="px-2 py-0.5 text-[11px] sm:text-xs font-bold rounded-md text-[#C4735B]">
                   {formattedBudget}
                 </span>
               </div>
@@ -314,37 +307,27 @@ const JobCard = React.memo(function JobCard({
         </div>
 
         {/* Save button - floating */}
-        <motion.button
+        <button
           type="button"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             onSave?.(job.id);
           }}
-          className={`
-            absolute top-2 right-2 sm:top-3 sm:right-3 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center
-            transition-all duration-200
-            ${hasImages
-              ? "bg-white/90 dark:bg-black/60 shadow-sm"
-              : "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-            }
-          `}
-          whileHover={{ scale: 1.15 }}
-          whileTap={{ scale: 0.9 }}
+          className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+            hasImages
+              ? "bg-white/90 dark:bg-black/60"
+              : "bg-neutral-100 dark:bg-neutral-800"
+          }`}
         >
-          <motion.div
-            animate={isSaved ? { scale: [1, 1.3, 1] } : {}}
-            transition={{ duration: 0.3 }}
-          >
-            <Bookmark
-              className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
-                isSaved
-                  ? "fill-amber-500 text-amber-500"
-                  : "text-neutral-500 dark:text-neutral-400"
-              }`}
-            />
-          </motion.div>
-        </motion.button>
+          <Bookmark
+            className={`w-3.5 h-3.5 transition-colors ${
+              isSaved
+                ? "fill-amber-500 text-amber-500"
+                : "text-neutral-400"
+            }`}
+          />
+        </button>
       </motion.div>
     </Link>
   );

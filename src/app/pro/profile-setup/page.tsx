@@ -557,8 +557,8 @@ function ProProfileSetupPageContent() {
     categories: selectedCategories.length > 0,
     subcategories: selectedSubcategories.length > 0,
     pricing: (() => {
-      // "By agreement" pricing is valid without numeric inputs.
-      if (formData.pricingModel === 'byAgreement') return true;
+      // byAgreement no longer valid for new profiles — must set a price
+      if (formData.pricingModel === 'byAgreement' || !formData.pricingModel) return false;
 
       const base = parseFloat(formData.basePrice);
       const max = parseFloat(formData.maxPrice);
@@ -693,14 +693,11 @@ function ProProfileSetupPageContent() {
         yearsExperience: maxExperienceYears,
         avatar: formData.avatar || user?.avatar,
         pricingModel,
-        // For "by agreement", explicitly send null so backend can unset previously saved numeric prices.
-        // For "fixed" and "per_sqm", also send maxPrice=null so previous range max doesn't linger.
-        basePrice: pricingModel === 'byAgreement' ? null : baseNum,
-        maxPrice: pricingModel === 'byAgreement'
+        // For "fixed" and "per_sqm", send maxPrice=null so previous range max doesn't linger.
+        basePrice: baseNum,
+        maxPrice: pricingModel === 'fixed' || pricingModel === 'per_sqm'
           ? null
-          : pricingModel === 'fixed' || pricingModel === 'per_sqm'
-            ? null
-            : maxNum,
+          : maxNum,
         serviceAreas: formData.nationwide && locationData ? [locationData.nationwide] : formData.serviceAreas,
         portfolioProjects: cleanedPortfolioProjects,
         pinterestLinks: formData.portfolioUrl ? [formData.portfolioUrl] : undefined,
@@ -790,64 +787,69 @@ function ProProfileSetupPageContent() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF9] dark:bg-neutral-950 flex flex-col pb-24 sm:pb-20">
-      {/* Header with progress - matches register page */}
+      {/* Header with progress */}
       <header className="sticky top-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-800">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="h-14 sm:h-12 flex items-center justify-between">
+          <div className="h-12 flex items-center justify-between">
             <Logo />
-            <Link href="/help" className="text-xs text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors">
-              {t('common.help')}
-            </Link>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium text-neutral-400">
+                {getCurrentStepIndex() + 1}/{STEPS.length}
+              </span>
+              <Link href="/help" className="text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors">
+                {t('common.help')}
+              </Link>
+            </div>
           </div>
 
-          {/* Step indicators */}
-          <div className="pb-3 pt-1">
-            <div className="flex items-center justify-center gap-0">
+          {/* Step labels + progress bar */}
+          <div className="pb-2">
+            {/* Labels row */}
+            <div className="flex mb-1.5">
               {STEPS.map((step, index) => {
                 const currentIndex = getCurrentStepIndex();
                 const isCompleted = index < currentIndex;
                 const isCurrent = index === currentIndex;
-                const isFuture = index > currentIndex;
 
                 return (
-                  <div key={step.id} className="flex items-center">
-                    {/* Step circle */}
-                    <button
-                      type="button"
-                      onClick={() => isCompleted ? goToStep(step.id) : undefined}
-                      disabled={isFuture || isCurrent}
-                      className={`
-                        relative w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300
-                        ${isCompleted
-                          ? 'bg-[#C4735B] text-white cursor-pointer hover:bg-[#B5624A] hover:scale-110 shadow-md shadow-[#C4735B]/20'
-                          : isCurrent
-                            ? 'bg-[#C4735B] text-white ring-4 ring-[#C4735B]/20 shadow-lg shadow-[#C4735B]/25'
-                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-default'
-                        }
-                      `}
-                    >
-                      {isCompleted ? (
-                        <Check className="w-4 h-4" strokeWidth={3} />
-                      ) : (
-                        <span>{index + 1}</span>
-                      )}
-                    </button>
-
-                    {/* Connecting line */}
-                    {index < STEPS.length - 1 && (
-                      <div className={`
-                        w-6 sm:w-10 h-0.5 transition-colors duration-300
-                        ${index < currentIndex ? 'bg-[#C4735B]' : 'bg-neutral-200 dark:bg-neutral-700'}
-                      `} />
-                    )}
-                  </div>
+                  <button
+                    key={step.id}
+                    type="button"
+                    onClick={() => isCompleted ? goToStep(step.id) : undefined}
+                    disabled={!isCompleted}
+                    className={`flex-1 text-center text-[10px] sm:text-[11px] font-medium transition-colors ${
+                      isCurrent
+                        ? 'text-[#C4735B]'
+                        : isCompleted
+                          ? 'text-neutral-600 dark:text-neutral-400 cursor-pointer hover:text-[#C4735B]'
+                          : 'text-neutral-300 dark:text-neutral-600'
+                    }`}
+                  >
+                    <span className="hidden sm:inline">{step.title[locale === 'ka' ? 'ka' : 'en']}</span>
+                    <span className="sm:hidden">{index + 1}</span>
+                  </button>
                 );
               })}
             </div>
-            {/* Current step title */}
-            <p className="text-center text-xs font-medium text-[#C4735B] mt-2">
-              {STEPS[getCurrentStepIndex()].title[locale === 'ka' ? 'ka' : 'en']}
-            </p>
+
+            {/* Progress bar */}
+            <div className="flex gap-1">
+              {STEPS.map((step, index) => {
+                const currentIndex = getCurrentStepIndex();
+                return (
+                  <div
+                    key={step.id}
+                    className={`flex-1 h-1 rounded-full transition-colors duration-300 ${
+                      index < currentIndex
+                        ? 'bg-[#C4735B]'
+                        : index === currentIndex
+                          ? 'bg-[#C4735B]/40'
+                          : 'bg-neutral-100 dark:bg-neutral-800'
+                    }`}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </header>
@@ -938,10 +940,10 @@ function ProProfileSetupPageContent() {
                         max: parseInt(formData.maxPrice) || 0,
                       },
                       priceType: (
-                        formData.pricingModel === 'byAgreement' ? 'byAgreement' :
                         formData.pricingModel === 'range' ? 'range' :
-                        'fixed'
-                      ) as 'byAgreement' | 'fixed' | 'range',
+                        formData.pricingModel === 'fixed' || formData.pricingModel === 'per_sqm' ? 'fixed' :
+                        'fixed' // byAgreement defaults to fixed so user must set price
+                      ) as 'fixed' | 'range',
                       serviceAreas: formData.serviceAreas,
                       nationwide: formData.nationwide,
                     }}
@@ -955,14 +957,11 @@ function ProProfileSetupPageContent() {
                       }
                       if ('priceType' in updates && updates.priceType) {
                         const typeMap: Record<string, typeof formData.pricingModel> = {
-                          byAgreement: 'byAgreement',
                           fixed: 'fixed',
                           range: 'range',
                         };
                         const nextModel = typeMap[updates.priceType] || 'fixed';
-                        if (nextModel === 'byAgreement') {
-                          handleFormChange({ pricingModel: nextModel, basePrice: '', maxPrice: '' });
-                        } else if (nextModel === 'fixed') {
+                        if (nextModel === 'fixed') {
                           // Fixed is a single price; clear max price.
                           handleFormChange({ pricingModel: nextModel, maxPrice: '' });
                         } else {
@@ -1054,7 +1053,15 @@ function ProProfileSetupPageContent() {
                 <span className="hidden sm:inline">{t('common.back')}</span>
               </button>
             ) : (
-              <div />
+              <button
+                onClick={() => router.back()}
+                className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 min-h-[44px] rounded-xl text-sm font-medium text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all active:scale-[0.98]"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span className="hidden sm:inline">{t('common.cancel')}</span>
+              </button>
             )}
 
             {/* Center step title - desktop only */}

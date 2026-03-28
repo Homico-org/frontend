@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, forwardRef, InputHTMLAttributes } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { useState, useEffect, useCallback, forwardRef, InputHTMLAttributes } from 'react';
+import { createPortal } from 'react-dom';
+import { ChevronDown, Check } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { countries } from '@/contexts/LanguageContext';
@@ -74,6 +75,8 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
   ) => {
     const [selectedCountry, setSelectedCountry] = useState<CountryCode>(country);
     const [showDropdown, setShowDropdown] = useState(false);
+    const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
+    const triggerRef = useClickOutside<HTMLDivElement>(() => setShowDropdown(false), showDropdown);
     const dropdownRef = useClickOutside<HTMLDivElement>(() => setShowDropdown(false), showDropdown);
 
     const actualVariant = error ? 'error' : variant;
@@ -84,6 +87,29 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
       setSelectedCountry(country);
     }, [country]);
 
+    // Calculate dropdown position relative to viewport
+    const updatePosition = useCallback(() => {
+      const el = triggerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      setDropdownPos({
+        top: rect.bottom + 4,
+        left: rect.left,
+      });
+    }, [triggerRef]);
+
+    useEffect(() => {
+      if (showDropdown) {
+        updatePosition();
+        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('resize', updatePosition);
+        return () => {
+          window.removeEventListener('scroll', updatePosition, true);
+          window.removeEventListener('resize', updatePosition);
+        };
+      }
+    }, [showDropdown, updatePosition]);
+
     const handleCountrySelect = (code: CountryCode) => {
       setSelectedCountry(code);
       onCountryChange?.(code);
@@ -91,7 +117,6 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     };
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      // Only allow numbers
       const cleaned = e.target.value.replace(/\D/g, '');
       onChange?.(cleaned);
     };
@@ -106,7 +131,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
             {label}
           </label>
         )}
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative" ref={triggerRef}>
           {/* Country selector */}
           <button
             type="button"
@@ -124,7 +149,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
             </span>
             <ChevronDown
               className={cn(
-                'w-3 h-3 text-neutral-400 transition-transform',
+                'w-3 h-3 text-neutral-400 transition-transform duration-200',
                 showDropdown && 'rotate-180'
               )}
             />
@@ -153,43 +178,55 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
             {...props}
           />
 
-          {/* Country dropdown */}
-          {showDropdown && (
+          {/* Country dropdown — rendered in portal */}
+          {showDropdown && dropdownPos && createPortal(
             <div
-              className="absolute top-full left-0 mt-1 w-64 max-h-64 overflow-y-auto rounded-xl shadow-lg border z-50"
+              ref={dropdownRef}
+              className="fixed w-64 max-h-64 overflow-y-auto rounded-xl shadow-2xl border z-[200] animate-scale-in"
               style={{
+                top: dropdownPos.top,
+                left: dropdownPos.left,
                 backgroundColor: 'var(--color-bg-elevated)',
                 borderColor: 'var(--color-border)',
               }}
             >
-              {(Object.keys(countries) as CountryCode[]).map((code) => {
-                const data = countries[code];
-                return (
-                  <button
-                    key={code}
-                    type="button"
-                    onClick={() => handleCountrySelect(code)}
-                    className={cn(
-                      'w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors first:rounded-t-xl last:rounded-b-xl',
-                      selectedCountry === code && 'bg-[#C4735B]/10'
-                    )}
-                  >
-                    <span className="text-xl">{data.flag}</span>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="text-sm font-medium truncate"
-                        style={{ color: 'var(--color-text-primary)' }}
-                      >
-                        {data.name}
-                      </p>
-                    </div>
-                    <span className="text-xs text-neutral-500">
-                      {data.phonePrefix}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+              <div className="p-1">
+                {(Object.keys(countries) as CountryCode[]).map((code) => {
+                  const data = countries[code];
+                  const isSelected = selectedCountry === code;
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      onClick={() => handleCountrySelect(code)}
+                      className={cn(
+                        'w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-lg transition-colors',
+                        isSelected
+                          ? 'bg-[#C4735B]/10'
+                          : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                      )}
+                    >
+                      <span className="text-xl">{data.flag}</span>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className="text-sm font-medium truncate"
+                          style={{ color: 'var(--color-text-primary)' }}
+                        >
+                          {data.name}
+                        </p>
+                      </div>
+                      <span className="text-xs text-neutral-500">
+                        {data.phonePrefix}
+                      </span>
+                      {isSelected && (
+                        <Check className="w-4 h-4 text-[#C4735B] flex-shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>,
+            document.body
           )}
         </div>
         {error && (
