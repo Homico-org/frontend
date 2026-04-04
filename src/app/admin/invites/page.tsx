@@ -24,8 +24,14 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+interface ConfirmAction {
+  type: "resend" | "delete";
+  invite: Invite;
+}
+
 interface Invite {
-  _id: string;
+  _id?: string;
+  id?: string;
   name: string;
   phone: string;
   category?: string;
@@ -41,9 +47,10 @@ interface Invite {
 
 interface InviteStats {
   total: number;
-  smsSent: number;
-  opened: number;
-  activated: number;
+  byStatus: { pending: number; sms_sent: number; opened: number; activated: number };
+  byType: { professional: number; service: number; "tool-rental": number };
+  conversionRate: number;
+  openRate: number;
 }
 
 type StatusFilter = "all" | "pending" | "sms_sent" | "opened" | "activated";
@@ -77,6 +84,9 @@ function AdminInvitesPageContent() {
   const [showFilters, setShowFilters] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+
+  const getInviteId = useCallback((inv: Invite) => inv._id || inv.id || "", []);
 
   const lastFetchKeyRef = useRef<string>("");
   const lastFetchAtRef = useRef<number>(0);
@@ -113,7 +123,7 @@ function AdminInvitesPageContent() {
           api.get(`/admin/invites/stats`).catch(() => ({ data: null })),
         ]);
 
-        setInvites(invitesRes.data.invites || invitesRes.data || []);
+        setInvites(invitesRes.data.items || invitesRes.data.invites || []);
         setTotalPages(invitesRes.data.totalPages || 1);
         setTotalCount(invitesRes.data.total || 0);
 
@@ -151,12 +161,14 @@ function AdminInvitesPageContent() {
   };
 
   const handleResend = async (invite: Invite) => {
-    setResendingId(invite._id);
+    const id = getInviteId(invite);
+    setResendingId(id);
+    setConfirmAction(null);
     try {
-      await api.patch(`/admin/invites/${invite._id}/resend`);
+      await api.patch(`/admin/invites/${id}/resend`);
       setInvites((prev) =>
         prev.map((i) =>
-          i._id === invite._id ? { ...i, status: "sms_sent" } : i
+          getInviteId(i) === id ? { ...i, status: "pending" } : i
         )
       );
       toast.success(t("admin.inviteResent"));
@@ -169,11 +181,12 @@ function AdminInvitesPageContent() {
   };
 
   const handleDelete = async (invite: Invite) => {
-    if (!window.confirm(t("admin.confirmDeleteInvite"))) return;
-    setDeletingId(invite._id);
+    const id = getInviteId(invite);
+    setDeletingId(id);
+    setConfirmAction(null);
     try {
-      await api.delete(`/admin/invites/${invite._id}`);
-      setInvites((prev) => prev.filter((i) => i._id !== invite._id));
+      await api.delete(`/admin/invites/${id}`);
+      setInvites((prev) => prev.filter((i) => getInviteId(i) !== id));
       setTotalCount((c) => Math.max(0, c - 1));
       toast.success(t("admin.inviteDeleted"));
     } catch (err) {
@@ -249,40 +262,40 @@ function AdminInvitesPageContent() {
     },
     {
       label: t("admin.smsSent"),
-      value: stats?.smsSent ?? 0,
+      value: stats?.byStatus?.sms_sent ?? 0,
       icon: Send,
       color: THEME.info,
       filter: "sms_sent" as StatusFilter,
     },
     {
       label: t("admin.opened"),
-      value: stats?.opened ?? 0,
+      value: stats?.byStatus?.opened ?? 0,
       icon: Mail,
       color: THEME.warning,
       filter: "opened" as StatusFilter,
     },
     {
       label: t("admin.activated"),
-      value: stats?.activated ?? 0,
+      value: stats?.byStatus?.activated ?? 0,
       icon: MessageSquare,
       color: THEME.success,
       filter: "activated" as StatusFilter,
     },
   ];
 
-  const statusPills: { value: StatusFilter; label: string }[] = [
-    { value: "all", label: t("common.all") || "All" },
-    { value: "pending", label: t("admin.pending") },
-    { value: "sms_sent", label: t("admin.smsSent") },
-    { value: "opened", label: t("admin.opened") },
-    { value: "activated", label: t("admin.activated") },
+  const statusPills: { value: StatusFilter; label: string; count?: number }[] = [
+    { value: "all", label: t("common.all") || "All", count: stats?.total },
+    { value: "pending", label: t("admin.pending"), count: stats?.byStatus?.pending },
+    { value: "sms_sent", label: t("admin.smsSent"), count: stats?.byStatus?.sms_sent },
+    { value: "opened", label: t("admin.opened"), count: stats?.byStatus?.opened },
+    { value: "activated", label: t("admin.activated"), count: stats?.byStatus?.activated },
   ];
 
-  const typePills: { value: TypeFilter; label: string }[] = [
-    { value: "all", label: t("common.all") || "All" },
-    { value: "professional", label: t("admin.professional") },
-    { value: "service", label: t("admin.service") },
-    { value: "tool-rental", label: t("admin.toolRental") },
+  const typePills: { value: TypeFilter; label: string; count?: number }[] = [
+    { value: "all", label: t("common.all") || "All", count: stats?.total },
+    { value: "professional", label: t("admin.professional"), count: stats?.byType?.professional },
+    { value: "service", label: t("admin.service"), count: stats?.byType?.service },
+    { value: "tool-rental", label: t("admin.toolRental"), count: stats?.byType?.["tool-rental"] },
   ];
 
   if (isLoading) {
@@ -440,7 +453,7 @@ function AdminInvitesPageContent() {
                       }`,
                     }}
                   >
-                    {p.label}
+                    {p.label}{p.count != null ? ` (${p.count.toLocaleString()})` : ""}
                   </button>
                 ))}
               </div>
@@ -578,7 +591,7 @@ function AdminInvitesPageContent() {
                   }`,
                 }}
               >
-                {p.label}
+                {p.label}{p.count != null ? ` (${p.count.toLocaleString()})` : ""}
               </button>
             ))}
           </div>
@@ -611,7 +624,7 @@ function AdminInvitesPageContent() {
                   }`,
                 }}
               >
-                {p.label}
+                {p.label}{p.count != null ? ` (${p.count.toLocaleString()})` : ""}
               </button>
             ))}
           </div>
@@ -672,7 +685,7 @@ function AdminInvitesPageContent() {
                     invite.status === "sms_sent" ||
                     invite.status === "opened";
                   return (
-                    <div key={invite._id} className="p-4">
+                    <div key={getInviteId(invite)} className="p-4">
                       <div className="flex items-start gap-3">
                         <div
                           className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold"
@@ -759,13 +772,13 @@ function AdminInvitesPageContent() {
                           <div className="flex items-center gap-1.5">
                             {canResend && (
                               <button
-                                onClick={() => handleResend(invite)}
-                                disabled={resendingId === invite._id}
+                                onClick={() => setConfirmAction({ type: "resend", invite })}
+                                disabled={resendingId === getInviteId(invite)}
                                 className="w-7 h-7 rounded-lg flex items-center justify-center transition-transform active:scale-90 disabled:opacity-50"
                                 style={{ background: `${THEME.info}20` }}
                                 title={t("admin.resendSms")}
                               >
-                                {resendingId === invite._id ? (
+                                {resendingId === getInviteId(invite) ? (
                                   <RefreshCw
                                     className="w-3.5 h-3.5 animate-spin"
                                     style={{ color: THEME.info }}
@@ -779,8 +792,8 @@ function AdminInvitesPageContent() {
                               </button>
                             )}
                             <button
-                              onClick={() => handleDelete(invite)}
-                              disabled={deletingId === invite._id}
+                              onClick={() => setConfirmAction({ type: "delete", invite })}
+                              disabled={deletingId === getInviteId(invite)}
                               className="w-7 h-7 rounded-lg flex items-center justify-center transition-transform active:scale-90 disabled:opacity-50"
                               style={{ background: `${THEME.error}20` }}
                               title={t("common.delete")}
@@ -809,7 +822,7 @@ function AdminInvitesPageContent() {
                     invite.status === "opened";
                   return (
                     <div
-                      key={invite._id}
+                      key={getInviteId(invite)}
                       className="px-4 sm:px-6 py-3 sm:py-4 grid grid-cols-12 gap-3 items-center transition-colors"
                       style={{
                         borderBottom:
@@ -937,13 +950,13 @@ function AdminInvitesPageContent() {
                       <div className="col-span-1 flex items-center justify-end gap-2">
                         {canResend && (
                           <button
-                            onClick={() => handleResend(invite)}
-                            disabled={resendingId === invite._id}
+                            onClick={() => setConfirmAction({ type: "resend", invite })}
+                            disabled={resendingId === getInviteId(invite)}
                             className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110 disabled:opacity-50"
                             style={{ background: `${THEME.info}20` }}
                             title={t("admin.resendSms")}
                           >
-                            {resendingId === invite._id ? (
+                            {resendingId === getInviteId(invite) ? (
                               <RefreshCw
                                 className="w-4 h-4 animate-spin"
                                 style={{ color: THEME.info }}
@@ -957,8 +970,8 @@ function AdminInvitesPageContent() {
                           </button>
                         )}
                         <button
-                          onClick={() => handleDelete(invite)}
-                          disabled={deletingId === invite._id}
+                          onClick={() => setConfirmAction({ type: "delete", invite })}
+                          disabled={deletingId === getInviteId(invite)}
                           className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110 disabled:opacity-50"
                           style={{ background: `${THEME.error}20` }}
                           title={t("common.delete")}
@@ -1056,6 +1069,88 @@ function AdminInvitesPageContent() {
           </div>
         )}
       </main>
+
+      {/* Confirmation Modal */}
+      {confirmAction && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          onClick={() => setConfirmAction(null)}
+        >
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div
+            className="relative w-full max-w-sm rounded-2xl p-6 shadow-2xl"
+            style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{
+                  background: confirmAction.type === "delete" ? `${THEME.error}20` : `${THEME.info}20`,
+                }}
+              >
+                {confirmAction.type === "delete" ? (
+                  <Trash2 className="w-5 h-5" style={{ color: THEME.error }} />
+                ) : (
+                  <Send className="w-5 h-5" style={{ color: THEME.info }} />
+                )}
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm" style={{ color: THEME.text }}>
+                  {confirmAction.type === "delete" ? t("admin.confirmDeleteInvite") : t("admin.confirmResendSms")}
+                </h3>
+              </div>
+            </div>
+
+            <div
+              className="rounded-xl p-3 mb-5"
+              style={{ background: THEME.surfaceHover, border: `1px solid ${THEME.border}` }}
+            >
+              <p className="font-medium text-sm" style={{ color: THEME.text }}>
+                {confirmAction.invite.name}
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
+                {confirmAction.invite.phone}
+              </p>
+              {getCategoryDisplay(confirmAction.invite) !== "—" && (
+                <p className="text-xs mt-1" style={{ color: THEME.textMuted }}>
+                  {getCategoryDisplay(confirmAction.invite)}
+                </p>
+              )}
+            </div>
+
+            <p className="text-xs mb-5" style={{ color: THEME.textMuted }}>
+              {confirmAction.type === "delete"
+                ? t("admin.confirmDeleteInviteDesc")
+                : t("admin.confirmResendSmsDesc")}
+            </p>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setConfirmAction(null)}
+                className="flex-1 h-10 rounded-xl text-sm font-medium transition-all active:scale-[0.98]"
+                style={{ background: THEME.surfaceHover, color: THEME.textMuted, border: `1px solid ${THEME.border}` }}
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                onClick={() => {
+                  if (confirmAction.type === "delete") handleDelete(confirmAction.invite);
+                  else handleResend(confirmAction.invite);
+                }}
+                className="flex-1 h-10 rounded-xl text-sm font-medium text-white transition-all active:scale-[0.98]"
+                style={{
+                  background: confirmAction.type === "delete"
+                    ? THEME.error
+                    : THEME.info,
+                }}
+              >
+                {confirmAction.type === "delete" ? t("common.delete") : t("admin.resendSms")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
