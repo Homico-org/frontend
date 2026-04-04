@@ -27,10 +27,13 @@ const CATEGORY_LABELS: Record<string, { en: string; ka: string; ru: string }> = 
   iron: { en: 'Ironwork', ka: 'რკინის სამუშაოები', ru: 'Металлоконструкции' },
   carpentry: { en: 'Carpentry', ka: 'ხის სამუშაოები', ru: 'Столярные работы' },
   drywall: { en: 'Drywall', ka: 'თაბაშირმუყაო', ru: 'Гипсокартон' },
-  insulation: { en: 'Insulation', ka: 'იზოლაცია', ru: 'Изоляция' },
   demolition: { en: 'Demolition', ka: 'დემონტაჟი', ru: 'Демонтаж' },
   masonry: { en: 'Masonry', ka: 'ქვის სამუშაო', ru: 'Каменные работы' },
   construction: { en: 'Construction', ka: 'მშენებლობა', ru: 'Строительство' },
+  'doors-windows': { en: 'Doors & Windows', ka: 'კარ-ფანჯარა', ru: 'Двери и окна' },
+  gas: { en: 'Gas Work', ka: 'გაზის სამუშაოები', ru: 'Газовые работы' },
+  fireplace: { en: 'Fireplace', ka: 'ბუხარი', ru: 'Камин' },
+  measurement: { en: 'Measurement', ka: 'აზომვა', ru: 'Замеры' },
 
   // Subcategories - Design
   interior: { en: 'Interior Design', ka: 'ინტერიერი', ru: 'Дизайн интерьера' },
@@ -68,6 +71,7 @@ const CATEGORY_LABELS: Record<string, { en: string; ka: string; ru: string }> = 
   doors: { en: 'Doors', ka: 'კარები', ru: 'Двери' },
   'it-support': { en: 'IT Support', ka: 'IT მხარდაჭერა', ru: 'IT поддержка' },
   'network-admin': { en: 'Network Administration', ka: 'ქსელის ადმინისტრირება', ru: 'Сетевое администрирование' },
+  'furniture-cleaning': { en: 'Furniture Cleaning', ka: 'ავეჯის ქიმწმენდა', ru: 'Химчистка мебели' },
 
   // Craftsmen subcategories
   handyman: { en: 'Handyman', ka: 'ხელოსანი', ru: 'Мастер на все руки' },
