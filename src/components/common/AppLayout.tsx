@@ -37,6 +37,7 @@ const CUSTOM_LAYOUT_PATHS = [
   '/pro/profile-setup',
   '/projects/new',
   '/for-business',
+  '/invite',
 ];
 
 interface AppLayoutProps {

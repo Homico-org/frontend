@@ -3109,5 +3109,25 @@
     "closed": "Closed",
     "notAvailable": "Not available on this date",
     "loginToBook": "Log in to book an appointment"
+  },
+  "invite": {
+    "subtitle": "New platform for service professionals",
+    "yourProfile": "Your profile",
+    "verifyAndActivate": "Verify & Activate Account",
+    "codeSent": "Code sent to",
+    "enterCode": "Enter verification code",
+    "success": "Your account is activated!",
+    "redirecting": "Redirecting to your profile...",
+    "invalidLink": "Invalid or expired link",
+    "invalidLinkDesc": "This invite link is no longer active",
+    "verifyFailed": "Invalid code, please try again",
+    "otpFailed": "Failed to send code",
+    "reviews": "reviews",
+    "benefit1": "Get discovered by clients easily",
+    "benefit2": "Manage orders from your phone",
+    "benefit3": "Build reputation and get reviews",
+    "trustBadge": "500+ professionals already joined",
+    "otpHint": "We will send a verification code to your phone",
+    "yourPhone": "Your phone"
   }
 }
