@@ -75,7 +75,7 @@ export default function InvitePage() {
       const res = await api.post('/invite/activate', { token: invite.token, phone: invite.phone, code });
       setState('success');
       login(res.data.access_token, res.data.user);
-      setTimeout(() => router.push('/register/professional'), 1500);
+      setTimeout(() => router.push('/pro/profile-setup'), 1500);
     } catch { setError(t('invite.verifyFailed')); setState('otp'); }
   };
 

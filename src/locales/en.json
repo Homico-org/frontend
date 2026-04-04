@@ -3144,7 +3144,7 @@
     "codeSent": "Code sent to",
     "enterCode": "Enter verification code",
     "success": "Your account is activated!",
-    "redirecting": "Redirecting to your profile...",
+    "redirecting": "Redirecting to profile setup...",
     "invalidLink": "Invalid or expired link",
     "invalidLinkDesc": "This invite link is no longer active",
     "verifyFailed": "Invalid code, please try again",
