@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowRight, CheckCircle2, Phone, ShieldX } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock, ShieldX } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { OTPInput } from '@/components/ui/OTPInput';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import axios from 'axios';
 
 interface InviteData {
   token: string;
@@ -24,20 +26,32 @@ interface InviteData {
   reviewCount: number;
 }
 
-type PageState = 'loading' | 'preview' | 'otp' | 'verifying' | 'success' | 'error';
+type PageState = 'loading' | 'preview' | 'otp' | 'password' | 'activating' | 'success' | 'error';
 
 export default function InvitePage() {
   const params = useParams();
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
+  const { closeLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
   const token = params.token as string;
 
   const [state, setState] = useState<PageState>('loading');
   const [invite, setInvite] = useState<InviteData | null>(null);
   const [otpCode, setOtpCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [sendingOtp, setSendingOtp] = useState(false);
+  const didInit = useRef(false);
+
+  // Close any login modal and clear stale auth on mount
+  useEffect(() => {
+    if (didInit.current) return;
+    didInit.current = true;
+    closeLoginModal();
+    logout();
+  }, [closeLoginModal, logout]);
 
   useEffect(() => {
     if (!token) return;
@@ -51,7 +65,8 @@ export default function InvitePage() {
       setState('preview');
       return;
     }
-    api.get(`/invite/${token}`)
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    axios.get(`${baseUrl}/invite/${token}`)
       .then((res) => { setInvite(res.data); setState('preview'); })
       .catch(() => { setState('error'); });
   }, [token]);
@@ -68,15 +83,33 @@ export default function InvitePage() {
     finally { setSendingOtp(false); }
   };
 
-  const handleVerify = async (code: string) => {
-    if (!invite) return;
-    setState('verifying'); setError('');
+  const handleOtpComplete = (code: string) => {
+    setOtpCode(code);
+    setState('password');
+    setError('');
+  };
+
+  const handleActivate = async () => {
+    if (!invite || !otpCode) return;
+    if (password.length < 6) {
+      setError(t('invite.passwordTooShort'));
+      return;
+    }
+    setState('activating'); setError('');
     try {
-      const res = await api.post('/invite/activate', { token: invite.token, phone: invite.phone, code });
+      const res = await api.post('/invite/activate', {
+        token: invite.token,
+        phone: invite.phone,
+        code: otpCode,
+        password,
+      });
       setState('success');
       login(res.data.access_token, res.data.user);
       setTimeout(() => router.push('/pro/profile-setup'), 1500);
-    } catch { setError(t('invite.verifyFailed')); setState('otp'); }
+    } catch {
+      setError(t('invite.verifyFailed'));
+      setState('password');
+    }
   };
 
   const cat = locale === 'ka' ? invite?.categoryKa : invite?.category;
@@ -115,7 +148,6 @@ export default function InvitePage() {
 
           {state === 'preview' && (
             <>
-              {/* Name + meta */}
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{invite.name}</h1>
               <p className="text-gray-400 text-sm mb-6">{t('invite.subtitle')}</p>
 
@@ -131,10 +163,8 @@ export default function InvitePage() {
                 )}
               </div>
 
-              {/* Divider */}
               <div className="h-px bg-gray-100 mt-4 mb-6" />
 
-              {/* Benefits — just text, minimal */}
               <ul className="space-y-3 mb-8 text-sm text-gray-500">
                 <li className="flex items-center gap-2">
                   <div className="w-1 h-1 rounded-full bg-[#C4735B]" />
@@ -169,17 +199,69 @@ export default function InvitePage() {
             </>
           )}
 
-          {(state === 'otp' || state === 'verifying') && (
+          {state === 'otp' && (
             <div className="text-center">
               <h2 className="text-xl font-bold text-gray-900 mb-1">{t('invite.enterCode')}</h2>
               <p className="text-sm text-gray-400 mb-8">
                 {t('invite.codeSent')} <span className="text-gray-600 font-mono">{maskPhone(invite.phone)}</span>
               </p>
               <div className="flex justify-center mb-6">
-                <OTPInput length={4} value={otpCode} onChange={setOtpCode} onComplete={handleVerify} disabled={state === 'verifying'} autoFocus />
+                <OTPInput length={4} value={otpCode} onChange={setOtpCode} onComplete={handleOtpComplete} autoFocus />
               </div>
-              {state === 'verifying' && <LoadingSpinner size="md" />}
               {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+            </div>
+          )}
+
+          {(state === 'password' || state === 'activating') && (
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-[#C4735B]/10 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-[#C4735B]" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">{t('invite.setPassword')}</h2>
+                  <p className="text-sm text-gray-400">{t('invite.setPasswordDesc')}</p>
+                </div>
+              </div>
+
+              <div className="relative mb-4">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t('invite.passwordPlaceholder')}
+                  className="w-full h-12 px-4 pr-12 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 transition-all"
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleActivate(); }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1"
+                >
+                  {showPassword
+                    ? <EyeOff className="w-4 h-4 text-gray-400" />
+                    : <Eye className="w-4 h-4 text-gray-400" />
+                  }
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-400 mb-6">{t('invite.passwordHint')}</p>
+
+              {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+
+              <button
+                onClick={handleActivate}
+                disabled={state === 'activating' || password.length < 6}
+                className="w-full h-12 rounded-xl bg-[#C4735B] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:bg-[#B5624A] active:scale-[0.98] disabled:opacity-50"
+              >
+                {state === 'activating' ? <LoadingSpinner size="sm" /> : (
+                  <>
+                    {t('invite.activateAccount')}
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
             </div>
           )}
 

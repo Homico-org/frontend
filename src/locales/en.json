@@ -3155,6 +3155,12 @@
     "benefit3": "Build reputation and get reviews",
     "trustBadge": "500+ professionals already joined",
     "otpHint": "We will send a verification code to your phone",
-    "yourPhone": "Your phone"
+    "yourPhone": "Your phone",
+    "setPassword": "Create password",
+    "setPasswordDesc": "Set a password for your account",
+    "passwordPlaceholder": "Enter password",
+    "passwordHint": "Minimum 6 characters",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "activateAccount": "Activate account"
   }
 }
