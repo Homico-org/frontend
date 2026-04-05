@@ -31,7 +31,7 @@ type PageState = 'loading' | 'preview' | 'otp' | 'password' | 'activating' | 'su
 export default function InvitePage() {
   const params = useParams();
   const router = useRouter();
-  const { login, logout } = useAuth();
+  const { login } = useAuth();
   const { closeLoginModal } = useAuthModal();
   const { t, locale } = useLanguage();
   const token = params.token as string;
@@ -45,13 +45,12 @@ export default function InvitePage() {
   const [sendingOtp, setSendingOtp] = useState(false);
   const didInit = useRef(false);
 
-  // Close any login modal and clear stale auth on mount
+  // Close any login modal on mount
   useEffect(() => {
     if (didInit.current) return;
     didInit.current = true;
     closeLoginModal();
-    logout();
-  }, [closeLoginModal, logout]);
+  }, [closeLoginModal]);
 
   useEffect(() => {
     if (!token) return;
