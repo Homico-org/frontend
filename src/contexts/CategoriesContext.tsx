@@ -14,6 +14,18 @@ export interface SubSubcategory {
   isActive: boolean;
 }
 
+export interface CatalogServiceItem {
+  key: string;
+  name: string;
+  nameKa: string;
+  nameRu?: string;
+  basePrice: number;
+  maxPrice?: number;
+  unit: string;
+  unitName: string;
+  unitNameKa: string;
+}
+
 export interface Subcategory {
   key: string;
   name: string;
@@ -23,6 +35,8 @@ export interface Subcategory {
   sortOrder: number;
   isActive: boolean;
   children: SubSubcategory[];
+  services?: CatalogServiceItem[];
+  priceRange?: { min: number; max?: number };
 }
 
 export interface Category {
@@ -68,6 +82,8 @@ interface RawSubcategory {
   sortOrder?: number;
   icon?: string;
   children?: SubSubcategory[];
+  services?: CatalogServiceItem[];
+  priceRange?: { min: number; max?: number };
 }
 
 // Transform raw subcategory to frontend format
@@ -81,6 +97,8 @@ function transformSubcategory(sub: RawSubcategory): Subcategory {
     sortOrder: sub.sortOrder ?? 0,
     isActive: sub.isActive ?? true,
     children: sub.children || [],
+    services: sub.services || [],
+    priceRange: sub.priceRange,
   };
 }
 
@@ -141,8 +159,8 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
       setError(null);
 
       const [categoriesRes, flatRes] = await Promise.all([
-        api.get(`/categories`),
-        api.get<FlatCategoryItem[]>('/categories/flat'),
+        api.get(`/service-catalog/as-categories`),
+        api.get<FlatCategoryItem[]>('/service-catalog/as-categories/flat'),
       ]);
 
       setCategories(categoriesRes.data.map(transformCategory));

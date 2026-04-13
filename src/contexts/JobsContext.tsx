@@ -2,12 +2,14 @@
 
 import { AnalyticsEvent, trackAnalyticsEvent } from '@/hooks/useAnalytics';
 import api from '@/lib/api';
+import { useSearchParams } from 'next/navigation';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
 
 export interface JobFilters {
   category: string | null;
-  subcategory: string | null;
+  subcategory: string | null; // legacy single
+  subcategories: string[];
   budgetMin: number | null;
   budgetMax: number | null;
   propertyType: string;
@@ -15,11 +17,13 @@ export interface JobFilters {
   deadline: string;
   searchQuery: string;
   showFavoritesOnly: boolean;
+  sort: string;
 }
 
 const DEFAULT_FILTERS: JobFilters = {
   category: null,
   subcategory: null,
+  subcategories: [],
   budgetMin: null,
   budgetMax: null,
   propertyType: 'all',
@@ -27,6 +31,7 @@ const DEFAULT_FILTERS: JobFilters = {
   deadline: 'all',
   searchQuery: '',
   showFavoritesOnly: false,
+  sort: 'newest',
 };
 
 interface JobsContextType {
@@ -44,7 +49,33 @@ const JobsContext = createContext<JobsContextType | null>(null);
 
 export function JobsProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
-  const [filters, setFilters] = useState<JobFilters>(DEFAULT_FILTERS);
+  const searchParams = useSearchParams();
+
+  // Initialize from URL
+  const [filters, setFiltersRaw] = useState<JobFilters>(() => {
+    const subcats = searchParams.get('subcategories');
+    return {
+      ...DEFAULT_FILTERS,
+      subcategories: subcats ? subcats.split(',').filter(Boolean) : [],
+      subcategory: subcats ? subcats.split(',')[0] : null,
+    };
+  });
+
+  // Wrap setFilters to also sync URL
+  const setFilters = useCallback((f: JobFilters) => {
+    setFiltersRaw(f);
+    // Sync to URL without triggering React re-render
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/jobs')) {
+      const params = new URLSearchParams();
+      if (f.subcategories?.length > 0) params.set('subcategories', f.subcategories.join(','));
+      if (f.budgetMin !== null) params.set('budgetMin', f.budgetMin.toString());
+      if (f.budgetMax !== null) params.set('budgetMax', f.budgetMax.toString());
+      if (f.searchQuery) params.set('search', f.searchQuery);
+      const qs = params.toString();
+      const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+      window.history.replaceState(null, '', newUrl);
+    }
+  }, []);
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
   const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set());
   const [isLoadingApplied, setIsLoadingApplied] = useState(true);

@@ -222,36 +222,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                               {user.email}
                             </p>
                             {user.selectedSubcategories &&
-                              user.selectedSubcategories.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mt-1.5">
-                                  {user.selectedSubcategories
-                                    .slice(0, 2)
-                                    .map((subKey) => (
-                                      <span
-                                        key={subKey}
-                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium"
-                                        style={{
-                                          background:
-                                            "rgba(255, 255, 255, 0.9)",
-                                          color: ACCENT_COLOR,
-                                        }}
-                                      >
-                                        {getSubcategoryDisplayName(subKey)}
-                                      </span>
-                                    ))}
-                                  {user.selectedSubcategories.length > 2 && (
-                                    <span
-                                      className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium"
-                                      style={{
-                                        background: "rgba(255, 255, 255, 0.7)",
-                                        color: ACCENT_COLOR,
-                                      }}
-                                    >
-                                      +{user.selectedSubcategories.length - 2}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
+                              null /* category badges removed from dropdown */}
                           </div>
                         </div>
                       </Link>

@@ -1,11 +1,13 @@
 "use client";
 
 import AddressPicker from "@/components/common/AddressPicker";
+import BeforeAfterUpload from "@/components/common/BeforeAfterUpload";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { StarRating } from "@/components/ui/StarRating";
 
@@ -170,7 +172,6 @@ export default function ProjectsStep({
 }: ProjectsStepProps) {
   const { t, locale } = useLanguage();
   const galleryInputRef = useRef<HTMLInputElement>(null);
-  const beforeAfterInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
   const [isAddingProject, setIsAddingProject] = useState(false);
@@ -404,39 +405,7 @@ export default function ProjectsStep({
     if (galleryInputRef.current) galleryInputRef.current.value = "";
   };
 
-  const handleBeforeAfterUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const files = e.target.files;
-    if (!files || files.length !== 2) {
-      if (beforeAfterInputRef.current) beforeAfterInputRef.current.value = "";
-      return;
-    }
-
-    setUploadingType("beforeAfter");
-    setUploadProgress(0);
-
-    const beforeUrl = await uploadImage(files[0]);
-    setUploadProgress(50);
-    const afterUrl = await uploadImage(files[1]);
-    setUploadProgress(100);
-
-    if (beforeUrl && afterUrl) {
-      const newPair: BeforeAfterPair = {
-        id: `pair-${Date.now()}`,
-        beforeImage: beforeUrl,
-        afterImage: afterUrl,
-      };
-      setCurrentProject((prev) => ({
-        ...prev,
-        beforeAfterPairs: [...prev.beforeAfterPairs, newPair],
-      }));
-    }
-
-    setUploadingType(null);
-    setUploadProgress(0);
-    if (beforeAfterInputRef.current) beforeAfterInputRef.current.value = "";
-  };
+  // Before/After handled by BeforeAfterUpload component
 
   const handleRemoveGalleryImage = (index: number) => {
     setCurrentProject((prev) => ({
@@ -527,6 +496,7 @@ export default function ProjectsStep({
 
   const canSave = () => {
     if (!currentProject.title.trim()) return false;
+    if (!currentProject.location?.trim()) return false;
     return (
       currentProject.images.length > 0 ||
       currentProject.videos.length > 0 ||
@@ -542,48 +512,24 @@ export default function ProjectsStep({
 
   return (
     <div className="space-y-6">
-      {/* Header with Stats */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <svg
-            className="w-5 h-5 text-[#C4735B]"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-          <div>
-            <span className="font-semibold text-[var(--color-text-primary)]">
-              {t('common.portfolio')}
-            </span>
-            <span className="text-xs text-[var(--color-text-secondary)] ml-2">
-              {locale === "ka"
-                ? `${projects.length} პროექტი • ${visibleProjects.length} ხილვადი`
-                : `${projects.length} projects • ${visibleProjects.length} visible`}
-            </span>
-          </div>
+      {/* Header — only show when there are projects */}
+      {projects.length > 0 && !isAddingProject && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-[var(--color-text-secondary)]">
+            {projects.length} {t('common.total')}
+          </span>
+          {projects.length < maxProjects && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAddProject}
+            >
+              + {t('common.addProject')}
+            </Button>
+          )}
         </div>
-
-        {!isAddingProject && projects.length < maxProjects && (
-          <Button
-            type="button"
-            onClick={handleAddProject}
-            leftIcon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            }
-          >
-            {t('common.addProject')}
-          </Button>
-        )}
-      </div>
+      )}
 
       {/* Projects List with Drag & Drop */}
       {projects.length > 0 && !isAddingProject && (
@@ -619,68 +565,36 @@ export default function ProjectsStep({
                     ${!isVisible ? "opacity-60" : ""}
                   `}
                 >
-                  {/* Position Indicator */}
-                  <div
-                    className={`
-                    absolute top-3 left-3 z-10 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold
-                    ${
-                      willShowInBrowse
-                        ? "bg-[#C4735B] text-white shadow-lg shadow-[#C4735B]/30"
-                        : "bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]"
-                    }
-                  `}
-                  >
-                    {index + 1}
-                  </div>
-
-                  {/* Homico Badge */}
-                  {isHomico && (
-                    <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider shadow-lg">
-                      <svg
-                        className="w-3 h-3"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Homico
-                    </div>
-                  )}
-
-                  {/* Drag Handle (for non-Homico) */}
-                  {!isHomico && (
-                    <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="p-1.5 rounded-lg bg-[var(--color-bg-elevated)]/90 border border-[var(--color-border-subtle)] shadow-sm">
-                        <svg
-                          className="w-4 h-4 text-[var(--color-text-muted)]"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                  <div className="p-4">
+                    {/* Project Header — number + title + badges + actions */}
+                    <div className="flex items-start justify-between mb-3 gap-2">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        {/* Number badge */}
+                        <div
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+                            willShowInBrowse
+                              ? "bg-[#C4735B] text-white"
+                              : "bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]"
+                          }`}
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 8h16M4 16h16"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
+                          {index + 1}
+                        </div>
 
-                  <div className="p-4 pl-14">
-                    {/* Project Header */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-[var(--color-text-primary)] truncate">
-                            {project.title}
-                          </h4>
-                          {willShowInBrowse && (
-                            <Badge variant="warning" size="xs" className="flex-shrink-0">
-                              {t('common.visible')}
-                            </Badge>
-                          )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-[var(--color-text-primary)] truncate">
+                              {project.title}
+                            </h4>
+                            {willShowInBrowse && (
+                              <Badge variant="warning" size="xs" className="flex-shrink-0">
+                                {t('common.visible')}
+                              </Badge>
+                            )}
+                            {isHomico && (
+                              <Badge variant="success" size="xs" className="flex-shrink-0">
+                                Homico
+                              </Badge>
+                            )}
                         </div>
                         {project.description && (
                           <p className="text-xs text-[var(--color-text-secondary)] mt-1 line-clamp-2">
@@ -724,6 +638,7 @@ export default function ProjectsStep({
                             )}
                           </div>
                         )}
+                      </div>
                       </div>
 
                       {/* Actions (only for external projects) */}
@@ -900,48 +815,35 @@ export default function ProjectsStep({
         </div>
       )}
 
-      {/* Empty State */}
+      {/* Empty State — compact, auto-opens form */}
       {projects.length === 0 && !isAddingProject && (
         <button
           type="button"
           onClick={handleAddProject}
-          className="w-full py-12 rounded-2xl border-2 border-dashed border-[var(--color-border-subtle)] hover:border-[#C4735B]/40 bg-[var(--color-bg-tertiary)] transition-all duration-300 group"
+          className="w-full py-8 rounded-xl border-2 border-dashed border-[var(--color-border-subtle)] hover:border-[#C4735B]/40 bg-[var(--color-bg-elevated)] transition-all group"
         >
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C4735B]/15 to-[#D4896B]/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-[#C4735B]/20 border border-[#C4735B]/20">
-              <svg
-                className="w-8 h-8 text-[#C4735B]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M12 4v16m8-8H4"
-                />
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-[#C4735B]/10 flex items-center justify-center group-hover:bg-[#C4735B]/20 transition-colors">
+              <svg className="w-5 h-5 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </div>
-            <div className="text-center">
-              <p className="font-semibold text-[var(--color-text-secondary)] group-hover:text-[#C4735B] transition-colors">
-                {t('common.addYourFirstProject')}
-              </p>
-              <p className="text-xs text-[var(--color-text-muted)] mt-1 max-w-[280px]">
-                {t('common.showcaseYourWorkWithPhotos')}
-              </p>
-            </div>
+            <p className="text-sm font-medium text-[var(--color-text-secondary)] group-hover:text-[#C4735B] transition-colors">
+              {t('common.addYourFirstProject')}
+            </p>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {t('common.showcaseYourWorkWithPhotos')}
+            </p>
           </div>
         </button>
       )}
 
       {/* Add/Edit Project Form */}
       {isAddingProject && (
-        <div className="rounded-2xl border-2 border-[#C4735B]/30 overflow-hidden bg-[var(--color-bg-elevated)] shadow-xl shadow-[#C4735B]/10">
+        <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
           {/* Form Header */}
-          <div className="px-5 py-4 border-b border-[var(--color-border-subtle)] bg-gradient-to-r from-[#C4735B]/5 to-transparent flex items-center justify-between">
-            <h4 className="font-semibold text-[var(--color-text-primary)] flex items-center gap-2.5">
-              <span className="w-2 h-2 rounded-full bg-[#C4735B] animate-pulse"></span>
+          <div className="px-4 py-3 border-b border-[var(--color-border-subtle)] flex items-center justify-between">
+            <h4 className="font-semibold text-sm text-[var(--color-text-primary)]">
               {editingProjectId
                 ? t('common.editProject')
                 : t('common.newProject')}
@@ -949,76 +851,53 @@ export default function ProjectsStep({
             <button
               type="button"
               onClick={resetForm}
-              className="p-2 rounded-xl hover:bg-[var(--color-bg-tertiary)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+              className="p-1.5 rounded-lg hover:bg-[var(--color-bg-tertiary)] transition-colors text-[var(--color-text-muted)]"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="p-5 space-y-5">
-            {/* Project Title */}
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-                {t('common.projectTitle')}{" "}
-                <span className="text-red-500">*</span>
-              </label>
-              <Input
-                type="text"
-                value={currentProject.title}
-                onChange={(e) =>
-                  setCurrentProject((prev) => ({
-                    ...prev,
-                    title: e.target.value,
-                  }))
-                }
-                placeholder={
-                  t('common.egApartmentRenovation')
-                }
-                inputSize="lg"
-              />
+          <div className="p-4 space-y-4">
+            {/* Title + Location row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1">
+                  {t('common.projectTitle')} <span className="text-red-400">*</span>
+                </label>
+                <Input
+                  type="text"
+                  value={currentProject.title}
+                  onChange={(e) =>
+                    setCurrentProject((prev) => ({ ...prev, title: e.target.value }))
+                  }
+                  placeholder={t('common.egApartmentRenovation')}
+                  inputSize="default"
+                />
+              </div>
+              <div>
+                <AddressPicker
+                  value={currentProject.location || ""}
+                  onChange={(value) =>
+                    setCurrentProject((prev) => ({ ...prev, location: value }))
+                  }
+                  locale={locale as "ka" | "en" | "ru"}
+                  label={t('common.location')}
+                  required
+                />
+              </div>
             </div>
 
-            {/* Location */}
+            {/* Description — compact */}
             <div>
-              <AddressPicker
-                value={currentProject.location || ""}
-                onChange={(value) =>
-                  setCurrentProject((prev) => ({ ...prev, location: value }))
-                }
-                locale={locale as "ka" | "en" | "ru"}
-                label={t('common.location')}
-                required={false}
-              />
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1">
                 {t('common.description')}
               </label>
               <Textarea
                 value={currentProject.description}
                 onChange={(e) =>
-                  setCurrentProject((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
+                  setCurrentProject((prev) => ({ ...prev, description: e.target.value }))
                 }
-                placeholder={
-                  t('common.brieflyDescribeWhatYouDid')
-                }
+                placeholder={t('common.brieflyDescribeWhatYouDid')}
                 rows={2}
                 textareaSize="sm"
               />
@@ -1028,8 +907,7 @@ export default function ProjectsStep({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <label className="block text-sm font-medium text-[var(--color-text-primary)]">
-                  {t('common.media')}{" "}
-                  <span className="text-red-500">*</span>
+                  {t('common.media')}
                 </label>
                 {totalMedia > 0 && (
                   <span className="text-xs text-[var(--color-text-muted)]">
@@ -1044,33 +922,25 @@ export default function ProjectsStep({
                 currentProject.beforeAfterPairs.length > 0) && (
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                   {currentProject.beforeAfterPairs.map((pair) => (
-                    <div key={pair.id} className="relative group">
-                      <BeforeAfterPreview
-                        beforeImage={pair.beforeImage}
-                        afterImage={pair.afterImage}
-                        compact
-                      />
-                      <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded text-[8px] font-bold text-white shadow">
-                        B/A
+                    <div key={pair.id} className="relative group col-span-2 aspect-[2/1] rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex">
+                      <div className="w-1/2 h-full relative">
+                        <img src={pair.beforeImage} alt="Before" className="w-full h-full object-cover" />
+                        <span className="absolute bottom-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[8px] font-bold text-white">
+                          {t('common.before')}
+                        </span>
+                      </div>
+                      <div className="w-1/2 h-full relative">
+                        <img src={pair.afterImage} alt="After" className="w-full h-full object-cover" />
+                        <span className="absolute bottom-1 right-1 px-1 py-0.5 bg-emerald-500 rounded text-[8px] font-bold text-white">
+                          {t('common.after')}
+                        </span>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleRemoveBeforeAfterPair(pair.id)}
                         className="absolute top-1 right-1 p-1 bg-red-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                       >
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
+                        <X className="w-3 h-3" />
                       </button>
                     </div>
                   ))}
@@ -1159,7 +1029,8 @@ export default function ProjectsStep({
               )}
 
               {/* Upload Options */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
                 <input
                   ref={galleryInputRef}
                   type="file"
@@ -1252,51 +1123,22 @@ export default function ProjectsStep({
                   )}
                 </button>
 
-                <input
-                  ref={beforeAfterInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleBeforeAfterUpload}
-                  className="hidden"
+              </div>
+                {/* Before/After upload */}
+                <BeforeAfterUpload
+                  pairs={currentProject.beforeAfterPairs.map(p => ({ before: p.beforeImage, after: p.afterImage }))}
+                  onPairsChange={(newPairs) => {
+                    setCurrentProject(prev => ({
+                      ...prev,
+                      beforeAfterPairs: newPairs.map((p, i) => ({
+                        id: `pair-${Date.now()}-${i}`,
+                        beforeImage: p.before,
+                        afterImage: p.after,
+                      })),
+                    }));
+                  }}
+                  uploadImage={uploadImage}
                 />
-                <button
-                  type="button"
-                  onClick={() => beforeAfterInputRef.current?.click()}
-                  disabled={uploadingType === "beforeAfter"}
-                  className="w-full p-4 rounded-xl border-2 border-dashed border-[var(--color-border-subtle)] hover:border-amber-400/40 bg-[var(--color-bg-tertiary)] transition-all duration-200 flex flex-col items-center gap-2 text-[var(--color-text-secondary)] hover:text-amber-600 group"
-                >
-                  {uploadingType === "beforeAfter" ? (
-                    <>
-                      <LoadingSpinner size="md" color="#f59e0b" />
-                      <span className="text-sm">{uploadProgress}%</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 group-hover:from-amber-500/20 group-hover:to-orange-500/20 flex items-center justify-center transition-colors">
-                        <svg
-                          className="w-5 h-5 text-amber-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-sm font-medium">
-                        {t('common.beforeafter')}
-                      </span>
-                      <span className="text-[10px] text-[var(--color-text-muted)]">
-                        {t('common.selectExactly2Images')}
-                      </span>
-                    </>
-                  )}
-                </button>
               </div>
             </div>
 
@@ -1325,35 +1167,7 @@ export default function ProjectsStep({
         </div>
       )}
 
-      {/* Stats Summary */}
-      {projects.length > 0 && !isAddingProject && (
-        <div className="grid grid-cols-3 gap-3">
-          <div className="p-4 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border-subtle)] text-center">
-            <div className="text-2xl font-bold text-[var(--color-text-primary)]">
-              {projects.length}
-            </div>
-            <div className="text-xs text-[var(--color-text-secondary)]">
-              {t('common.total')}
-            </div>
-          </div>
-          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
-            <div className="text-2xl font-bold text-emerald-700">
-              {homicoProjects.length}
-            </div>
-            <div className="text-xs text-emerald-600">
-              {t('common.fromHomico')}
-            </div>
-          </div>
-          <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 text-center">
-            <div className="text-2xl font-bold text-amber-700">
-              {Math.min(visibleProjects.length, maxVisibleInBrowse)}
-            </div>
-            <div className="text-xs text-amber-600">
-              {t('common.onBrowse')}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* No stats summary — keep it clean */}
     </div>
   );
 }

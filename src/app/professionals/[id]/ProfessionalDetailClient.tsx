@@ -1,17 +1,18 @@
 "use client";
 
+import ServiceBookingModal from "@/components/booking/ServiceBookingModal";
 import AddressPicker from "@/components/common/AddressPicker";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import Select from "@/components/common/Select";
 import AboutTab from "@/components/professionals/AboutTab";
 import BookingModal from "@/components/professionals/BookingModal";
-import SchedulePanel from "@/components/settings/SchedulePanel";
 import ContactModal from "@/components/professionals/ContactModal";
 import InviteProToJobModal from "@/components/professionals/InviteProToJobModal";
 import PortfolioTab from "@/components/professionals/PortfolioTab";
 import { type ProfileSidebarTab } from "@/components/professionals/ProfileSidebar";
 import ReviewsTab from "@/components/professionals/ReviewsTab";
 import SimilarProfessionals from "@/components/professionals/SimilarProfessionals";
+import SchedulePanel from "@/components/settings/SchedulePanel";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ConfirmModal, Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ import type {
   ProProfile,
 } from "@/types/shared";
 import { PricingModel } from "@/types/shared";
+import { formatDate } from "@/utils/dateUtils";
 import { backOrNavigate } from "@/utils/navigationUtils";
 import { formatGeorgianPhoneDisplay } from "@/utils/validationUtils";
 import { AnimatePresence, motion } from "framer-motion";
@@ -48,12 +50,14 @@ import {
   MessageSquare,
   Phone,
   Plus,
-  Share2,
-  Star,
   Settings,
-  X
+  Share2,
+  ShoppingCart,
+  Star,
+  X,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -156,7 +160,11 @@ export default function ProfessionalDetailClient({
   const [error, setError] = useState<string | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showServiceBookingModal, setShowServiceBookingModal] = useState(false);
   const [showSchedulePanel, setShowSchedulePanel] = useState(false);
+  const [existingBookings, setExistingBookings] = useState<
+    { id: string; date: string; startHour: number; status: string }[]
+  >([]);
   const [reviews, setReviews] = useState<PageReview[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
 
@@ -165,6 +173,7 @@ export default function ProfessionalDetailClient({
   const [selectedProject, setSelectedProject] = useState<{
     images: string[];
     videos?: string[];
+    beforeAfter?: { before: string; after: string }[];
     title: string;
     currentIndex: number;
   } | null>(null);
@@ -313,6 +322,45 @@ export default function ProfessionalDetailClient({
     };
   }, [paramId, profile]);
 
+  // Fetch existing bookings with this pro (for clients)
+  useEffect(() => {
+    if (!profile?.id || !user || isOwner) return;
+    api
+      .get("/bookings/my")
+      .then((res) => {
+        const all = res.data || [];
+        const withThisPro = all.filter(
+          (b: {
+            professional?: { _id?: string; id?: string };
+            status: string;
+          }) => {
+            const proId = b.professional?.id || b.professional?._id;
+            return (
+              proId === profile.id &&
+              (b.status === "pending" || b.status === "confirmed")
+            );
+          },
+        );
+        setExistingBookings(
+          withThisPro.map(
+            (b: {
+              _id?: string;
+              id?: string;
+              date: string;
+              startHour: number;
+              status: string;
+            }) => ({
+              id: b.id || b._id || "",
+              date: b.date,
+              startHour: b.startHour,
+              status: b.status,
+            }),
+          ),
+        );
+      })
+      .catch(() => {});
+  }, [profile?.id, user, isOwner]);
+
   useEffect(() => {
     if (!profile?.id) return;
     if (profileViewTrackedRef.current === profile.id) return;
@@ -421,7 +469,9 @@ export default function ProfessionalDetailClient({
         }
       }
     }
-    return subcats.filter((s) => s && (knownSubKeys.has(s) || s.startsWith("custom:")));
+    return subcats.filter(
+      (s) => s && (knownSubKeys.has(s) || s.startsWith("custom:")),
+    );
   }, [profile, CATEGORIES]);
 
   // Fetch my open jobs to decide whether to show "Invite to job" CTA
@@ -1104,7 +1154,15 @@ export default function ProfessionalDetailClient({
     videos: string[];
     beforeAfter?: { before: string; after: string }[];
     date?: string;
-    source?: "external" | "homico"; // 'homico' = from completed jobs, not editable
+    source?: "external" | "homico";
+    clientName?: string;
+    clientAvatar?: string;
+    clientId?: string;
+    rating?: number;
+    review?: string;
+    category?: string;
+    completedDate?: string;
+    projectType?: string;
   }
 
   const getUnifiedProjects = useCallback((): UnifiedProject[] => {
@@ -1117,15 +1175,7 @@ export default function ProfessionalDetailClient({
       if (seenTitles.has(titleKey)) return;
       seenTitles.add(titleKey);
 
-      const images: string[] = [];
-      if (item.imageUrl) images.push(item.imageUrl);
-      if (item.images) {
-        item.images.forEach((img) => {
-          if (!images.includes(img)) images.push(img);
-        });
-      }
-
-      // Convert beforeAfterPairs (with beforeImage/afterImage) to beforeAfter (with before/after)
+      // Convert beforeAfterPairs first so we can filter imageUrl
       const beforeAfterData: { before: string; after: string }[] = [];
       const extendedItem = item as ExtendedPortfolioItem;
       if (
@@ -1142,6 +1192,19 @@ export default function ProfessionalDetailClient({
         beforeAfterData.push(...item.beforeAfter);
       }
 
+      // Build images array, excluding any that are part of B/A pairs
+      const baUrls = new Set(
+        beforeAfterData.flatMap((p) => [p.before, p.after]),
+      );
+      const images: string[] = [];
+      if (item.imageUrl && !baUrls.has(item.imageUrl))
+        images.push(item.imageUrl);
+      if (item.images) {
+        item.images.forEach((img) => {
+          if (!images.includes(img) && !baUrls.has(img)) images.push(img);
+        });
+      }
+
       const hasMedia = images.length > 0 || beforeAfterData.length > 0;
       if (hasMedia) {
         projects.push({
@@ -1153,7 +1216,26 @@ export default function ProfessionalDetailClient({
           videos: item.videos || [],
           beforeAfter: beforeAfterData,
           date: item.completedDate || item.projectDate,
-          source: item.source, // Pass through the source field
+          source: item.source,
+          clientName:
+            typeof item.clientId === "object" && item.clientId
+              ? (item.clientId as Record<string, string>).name ||
+                item.clientName
+              : item.clientName,
+          clientAvatar:
+            typeof item.clientId === "object" && item.clientId
+              ? (item.clientId as Record<string, string>).avatar
+              : undefined,
+          clientId:
+            typeof item.clientId === "string"
+              ? item.clientId
+              : (item.clientId as Record<string, string>)?.id ||
+                (item.clientId as Record<string, string>)?._id,
+          rating: item.rating,
+          review: item.review,
+          category: item.category,
+          completedDate: item.completedDate,
+          projectType: item.projectType,
         });
       }
     });
@@ -1485,7 +1567,13 @@ export default function ProfessionalDetailClient({
             </div>
             <Button
               size="sm"
-              onClick={() => router.push(isAdmin && !isOwner ? `/pro/profile-setup?proId=${profile.id}` : "/pro/profile-setup")}
+              onClick={() =>
+                router.push(
+                  isAdmin && !isOwner
+                    ? `/pro/profile-setup?proId=${profile.id}`
+                    : "/pro/profile-setup",
+                )
+              }
               className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm flex-shrink-0"
             >
               {t("professional.editProfile")}
@@ -1520,7 +1608,9 @@ export default function ProfessionalDetailClient({
             <div className="flex items-center gap-2 flex-shrink-0">
               <Button
                 size="sm"
-                onClick={() => router.push(`/pro/profile-setup?proId=${profile.id}`)}
+                onClick={() =>
+                  router.push(`/pro/profile-setup?proId=${profile.id}`)
+                }
                 className="bg-indigo-500 hover:bg-indigo-600 text-white text-xs sm:text-sm"
               >
                 <Settings className="w-3.5 h-3.5 mr-1" />
@@ -1709,13 +1799,7 @@ export default function ProfessionalDetailClient({
                 </p>
               )}
 
-              {/* Availability + Location */}
-              {profile.isAvailable && (
-                <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-medium mb-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  {locale === "ka" ? "ხელმისაწვდომია" : "Available Now"}
-                </span>
-              )}
+              {/* Location */}
               {profile.serviceAreas?.length > 0 && (
                 <div className="flex items-center gap-1 text-xs text-neutral-500">
                   <MapPin className="w-3 h-3" />
@@ -1917,10 +2001,7 @@ export default function ProfessionalDetailClient({
                         <BadgeCheck className="w-4 h-4 text-white" />
                       </div>
                     )}
-                    {profile.isAvailable &&
-                      profile.verificationStatus !== "verified" && (
-                        <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-[3px] border-white dark:border-neutral-900" />
-                      )}
+                    {/* Availability dot removed */}
                   </div>
 
                   {/* Name */}
@@ -1968,14 +2049,6 @@ export default function ProfessionalDetailClient({
                         </button>
                       )}
                     </div>
-                  )}
-
-                  {/* Availability */}
-                  {profile.isAvailable && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-medium mb-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      {locale === "ka" ? "ხელმისაწვდომია" : "Available Now"}
-                    </span>
                   )}
 
                   {/* Title/Tagline */}
@@ -2156,40 +2229,112 @@ export default function ProfessionalDetailClient({
                           {t("professional.inviteToJob")}
                         </motion.button>
                       )}
-                      {!canEdit && (
+                      {/* Existing booking indicator */}
+                      {existingBookings.length > 0 && (
+                        <Link
+                          href="/bookings"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/30"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-800/40 flex items-center justify-center shrink-0">
+                            <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                              {existingBookings[0].status === "pending"
+                                ? locale === "ka"
+                                  ? "მომლოდინე ჯავშანი"
+                                  : "Pending booking"
+                                : locale === "ka"
+                                  ? "დადასტურებული ჯავშანი"
+                                  : "Confirmed booking"}
+                            </p>
+                            <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                              {formatDate(
+                                existingBookings[0].date,
+                                locale as "en" | "ka" | "ru",
+                              )}{" "}
+                              · {existingBookings[0].startHour}:00
+                            </p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-emerald-400 shrink-0" />
+                        </Link>
+                      )}
+                      {!canEdit &&
+                        (profile?.servicePricing?.filter(
+                          (s) => s.isActive && s.price > 0,
+                        ).length ?? 0) > 0 && (
+                          <motion.button
+                            whileHover={{ scale: 1.02, y: -1 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => {
+                              if (!user) {
+                                openLoginModal(
+                                  `/professionals/${profile?.id || (profile as any)?._id}`,
+                                );
+                                return;
+                              }
+                              setShowServiceBookingModal(true);
+                            }}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white font-semibold text-sm bg-[#C4735B] hover:bg-[#B5624A] transition-colors"
+                          >
+                            <ShoppingCart className="w-4 h-4" />
+                            {t("booking.requestService")}
+                          </motion.button>
+                        )}
+                      {/* Message button */}
+                      {!canEdit && user && (
                         <motion.button
                           whileHover={{ scale: 1.02, y: -1 }}
                           whileTap={{ scale: 0.97 }}
                           onClick={() => {
-                            if (!user) {
-                              openLoginModal(`/professionals/${profile?.id || (profile as any)?._id}`);
-                              return;
-                            }
-                            setShowBookingModal(true);
+                            window.location.href = `/chat?proId=${profile?.id || (profile as unknown as Record<string, string>)?._id}`;
                           }}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-neutral-700 dark:text-neutral-200 font-medium text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-colors"
-                        >
-                          <Calendar className="w-4 h-4" />
-                          {t("booking.bookAppointment")}
-                        </motion.button>
-                      )}
-                      {canEdit && (
-                        <motion.button
-                          whileHover={{ scale: 1.02, y: -1 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => setShowSchedulePanel(true)}
                           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[#C4735B] font-medium text-sm bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-colors"
                         >
-                          <Calendar className="w-4 h-4" />
-                          {t("settings.availability")}
+                          <MessageSquare className="w-4 h-4" />
+                          {t("common.message")}
                         </motion.button>
+                      )}
+                      {!canEdit && (
+                        <Link
+                          href={`/post-job?invitePro=${profile?.id}`}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm border transition-colors"
+                          style={{ borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-secondary)' }}
+                        >
+                          <Briefcase className="w-4 h-4" />
+                          {t("browse.postAJob")}
+                        </Link>
+                      )}
+                      {canEdit && (
+                        <>
+                          <motion.button
+                            whileHover={{ scale: 1.02, y: -1 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => setShowSchedulePanel(true)}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[#C4735B] font-medium text-sm bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-colors"
+                          >
+                            <Calendar className="w-4 h-4" />
+                            {t("settings.availability")}
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.02, y: -1 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => setShowShareMenu(true)}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm border transition-colors"
+                            style={{ borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-secondary)' }}
+                          >
+                            <Share2 className="w-4 h-4" />
+                            {t("common.share")}
+                          </motion.button>
+                        </>
                       )}
                     </div>
                   )}
                 </motion.div>
 
-                {/* Pricing */}
-                {pricingMeta && (
+                {/* Services & Pricing */}
+                {((profile?.servicePricing?.length ?? 0) > 0 ||
+                  pricingMeta) && (
                   <motion.div
                     variants={{
                       hidden: { opacity: 0, y: 12 },
@@ -2198,13 +2343,132 @@ export default function ProfessionalDetailClient({
                     transition={{ duration: 0.35 }}
                     className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3"
                   >
-                    {!canEdit || !isEditingPricing ? (
+                    {(profile?.servicePricing?.length ?? 0) > 0 ? (
+                      (() => {
+                        // Build lookups from catalog
+                        const svcNameMap: Record<string, string> = {};
+                        const subNameMap: Record<string, string> = {};
+                        for (const cat of CATEGORIES) {
+                          for (const sub of cat.subcategories || []) {
+                            subNameMap[sub.key] =
+                              locale === "ka" ? sub.nameKa : sub.name;
+                            for (const svc of sub.services || []) {
+                              svcNameMap[svc.key] =
+                                locale === "ka" ? svc.nameKa : svc.name;
+                            }
+                          }
+                        }
+
+                        // Build set of valid service keys from current catalog
+                        const validServiceKeys = new Set<string>();
+                        for (const cat of CATEGORIES) {
+                          for (const sub of cat.subcategories) {
+                            validServiceKeys.add(sub.key);
+                            for (const svc of sub.services || []) {
+                              validServiceKeys.add(svc.key);
+                            }
+                          }
+                        }
+
+                        // Group services by subcategory — only show services that exist in current catalog
+                        const activeServices = profile.servicePricing!.filter(
+                          (s) =>
+                            s.isActive &&
+                            s.price > 0 &&
+                            (validServiceKeys.has(s.serviceKey) ||
+                              validServiceKeys.has(s.subcategoryKey)),
+                        );
+                        const grouped: Record<string, typeof activeServices> =
+                          {};
+                        for (const svc of activeServices) {
+                          const key = svc.subcategoryKey || "_other";
+                          if (!grouped[key]) grouped[key] = [];
+                          grouped[key].push(svc);
+                        }
+
+                        // Get experience from selectedServices
+                        const expMap: Record<string, string> = {};
+                        if (profile.selectedServices) {
+                          for (const s of profile.selectedServices) {
+                            expMap[s.key] = s.experience;
+                          }
+                        }
+
+                        const expLabels: Record<string, string> = {
+                          "1-2": locale === "ka" ? "1-2 წელი" : "1-2 yrs",
+                          "3-5": locale === "ka" ? "3-5 წელი" : "3-5 yrs",
+                          "5-10": locale === "ka" ? "5-10 წელი" : "5-10 yrs",
+                          "10+": locale === "ka" ? "10+ წელი" : "10+ yrs",
+                        };
+
+                        return (
+                          <div className="space-y-3">
+                            {Object.entries(grouped).map(
+                              ([subKey, services]) => (
+                                <div key={subKey}>
+                                  <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
+                                      {subNameMap[subKey] || subKey}
+                                    </span>
+                                    {expMap[subKey] && (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B] font-medium">
+                                        {expLabels[expMap[subKey]] ||
+                                          expMap[subKey]}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="space-y-1">
+                                    {services.map((svc) => (
+                                      <div
+                                        key={svc.serviceKey}
+                                        className="py-0.5"
+                                      >
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-sm text-neutral-600 dark:text-neutral-300">
+                                            {svcNameMap[svc.serviceKey] || svc.serviceKey}
+                                          </span>
+                                          <span className="text-sm font-semibold text-[#C4735B]">
+                                            {svc.price}₾
+                                          </span>
+                                        </div>
+                                        {(svc as any).discountTiers?.length >
+                                          0 && (
+                                          <div className="flex flex-wrap gap-1 mt-0.5">
+                                            {(svc as any).discountTiers.map(
+                                              (
+                                                tier: {
+                                                  minQuantity: number;
+                                                  percent: number;
+                                                },
+                                                i: number,
+                                              ) => (
+                                                <span
+                                                  key={i}
+                                                  className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-medium"
+                                                >
+                                                  {tier.minQuantity}+ → -
+                                                  {tier.percent}%
+                                                </span>
+                                              ),
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ),
+                            )}
+                          </div>
+                        );
+                      })()
+                    ) : !canEdit || !isEditingPricing ? (
                       <div className="flex items-center justify-between">
                         <div>
                           <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
-                            {pricingMeta.typeLabel}
+                            {pricingMeta?.typeLabel}
                           </span>
-                          {pricingMeta.valueLabel && (
+                          {pricingMeta?.valueLabel && (
                             <p className="text-xl font-bold text-[#C4735B] dark:text-[#D4937B]">
                               {pricingMeta.valueLabel}
                             </p>
@@ -2431,132 +2695,6 @@ export default function ProfessionalDetailClient({
                   </div>
                 </motion.div>
 
-                {/* Services */}
-                {((profile.selectedServices?.length ?? 0) > 0 ||
-                  proSubcategories.length > 0) && (
-                  <motion.div
-                    variants={{
-                      hidden: { opacity: 0, y: 12 },
-                      show: { opacity: 1, y: 0 },
-                    }}
-                    transition={{ duration: 0.35 }}
-                    className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3"
-                  >
-                    <h3 className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-2">
-                      {locale === "ka"
-                        ? "სერვისები და გამოცდილება"
-                        : "Services & Experience"}
-                    </h3>
-                    <motion.div
-                      className="flex flex-wrap gap-1.5"
-                      initial="hidden"
-                      animate="show"
-                      variants={{
-                        hidden: {},
-                        show: {
-                          transition: {
-                            staggerChildren: 0.04,
-                            delayChildren: 0.5,
-                          },
-                        },
-                      }}
-                    >
-                      {profile.selectedServices &&
-                      profile.selectedServices.length > 0
-                        ? profile.selectedServices.map((service, idx) => (
-                            <motion.div
-                              key={`svc-${idx}`}
-                              variants={{
-                                hidden: { opacity: 0, scale: 0.8 },
-                                show: { opacity: 1, scale: 1 },
-                              }}
-                              transition={{
-                                type: "spring",
-                                stiffness: 500,
-                                damping: 25,
-                              }}
-                              whileHover={{ scale: 1.05, y: -1 }}
-                              className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 text-xs cursor-default hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-colors"
-                            >
-                              <span className="font-medium text-neutral-700 dark:text-neutral-200">
-                                {{
-                                  ka: service.nameKa,
-                                  en: service.name,
-                                  ru: service.name,
-                                }[locale] ?? service.name}
-                              </span>
-                              <span className="text-[10px] font-bold text-[#C4735B] bg-[#C4735B]/10 px-1 py-0.5 rounded">
-                                {getExperienceLabel(service.experience)}
-                              </span>
-                            </motion.div>
-                          ))
-                        : proSubcategories.map((sub, idx) => {
-                            const experience = getServiceExperience(sub);
-                            return (
-                              <motion.div
-                                key={`sub-${idx}`}
-                                variants={{
-                                  hidden: { opacity: 0, scale: 0.8 },
-                                  show: { opacity: 1, scale: 1 },
-                                }}
-                                transition={{
-                                  type: "spring",
-                                  stiffness: 500,
-                                  damping: 25,
-                                }}
-                                whileHover={{ scale: 1.05, y: -1 }}
-                                className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 text-xs cursor-default hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-colors"
-                              >
-                                <span className="font-medium text-neutral-700 dark:text-neutral-200">
-                                  {getSubcategoryLabel(sub)}
-                                </span>
-                                {experience && (
-                                  <span className="text-[10px] font-bold text-[#C4735B] bg-[#C4735B]/10 px-1 py-0.5 rounded">
-                                    {getExperienceLabel(experience)}
-                                  </span>
-                                )}
-                              </motion.div>
-                            );
-                          })}
-                    </motion.div>
-                    {proCategories.length > 0 && (
-                      <motion.div
-                        className="flex flex-wrap gap-1.5 mt-2"
-                        initial="hidden"
-                        animate="show"
-                        variants={{
-                          hidden: {},
-                          show: {
-                            transition: {
-                              staggerChildren: 0.05,
-                              delayChildren: 0.7,
-                            },
-                          },
-                        }}
-                      >
-                        {proCategories.map((cat, idx) => (
-                          <motion.span
-                            key={`cat-${idx}`}
-                            variants={{
-                              hidden: { opacity: 0, scale: 0.8 },
-                              show: { opacity: 1, scale: 1 },
-                            }}
-                            transition={{
-                              type: "spring",
-                              stiffness: 500,
-                              damping: 25,
-                            }}
-                            whileHover={{ scale: 1.08 }}
-                            className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-gradient-to-r from-[#C4735B] to-[#D4937B] text-white cursor-default"
-                          >
-                            {getCategoryLabel(cat)}
-                          </motion.span>
-                        ))}
-                      </motion.div>
-                    )}
-                  </motion.div>
-                )}
-
                 {/* Member since */}
                 {profile.createdAt && (
                   <motion.div
@@ -2571,14 +2709,50 @@ export default function ProfessionalDetailClient({
                       className="text-[10px] text-neutral-400 uppercase tracking-wider"
                       suppressHydrationWarning
                     >
-                      {locale === "ka" ? "წევრია" : locale === "ru" ? "Участник с" : "Member since"}:{" "}
+                      {locale === "ka"
+                        ? "წევრია"
+                        : locale === "ru"
+                          ? "Участник с"
+                          : "Member since"}
+                      :{" "}
                       {(() => {
                         const d = new Date(profile.createdAt);
-                        const monthsKa = ["იანვარი", "თებერვალი", "მარტი", "აპრილი", "მაისი", "ივნისი", "ივლისი", "აგვისტო", "სექტემბერი", "ოქტომბერი", "ნოემბერი", "დეკემბერი"];
-                        const monthsRu = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-                        if (locale === "ka") return `${monthsKa[d.getMonth()]} ${d.getFullYear()}`;
-                        if (locale === "ru") return `${monthsRu[d.getMonth()]} ${d.getFullYear()}`;
-                        return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+                        const monthsKa = [
+                          "იანვარი",
+                          "თებერვალი",
+                          "მარტი",
+                          "აპრილი",
+                          "მაისი",
+                          "ივნისი",
+                          "ივლისი",
+                          "აგვისტო",
+                          "სექტემბერი",
+                          "ოქტომბერი",
+                          "ნოემბერი",
+                          "დეკემბერი",
+                        ];
+                        const monthsRu = [
+                          "Январь",
+                          "Февраль",
+                          "Март",
+                          "Апрель",
+                          "Май",
+                          "Июнь",
+                          "Июль",
+                          "Август",
+                          "Сентябрь",
+                          "Октябрь",
+                          "Ноябрь",
+                          "Декабрь",
+                        ];
+                        if (locale === "ka")
+                          return `${monthsKa[d.getMonth()]} ${d.getFullYear()}`;
+                        if (locale === "ru")
+                          return `${monthsRu[d.getMonth()]} ${d.getFullYear()}`;
+                        return d.toLocaleDateString("en-US", {
+                          month: "long",
+                          year: "numeric",
+                        });
                       })()}
                     </p>
                   </motion.div>
@@ -2600,9 +2774,15 @@ export default function ProfessionalDetailClient({
               {(portfolioProjects.length > 0 || isOwner) && (
                 <section>
                   <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-                    {locale === "ka" ? "ნამუშევრები" : locale === "ru" ? "Портфолио" : "Portfolio"}
+                    {locale === "ka"
+                      ? "ნამუშევრები"
+                      : locale === "ru"
+                        ? "Портфолио"
+                        : "Portfolio"}
                     {portfolioProjects.length > 0 && (
-                      <span className="text-xs font-normal text-neutral-400">{portfolioProjects.length}</span>
+                      <span className="text-xs font-normal text-neutral-400">
+                        {portfolioProjects.length}
+                      </span>
                     )}
                   </h2>
                   <PortfolioTab
@@ -2615,6 +2795,15 @@ export default function ProfessionalDetailClient({
                       videos: p.videos,
                       beforeAfter: p.beforeAfter,
                       isEditable: p.source !== "homico",
+                      source: p.source,
+                      clientName: p.clientName,
+                      clientAvatar: p.clientAvatar,
+                      clientId: p.clientId,
+                      rating: p.rating,
+                      review: p.review,
+                      category: p.category,
+                      completedDate: p.completedDate,
+                      projectType: p.projectType,
                     }))}
                     onProjectClick={setSelectedProject}
                     locale={locale as "en" | "ka" | "ru"}
@@ -2641,7 +2830,11 @@ export default function ProfessionalDetailClient({
               {/* ABOUT SECTION */}
               <section>
                 <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">
-                  {locale === "ka" ? "შესახებ" : locale === "ru" ? "О специалисте" : "About"}
+                  {locale === "ka"
+                    ? "შესახებ"
+                    : locale === "ru"
+                      ? "О специалисте"
+                      : "About"}
                 </h2>
                 <AboutTab
                   bio={profile.bio}
@@ -2667,13 +2860,19 @@ export default function ProfessionalDetailClient({
                     toast.success(t("professional.saved"));
                   }}
                   onSaveServices={async (customServices) => {
-                    await api.patch("/users/me/pro-profile", { customServices });
-                    setProfile((prev) => prev ? { ...prev, customServices } : prev);
+                    await api.patch("/users/me/pro-profile", {
+                      customServices,
+                    });
+                    setProfile((prev) =>
+                      prev ? { ...prev, customServices } : prev,
+                    );
                     toast.success(t("common.saved"));
                   }}
                   onSaveSocialLinks={async (socialLinks) => {
                     await api.patch("/users/me/pro-profile", socialLinks);
-                    setProfile((prev) => prev ? { ...prev, ...socialLinks } : prev);
+                    setProfile((prev) =>
+                      prev ? { ...prev, ...socialLinks } : prev,
+                    );
                     toast.success(t("common.saved"));
                   }}
                 />
@@ -2682,9 +2881,15 @@ export default function ProfessionalDetailClient({
               {/* REVIEWS SECTION */}
               <section>
                 <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-                  {locale === "ka" ? "შეფასებები" : locale === "ru" ? "Отзывы" : "Reviews"}
+                  {locale === "ka"
+                    ? "შეფასებები"
+                    : locale === "ru"
+                      ? "Отзывы"
+                      : "Reviews"}
                   {(reviews.length || profile.totalReviews) > 0 && (
-                    <span className="text-xs font-normal text-neutral-400">{reviews.length || profile.totalReviews}</span>
+                    <span className="text-xs font-normal text-neutral-400">
+                      {reviews.length || profile.totalReviews}
+                    </span>
                   )}
                 </h2>
                 <ReviewsTab
@@ -2820,14 +3025,24 @@ export default function ProfessionalDetailClient({
       {/* ========== PROJECT LIGHTBOX ========== */}
       {selectedProject &&
         (() => {
+          const baPairs = selectedProject.beforeAfter || [];
           const allMedia = [
             ...selectedProject.images,
+            ...baPairs.map((p) => `__ba_${p.before}|${p.after}`),
             ...(selectedProject.videos || []),
           ];
           const totalMedia = allMedia.length;
           const currentItem = allMedia[selectedProject.currentIndex];
+          const isBaItem = currentItem?.startsWith("__ba_");
+          const currentBa = isBaItem
+            ? (() => {
+                const parts = currentItem.slice(5).split("|");
+                return { before: parts[0], after: parts[1] };
+              })()
+            : null;
           const isVideo =
-            selectedProject.currentIndex >= selectedProject.images.length;
+            selectedProject.currentIndex >=
+            selectedProject.images.length + baPairs.length;
 
           return (
             <div
@@ -2904,6 +3119,41 @@ export default function ProfessionalDetailClient({
                     autoPlay
                     className="max-w-full max-h-[60vh] sm:max-h-[70vh] object-contain rounded-lg"
                   />
+                ) : currentBa ? (
+                  /* Before/After split view in lightbox */
+                  <div
+                    className="flex gap-2 max-w-full max-h-[60vh] sm:max-h-[70vh]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="relative flex-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={storage.getOptimizedImageUrl(
+                          currentBa.before,
+                          "lightbox",
+                        )}
+                        alt="Before"
+                        className="w-full h-full object-contain rounded-lg"
+                      />
+                      <span className="absolute bottom-3 left-3 px-3 py-1 rounded-lg bg-red-500/80 text-sm font-bold text-white">
+                        Before
+                      </span>
+                    </div>
+                    <div className="relative flex-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={storage.getOptimizedImageUrl(
+                          currentBa.after,
+                          "lightbox",
+                        )}
+                        alt="After"
+                        className="w-full h-full object-contain rounded-lg"
+                      />
+                      <span className="absolute bottom-3 right-3 px-3 py-1 rounded-lg bg-emerald-500/80 text-sm font-bold text-white">
+                        After
+                      </span>
+                    </div>
+                  </div>
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -2950,9 +3200,51 @@ export default function ProfessionalDetailClient({
                         />
                       </button>
                     ))}
+                    {/* Before/After thumbnails */}
+                    {baPairs.map((pair, idx) => {
+                      const mediaIdx = selectedProject.images.length + idx;
+                      return (
+                        <button
+                          key={`ba-${idx}`}
+                          onClick={() =>
+                            setSelectedProject((prev) =>
+                              prev ? { ...prev, currentIndex: mediaIdx } : null,
+                            )
+                          }
+                          className={`relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-md sm:rounded-lg overflow-hidden flex-shrink-0 transition-all flex ${
+                            mediaIdx === selectedProject.currentIndex
+                              ? "ring-2 ring-[#C4735B] ring-offset-1 sm:ring-offset-2 ring-offset-black"
+                              : "opacity-60 hover:opacity-100"
+                          }`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={storage.getOptimizedImageUrl(
+                              pair.before,
+                              "thumbnailSmall",
+                            )}
+                            alt=""
+                            className="w-1/2 h-full object-cover"
+                          />
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={storage.getOptimizedImageUrl(
+                              pair.after,
+                              "thumbnailSmall",
+                            )}
+                            alt=""
+                            className="w-1/2 h-full object-cover"
+                          />
+                          <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 px-1 py-0.5 rounded bg-black/70 text-[6px] font-bold text-white">
+                            B/A
+                          </span>
+                        </button>
+                      );
+                    })}
                     {/* Video thumbnails */}
                     {(selectedProject.videos || []).map((vid, idx) => {
-                      const mediaIdx = selectedProject.images.length + idx;
+                      const mediaIdx =
+                        selectedProject.images.length + baPairs.length + idx;
                       return (
                         <button
                           key={`vid-${idx}`}
@@ -3082,8 +3374,25 @@ export default function ProfessionalDetailClient({
         />
       )}
 
+      {/* ========== SERVICE BOOKING MODAL ========== */}
+      {profile && (
+        <ServiceBookingModal
+          isOpen={showServiceBookingModal}
+          onClose={() => setShowServiceBookingModal(false)}
+          professional={{
+            id: profile.id || (profile as any)._id,
+            name: profile.name || "",
+            avatar: profile.avatar,
+            servicePricing: profile.servicePricing ?? [],
+          }}
+        />
+      )}
+
       {/* ========== SCHEDULE PANEL (owner only) ========== */}
-      <SchedulePanel isOpen={showSchedulePanel} onClose={() => setShowSchedulePanel(false)} />
+      <SchedulePanel
+        isOpen={showSchedulePanel}
+        onClose={() => setShowSchedulePanel(false)}
+      />
 
       {/* ========== ADD/EDIT PROJECT MODAL ========== */}
       {(showAddProjectModal || editingProject) && (
@@ -3877,13 +4186,13 @@ function ProjectFormModal({
                         <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
                         {t("common.before")}
                       </span>
-                      <div className="aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
+                      <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
                         <Image
                           src={storage.getFileUrl(pair.before)}
                           alt=""
                           fill
-                          className="rounded-full object-cover"
-                          sizes="40px"
+                          className="object-cover"
+                          sizes="200px"
                         />
                       </div>
                     </div>
@@ -3897,13 +4206,13 @@ function ProjectFormModal({
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                         {t("common.after")}
                       </span>
-                      <div className="aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
+                      <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
                         <Image
                           src={storage.getFileUrl(pair.after)}
                           alt=""
                           fill
-                          className="rounded-full object-cover"
-                          sizes="40px"
+                          className="object-cover"
+                          sizes="200px"
                         />
                       </div>
                     </div>
@@ -3923,13 +4232,13 @@ function ProjectFormModal({
                       <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-amber-600 bg-amber-100 dark:bg-amber-800/30 px-2 py-0.5 rounded-full">
                         ✓ {t("common.before")}
                       </span>
-                      <div className="aspect-[4/3] rounded-lg overflow-hidden ring-2 ring-amber-300 dark:ring-amber-600">
+                      <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-2 ring-amber-300 dark:ring-amber-600">
                         <Image
                           src={storage.getFileUrl(pendingBeforeImage)}
                           alt=""
                           fill
-                          className="rounded-full object-cover"
-                          sizes="40px"
+                          className="object-cover"
+                          sizes="200px"
                         />
                       </div>
                     </div>

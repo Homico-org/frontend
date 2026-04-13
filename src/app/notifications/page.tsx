@@ -2,6 +2,7 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import MobileBottomNav from '@/components/common/MobileBottomNav';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/IconBadge';
@@ -31,7 +32,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 // Notification type configurations
-const notificationConfig: Record<NotificationType, { icon: typeof Briefcase; color: string; bgColor: string }> = {
+const notificationConfig: Record<string, { icon: typeof Briefcase; color: string; bgColor: string }> = {
   new_proposal: {
     icon: Briefcase,
     color: '#3B82F6',
@@ -82,12 +83,131 @@ const notificationConfig: Record<NotificationType, { icon: typeof Briefcase; col
     color: '#06B6D4',
     bgColor: 'rgba(6, 182, 212, 0.1)',
   },
+  profile_approved: {
+    icon: CheckCheck,
+    color: '#10B981',
+    bgColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  profile_rejected: {
+    icon: Briefcase,
+    color: '#EF4444',
+    bgColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  new_booking: {
+    icon: Briefcase,
+    color: '#C4735B',
+    bgColor: 'rgba(196, 115, 91, 0.1)',
+  },
+  booking_confirmed: {
+    icon: CheckCheck,
+    color: '#10B981',
+    bgColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  booking_started: {
+    icon: Briefcase,
+    color: '#3B82F6',
+    bgColor: 'rgba(59, 130, 246, 0.1)',
+  },
+  booking_cancelled: {
+    icon: Briefcase,
+    color: '#6B7280',
+    bgColor: 'rgba(107, 114, 128, 0.1)',
+  },
+  booking_completed: {
+    icon: CheckCheck,
+    color: '#10B981',
+    bgColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  review_prompt: {
+    icon: Star,
+    color: '#F59E0B',
+    bgColor: 'rgba(245, 158, 11, 0.1)',
+  },
   system_announcement: {
     icon: Megaphone,
     color: '#F97316',
     bgColor: 'rgba(249, 115, 22, 0.1)',
   },
 };
+
+// Map backend notification titles to translation type keys
+const titleToTypeMap: Record<string, string> = {
+  'New Booking Request': 'new_booking',
+  'Booking Confirmed': 'booking_confirmed',
+  'Work Started': 'booking_started',
+  'Booking Cancelled': 'booking_cancelled',
+  'Booking Completed': 'booking_completed',
+  'Work Completed': 'work_completed',
+  'How was your experience?': 'review_prompt',
+  'New Proposal': 'new_proposal',
+  'Proposal Accepted': 'proposal_accepted',
+  'Proposal Rejected': 'proposal_rejected',
+  'Job Completed': 'job_completed',
+  'Job Cancelled': 'job_cancelled',
+  'Job Invitation': 'job_invitation',
+  'New Message': 'new_message',
+  'New Review': 'new_review',
+  'Account Verified': 'account_verified',
+  'Profile Update': 'profile_update',
+  'Profile Approved': 'profile_approved',
+  'Profile Needs Updates': 'profile_rejected',
+  'New Pro Registration': 'profile_update',
+  'System Announcement': 'system_announcement',
+};
+
+const monthNames: Record<string, string[]> = {
+  ka: ['იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი', 'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი'],
+  ru: ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'],
+  en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+};
+
+function formatNotificationDate(dateStr: string, locale: string): string {
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  const day = parseInt(parts[2], 10);
+  const monthIdx = parseInt(parts[1], 10) - 1;
+  const months = monthNames[locale] || monthNames.en;
+  return `${day} ${months[monthIdx]}`;
+}
+
+// Extract date and time from backend notification message
+function extractMessageParams(message: string, locale: string): Record<string, string> {
+  const params: Record<string, string> = {};
+
+  const dateMatch = message.match(/(\d{4}-\d{2}-\d{2})/);
+  if (dateMatch) params.date = formatNotificationDate(dateMatch[1], locale);
+
+  const timeMatch = message.match(/at (\d{1,2}:\d{2})/);
+  if (timeMatch) params.time = timeMatch[1];
+
+  const hourMatch = message.match(/(\d{1,2}):00/);
+  if (hourMatch && !params.time) params.time = hourMatch[1] + ':00';
+
+  return params;
+}
+
+// Get translated notification title and message
+function getTranslatedNotification(
+  notification: Notification,
+  t: (key: string, params?: Record<string, string | number>) => string,
+  locale: string
+): { title: string; message: string } {
+  // Check title mapping first to distinguish e.g. "Work Completed" from "Booking Completed"
+  const resolvedKey = titleToTypeMap[notification.title] || notification.type;
+
+  const titleKey = `notifications.types.${resolvedKey}.title`;
+  const messageKey = `notifications.types.${resolvedKey}.message`;
+
+  const params = extractMessageParams(notification.message, locale);
+
+  const translatedTitle = t(titleKey, params);
+  const translatedMessage = t(messageKey, params);
+
+  return {
+    title: translatedTitle !== titleKey ? translatedTitle : notification.title,
+    message: translatedMessage !== messageKey ? translatedMessage : notification.message,
+  };
+}
 
 type FilterKey = 'all' | 'unread' | 'jobs' | 'messages' | 'reviews';
 
@@ -110,6 +230,7 @@ function SwipeableNotificationCard({
   const cardRef = useRef<HTMLDivElement>(null);
 
   const config = notificationConfig[notification.type] || notificationConfig.system_announcement;
+  const translated = getTranslatedNotification(notification, t, locale);
   const Icon = config.icon;
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -178,14 +299,14 @@ function SwipeableNotificationCard({
                   !notification.isRead ? 'text-neutral-900 dark:text-white' : 'text-neutral-600 dark:text-neutral-400'
                 }`}
               >
-                {notification.title}
+                {translated.title}
               </h4>
               {!notification.isRead && (
                 <div className="w-2 h-2 rounded-full bg-[#C4735B] flex-shrink-0 mt-1.5" />
               )}
             </div>
             <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-500 line-clamp-2">
-              {notification.message}
+              {translated.message}
             </p>
             <div className="mt-2 flex items-center justify-between">
               <span className="text-[11px] text-neutral-400 dark:text-neutral-600">
@@ -286,11 +407,11 @@ function NotificationsPageContent() {
     }
   }, [isAuthenticated, fetchNotifications]);
 
-  const filters: { key: FilterKey; label: string; labelKa: string; count?: number }[] = [
-    { key: 'all', label: 'All', labelKa: 'ყველა' },
-    { key: 'unread', label: 'Unread', labelKa: 'წაუკითხავი', count: unreadCount },
-    { key: 'jobs', label: 'Jobs', labelKa: 'სამუშაოები' },
-    { key: 'reviews', label: 'Reviews', labelKa: 'შეფასებები' },
+  const filters: { key: FilterKey; label: string; count?: number }[] = [
+    { key: 'all', label: t('notifications.filters.all') },
+    { key: 'unread', label: t('notifications.filters.unread'), count: unreadCount },
+    { key: 'jobs', label: t('notifications.filters.jobs') },
+    { key: 'reviews', label: t('reviews.title') },
   ];
 
   const filteredNotifications = notifications.filter((n) => {
@@ -400,7 +521,7 @@ function NotificationsPageContent() {
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                 }`}
               >
-                {locale === 'ka' ? filter.labelKa : filter.label}
+                {filter.label}
                 {filter.count !== undefined && filter.count > 0 && (
                   <Badge
                     variant={activeFilter === filter.key ? "ghost" : "premium"}
@@ -421,7 +542,7 @@ function NotificationsPageContent() {
               className="flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg text-sm font-medium text-neutral-700 dark:text-neutral-300"
             >
               <Filter className="w-4 h-4" />
-              <span>{locale === 'ka' ? currentFilter?.labelKa : currentFilter?.label}</span>
+              <span>{currentFilter?.label}</span>
               {activeFilter === 'unread' && unreadCount > 0 && (
                 <Badge variant="premium" size="xs">
                   {unreadCount}
@@ -466,7 +587,7 @@ function NotificationsPageContent() {
                         : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                     }`}
                   >
-                    <span className="font-medium">{locale === 'ka' ? filter.labelKa : filter.label}</span>
+                    <span className="font-medium">{filter.label}</span>
                     <div className="flex items-center gap-2">
                       {filter.count !== undefined && filter.count > 0 && (
                         <Badge variant="premium" size="xs">
@@ -516,8 +637,8 @@ function NotificationsPageContent() {
             </h3>
             <p className="text-xs text-neutral-500 max-w-xs mx-auto">
               {activeFilter === 'unread'
-                ? locale === 'ka' ? 'ყველა შეტყობინება წაკითხულია' : "You've read all your notifications"
-                : locale === 'ka' ? 'ახალი შეტყობინებები აქ გამოჩნდება' : "New notifications will appear here"}
+                ? t('notifications.allRead')
+                : t('notifications.newWillAppear')}
             </p>
           </div>
         ) : (
@@ -572,6 +693,7 @@ function NotificationsPageContent() {
           animation: slide-up 0.3s ease-out forwards;
         }
       `}</style>
+      <MobileBottomNav />
     </div>
   );
 }

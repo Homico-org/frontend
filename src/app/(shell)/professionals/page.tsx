@@ -2,6 +2,7 @@
 
 import EmptyState from "@/components/common/EmptyState";
 import ProCard from "@/components/common/ProCard";
+import BrowseFilterBar from "@/components/browse/BrowseFilterBar";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrowseContext } from "@/contexts/BrowseContext";
@@ -36,6 +37,16 @@ export default function ProfessionalsPage() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const loaderRef = useRef<HTMLDivElement>(null);
+
+  // Restore scroll position on back navigation
+  useEffect(() => {
+    const saved = sessionStorage.getItem('browseScrollY');
+    if (saved) {
+      const y = parseInt(saved, 10);
+      sessionStorage.removeItem('browseScrollY');
+      setTimeout(() => window.scrollTo(0, y), 100);
+    }
+  }, []);
 
   const fetchProfessionals = useCallback(
     async (pageNum: number, reset = false) => {
@@ -172,21 +183,28 @@ export default function ProfessionalsPage() {
   };
 
   const ProfessionalsSkeleton = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
-      {Array.from({ length: 8 }).map((_, i) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      {Array.from({ length: 9 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-neutral-900 rounded-xl p-3 sm:p-5 border border-neutral-200/70 dark:border-neutral-800/80"
+          className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80"
         >
-          <div className="flex items-center gap-3 sm:flex-col sm:items-center">
-            <div className="w-12 h-12 sm:w-20 sm:h-20 rounded-full bg-neutral-200 dark:bg-neutral-700 animate-pulse flex-shrink-0" />
-            <div className="flex-1 min-w-0 sm:w-full sm:mt-3">
-              <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4 sm:mx-auto animate-pulse mb-2" />
-              <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2 sm:mx-auto animate-pulse mb-2" />
-              <div className="flex gap-1.5 sm:hidden">
-                <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-16 animate-pulse" />
-                <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-20 animate-pulse" />
+          <div className="grid grid-cols-3 gap-px aspect-[3/1.15] bg-neutral-200 dark:bg-neutral-700">
+            {[0, 1, 2].map(j => (
+              <div key={j} className="bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+            ))}
+          </div>
+          <div className="p-3 sm:p-4">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-700 animate-pulse flex-shrink-0" />
+              <div className="flex-1">
+                <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-2/3 animate-pulse mb-1.5" />
+                <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-1/3 animate-pulse" />
               </div>
+            </div>
+            <div className="flex gap-1.5">
+              <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-16 animate-pulse" />
+              <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-20 animate-pulse" />
             </div>
           </div>
         </div>
@@ -208,6 +226,7 @@ export default function ProfessionalsPage() {
 
   return (
     <div className="space-y-3 sm:space-y-4">
+      <BrowseFilterBar />
       {/* CTA: Guest → Register as Pro | Client → Post a Job */}
       {!isLoading && results.length > 0 && (
         <>
@@ -267,7 +286,11 @@ export default function ProfessionalsPage() {
       {isLoading ? (
         <ProfessionalsSkeleton />
       ) : results.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 items-stretch">
+        <>
+        <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+          {results.length} {t("browse.resultsFound")}
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 items-stretch">
           {results.map((profile, index) => (
             <div
               key={profile.id || `pro-${index}`}
@@ -279,10 +302,13 @@ export default function ProfessionalsPage() {
                 onLike={() => handleProLike(profile.id)}
                 showLikeButton={true}
                 variant="compact"
+                activeCategory={selectedCategory || undefined}
+                activeSubcategories={selectedSubcategories}
               />
             </div>
           ))}
         </div>
+        </>
       ) : (
         <ProfessionalsEmptyState />
       )}

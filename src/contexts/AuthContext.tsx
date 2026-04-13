@@ -1,6 +1,7 @@
 'use client';
 
 import { AnalyticsEvent, trackAnalyticsEvent } from '@/hooks/useAnalytics';
+import api from '@/lib/api';
 import { AccountType, UserRole } from '@/types';
 import { useRouter } from 'next/navigation';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -37,7 +38,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   isAuthValidated: boolean;
-  login: (accessToken: string, user: User) => void;
+  login: (accessToken: string, user: User, refreshToken?: string) => void;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -47,6 +48,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Helper to clear all auth data
 const clearAuthData = () => {
   localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
   localStorage.removeItem('user');
   // Also clear old token key if exists
   localStorage.removeItem('token');
@@ -62,22 +64,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Ref to prevent duplicate auth initialization (React Strict Mode)
   const authInitializedRef = useRef(false);
 
-  // Validate token with backend
+  // Validate token with backend — uses api instance so refresh interceptor works
   const validateToken = useCallback(async (tokenToValidate: string): Promise<User | null> => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${API_URL}/users/me`, {
-        headers: {
-          'Authorization': `Bearer ${tokenToValidate}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        return null;
-      }
-
-      const userData = await response.json();
+      // Ensure the token is set before calling
+      api.defaults.headers.common['Authorization'] = `Bearer ${tokenToValidate}`;
+      const response = await api.get('/users/me');
+      const userData = response.data;
       return {
         id: userData.id || userData._id,
         uid: userData.uid,
@@ -178,9 +171,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const login = useCallback((accessToken: string, userData: User) => {
+  const login = useCallback((accessToken: string, userData: User, refreshToken?: string) => {
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('user', JSON.stringify(userData));
+    if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
     setUser(userData);
     setToken(accessToken);
   }, []);

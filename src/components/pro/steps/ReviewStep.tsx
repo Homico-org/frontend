@@ -1,6 +1,7 @@
 "use client";
 
 import { ExperienceLevel, SelectedService } from "@/components/register/steps/StepSelectServices";
+import { SelectedSubcategoryWithPricing } from "./ServicesPricingStep";
 import { Badge } from "@/components/ui/badge";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -8,7 +9,6 @@ import {
   AlertCircle,
   Briefcase,
   CheckCircle2,
-  Clock,
   DollarSign,
   Facebook,
   Globe,
@@ -19,16 +19,15 @@ import {
   MessageCircle,
   Pencil,
   Phone,
-  User
+  User,
 } from "lucide-react";
 import { PortfolioProject } from "./ProjectsStep";
 
-// Experience level labels
-const EXPERIENCE_LABELS: Record<ExperienceLevel, { en: string; ka: string }> = {
-  '1-2': { en: '1-2 years', ka: '1-2 წელი' },
-  '3-5': { en: '3-5 years', ka: '3-5 წელი' },
-  '5-10': { en: '5-10 years', ka: '5-10 წელი' },
-  '10+': { en: '10+ years', ka: '10+ წელი' },
+const EXP_LABELS: Record<string, { en: string; ka: string }> = {
+  "1-2": { en: "1-2 years", ka: "1-2 წელი" },
+  "3-5": { en: "3-5 years", ka: "3-5 წელი" },
+  "5-10": { en: "5-10 years", ka: "5-10 წელი" },
+  "10+": { en: "10+ years", ka: "10+ წელი" },
 };
 
 interface ReviewStepProps {
@@ -41,7 +40,6 @@ interface ReviewStepProps {
     pricingModel: string;
     serviceAreas: string[];
     nationwide: boolean;
-    // Social links
     whatsapp?: string;
     telegram?: string;
     instagram?: string;
@@ -53,543 +51,221 @@ interface ReviewStepProps {
   selectedSubcategories: string[];
   customServices?: string[];
   avatarPreview: string | null;
-  locationData: {
-    nationwide: string;
-  } | null;
+  locationData: { nationwide: string } | null;
   onEditStep: (step: number) => void;
   isEditMode?: boolean;
   portfolioProjects?: PortfolioProject[];
-  selectedServices?: SelectedService[]; // New: services with per-service experience
+  selectedServices?: SelectedService[];
+  selectedSubcategoriesWithPricing?: SelectedSubcategoryWithPricing[];
 }
 
 export default function ReviewStep({
   formData,
-  selectedCategories,
-  selectedSubcategories,
   customServices = [],
   avatarPreview,
   locationData,
   onEditStep,
-  isEditMode = false,
   portfolioProjects = [],
-  selectedServices = [],
+  selectedSubcategoriesWithPricing = [],
 }: ReviewStepProps) {
   const { t, locale } = useLanguage();
-  const { getCategoryByKey, categories } = useCategories();
+  const { getCategoryByKey } = useCategories();
 
-  // Helper to find subcategory by key across all categories
-  const getSubcategoryByKey = (subKey: string) => {
-    for (const cat of categories) {
-      const sub = cat.subcategories?.find((s) => s.key === subKey);
-      if (sub) return sub;
-    }
-    return undefined;
-  };
+  const ka = locale === "ka";
 
-  const getPricingSuffix = () => {
-    switch (formData.pricingModel) {
-      case "byAgreement":
-        return "";
-      case "per_sqm":
-        return `₾${t("timeUnits.perSqm")}`;
-      case "range":
-        return "₾";
-      case "fixed":
-        return "₾";
-      default:
-        return "₾";
-    }
-  };
+  const hasBio = formData.bio.trim().length >= 50;
+  const hasAvatar = !!avatarPreview;
+  const hasServices = selectedSubcategoriesWithPricing.length > 0;
+  const hasAreas = formData.nationwide || formData.serviceAreas.length > 0;
+  const hasPortfolio = portfolioProjects.length > 0;
 
-  const getPricingLabel = () => {
-    switch (formData.pricingModel) {
-      case "per_sqm":
-        return t("professional.perSqm");
-      case "fixed":
-        return t("common.fixed");
-      case "range":
-        return t("common.priceRange");
-      default:
-        return "";
-    }
-  };
-
-  // Completeness checks per section
-  const completeness = {
-    about: {
-      complete: !!avatarPreview && formData.bio.trim().length >= 50,
-      required: true,
-    },
-    services: {
-      complete: selectedServices.length > 0 || selectedSubcategories.length > 0,
-      required: true,
-    },
-    pricing: {
-      complete: formData.pricingModel === 'fixed' || formData.pricingModel === 'per_sqm'
-        ? !!formData.basePrice && Number(formData.basePrice) > 0
-        : formData.pricingModel === 'range'
-          ? !!formData.basePrice && !!formData.maxPrice && Number(formData.maxPrice) >= Number(formData.basePrice) && Number(formData.basePrice) > 0
-          : false,
-      required: true,
-    },
-    areas: {
-      complete: formData.nationwide || formData.serviceAreas.length > 0,
-      required: true,
-    },
-    portfolio: {
-      complete: portfolioProjects.length > 0,
-      required: false,
-    },
-    social: {
-      complete: !!(formData.whatsapp || formData.telegram || formData.instagram || formData.facebook || formData.linkedin || formData.website),
-      required: false,
-    },
-  };
-
-  const StatusBadge = ({ complete, required }: { complete: boolean; required: boolean }) => {
-    if (complete) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
-          <CheckCircle2 className="w-3 h-3" />
-          {locale === 'ka' ? 'შევსებულია' : 'Complete'}
+  const SectionHeader = ({
+    icon: Icon,
+    title,
+    stepIndex,
+    complete,
+    required = true,
+  }: {
+    icon: typeof User;
+    title: string;
+    stepIndex: number;
+    complete: boolean;
+    required?: boolean;
+  }) => (
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2">
+        <Icon className="w-4 h-4 text-[#C4735B]" />
+        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
+          {title}
         </span>
-      );
-    }
-    if (required) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400">
-          <AlertCircle className="w-3 h-3" />
-          {locale === 'ka' ? 'შეავსეთ' : 'Incomplete'}
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
-        <AlertCircle className="w-3 h-3" />
-        {locale === 'ka' ? 'რეკომენდებული' : 'Recommended'}
-      </span>
-    );
-  };
+        {complete ? (
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+        ) : required ? (
+          <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+        ) : null}
+      </div>
+      <button
+        type="button"
+        onClick={() => onEditStep(stepIndex)}
+        className="flex items-center gap-1 text-xs text-[#C4735B] hover:text-[#A85D4A] font-medium transition-colors"
+      >
+        <Pencil className="w-3 h-3" />
+        {t("common.edit")}
+      </button>
+    </div>
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Profile Preview Card */}
-      <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] overflow-hidden shadow-sm">
-        {/* About Section */}
-        <div className="p-6 border-b border-[var(--color-border-subtle)]">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-              <User className="w-4 h-4 text-[#C4735B]" />
-              <span className="text-xs font-semibold uppercase tracking-wider">
-                {t('common.about')}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusBadge complete={completeness.about.complete} required={completeness.about.required} />
-              <button
-                type="button"
-                onClick={() => onEditStep(0)}
-                className="flex items-center gap-1.5 text-sm text-[#C4735B] hover:text-[#A85D4A] font-medium transition-colors"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-                {t('common.edit')}
-              </button>
-            </div>
-          </div>
+    <div className="space-y-4">
+      {/* ── About ── */}
+      <div className="bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border-subtle)] p-4">
+        <SectionHeader icon={User} title={t("common.about")} stepIndex={0} complete={hasBio && hasAvatar} />
 
-          <div className="flex items-start gap-4">
-            {avatarPreview ? (
-              <img
-                src={avatarPreview}
-                alt=""
-                className="w-16 h-16 rounded-xl object-cover shadow-md"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[var(--color-bg-tertiary)] to-[var(--color-bg-muted)] flex items-center justify-center">
-                <User className="w-8 h-8 text-[var(--color-text-muted)]" />
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg font-semibold text-[var(--color-text-primary)]">
-                  {formData.yearsExperience || "0"}{" "}
-                  {t('common.yearsExperience')}
-                </span>
-              </div>
-              <p className="text-sm text-[var(--color-text-secondary)] line-clamp-3">
-                {formData.bio ||
-                  (t('common.notAdded'))}
-              </p>
-            </div>
-          </div>
-
-          {/* Social Links (if any) */}
-          {(formData.whatsapp || formData.telegram || formData.instagram || formData.facebook || formData.linkedin || formData.website) && (
-            <div className="mt-4 pt-4 border-t border-[var(--color-border-subtle)]">
-              <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
-                {t('common.socialLinks')}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {formData.whatsapp && (
-                  <Badge variant="success" size="sm" icon={<Phone className="w-3 h-3" />}>
-                    WhatsApp
-                  </Badge>
-                )}
-                {formData.telegram && (
-                  <Badge variant="info" size="sm" icon={<MessageCircle className="w-3 h-3" />}>
-                    Telegram
-                  </Badge>
-                )}
-                {formData.instagram && (
-                  <Badge variant="secondary" size="sm" icon={<Instagram className="w-3 h-3" />} className="!bg-pink-50 !text-pink-500 dark:!bg-pink-900/30 dark:!text-pink-400">
-                    Instagram
-                  </Badge>
-                )}
-                {formData.facebook && (
-                  <Badge variant="info" size="sm" icon={<Facebook className="w-3 h-3" />}>
-                    Facebook
-                  </Badge>
-                )}
-                {formData.linkedin && (
-                  <Badge variant="info" size="sm" icon={<Linkedin className="w-3 h-3" />}>
-                    LinkedIn
-                  </Badge>
-                )}
-                {formData.website && (
-                  <Badge variant="default" size="sm" icon={<Globe className="w-3 h-3" />}>
-                    {t('common.website')}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Services Section */}
-        <div className="p-6 border-b border-[var(--color-border-subtle)]">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-              <Briefcase className="w-4 h-4 text-[#C4735B]" />
-              <span className="text-xs font-semibold uppercase tracking-wider">
-                {t('common.services')}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusBadge complete={completeness.services.complete} required={completeness.services.required} />
-              <button
-                type="button"
-                onClick={() => onEditStep(1)}
-                className="flex items-center gap-1.5 text-sm text-[#C4735B] hover:text-[#A85D4A] font-medium transition-colors"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-                {locale === "ka" ? "რედაქტირება" : "Edit"}
-              </button>
-            </div>
-          </div>
-
-          {/* Categories */}
-          <div className="mb-4">
-            <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
-              {t('common.categories')}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {selectedCategories.map((catKey) => {
-                const cat = getCategoryByKey(catKey);
-                return (
-                  <span
-                    key={catKey}
-                    className="px-3 py-1.5 rounded-lg bg-[#C4735B]/10 text-[#C4735B] text-sm font-medium"
-                  >
-                    {locale === "ka" ? cat?.nameKa : cat?.name}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Services with Experience (new format) */}
-          {selectedServices.length > 0 ? (
-            <div>
-              <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
-                {t('common.skills')}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {selectedServices.slice(0, 6).map((service) => (
-                  <div
-                    key={service.key}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-sm"
-                  >
-                    <span className="text-[var(--color-text-secondary)]">
-                      {locale === "ka" ? service.nameKa : service.name}
-                    </span>
-                    <span className="flex items-center gap-1 text-xs text-[#C4735B] font-medium">
-                      <Clock className="w-3 h-3" />
-                      {EXPERIENCE_LABELS[service.experience]?.[locale === 'ka' ? 'ka' : 'en'] || service.experience}
-                    </span>
-                  </div>
-                ))}
-                {selectedServices.length > 6 && (
-                  <span className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] text-sm">
-                    +{selectedServices.length - 6}{" "}
-                    {t('common.more')}
-                  </span>
-                )}
-              </div>
-            </div>
-          ) : selectedSubcategories.length > 0 ? (
-            /* Fallback: Old format subcategories */
-            <div>
-              <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
-                {t('common.skills')}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {selectedSubcategories.slice(0, 6).map((subKey) => {
-                  const sub = getSubcategoryByKey(subKey);
-                  return (
-                    <span
-                      key={subKey}
-                      className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] text-sm"
-                    >
-                      {locale === "ka" ? sub?.nameKa : sub?.name}
-                    </span>
-                  );
-                })}
-                {selectedSubcategories.length > 6 && (
-                  <span className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] text-sm">
-                    +{selectedSubcategories.length - 6}{" "}
-                    {t('common.more')}
-                  </span>
-                )}
-              </div>
-            </div>
-          ) : null}
-
-          {/* Custom Services (Skills) */}
-          {customServices.length > 0 && (
-            <div className="mt-4">
-              <p className="text-xs text-[var(--color-text-tertiary)] mb-2">
-                {t('common.customSkills')}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {customServices.slice(0, 6).map((skill, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-sm"
-                  >
-                    {skill}
-                  </span>
-                ))}
-                {customServices.length > 6 && (
-                  <span className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] text-sm">
-                    +{customServices.length - 6}{" "}
-                    {locale === "ka" ? "სხვა" : "more"}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Pricing Section */}
-        <div className="p-6 border-b border-[var(--color-border-subtle)]">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-              <DollarSign className="w-4 h-4 text-[#C4735B]" />
-              <span className="text-xs font-semibold uppercase tracking-wider">
-                {t('common.pricing')}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusBadge complete={completeness.pricing.complete} required={completeness.pricing.required} />
-              <button
-                type="button"
-                onClick={() => onEditStep(2)}
-                className="flex items-center gap-1.5 text-sm text-[#C4735B] hover:text-[#A85D4A] font-medium transition-colors"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-                {locale === "ka" ? "რედაქტირება" : "Edit"}
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-baseline gap-3">
-            <span className="text-2xl font-bold text-[var(--color-text-primary)]">
-              {formData.pricingModel === "byAgreement"
-                ? t("common.negotiable")
-                : formData.basePrice || "0"}
-              {formData.pricingModel === "range" && formData.maxPrice && ` - ${formData.maxPrice}`}
-            </span>
-            <span className="text-[var(--color-text-secondary)]">
-              {getPricingSuffix()}
-            </span>
-          </div>
-          <p className="text-sm text-[var(--color-text-tertiary)] mt-1">
-            {getPricingLabel()}
-          </p>
-        </div>
-
-        {/* Portfolio Section */}
-        <div className="p-6 border-b border-[var(--color-border-subtle)]">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-              <Images className="w-4 h-4 text-[#C4735B]" />
-              <span className="text-xs font-semibold uppercase tracking-wider">
-                {t('common.portfolio')}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusBadge complete={completeness.portfolio.complete} required={completeness.portfolio.required} />
-              <button
-                type="button"
-                onClick={() => onEditStep(3)}
-                className="flex items-center gap-1.5 text-sm text-[#C4735B] hover:text-[#A85D4A] font-medium transition-colors"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-                {locale === "ka" ? "რედაქტირება" : "Edit"}
-              </button>
-            </div>
-          </div>
-
-          {portfolioProjects.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {portfolioProjects.slice(0, 6).map((project, idx) => {
-                const hasImages = project.images && project.images.length > 0;
-                const hasVideos = project.videos && project.videos.length > 0;
-                const hasBeforeAfter = project.beforeAfterPairs && project.beforeAfterPairs.length > 0;
-                const totalMedia = (project.images?.length || 0) + (project.videos?.length || 0) + (project.beforeAfterPairs?.length || 0);
-
-                return (
-                  <div key={project.id || idx} className="relative aspect-[4/3] rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)]">
-                    {hasImages ? (
-                      <img
-                        src={project.images[0]}
-                        alt={project.title || `Project ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : hasVideos ? (
-                      <>
-                        <video
-                          src={project.videos![0]}
-                          className="w-full h-full object-cover"
-                          muted
-                          playsInline
-                        />
-                        {/* Play icon overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="w-10 h-10 rounded-full bg-[#C4735B]/80 flex items-center justify-center">
-                            <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </div>
-                        </div>
-                      </>
-                    ) : hasBeforeAfter ? (
-                      <div className="w-full h-full flex">
-                        <div className="w-1/2 h-full relative">
-                          <img
-                            src={project.beforeAfterPairs![0].beforeImage}
-                            alt="Before"
-                            className="w-full h-full object-cover"
-                          />
-                          <Badge variant="ghost" size="xs" className="absolute bottom-1 left-1 bg-black/60 text-white">
-                            {t('common.before')}
-                          </Badge>
-                        </div>
-                        <div className="w-1/2 h-full relative">
-                          <img
-                            src={project.beforeAfterPairs![0].afterImage}
-                            alt="After"
-                            className="w-full h-full object-cover"
-                          />
-                          <Badge variant="success" size="xs" className="absolute bottom-1 right-1">
-                            {t('common.after')}
-                          </Badge>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Images className="w-8 h-8 text-[var(--color-text-muted)]" />
-                      </div>
-                    )}
-                    {/* Media count badge */}
-                    {totalMedia > 1 && (
-                      <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium">
-                        {totalMedia}
-                      </div>
-                    )}
-                    {project.title && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-                        <p className="text-xs text-white font-medium truncate">{project.title}</p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+        <div className="flex items-start gap-3">
+          {avatarPreview ? (
+            <img src={avatarPreview} alt="" className="w-14 h-14 rounded-xl object-cover" />
           ) : (
-            <span className="text-[var(--color-text-muted)]">
-              {t('common.noProjectsAdded')}
-            </span>
+            <div className="w-14 h-14 rounded-xl bg-[var(--color-bg-tertiary)] flex items-center justify-center">
+              <User className="w-7 h-7 text-[var(--color-text-muted)]" />
+            </div>
           )}
-          {portfolioProjects.length > 6 && (
-            <p className="text-sm text-[var(--color-text-tertiary)] mt-3">
-              +{portfolioProjects.length - 6} {t('common.moreProjects')}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-[var(--color-text-primary)] line-clamp-3">
+              {formData.bio || <span className="text-[var(--color-text-muted)] italic">{t("common.notAdded")}</span>}
             </p>
-          )}
+          </div>
         </div>
 
-        {/* Location Section */}
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-              <MapPin className="w-4 h-4 text-[#C4735B]" />
-              <span className="text-xs font-semibold uppercase tracking-wider">
-                {t('common.serviceArea')}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusBadge complete={completeness.areas.complete} required={completeness.areas.required} />
-              <button
-                type="button"
-                onClick={() => onEditStep(2)}
-                className="flex items-center gap-1.5 text-sm text-[#C4735B] hover:text-[#A85D4A] font-medium transition-colors"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-                {locale === "ka" ? "რედაქტირება" : "Edit"}
-              </button>
-            </div>
+        {/* Social links */}
+        {(formData.whatsapp || formData.telegram || formData.instagram || formData.facebook || formData.linkedin || formData.website) && (
+          <div className="mt-3 pt-3 border-t border-[var(--color-border-subtle)] flex flex-wrap gap-1.5">
+            {formData.whatsapp && <Badge variant="success" size="sm" icon={<Phone className="w-3 h-3" />}>WhatsApp</Badge>}
+            {formData.telegram && <Badge variant="info" size="sm" icon={<MessageCircle className="w-3 h-3" />}>Telegram</Badge>}
+            {formData.instagram && <Badge variant="secondary" size="sm" icon={<Instagram className="w-3 h-3" />}>Instagram</Badge>}
+            {formData.facebook && <Badge variant="info" size="sm" icon={<Facebook className="w-3 h-3" />}>Facebook</Badge>}
+            {formData.linkedin && <Badge variant="info" size="sm" icon={<Linkedin className="w-3 h-3" />}>LinkedIn</Badge>}
+            {formData.website && <Badge variant="default" size="sm" icon={<Globe className="w-3 h-3" />}>{t("common.website")}</Badge>}
           </div>
+        )}
 
-          {formData.nationwide ? (
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🇬🇪</span>
-              <span className="font-medium text-[var(--color-text-primary)]">
-                {locationData?.nationwide || "Nationwide"}
-              </span>
-            </div>
-          ) : formData.serviceAreas.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {formData.serviceAreas.slice(0, 5).map((area) => (
-                <span
-                  key={area}
-                  className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] text-sm"
-                >
-                  {area}
+        {/* Custom skills */}
+        {customServices.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-[var(--color-border-subtle)]">
+            <p className="text-[10px] text-[var(--color-text-muted)] mb-1.5">{t("common.customSkills")}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {customServices.map((s, i) => (
+                <span key={i} className="px-2 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs">
+                  {s}
                 </span>
               ))}
-              {formData.serviceAreas.length > 5 && (
-                <span className="px-3 py-1.5 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] text-sm">
-                  +{formData.serviceAreas.length - 5}{" "}
-                  {locale === "ka" ? "სხვა" : "more"}
-                </span>
-              )}
             </div>
-          ) : (
-            <span className="text-[var(--color-text-muted)]">
-              {t('common.noneSelected')}
+          </div>
+        )}
+      </div>
+
+      {/* ── Services & Pricing ── */}
+      <div className="bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border-subtle)] p-4">
+        <SectionHeader icon={Briefcase} title={`${t("common.services")} & ${t("common.pricing")}`} stepIndex={1} complete={hasServices} />
+
+        {selectedSubcategoriesWithPricing.length > 0 ? (
+          <div className="space-y-3">
+            {selectedSubcategoriesWithPricing.map((sub) => {
+              const displayName = ka ? sub.nameKa : sub.name;
+              const cat = getCategoryByKey(sub.categoryKey);
+              const catName = ka ? cat?.nameKa : cat?.name;
+              const expLabel = EXP_LABELS[sub.experience]?.[ka ? "ka" : "en"] || sub.experience;
+              const pricedServices = sub.services.filter((s) => s.isActive && s.price > 0);
+
+              return (
+                <div key={sub.key} className="border border-[var(--color-border-subtle)] rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <span className="text-sm font-medium text-[var(--color-text-primary)]">{displayName}</span>
+                      {catName && (
+                        <span className="text-[10px] text-[var(--color-text-muted)] ml-2">{catName}</span>
+                      )}
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B] font-medium">
+                      {expLabel}
+                    </span>
+                  </div>
+
+                  {pricedServices.length > 0 ? (
+                    <div className="space-y-1">
+                      {pricedServices.map((svc) => (
+                        <div key={svc.serviceKey} className="flex items-center justify-between text-xs">
+                          <span className="text-[var(--color-text-secondary)]">{svc.label}</span>
+                          <span className="font-medium text-[var(--color-text-primary)]">
+                            {svc.price}₾ <span className="text-[var(--color-text-muted)] font-normal">/ {svc.unitLabel}</span>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-[var(--color-text-muted)] italic">{t("common.negotiable")}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-[var(--color-text-muted)]">{t("common.notAdded")}</p>
+        )}
+      </div>
+
+      {/* ── Service Areas ── */}
+      <div className="bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border-subtle)] p-4">
+        <SectionHeader icon={MapPin} title={t("common.serviceArea")} stepIndex={2} complete={hasAreas} />
+
+        {formData.nationwide ? (
+          <div className="flex items-center gap-2">
+            <span className="text-base">🇬🇪</span>
+            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+              {locationData?.nationwide || t("common.nationwide")}
             </span>
-          )}
-        </div>
+          </div>
+        ) : formData.serviceAreas.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5">
+            {formData.serviceAreas.map((area) => (
+              <span key={area} className="px-2.5 py-1 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] text-xs">
+                {area}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-[var(--color-text-muted)]">{t("common.noneSelected")}</p>
+        )}
+      </div>
+
+      {/* ── Portfolio ── */}
+      <div className="bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border-subtle)] p-4">
+        <SectionHeader icon={Images} title={t("common.portfolio")} stepIndex={3} complete={hasPortfolio} required={false} />
+
+        {portfolioProjects.length > 0 ? (
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            {portfolioProjects.slice(0, 8).map((project, idx) => {
+              const cover = project.images?.[0] || project.beforeAfterPairs?.[0]?.beforeImage;
+              return (
+                <div key={project.id || idx} className="relative aspect-square rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)]">
+                  {cover ? (
+                    <img src={cover} alt={project.title} className="w-full h-full object-cover" />
+                  ) : project.videos?.[0] ? (
+                    <video src={project.videos[0]} className="w-full h-full object-cover" muted playsInline />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Images className="w-6 h-6 text-[var(--color-text-muted)]" />
+                    </div>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1.5">
+                    <p className="text-[10px] text-white font-medium truncate">{project.title}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-[var(--color-text-muted)]">{t("common.noProjectsAdded")}</p>
+        )}
       </div>
     </div>
   );

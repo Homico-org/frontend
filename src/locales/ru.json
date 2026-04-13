@@ -26,10 +26,14 @@
     "yes": "Да",
     "no": "Нет",
     "close": "Закрыть",
+    "discount": "Скидка",
+    "done": "Готово",
     "open": "Открыть",
     "update": "Обновить",
     "create": "Создать",
     "share": "Поделиться",
+    "addEmail": "Добавить email",
+    "addEmailPrompt": "Добавьте email для получения уведомлений о заказах и бронированиях",
     "copyLink": "Копировать ссылку",
     "linkCopied": "Ссылка скопирована",
     "confirm": "Подтвердить",
@@ -254,12 +258,21 @@
     "whereYouWork": "Где вы работаете",
     "writeWhatServicesYouOffer": "Напишите какие услуги предлагаете",
     "yearsExperience": "Лет опыта",
-    "yearsOfExperience": "Лет опыта"
+    "yearsOfExperience": "Лет опыта",
+    "servicePrices": "Цены на услуги",
+    "setYourPricePerService": "Установите цену для каждой услуги",
+    "recommendedPrice": "Рекомендуемая",
+    "noServicesConfigured": "Установите общий диапазон цен",
+    "shortlisted": "В шорт-листе",
+    "hire": "Нанять",
+    "interested": "Интересует",
+    "reject": "Отклонить"
   },
   "nav": {
     "portfolios": "Портфолио",
     "tools": "Инструменты",
     "jobs": "Работы",
+    "bookings": "Бронирования",
     "forBusiness": "Для бизнеса"
   },
   "validation": {
@@ -479,7 +492,32 @@
     "selectMinimum": "Выберите минимум",
     "spec": "Спец",
     "stars": "Звёзды",
-    "viaHomico": "Через Homico"
+    "viaHomico": "Через Homico",
+    "filters": "Фильтры",
+    "allCities": "Все города",
+    "city": "Город",
+    "rating": "Рейтинг",
+    "budget": "Бюджет",
+    "sort": {
+      "recommended": "Рекомендуемые",
+      "rating": "По рейтингу",
+      "reviews": "По отзывам",
+      "priceLow": "Цена ↑",
+      "priceHigh": "Цена ↓",
+      "newest": "Новые",
+      "budgetHigh": "Бюджет ↓",
+      "budgetLow": "Бюджет ↑"
+    },
+    "selectCategory": "Выбрать категорию",
+    "searchServices": "Поиск услуг...",
+    "selectServices": "выберите услуги",
+    "selectedCount": "выбрано",
+    "showResults": "Показать результаты",
+    "searchingAI": "AI ищет...",
+    "aiSuggested": "AI рекомендует",
+    "selectAll": "Выбрать все",
+    "deselectAll": "Снять все",
+    "category": "Категория"
   },
   "job": {
     "title": "Название",
@@ -669,7 +707,16 @@
     "yourProjectHasBeenSuccessfully": "Ваш проект успешно",
     "yourProposal": "Ваше предложение",
     "yourRating": "Ваша оценка",
-    "youreHired": "Вы наняты"
+    "youreHired": "Вы наняты",
+    "selectCategoryFirst": "Сначала выберите категорию",
+    "selectServices": "Выберите услуги",
+    "marketPrice": "Рыночная цена",
+    "yourBudget": "Ваш бюджет",
+    "totalBudget": "Общий бюджет",
+    "servicesSelected": "услуг выбрано",
+    "aboveMarket": "Выше рынка",
+    "belowMarket": "Ниже рынка",
+    "switchCategoryConfirm": "Смена категории сбросит выбранные услуги. Продолжить?"
   },
   "jobComments": {
     "title": "Заинтересованные специалисты",
@@ -789,7 +836,8 @@
     "youHiredTheProfessional": "Вы наняли специалиста",
     "yourFeedbackHelpsOtherClients": "Ваш отзыв помогает другим клиентам",
     "youveBeenHiredForThis": "Вас наняли на этот проект",
-    "youveBeenHired": "Вас наняли на эту работу!"
+    "youveBeenHired": "Вас наняли на эту работу!",
+    "applicants": "Кандидаты"
   },
   "postJob": {
     "steps": {
@@ -946,6 +994,10 @@
     "noBio": "Био не добавлено",
     "noDescription": "Нет описания",
     "noPortfolioItemsYet": "Нет элементов портфолио",
+    "completedJobsCount": "выполненных работ",
+    "respondsIn": "Отвечает за",
+    "lessThanHour": "< 1 часа",
+    "lessThanHours": "< {count} часов",
     "noReviewsYet": "Отзывов пока нет",
     "noHomicoReviews": "Отзывов с Homico пока нет",
     "noExternalReviews": "Внешних отзывов пока нет",
@@ -1124,7 +1176,111 @@
     "allCaughtUp": "Всё просмотрено",
     "clearAll": "Очистить все",
     "older": "Старше",
-    "swipeLeftToDelete": "Свайп влево для удаления"
+    "swipeLeftToDelete": "Свайп влево для удаления",
+    "allRead": "Вы прочитали все уведомления",
+    "newWillAppear": "Новые уведомления появятся здесь",
+    "types": {
+      "new_booking": {
+        "title": "Новый запрос на бронирование",
+        "message": "У вас новый запрос на бронирование на {date} в {time}"
+      },
+      "booking_confirmed": {
+        "title": "Бронирование подтверждено",
+        "message": "Ваше бронирование на {date} в {time} подтверждено"
+      },
+      "booking_started": {
+        "title": "Работа началась",
+        "message": "Специалист начал работу по вашему бронированию на {date}"
+      },
+      "booking_cancelled": {
+        "title": "Бронирование отменено",
+        "message": "Бронирование на {date} в {time} отменено"
+      },
+      "booking_completed": {
+        "title": "Бронирование завершено",
+        "message": "Бронирование на {date} в {time} завершено"
+      },
+      "review_prompt": {
+        "title": "Как вам опыт?",
+        "message": "Оставьте отзыв о вашем бронировании"
+      },
+      "new_proposal": {
+        "title": "Новое предложение",
+        "message": "Вы получили новое предложение"
+      },
+      "proposal_accepted": {
+        "title": "Предложение принято",
+        "message": "Ваше предложение было принято"
+      },
+      "proposal_rejected": {
+        "title": "Предложение отклонено",
+        "message": "Ваше предложение было отклонено"
+      },
+      "job_completed": {
+        "title": "Работа завершена",
+        "message": "Работа была завершена"
+      },
+      "job_cancelled": {
+        "title": "Работа отменена",
+        "message": "Работа была отменена"
+      },
+      "job_invitation": {
+        "title": "Приглашение на работу",
+        "message": "Вас пригласили на работу"
+      },
+      "new_message": {
+        "title": "Новое сообщение",
+        "message": "У вас новое сообщение"
+      },
+      "new_review": {
+        "title": "Новый отзыв",
+        "message": "Вы получили новый отзыв"
+      },
+      "account_verified": {
+        "title": "Аккаунт подтверждён",
+        "message": "Ваш аккаунт был подтверждён"
+      },
+      "profile_update": {
+        "title": "Обновление профиля",
+        "message": "Ваш профиль был обновлён"
+      },
+      "profile_approved": {
+        "title": "Профиль одобрен",
+        "message": "Ваш профессиональный профиль одобрен"
+      },
+      "profile_rejected": {
+        "title": "Профиль требует обновления",
+        "message": "Ваш профиль не был одобрен"
+      },
+      "system_announcement": {
+        "title": "Системное объявление",
+        "message": "Новое системное объявление"
+      },
+      "work_completed": {
+        "title": "Работа завершена",
+        "message": "Работа завершена, оставьте отзыв"
+      }
+    }
+  },
+  "criticalNotification": {
+    "new_booking": {
+      "title": "Новый заказ",
+      "action": "Посмотреть заказ"
+    },
+    "booking_confirmed": {
+      "title": "Бронирование подтверждено",
+      "action": "Посмотреть заказ"
+    },
+    "booking_started": {
+      "title": "Работа началась",
+      "action": "Подробнее"
+    },
+    "booking_completed": {
+      "title": "Работа завершена",
+      "action": "Оставить отзыв"
+    },
+    "dismiss": "Закрыть",
+    "more": "ещё"
   },
   "messages": {
     "title": "Сообщения",
@@ -1212,7 +1368,13 @@
     "loginRequired": "Пожалуйста, войдите, чтобы оставить отзыв",
     "phoneRequired": "Номер телефона обязателен",
     "verifiedUser": "Подтверждённый пользователь",
-    "phoneVerificationNote": "Ваш телефон будет подтверждён для проверки отзыва"
+    "phoneVerificationNote": "Ваш телефон будет подтверждён для проверки отзыва",
+    "howWasExperience": "Как прошёл опыт?",
+    "rateYourExperience": "Оцените опыт",
+    "tellOthers": "Расскажите о вашем опыте...",
+    "uploadWorkPhotos": "Загрузите фото выполненной работы",
+    "reviewSubmittedSuccessfully": "Отзыв успешно отправлен",
+    "bookingNotCompleted": "Это бронирование ещё не завершено."
   },
   "analytics": {
     "title": "Аналитика",
@@ -1256,6 +1418,7 @@
     "addACardForFaster": "Добавьте карту для быстрой",
     "addCard": "Добавить карту",
     "addEmail": "Добавить email",
+    "addEmailPrompt": "Добавьте email для получения уведомлений о работах и бронированиях",
     "addNewCard": "Добавить новую карту",
     "addPaymentMethod": "Добавить способ оплаты",
     "addYourEmailToReceive": "Добавьте email для получения",
@@ -2327,7 +2490,6 @@
     "totalInvites": "Всего приглашений",
     "smsSent": "SMS отправлено",
     "opened": "Открыто",
-    "activated": "Активировано",
     "pending": "Ожидает",
     "resendSms": "Отправить повторно",
     "invitePhone": "Телефон",
@@ -2481,7 +2643,33 @@
     "viewMyProfile": "Посмотреть мой профиль",
     "goToDashboard": "Перейти в панель управления",
     "lookingForPro": "Ищете специалиста?",
-    "registerAsClient": "Зарегистрируйтесь как клиент"
+    "registerAsClient": "Зарегистрируйтесь как клиент",
+    "servicesPricingTitle": "Услуги и цены",
+    "servicesPricingDescription": "Выберите услуги и установите цену для каждой",
+    "selectSubcategories": "Выберите специализации",
+    "setPricing": "Установите цены",
+    "experienceYears": "Опыт работы",
+    "exp1to2": "1–2 года",
+    "exp3to5": "3–5 лет",
+    "exp5to10": "5–10 лет",
+    "exp10plus": "10+ лет",
+    "noServicesForSubcategory": "Цены будут уточнены после проверки профиля",
+    "priceWillBeSetLater": "Цена будет установлена позже",
+    "servicePriceHint": "Оставьте пустым для «по договорённости»",
+    "filterSubcategories": "Поиск специализаций...",
+    "subcategoriesSelected": "выбрано",
+    "selectSubcategoriesToSetPrices": "Выберите специализации слева, чтобы установить цены",
+    "setAtLeastOnePrice": "Установите цену хотя бы для одной услуги",
+    "bulkDiscounts": "Скидки за объём (при заказе нескольких)",
+    "addDiscount": "Добавить скидку за объём",
+    "configurePricing": "Настроить цены",
+    "setPricesForServices": "Установите цены",
+    "pricesFilled": "Цены заполнены",
+    "welcomeBanner": "Заполните профиль чтобы начать получать клиентов",
+    "benefit1": "Клиенты найдут вас по вашим услугам",
+    "benefit2": "Получайте уведомления о подходящих заказах",
+    "benefit3": "Зарабатывайте доверие через проверенные отзывы",
+    "getStarted": "Начать"
   },
   "categories": {
     "renovation": "Ремонт",
@@ -2993,7 +3181,18 @@
     "welcomeBack": "С возвращением",
     "workWillAppear": "Принятые заказы и проекты появятся здесь",
     "noReviewsYet": "Отзывов пока нет",
-    "requestReviewsHint": "Поделитесь ссылкой с бывшими клиентами для сбора отзывов"
+    "requestReviewsHint": "Поделитесь ссылкой с бывшими клиентами для сбора отзывов",
+    "noPostedJobs": "Объявлений пока нет",
+    "myPostedJobs": "Мои объявления",
+    "profileCompletion": "Заполнение профиля",
+    "profileCompletionSubtitle": "Заполните профиль чтобы привлечь больше клиентов",
+    "addProfilePhoto": "Добавьте фото профиля",
+    "writeAboutYourself": "Напишите о себе",
+    "selectYourServices": "Выберите услуги",
+    "setServiceAreas": "Укажите зоны обслуживания",
+    "addPortfolioProjects": "Добавьте проекты в портфолио",
+    "getFirstReview": "Получите первый отзыв",
+    "shareReviewLink": "Поделитесь ссылкой для отзыва"
   },
   "feedback": {
     "title": "Обратная связь",
@@ -3103,6 +3302,7 @@
   },
   "booking": {
     "title": "Мои бронирования",
+    "subtitle": "Управляйте бронированиями и расписанием",
     "bookAppointment": "Забронировать",
     "selectDate": "Выберите дату",
     "selectTime": "Выберите время",
@@ -3122,11 +3322,13 @@
     "past": "Прошедшие",
     "cancelled": "Отменённые",
     "bookingSuccess": "Бронирование успешно создано!",
+    "viewBookings": "Посмотреть бронирования",
     "bookingCancelled": "Бронирование отменено",
     "bookingConfirmed": "Бронирование подтверждено",
     "bookingCompleted": "Бронирование завершено",
     "noBookings": "Бронирований пока нет",
     "noBookingsDescription": "Ваши бронирования появятся здесь",
+    "findProfessional": "Найти специалиста",
     "with": "с",
     "confirmAction": "Подтвердить",
     "completeAction": "Завершить",
@@ -3134,7 +3336,31 @@
     "scheduleOverview": "Расписание",
     "closed": "Закрыто",
     "notAvailable": "Недоступно на эту дату",
-    "loginToBook": "Войдите, чтобы забронировать"
+    "loginToBook": "Войдите, чтобы забронировать",
+    "requestService": "Запросить услугу",
+    "selectServices": "Выберите услуги",
+    "pickDateTime": "Выберите дату и время",
+    "confirmBooking": "Подтвердить бронирование",
+    "quantity": "Количество",
+    "addNote": "Добавить заметку",
+    "noAvailableSlots": "Нет свободных слотов",
+    "startWork": "Начать работу",
+    "completeWork": "Завершить работу",
+    "inProgress": "В процессе",
+    "statusInProgress": "В процессе",
+    "uploadBeforePhotos": "Загрузите фото до (необязательно)",
+    "uploadAfterPhotos": "Загрузите фото выполненной работы",
+    "atLeastOnePhoto": "Загрузите хотя бы одно фото",
+    "skip": "Пропустить",
+    "services": "Услуги",
+    "total": "Итого",
+    "address": "Адрес",
+    "beforePhotos": "До",
+    "afterPhotos": "После",
+    "photos": "Фото",
+    "you": "Вы",
+    "client": "Клиент",
+    "pro": "Специалист"
   },
   "invite": {
     "subtitle": "Новая платформа для специалистов",
@@ -3154,6 +3380,14 @@
     "benefit3": "Создавайте репутацию и получайте отзывы",
     "trustBadge": "500+ специалистов уже присоединились",
     "otpHint": "Мы отправим код подтверждения на ваш номер",
-    "yourPhone": "Ваш номер"
+    "yourPhone": "Ваш номер",
+    "setPassword": "Создайте пароль",
+    "setPasswordDesc": "Установите пароль для аккаунта",
+    "passwordPlaceholder": "Введите пароль",
+    "passwordHint": "Минимум 6 символов",
+    "passwordTooShort": "Пароль должен быть не менее 6 символов",
+    "confirmPasswordPlaceholder": "Повторите пароль",
+    "passwordMismatch": "Пароли не совпадают",
+    "activateAccount": "Активировать аккаунт"
   }
 }

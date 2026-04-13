@@ -5,12 +5,14 @@ import AboutStep from '@/components/pro/steps/AboutStep';
 import PricingAreasStep from '@/components/pro/steps/PricingAreasStep';
 import ProjectsStep, { PortfolioProject } from '@/components/pro/steps/ProjectsStep';
 import ReviewStep from '@/components/pro/steps/ReviewStep';
-import StepSelectServices, { ExperienceLevel, SelectedService } from '@/components/register/steps/StepSelectServices';
+import ServicesPricingStep, { SelectedSubcategoryWithPricing } from '@/components/pro/steps/ServicesPricingStep';
+import { ExperienceLevel, SelectedService } from '@/components/register/steps/StepSelectServices';
 import { Alert } from '@/components/ui/Alert';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { api } from '@/lib/api';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
@@ -42,12 +44,18 @@ interface RawPortfolioProject extends Partial<PortfolioProject> {
   beforeAfter?: ApiBeforeAfterPair[];
 }
 
-type ProfileSetupStep = 'about' | 'categories' | 'pricing-areas' | 'projects' | 'review';
+interface UserServicePricingEntry {
+  serviceKey: string;
+  price: number;
+  isActive: boolean;
+}
+
+type ProfileSetupStep = 'about' | 'services-pricing' | 'service-areas' | 'projects' | 'review';
 
 const ALL_STEPS: { id: ProfileSetupStep; title: { en: string; ka: string } }[] = [
   { id: 'about', title: { en: 'About You', ka: 'შენს შესახებ' } },
-  { id: 'categories', title: { en: 'Services', ka: 'სერვისები' } },
-  { id: 'pricing-areas', title: { en: 'Pricing & Areas', ka: 'ფასები და ზონები' } },
+  { id: 'services-pricing', title: { en: 'Services & Prices', ka: 'სერვისები და ფასები' } },
+  { id: 'service-areas', title: { en: 'Service Areas', ka: 'სერვისის ზონები' } },
   { id: 'projects', title: { en: 'Portfolio', ka: 'პორტფოლიო' } },
   { id: 'review', title: { en: 'Review', ka: 'გადახედვა' } },
 ];
@@ -81,17 +89,9 @@ function ProProfileSetupPageContent() {
   // Form state - use SelectedService[] to match new registration flow
   const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
   const [customServices, setCustomServices] = useState<string[]>([]);
-  
-  // Track if services were pre-selected during registration (to skip categories step)
-  const [hasPreselectedServices, setHasPreselectedServices] = useState(false);
-  
-  // Dynamic steps - skip categories if services were pre-selected during registration
-  const STEPS = useMemo(() => {
-    if (hasPreselectedServices) {
-      return ALL_STEPS.filter(step => step.id !== 'categories');
-    }
-    return ALL_STEPS;
-  }, [hasPreselectedServices]);
+  const [selectedSubcategoriesWithPricing, setSelectedSubcategoriesWithPricing] = useState<SelectedSubcategoryWithPricing[]>([]);
+
+  const STEPS = ALL_STEPS;
   
   // Derived categories and subcategories from selectedServices
   const selectedCategories = useMemo(() => 
@@ -128,6 +128,61 @@ function ProProfileSetupPageContent() {
 
   const [portfolioProjects, setPortfolioProjects] = useState<PortfolioProject[]>([]);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  // Derive flat servicePricing array from the new combined step data
+  const servicePricing = useMemo(() =>
+    selectedSubcategoriesWithPricing.flatMap(sub =>
+      sub.services.filter(s => s.isActive && s.price > 0).map(s => ({
+        serviceKey: s.serviceKey,
+        categoryKey: s.categoryKey,
+        subcategoryKey: s.subcategoryKey,
+        price: s.price,
+        isActive: s.isActive,
+      }))
+    ),
+    [selectedSubcategoriesWithPricing]
+  );
+
+  // ── sessionStorage draft: restore on mount ──────────────────────────────────
+  useEffect(() => {
+    try {
+      // Don't restore draft when the invite registration flow is active
+      if (sessionStorage.getItem('proRegistrationData')) return;
+      const raw = sessionStorage.getItem('profileSetupDraft');
+      if (!raw) return;
+      const draft = JSON.parse(raw) as {
+        currentStep?: ProfileSetupStep;
+        formData?: Partial<typeof formData>;
+        selectedServices?: SelectedService[];
+        customServices?: string[];
+        portfolioProjects?: PortfolioProject[];
+      };
+      if (draft.currentStep) setCurrentStep(draft.currentStep);
+      if (draft.formData) setFormData((prev) => ({ ...prev, ...draft.formData }));
+      if (Array.isArray(draft.selectedServices)) setSelectedServices(draft.selectedServices);
+      if (Array.isArray(draft.customServices)) setCustomServices(draft.customServices);
+      if (Array.isArray(draft.portfolioProjects)) setPortfolioProjects(draft.portfolioProjects);
+    } catch {
+      // corrupt draft — ignore
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── sessionStorage draft: save whenever state changes (skip on first render) ─
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    try {
+      sessionStorage.setItem(
+        'profileSetupDraft',
+        JSON.stringify({ currentStep, formData, selectedServices, customServices, portfolioProjects }),
+      );
+    } catch {
+      // quota exceeded — ignore
+    }
+  }, [currentStep, formData, selectedServices, customServices, portfolioProjects]);
 
   // Store initial avatar from localStorage in a ref so it persists
   const initialAvatarRef = useRef<string | null>(null);
@@ -163,6 +218,22 @@ function ProProfileSetupPageContent() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
   const hasFetchedProfile = useRef(false);
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => {
+    try {
+      return localStorage.getItem('profileSetupWelcomeDismissed') !== 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  const dismissWelcomeBanner = () => {
+    try {
+      localStorage.setItem('profileSetupWelcomeDismissed', 'true');
+    } catch {
+      // ignore
+    }
+    setShowWelcomeBanner(false);
+  };
   const [locationData, setLocationData] = useState<{
     country: string;
     nationwide: string;
@@ -455,7 +526,7 @@ function ProProfileSetupPageContent() {
             const services = convertToSelectedServices(user.selectedSubcategories, '3-5');
             setSelectedServices(services);
             // Mark as having pre-selected services to skip categories step
-            setHasPreselectedServices(true);
+            // Services pre-selected from registration
           }
         }
       } catch (err) {
@@ -505,6 +576,8 @@ function ProProfileSetupPageContent() {
     fetchLocationData();
   }, [locale]);
 
+  // Service pricing is now managed by ServicesPricingStep component
+
   // Translate saved serviceAreas to current locale when locationData is available
   const hasTranslatedServiceAreas = useRef(false);
   useEffect(() => {
@@ -552,39 +625,24 @@ function ProProfileSetupPageContent() {
   // Validation
   const validation = useMemo(() => ({
     avatar: !!avatarPreview && avatarPreview.length > 0,
-    bio: formData.bio.trim().length >= 50, // Minimum 50 characters required
-    experience: selectedServices.length > 0, // Experience is now tied to services
-    categories: selectedCategories.length > 0,
-    subcategories: selectedSubcategories.length > 0,
-    pricing: (() => {
-      // byAgreement no longer valid for new profiles — must set a price
-      if (formData.pricingModel === 'byAgreement' || !formData.pricingModel) return false;
-
-      const base = parseFloat(formData.basePrice);
-      const max = parseFloat(formData.maxPrice);
-
-      if (!formData.basePrice || Number.isNaN(base) || base <= 0) return false;
-
-      // For ranges, ensure max exists and is >= base.
-      if (formData.pricingModel === 'range') {
-        if (!formData.maxPrice || Number.isNaN(max) || max <= 0) return false;
-        return max >= base;
-      }
-
-      return true;
-    })(),
+    bio: formData.bio.trim().length >= 50,
+    experience: selectedSubcategoriesWithPricing.length > 0,
+    categories: selectedSubcategoriesWithPricing.length > 0,
+    subcategories: selectedSubcategoriesWithPricing.length > 0,
+    pricing: selectedSubcategoriesWithPricing.length > 0
+      ? selectedSubcategoriesWithPricing.every(s =>
+          s.services.length === 0 || s.services.filter(svc => svc.isActive).every(svc => svc.price > 0)
+        )
+      : servicePricing.length > 0,
     serviceAreas: formData.nationwide || formData.serviceAreas.length > 0,
+    portfolio: true, // portfolio is optional — pros can add it later
   }), [
     avatarPreview,
     formData.bio,
-    formData.basePrice,
-    formData.maxPrice,
-    formData.pricingModel,
     formData.nationwide,
     formData.serviceAreas,
-    selectedCategories.length,
-    selectedSubcategories.length,
-    selectedServices.length,
+    selectedSubcategoriesWithPricing,
+    servicePricing,
   ]);
 
   const isFormValid = validation.avatar && validation.bio && validation.categories && validation.subcategories && validation.pricing && validation.serviceAreas;
@@ -650,7 +708,9 @@ function ProProfileSetupPageContent() {
       const baseNum = baseRaw ? Number(baseRaw) : NaN;
       const maxNum = maxRaw ? Number(maxRaw) : NaN;
 
-      if (pricingModel !== 'byAgreement') {
+      // Skip legacy price validation when per-service pricing is used
+      const hasServicePricingData = servicePricing.length > 0 && servicePricing.some(s => s.isActive && s.price > 0);
+      if (!hasServicePricingData && pricingModel !== 'byAgreement') {
         if (!baseRaw || !Number.isFinite(baseNum) || baseNum <= 0) {
           throw new Error(t('common.invalidPrice'));
         }
@@ -679,8 +739,12 @@ function ProProfileSetupPageContent() {
         profileType: 'personal',
         title: formData.title || (locale === 'ka' ? categoryInfo.nameKa : categoryInfo.name),
         bio: formData.bio,
-        categories: selectedCategories.length > 0 ? selectedCategories : ['interior-design'],
-        subcategories: selectedSubcategories.length > 0 ? selectedSubcategories : (user?.selectedSubcategories || []),
+        categories: selectedSubcategoriesWithPricing.length > 0
+          ? [...new Set(selectedSubcategoriesWithPricing.map(s => s.categoryKey))]
+          : (selectedCategories.length > 0 ? selectedCategories : ['interior-design']),
+        subcategories: selectedSubcategoriesWithPricing.length > 0
+          ? selectedSubcategoriesWithPricing.map(s => s.key)
+          : (selectedSubcategories.length > 0 ? selectedSubcategories : (user?.selectedSubcategories || [])),
         // Send selectedServices with per-service experience levels
         selectedServices: selectedServices.map(s => ({
           key: s.key,
@@ -692,12 +756,12 @@ function ProProfileSetupPageContent() {
         customServices: customServices.length > 0 ? customServices : undefined,
         yearsExperience: maxExperienceYears,
         avatar: formData.avatar || user?.avatar,
-        pricingModel,
-        // For "fixed" and "per_sqm", send maxPrice=null so previous range max doesn't linger.
-        basePrice: baseNum,
-        maxPrice: pricingModel === 'fixed' || pricingModel === 'per_sqm'
-          ? null
-          : maxNum,
+        // Only send legacy pricing when there's no per-service pricing
+        ...(servicePricing.length === 0 ? {
+          pricingModel,
+          basePrice: baseNum,
+          maxPrice: pricingModel === 'fixed' || pricingModel === 'per_sqm' ? null : maxNum,
+        } : {}),
         serviceAreas: formData.nationwide && locationData ? [locationData.nationwide] : formData.serviceAreas,
         portfolioProjects: cleanedPortfolioProjects,
         pinterestLinks: formData.portfolioUrl ? [formData.portfolioUrl] : undefined,
@@ -711,6 +775,21 @@ function ProProfileSetupPageContent() {
         facebookUrl: formData.facebook || undefined,
         linkedinUrl: formData.linkedin || undefined,
         websiteUrl: formData.website || undefined,
+        // Per-service pricing from the new combined step
+        servicePricing: selectedSubcategoriesWithPricing.length > 0
+          ? selectedSubcategoriesWithPricing.flatMap(sub =>
+              sub.services
+                .filter(s => s.price > 0)
+                .map(s => ({
+                  serviceKey: s.serviceKey,
+                  categoryKey: sub.categoryKey,
+                  subcategoryKey: sub.key,
+                  price: s.price,
+                  isActive: s.isActive,
+                  ...(s.discountTiers.length > 0 ? { discountTiers: s.discountTiers } : {}),
+                }))
+            )
+          : undefined,
       };
 
       const url = isAdminEditing
@@ -750,6 +829,9 @@ function ProProfileSetupPageContent() {
         });
       }
 
+      // Clear draft on successful submission
+      try { sessionStorage.removeItem('profileSetupDraft'); } catch { /* ignore */ }
+
       // Navigate to the professional's profile page
       const userId = isAdminEditing ? adminTargetProId : (data.id || data._id || user?.id);
       if (userId) {
@@ -765,17 +847,20 @@ function ProProfileSetupPageContent() {
     }
   };
 
-  // Can proceed to next step validation
-  const canProceedToNextStep = useMemo(() => {
-    switch (currentStep) {
-      case 'about': return validation.avatar && validation.bio;
-      case 'categories': return selectedServices.length > 0;
-      case 'pricing-areas': return validation.pricing && validation.serviceAreas;
-      case 'projects': return true; // Projects are optional, can always proceed
-      case 'review': return isFormValid;
-      default: return false;
-    }
-  }, [currentStep, validation, isFormValid, selectedServices.length]);
+  // Can proceed to next step validation — no useMemo to avoid stale state
+  const allActiveServicesPriced = selectedSubcategoriesWithPricing.length > 0 && selectedSubcategoriesWithPricing.every(s => {
+    const activeServices = s.services.filter(svc => svc.isActive);
+    return activeServices.length === 0 || activeServices.every(svc => svc.price > 0);
+  });
+
+  let canProceedToNextStep = false;
+  switch (currentStep) {
+    case 'about': canProceedToNextStep = validation.avatar && validation.bio; break;
+    case 'services-pricing': canProceedToNextStep = allActiveServicesPriced; break;
+    case 'service-areas': canProceedToNextStep = validation.serviceAreas; break;
+    case 'projects': canProceedToNextStep = true; break; // portfolio is optional
+    case 'review': canProceedToNextStep = isFormValid; break;
+  }
 
   if (authLoading || profileLoading) {
     return (
@@ -857,6 +942,60 @@ function ProProfileSetupPageContent() {
       {/* Main content */}
       <main className="flex-1 py-3 sm:py-4 lg:py-6">
         <div className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8">
+          {/* Welcome banner — shown only on first visit */}
+          <AnimatePresence>
+            {showWelcomeBanner && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8, height: 0, marginBottom: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mb-4 rounded-xl border overflow-hidden"
+                style={{ borderColor: '#C4735B30', background: 'linear-gradient(135deg, #C4735B0D 0%, #C4735B06 100%)' }}
+              >
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                      {t('register.welcomeBanner')}
+                    </p>
+                    <button
+                      onClick={dismissWelcomeBanner}
+                      className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                      aria-label="Dismiss"
+                    >
+                      <Check className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+                    {[
+                      { icon: '🔍', text: t('register.benefit1') },
+                      { icon: '💼', text: t('register.benefit2') },
+                      { icon: '⭐', text: t('register.benefit3') },
+                    ].map((b, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-2 px-3 py-2 rounded-lg"
+                        style={{ background: '#C4735B08', border: '1px solid #C4735B18' }}
+                      >
+                        <span className="text-base leading-none mt-0.5 flex-shrink-0">{b.icon}</span>
+                        <span className="text-[11px] leading-snug" style={{ color: 'var(--color-text-secondary)' }}>
+                          {b.text}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={dismissWelcomeBanner}
+                    className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: '#C4735B' }}
+                  >
+                    {t('register.getStarted')}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {error && (
             <Alert variant="error" size="sm" className="mb-4">
               {error}
@@ -907,67 +1046,42 @@ function ProProfileSetupPageContent() {
                     hideExperience // Hide the experience field
                     customServices={customServices}
                     onCustomServicesChange={setCustomServices}
+                    subcategoryKey={user?.selectedSubcategories?.[0]}
                   />
                 </div>
               )}
 
-              {/* STEP 2: Services with per-service experience */}
-              {currentStep === 'categories' && (
+              {/* STEP 2: Services & Pricing (merged) */}
+              {currentStep === 'services-pricing' && (
                 <div className="space-y-4">
-                  <StepSelectServices
-                    selectedServices={selectedServices}
-                    onServicesChange={setSelectedServices}
+                  <ServicesPricingStep
+                    selectedSubcategories={selectedSubcategoriesWithPricing}
+                    onSelectedSubcategoriesChange={setSelectedSubcategoriesWithPricing}
                   />
                 </div>
               )}
 
-              {/* STEP 3: Pricing & Service Areas (Combined) */}
-              {currentStep === 'pricing-areas' && (
+              {/* STEP 3: Service Areas */}
+              {currentStep === 'service-areas' && (
                 <div className="space-y-4">
                   <div>
                     <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                      {t('becomePro.pricingAreas')}
+                      {t('common.serviceAreas')}
                     </h1>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                      {t('becomePro.setYourRatesAndWork')}
+                      {t('common.whereYouWork') || t('becomePro.setYourRatesAndWork')}
                     </p>
                   </div>
 
                   <PricingAreasStep
                     formData={{
-                      priceRange: {
-                        min: parseInt(formData.basePrice) || 0,
-                        max: parseInt(formData.maxPrice) || 0,
-                      },
-                      priceType: (
-                        formData.pricingModel === 'range' ? 'range' :
-                        formData.pricingModel === 'fixed' || formData.pricingModel === 'per_sqm' ? 'fixed' :
-                        'fixed' // byAgreement defaults to fixed so user must set price
-                      ) as 'fixed' | 'range',
+                      priceRange: { min: 0, max: 0 },
+                      priceType: 'fixed',
                       serviceAreas: formData.serviceAreas,
                       nationwide: formData.nationwide,
                     }}
                     locationData={locationData}
                     onFormChange={(updates) => {
-                      if ('priceRange' in updates && updates.priceRange) {
-                        handleFormChange({
-                          basePrice: updates.priceRange.min.toString(),
-                          maxPrice: updates.priceRange.max.toString(),
-                        });
-                      }
-                      if ('priceType' in updates && updates.priceType) {
-                        const typeMap: Record<string, typeof formData.pricingModel> = {
-                          fixed: 'fixed',
-                          range: 'range',
-                        };
-                        const nextModel = typeMap[updates.priceType] || 'fixed';
-                        if (nextModel === 'fixed') {
-                          // Fixed is a single price; clear max price.
-                          handleFormChange({ pricingModel: nextModel, maxPrice: '' });
-                        } else {
-                          handleFormChange({ pricingModel: nextModel });
-                        }
-                      }
                       if ('serviceAreas' in updates) {
                         handleFormChange({ serviceAreas: updates.serviceAreas });
                       }
@@ -975,6 +1089,8 @@ function ProProfileSetupPageContent() {
                         handleFormChange({ nationwide: updates.nationwide });
                       }
                     }}
+                    servicePricing={[]}
+                    onServicePricingChange={() => {}}
                   />
                 </div>
               )}
@@ -983,11 +1099,18 @@ function ProProfileSetupPageContent() {
               {currentStep === 'projects' && (
                 <div className="space-y-4">
                   <div>
-                    <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                      {t('becomePro.portfolio')}
-                    </h1>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white">
+                        {t('becomePro.portfolio')}
+                      </h1>
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-tertiary)' }}>
+                        {locale === 'ka' ? 'არასავალდებულო' : 'Optional'}
+                      </span>
+                    </div>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                      {t('becomePro.showcaseYourWork')}
+                      {locale === 'ka'
+                        ? 'დაამატე შენი ნამუშევრები. შეგიძლია მოგვიანებითაც დაამატო პროფილიდან.'
+                        : 'Add your work samples. You can also add them later from your profile.'}
                     </p>
                   </div>
 
@@ -1015,7 +1138,7 @@ function ProProfileSetupPageContent() {
                   <ReviewStep
                     formData={{
                       ...formData,
-                      yearsExperience: maxExperienceYears.toString(), // Derived from services
+                      yearsExperience: maxExperienceYears.toString(),
                     }}
                     selectedCategories={selectedCategories}
                     selectedSubcategories={selectedSubcategories}
@@ -1023,13 +1146,13 @@ function ProProfileSetupPageContent() {
                     avatarPreview={avatarPreview}
                     locationData={locationData}
                     onEditStep={(stepIndex) => {
-                      // Map old step indices to new step ids
-                      const stepMap: ProfileSetupStep[] = ['about', 'categories', 'pricing-areas', 'projects', 'review'];
+                      const stepMap: ProfileSetupStep[] = ['about', 'services-pricing', 'service-areas', 'projects', 'review'];
                       goToStep(stepMap[stepIndex] || 'about');
                     }}
                     isEditMode={isEditMode}
                     portfolioProjects={portfolioProjects}
                     selectedServices={selectedServices}
+                    selectedSubcategoriesWithPricing={selectedSubcategoriesWithPricing}
                   />
                 </div>
               )}

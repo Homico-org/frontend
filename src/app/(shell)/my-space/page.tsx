@@ -31,12 +31,14 @@ import {
   Briefcase,
   Calendar,
   CheckCircle,
+  CheckCircle2,
   Copy,
   ExternalLink,
   MapPin,
   MessageSquare,
   Send,
   Star,
+  Upload,
   UserCog,
   Users,
   X,
@@ -141,6 +143,110 @@ function EmptyBlock({ icon: Icon, text, subtext }: { icon: typeof Calendar; text
   );
 }
 
+interface CompletionItem {
+  key: string;
+  label: string;
+  done: boolean;
+  weight: number;
+  action: () => void;
+}
+
+function ProfileCompletionCard({
+  items,
+  onAvatarUpload,
+  onShareReviewLink,
+}: {
+  items: CompletionItem[];
+  onAvatarUpload: () => void;
+  onShareReviewLink: () => void;
+}) {
+  const { t } = useLanguage();
+  const percent = items.filter((i) => i.done).reduce((acc, i) => acc + i.weight, 0);
+
+  if (percent >= 100) return null;
+
+  return (
+    <motion.div variants={itemVariants} className="mb-6">
+      <div
+        className="rounded-xl border p-4"
+        style={{
+          borderColor: `${ACCENT_COLOR}30`,
+          background: `linear-gradient(135deg, ${ACCENT_COLOR}08 0%, ${ACCENT_COLOR}04 100%)`,
+        }}
+      >
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>
+              {t("mySpace.profileCompletion")}
+            </h2>
+            <p className="text-[11px]" style={{ color: "var(--color-text-tertiary)" }}>
+              {t("mySpace.profileCompletionSubtitle")}
+            </p>
+          </div>
+          {/* Circular progress */}
+          <div className="relative w-12 h-12 flex-shrink-0">
+            <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+              <circle cx="24" cy="24" r="20" fill="none" strokeWidth="4" stroke="var(--color-border-subtle, #e5e7eb)" />
+              <circle
+                cx="24"
+                cy="24"
+                r="20"
+                fill="none"
+                strokeWidth="4"
+                stroke={ACCENT_COLOR}
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 20}`}
+                strokeDashoffset={`${2 * Math.PI * 20 * (1 - percent / 100)}`}
+                style={{ transition: "stroke-dashoffset 0.6s ease" }}
+              />
+            </svg>
+            <span
+              className="absolute inset-0 flex items-center justify-center text-[11px] font-bold"
+              style={{ color: ACCENT_COLOR }}
+            >
+              {percent}%
+            </span>
+          </div>
+        </div>
+
+        {/* Checklist */}
+        <ul className="space-y-1.5">
+          {items.map((item) => (
+            <li key={item.key}>
+              {item.done ? (
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-emerald-500" />
+                  <span className="text-[12px] line-through" style={{ color: "var(--color-text-tertiary)" }}>
+                    {item.label}
+                  </span>
+                </div>
+              ) : (
+                <button
+                  onClick={item.action}
+                  className="flex items-center gap-2 w-full text-left group"
+                >
+                  <div
+                    className="w-3.5 h-3.5 rounded-full border-2 flex-shrink-0"
+                    style={{ borderColor: `${ACCENT_COLOR}60` }}
+                  />
+                  <span
+                    className="text-[12px] font-medium group-hover:underline"
+                    style={{ color: ACCENT_COLOR }}
+                  >
+                    {item.label}
+                  </span>
+                  <ArrowRight className="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" style={{ color: ACCENT_COLOR }} />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </motion.div>
+  );
+}
+
 function MySpaceContent() {
   const { user } = useAuth();
   const { t, locale } = useLanguage();
@@ -153,6 +259,7 @@ function MySpaceContent() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [newJobs, setNewJobs] = useState<Job[]>([]);
   const [myPostedJobs, setMyPostedJobs] = useState<Job[]>([]);
+  const [proProfile, setProProfile] = useState<Record<string, unknown> | null>(null);
 
   // Reviews - request section
   const [reviewLink, setReviewLink] = useState("");
@@ -164,13 +271,31 @@ function MySpaceContent() {
   // Modal states
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+
+  // Email prompt dismissal
+  const [emailPromptDismissed, setEmailPromptDismissed] = useState(() => {
+    try {
+      const stored = localStorage.getItem('emailPromptDismissedAt');
+      if (!stored) return false;
+      const dismissedAt = Number(stored);
+      return Date.now() - dismissedAt < 7 * 24 * 60 * 60 * 1000;
+    } catch {
+      return false;
+    }
+  });
+
+  const dismissEmailPrompt = () => {
+    try { localStorage.setItem('emailPromptDismissedAt', String(Date.now())); } catch { /* ignore */ }
+    setEmailPromptDismissed(true);
+  };
   const copyTimeoutRef = useRef<NodeJS.Timeout>();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   /* ── Initial data fetch ── */
   const fetchData = useCallback(async () => {
     if (!user?.id) return;
     try {
-      const [rStats, proposalsRes, reviewsRes, jobsRes, reviewLinkRes, myJobsRes] =
+      const [rStats, proposalsRes, reviewsRes, jobsRes, reviewLinkRes, myJobsRes, profileRes] =
         await Promise.allSettled([
           api.get("/reviews/stats/my"),
           api.get("/jobs/my-proposals/list"),
@@ -178,8 +303,10 @@ function MySpaceContent() {
           api.get("/jobs?page=1&limit=6&sort=newest"),
           api.get("/reviews/request-link"),
           api.get("/jobs/my-jobs"),
+          api.get("/users/me"),
         ]);
       if (rStats.status === "fulfilled") setReviewStats(rStats.value.data);
+      if (profileRes.status === "fulfilled") setProProfile(profileRes.value.data as Record<string, unknown>);
       if (proposalsRes.status === "fulfilled") {
         const data = Array.isArray(proposalsRes.value.data) ? proposalsRes.value.data : [];
         setWorkProposals(data);
@@ -277,6 +404,78 @@ function MySpaceContent() {
   const isAdmin = user?.role === "admin";
   const firstName = user?.name?.split(" ")[0] || "";
 
+  /* ── Avatar upload handler ── */
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+      await api.post("/users/avatar", formData, { headers: { "Content-Type": "multipart/form-data" } });
+      toast.success(t("common.success"), t("common.saved"));
+      fetchData();
+    } catch {
+      toast.error(t("common.error"), t("common.tryAgain"));
+    } finally {
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  };
+
+  /* ── Profile completion items (not a hook — computed after early return) ── */
+  const completionItems: CompletionItem[] = (() => {
+    if (!isPro || !user || !proProfile) return [];
+    const bioText = ((proProfile.bio as string) || (proProfile.description as string) || "");
+    const userServices = proProfile.selectedServices as unknown[] | undefined;
+    const userCategories = proProfile.selectedCategories as string[] | undefined;
+    const userServicePricing = proProfile.servicePricing as unknown[] | undefined;
+    const userAreas = proProfile.serviceAreas as unknown[] | undefined;
+    const userPortfolio = proProfile.portfolioProjects as unknown[] | undefined;
+    return [
+      {
+        key: "avatar",
+        label: t("mySpace.addProfilePhoto"),
+        done: !!user.avatar,
+        weight: 20,
+        action: () => avatarInputRef.current?.click(),
+      },
+      {
+        key: "bio",
+        label: t("mySpace.writeAboutYourself"),
+        done: bioText.length >= 20,
+        weight: 15,
+        action: () => { window.location.href = "/pro/profile-setup"; },
+      },
+      {
+        key: "services",
+        label: t("mySpace.selectYourServices"),
+        done: (userServicePricing?.length ?? 0) > 0 || (userServices?.length ?? 0) > 0,
+        weight: 20,
+        action: () => { window.location.href = "/pro/profile-setup"; },
+      },
+      {
+        key: "serviceAreas",
+        label: t("mySpace.setServiceAreas"),
+        done: (userAreas?.length ?? 0) > 0,
+        weight: 10,
+        action: () => { window.location.href = "/pro/profile-setup"; },
+      },
+      {
+        key: "portfolio",
+        label: t("mySpace.addPortfolioProjects"),
+        done: (userPortfolio?.length ?? 0) > 0,
+        weight: 20,
+        action: () => { window.location.href = "/pro/profile-setup"; },
+      },
+      {
+        key: "review",
+        label: t("mySpace.getFirstReview"),
+        done: (reviewStats?.totalReviews ?? 0) > 0,
+        weight: 15,
+        action: () => setShowReviewsModal(true),
+      },
+    ];
+  })();
+
   const reviewValue = reviewStats?.totalReviews
     ? `${reviewStats.totalReviews} · ★ ${reviewStats.averageRating?.toFixed(1) ?? "—"}`
     : "0";
@@ -358,31 +557,31 @@ function MySpaceContent() {
       animate="visible"
       className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4 sm:py-5"
     >
-      {/* ── Header row ── */}
-      <motion.div variants={itemVariants} className="flex items-center justify-between gap-3 mb-5">
-        <div className="flex items-center gap-3 min-w-0">
+      {/* ── Header ── */}
+      <motion.div variants={itemVariants} className="mb-5 space-y-3">
+        <div className="flex items-center gap-3">
           {user && (
             <Avatar src={user.avatar} name={user.name} size="lg" rounded="xl" className="w-10 h-10 flex-shrink-0" />
           )}
-          <div className="min-w-0">
-            <h1 className="text-base sm:text-lg font-bold truncate" style={{ color: "var(--color-text-primary)" }}>
-              {t("mySpace.welcomeBack")}{firstName ? `, ${firstName}` : ""}
+          <div className="min-w-0 flex-1">
+            <h1 className="text-base sm:text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
+              {t("mySpace.welcomeBack")}{firstName ? `, ${firstName}` : ""} 👋
             </h1>
-            <p className="text-xs truncate" style={{ color: "var(--color-text-tertiary)" }}>{t("mySpace.subtitle")}</p>
+            <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>{t("mySpace.subtitle")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setShowSchedule(true)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity"
             style={{ backgroundColor: `${ACCENT_COLOR}15`, color: ACCENT_COLOR }}
           >
             <Calendar className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{t("settings.availability")}</span>
+            {t("settings.availability")}
           </button>
           <Link
             href="/pro/profile-setup"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white hover:opacity-90 transition-opacity"
             style={{ backgroundColor: ACCENT_COLOR }}
           >
             <UserCog className="w-3.5 h-3.5" />
@@ -395,11 +594,54 @@ function MySpaceContent() {
               style={{ border: "1px solid var(--color-border)", color: "var(--color-text-secondary)" }}
             >
               <ArrowUpRight className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{t("mySpace.viewProfile")}</span>
+              {t("mySpace.viewProfile")}
             </Link>
           )}
         </div>
       </motion.div>
+
+      {/* ── Hidden avatar file input ── */}
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleAvatarFileChange}
+      />
+
+      {/* ── Email prompt banner ── */}
+      {!user?.email && !emailPromptDismissed && (
+        <motion.div variants={itemVariants} className="mb-4">
+          <div
+            className="flex items-center gap-3 rounded-xl px-4 py-3"
+            style={{
+              border: '1px solid rgba(59,130,246,0.25)',
+              backgroundColor: 'rgba(59,130,246,0.06)',
+            }}
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                {t('common.addEmailPrompt')}
+              </p>
+            </div>
+            <Link
+              href="/settings"
+              className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
+              style={{ backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }}
+            >
+              {t('common.addEmail')}
+            </Link>
+            <button
+              onClick={dismissEmailPrompt}
+              className="shrink-0 w-6 h-6 flex items-center justify-center rounded-md transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+              aria-label={t('common.close')}
+              style={{ color: 'var(--color-text-tertiary)' }}
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* ── Stats ── */}
       <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
@@ -433,6 +675,15 @@ function MySpaceContent() {
         })}
       </motion.div>
 
+      {/* ── Profile Completion (pro only) ── */}
+      {isPro && completionItems.length > 0 && (
+        <ProfileCompletionCard
+          items={completionItems}
+          onAvatarUpload={() => avatarInputRef.current?.click()}
+          onShareReviewLink={() => setShowReviewsModal(true)}
+        />
+      )}
+
       {/* ── Active Work (pro + admin) ── */}
       {(isPro || isAdmin) && (
         <motion.section variants={itemVariants} className="mb-6">
@@ -455,7 +706,7 @@ function MySpaceContent() {
       {/* ── My Jobs ── */}
       <motion.section variants={itemVariants} className="mb-6">
           <SectionHeader
-            title={t("job.myJobs")}
+            title={t("mySpace.myPostedJobs")}
             count={myPostedJobs.length}
             viewAllHref={myPostedJobs.length > 0 ? "/my-jobs" : undefined}
             viewAllLabel={t("common.viewAll")}

@@ -365,8 +365,8 @@ export default function AiChatWidget() {
 
   const currentPrompts = quickPrompts[locale as keyof typeof quickPrompts] || quickPrompts.en;
 
-  // Hide on admin pages
-  if (pathname?.startsWith('/admin')) return null;
+  // Hide on admin and invite pages
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/invite')) return null;
 
   return (
     <>

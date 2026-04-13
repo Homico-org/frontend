@@ -23,7 +23,6 @@ import {
   FileText,
   Hammer,
   HelpCircle,
-  Images,
   LayoutDashboard,
   Mail,
   Plus,
@@ -45,7 +44,7 @@ const SIDEBAR_COLLAPSED_WIDTH = 56;
 
 type TabShowFor = "all" | "pro" | "client" | "auth";
 
-type TabKey = "my-space" | "my-jobs" | "bookings" | "jobs" | "portfolio" | "professionals";
+type TabKey = "my-space" | "my-jobs" | "bookings" | "jobs" | "professionals";
 
 
 const TABS: Array<{
@@ -91,15 +90,6 @@ const TABS: Array<{
     labelKa: "სამუშაოები",
     labelRu: "Работы",
     icon: Briefcase,
-    showFor: "all" as const,
-  },
-  {
-    key: "portfolio",
-    route: "/portfolio",
-    label: "Portfolio",
-    labelKa: "ნამუშევრები",
-    labelRu: "Портфолио",
-    icon: Images,
     showFor: "all" as const,
   },
   {
@@ -366,15 +356,12 @@ function BrowseSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
     }
   }, [selectedCategory, selectedSubcategories, categories, getSubcategoriesForCategory]);
 
-  const hasActive = selectedCategory !== null || selectedSubcategories.length > 0;
+  const hasActive = selectedSubcategories.length > 0;
 
-  const handleSubToggle = (catKey: string, subKey: string) => {
+  const handleSubToggle = (_catKey: string, subKey: string) => {
     toggleSubcategory(subKey);
-    if (selectedSubcategories.includes(subKey) && selectedSubcategories.length === 1) {
-      setSelectedCategory(null);
-    } else if (!selectedSubcategories.includes(subKey)) {
-      setSelectedCategory(catKey);
-    }
+    // Always clear selectedCategory — it's no longer needed with multi-select
+    setSelectedCategory(null);
   };
 
   const handleClear = () => {
@@ -392,7 +379,7 @@ function BrowseSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
       setExpandedCategories={setExpandedCategories}
       hasActive={hasActive}
       onClear={handleClear}
-      isCategoryActive={(catKey) => selectedCategory === catKey || selectedSubcategories.some(s =>
+      isCategoryActive={(catKey) => selectedSubcategories.some(s =>
         getSubcategoriesForCategory(catKey).some(sub => sub.key === s)
       )}
       isSubSelected={(subKey) => selectedSubcategories.includes(subKey)}
@@ -425,7 +412,8 @@ function JobsSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
     }
   }, [filters.category, filters.subcategory, categories, getSubcategoriesForCategory]);
 
-  const hasActive = filters.category !== null || filters.subcategory !== null;
+  const subs = filters.subcategories || [];
+  const hasActive = subs.length > 0;
 
   return (
     <SidebarCategoriesUI
@@ -436,18 +424,19 @@ function JobsSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
       expandedCategories={expandedCategories}
       setExpandedCategories={setExpandedCategories}
       hasActive={hasActive}
-      onClear={() => setFilters({ ...filters, category: null, subcategory: null })}
-      isCategoryActive={(catKey) => filters.category === catKey}
-      isSubSelected={(subKey) => filters.subcategory === subKey}
+      onClear={() => setFilters({ ...filters, category: null, subcategory: null, subcategories: [] })}
+      isCategoryActive={(catKey) => subs.some(s =>
+        getSubcategoriesForCategory(catKey).some(sub => sub.key === s)
+      )}
+      isSubSelected={(subKey) => subs.includes(subKey)}
       onCategoryClick={(catKey) => {
         setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }));
       }}
-      onSubClick={(catKey, subKey) => {
-        if (filters.subcategory === subKey) {
-          setFilters({ ...filters, subcategory: null });
-        } else {
-          setFilters({ ...filters, category: catKey, subcategory: subKey });
-        }
+      onSubClick={(_catKey, subKey) => {
+        const newSubs = subs.includes(subKey)
+          ? subs.filter(s => s !== subKey)
+          : [...subs, subKey];
+        setFilters({ ...filters, category: null, subcategory: newSubs[0] || null, subcategories: newSubs });
       }}
     />
   );
@@ -469,7 +458,7 @@ function SidebarCategoriesUI({
   onSubClick,
 }: {
   isCollapsed: boolean;
-  categories: { key: string }[];
+  categories: { key: string; name: string; nameKa: string }[];
   getSubcategoriesForCategory: (key: string) => { key: string; name: string; nameKa: string }[];
   locale: string;
   expandedCategories: Record<string, boolean>;
@@ -524,7 +513,7 @@ function SidebarCategoriesUI({
         const active = isCategoryActive(catKey);
         const subcategories = getSubcategoriesForCategory(catKey);
         const isExpanded = expandedCategories[catKey] ?? false;
-        const label = getCategoryLabelStatic(catKey, locale);
+        const label = (locale === 'ka' ? cat.nameKa : cat.name) || getCategoryLabelStatic(catKey, locale);
         const hasSelectedSub = subcategories.some(s => isSubSelected(s.key));
 
         return (
@@ -569,7 +558,7 @@ function SidebarCategoriesUI({
               <div className="ml-5 mt-0.5 space-y-0.5 pb-0.5">
                 {subcategories.map((sub) => {
                   const selected = isSubSelected(sub.key);
-                  const subLabel = getCategoryLabelStatic(sub.key, locale);
+                  const subLabel = (locale === 'ka' ? sub.nameKa : sub.name) || getCategoryLabelStatic(sub.key, locale);
                   return (
                     <button
                       key={sub.key}
@@ -626,11 +615,20 @@ function ShellContent({ children }: { children: ReactNode }) {
   const isPro = user?.role === "pro" || user?.role === "admin";
   const isClient = user?.role === "client";
   const isAuthenticated = !!user;
+  const [pendingBookingCount, setPendingBookingCount] = useState(0);
+
+  // Fetch pending booking count for badge
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    api.get('/bookings/my/pending-count')
+      .then(res => setPendingBookingCount(res.data?.count || 0))
+      .catch(() => {});
+  }, [isAuthenticated, pathname]);
 
   const isMySpacePage = pathname.startsWith("/my-space");
   const isJobsPage = pathname.startsWith("/jobs");
   const isProfessionalsPage = pathname.startsWith("/professionals");
-  const isPortfolioPage = pathname.startsWith("/portfolio");
+  const isPortfolioPage = pathname.startsWith("/portfolio"); // redirects to /professionals
   const isToolsPage = pathname === "/tools";
   const isToolsSubpage = pathname.startsWith("/tools/") && pathname !== "/tools";
 
@@ -647,13 +645,11 @@ function ShellContent({ children }: { children: ReactNode }) {
         ? "bookings"
         : isJobsPage
           ? "jobs"
-          : isPortfolioPage
-            ? "portfolio"
-            : isProfessionalsPage
-              ? "professionals"
-              : isMyWorkPage || pathname.startsWith("/settings") || pathname.startsWith("/tools")
-                ? null
-                : null;
+          : (isProfessionalsPage || isPortfolioPage)
+            ? "professionals"
+            : isMyWorkPage || pathname.startsWith("/settings") || pathname.startsWith("/tools")
+              ? null
+              : null;
 
   const visibleTabs = TABS.filter((tab) => {
     if (tab.showFor === "all") return true;
@@ -676,21 +672,21 @@ function ShellContent({ children }: { children: ReactNode }) {
     if (isJobsPage) {
       return { icon: Briefcase, title: t("browse.jobs"), subtitle: t("browse.jobsSubtitle") };
     }
-    if (isPortfolioPage) {
-      return { icon: Images, title: t("browse.portfolio"), subtitle: t("browse.portfolioSubtitle") };
-    }
-    if (isProfessionalsPage) {
+    if (isProfessionalsPage || isPortfolioPage) {
       return { icon: Users, title: t("browse.professionals"), subtitle: t("browse.professionalsSubtitle") };
+    }
+    if (isBookingsPage) {
+      return { icon: Calendar, title: t("booking.title"), subtitle: t("booking.subtitle") };
     }
     if (pathname.startsWith("/tools")) {
       return { icon: Wrench, title: t("tools.home.title"), subtitle: t("tools.home.subtitle") };
     }
     return { icon: Users, title: t("browse.title"), subtitle: undefined };
-  }, [isMySpacePage, isJobsPage, isPortfolioPage, isProfessionalsPage, isMyJobsPage, isMyWorkPage, pathname, t]);
+  }, [isMySpacePage, isJobsPage, isPortfolioPage, isProfessionalsPage, isMyJobsPage, isMyWorkPage, isBookingsPage, pathname, t]);
 
   const HeaderIcon = pageHeader.icon;
 
-  const showHeaderRow = !isToolsSubpage && !isMySpacePage && !isSettingsPage && !isBookingsPage;
+  const showHeaderRow = !isToolsSubpage && !isMySpacePage && !isSettingsPage;
   const showSearchFilters = !isToolsSubpage && !isToolsPage && !isMyJobsPage && !isMyWorkPage && !isMySpacePage && !isSettingsPage && !isBookingsPage;
 
   useEffect(() => setMounted(true), []);
@@ -746,7 +742,7 @@ function ShellContent({ children }: { children: ReactNode }) {
                   <Link
                     key={tab.key}
                     href={tab.route}
-                    className={`flex items-center text-sm font-medium transition-all ${
+                    className={`relative flex items-center text-sm font-medium transition-all ${
                       isCollapsed ? "justify-center px-2 py-2.5 rounded-xl" : "gap-3 px-3 py-2.5 rounded-xl"
                     } ${
                       isActive
@@ -758,9 +754,20 @@ function ShellContent({ children }: { children: ReactNode }) {
                   >
                     <Icon className="w-5 h-5 flex-shrink-0" />
                     {!isCollapsed && (
-                      <span>
+                      <span className="flex-1">
                         {locale === "ka" ? tab.labelKa : locale === "ru" ? tab.labelRu : tab.label}
                       </span>
+                    )}
+                    {tab.key === "bookings" && pendingBookingCount > 0 && (
+                      isCollapsed ? (
+                        <span className="absolute -top-0.5 -right-0.5 bg-[#C4735B] text-white text-[9px] font-bold min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-0.5 shadow-sm">
+                          {pendingBookingCount}
+                        </span>
+                      ) : (
+                        <span className={`${isActive ? "bg-white/30 text-white" : "bg-[#C4735B] text-white"} text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1`}>
+                          {pendingBookingCount}
+                        </span>
+                      )
                     )}
                   </Link>
                 );
@@ -768,21 +775,7 @@ function ShellContent({ children }: { children: ReactNode }) {
             </nav>
           </div>
 
-          {/* Categories — scrollable section between nav and post-job */}
-          {showSearchFilters && (
-            <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden border-t border-neutral-100 dark:border-neutral-800 ${isCollapsed ? "px-1.5 py-2" : "px-3 py-2"}`}>
-              {!isCollapsed && (
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5 px-1">
-                  {t("browse.categoryFilter")}
-                </p>
-              )}
-              {isJobsPage ? (
-                <JobsSidebarCategories isCollapsed={isCollapsed} />
-              ) : (
-                <BrowseSidebarCategories isCollapsed={isCollapsed} />
-              )}
-            </div>
-          )}
+          {/* Categories removed from sidebar — handled by filter bar on both pages */}
 
           {/* Footer area (My pages + Support + Social) */}
           <div className={`mt-auto pb-4 ${isCollapsed ? "px-2" : "px-3"}`}>
@@ -916,22 +909,14 @@ function ShellContent({ children }: { children: ReactNode }) {
             )}
 
             {showSearchFilters && (
-              <div className="flex items-center gap-2 px-3 pt-2 pb-3">
-                <div className="flex-1 min-w-0">
-                  {isJobsPage ? (
-                    <JobsSearchInput />
-                  ) : isProfessionalsPage ? (
-                    <BrowseSearchInput placeholder={t("browse.searchProfessionals")} />
-                  ) : (
-                    <BrowseSearchInput placeholder={t("browse.searchPortfolio")} />
-                  )}
-                </div>
-                <button
-                  onClick={() => setShowMobileCategories(true)}
-                  className="flex-shrink-0 w-10 h-11 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center justify-center text-neutral-500 hover:text-neutral-700 transition-colors"
-                >
-                  <Hammer className="w-4 h-4" />
-                </button>
+              <div className="px-3 pt-2 pb-3">
+                {isJobsPage ? (
+                  <JobsSearchInput />
+                ) : isProfessionalsPage ? (
+                  <BrowseSearchInput placeholder={t("browse.searchProfessionals")} />
+                ) : (
+                  <BrowseSearchInput placeholder={t("browse.searchPortfolio")} />
+                )}
               </div>
             )}
           </div>
@@ -974,34 +959,7 @@ function ShellContent({ children }: { children: ReactNode }) {
       <MobileBottomNav />
 
       {/* Mobile Categories Panel */}
-      {showMobileCategories && showSearchFilters && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setShowMobileCategories(false)}
-          />
-          <div className="absolute bottom-0 left-0 right-0 max-h-[70vh] bg-white dark:bg-neutral-900 rounded-t-2xl shadow-2xl flex flex-col animate-slide-up">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-                {t("browse.categoryFilter")}
-              </h3>
-              <button
-                onClick={() => setShowMobileCategories(false)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto px-3 py-3">
-              {isJobsPage ? (
-                <JobsSidebarCategories isCollapsed={false} />
-              ) : (
-                <BrowseSidebarCategories isCollapsed={false} />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Categories moved to filter bar — mobile panel removed */}
 
       <style jsx>{`
         .scrollbar-hide::-webkit-scrollbar {

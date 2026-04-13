@@ -180,11 +180,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
         />
       )}
 
-      <div className="space-y-6">
-        <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
-          {t('settings.profile')}
-        </h2>
-
+      <div className="space-y-4">
         {message && (
           <Alert 
             variant={message.type === 'success' ? 'success' : 'error'} 
@@ -261,54 +257,46 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
 
             <FormGroup>
               <Label>{t('common.email')}</Label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="flex-1 min-w-0">
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    disabled
-                    placeholder={t('settings.noEmailAdded')}
-                    rightIcon={formData.email ? (
-                      <Badge variant="success" size="xs" icon={<Check className="w-3 h-3" />}>
-                        {t('common.verified')}
-                      </Badge>
-                    ) : undefined}
-                  />
-                </div>
-                <Button variant="outline" onClick={onOpenEmailModal} className="w-full sm:w-auto">
-                  {formData.email
-                    ? (t('settings.change'))
-                    : (t('common.add'))}
+              <Input
+                type="email"
+                value={formData.email}
+                disabled
+                placeholder={t('settings.noEmailAdded')}
+              />
+              <div className="flex items-center justify-between mt-1.5 gap-2">
+                {formData.email ? (
+                  <Badge variant="success" size="xs" icon={<Check className="w-3 h-3" />}>
+                    {t('common.verified')}
+                  </Badge>
+                ) : (
+                  <span className="text-xs text-neutral-400">{t('settings.changingYourEmailRequiresVerification')}</span>
+                )}
+                <Button variant="outline" size="sm" onClick={onOpenEmailModal}>
+                  {formData.email ? t('settings.change') : t('common.add')}
                 </Button>
               </div>
-              <p className="mt-1 text-xs text-neutral-400">
-                {t('settings.changingYourEmailRequiresVerification')}
-              </p>
             </FormGroup>
 
             <FormGroup>
               <Label>{t('common.phone')}</Label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="flex-1 min-w-0">
-                  <Input
-                    type="tel"
-                    value={formData.phone}
-                    disabled
-                    placeholder={t("common.phone")}
-                    rightIcon={formData.phone ? (
-                      <Badge variant="success" size="xs" icon={<Check className="w-3 h-3" />}>
-                        {t('common.verified')}
-                      </Badge>
-                    ) : undefined}
-                  />
-                </div>
-                <Button variant="outline" onClick={onOpenPhoneModal} className="w-full sm:w-auto">
+              <Input
+                type="tel"
+                value={formData.phone}
+                disabled
+                placeholder={t("common.phone")}
+              />
+              <div className="flex items-center justify-between mt-1.5 gap-2">
+                {formData.phone ? (
+                  <Badge variant="success" size="xs" icon={<Check className="w-3 h-3" />}>
+                    {t('common.verified')}
+                  </Badge>
+                ) : (
+                  <span className="text-xs text-neutral-400">{t('settings.changingYourNumberRequiresVerification')}</span>
+                )}
+                <Button variant="outline" size="sm" onClick={onOpenPhoneModal}>
                   {formData.phone ? t('settings.change') : t('common.add')}
                 </Button>
               </div>
-              <p className="mt-1 text-xs text-neutral-400">
-                {t('settings.changingYourNumberRequiresVerification')}
-              </p>
             </FormGroup>
 
             <FormGroup>

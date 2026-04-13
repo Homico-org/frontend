@@ -145,11 +145,20 @@ export interface ProProfile extends BaseEntity {
   completedJobs: number;
   completedProjects?: number;
   externalCompletedJobs?: number;
+  avgResponseTime?: number; // average response time in hours
   
   // Pricing
   pricingModel?: PricingModel;
   basePrice?: number;
   maxPrice?: number;
+  servicePricing?: {
+    serviceKey: string;
+    categoryKey: string;
+    subcategoryKey: string;
+    price: number;
+    isActive: boolean;
+    discountTiers?: { minQuantity: number; percent: number }[];
+  }[];
   
   // Location & Availability
   serviceAreas: string[];
@@ -163,6 +172,9 @@ export interface ProProfile extends BaseEntity {
   portfolioImages: string[];
   pinterestLinks: string[];
   portfolioItemCount?: number; // Count from PortfolioItem collection
+  portfolioPreviewImages?: string[];
+  portfolioPreviewVideos?: string[];
+  portfolioPreviewBeforeAfter?: { before: string; after: string }[];
   
   // Verification
   isEmailVerified: boolean;

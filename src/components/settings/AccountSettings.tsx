@@ -7,7 +7,7 @@ import { IconBadge } from '@/components/ui/IconBadge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { AlertCircle, AlertTriangle, BriefcaseBusiness, Check, Trash2, User } from 'lucide-react';
+import { AlertCircle, AlertTriangle, BriefcaseBusiness, Check, EyeOff, Trash2, User } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 interface AccountSettingsProps {
@@ -78,101 +78,81 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
   const isPro = user?.role === 'pro' || user?.role === 'admin';
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
-          {t('settings.accountManagement')}
-        </h2>
-        <p className="text-sm mt-1 text-neutral-500">
-          {t('settings.manageYourAccountSettings')}
-        </p>
-      </div>
+    <div className="space-y-4">
+      <p className="text-sm text-neutral-500">
+        {t('settings.manageYourAccountSettings')}
+      </p>
 
-      {/* Pro Profile Deactivation */}
+      {/* Pro Profile Visibility */}
       {isPro && (
-        <Card
-          className={`overflow-hidden ${isProfileDeactivated ? 'border-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-yellow-500/10' : ''}`}
+        <div
+          className="rounded-xl p-4"
+          style={{
+            backgroundColor: isProfileDeactivated ? 'rgba(234, 179, 8, 0.06)' : 'var(--color-bg-tertiary)',
+            border: `1px solid ${isProfileDeactivated ? 'rgba(234, 179, 8, 0.2)' : 'var(--color-border-subtle)'}`,
+          }}
         >
-          <div className={`px-5 py-4 border-b ${isProfileDeactivated ? 'border-yellow-500/15' : 'border-neutral-200 dark:border-neutral-800'}`}>
-            <div className="flex items-center gap-2">
-              <BriefcaseBusiness className={`w-5 h-5 ${isProfileDeactivated ? 'text-yellow-600' : 'text-[#E07B4F]'}`} />
-              <h3 className={`font-semibold ${isProfileDeactivated ? 'text-yellow-600 dark:text-yellow-500' : 'text-neutral-900 dark:text-white'}`}>
-                {t('settings.professionalProfile')}
-              </h3>
-            </div>
-          </div>
-
-          <div className="p-5">
-            {isProfileDeactivated ? (
-              <div className="space-y-4">
-                <Alert variant="warning" showIcon>
-                  <div>
-                    <p className="font-medium">
-                      {t('settings.profileIsDeactivated')}
-                    </p>
-                    <p className="text-sm mt-1 opacity-80">
-                      {t('settings.yourProfileIsHiddenFrom')}
-                    </p>
-                    {deactivatedUntil && (
-                      <p className="text-sm mt-2 opacity-80">
-                        {t('settings.returns')} {deactivatedUntil.toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })}
-                      </p>
-                    )}
-                    {deactivationReason && (
-                      <p className="text-sm mt-1 opacity-60">
-                        {t('settings.reason')} {deactivationReason}
-                      </p>
-                    )}
-                  </div>
-                </Alert>
-                <Button
-                  onClick={handleReactivateProfile}
-                  loading={isReactivating}
-                  leftIcon={<Check className="w-4 h-4" />}
-                  className="w-full"
-                >
-                  {t('settings.reactivateProfile')}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
+          {isProfileDeactivated ? (
+            <div className="space-y-3">
+              <div className="flex items-start gap-2">
+                <EyeOff className="w-4 h-4 text-yellow-600 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-medium text-neutral-900 dark:text-white">
-                    {t('settings.temporarilyPause')}
-                  </h4>
-                  <p className="text-sm mt-1 text-neutral-500">
-                    {t('settings.temporarilyHideYourProfileFrom')}
+                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-500">
+                    {t('settings.profileIsDeactivated')}
+                  </p>
+                  <p className="text-xs text-neutral-500 mt-0.5">
+                    {t('settings.yourProfileIsHiddenFrom')}
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={onOpenDeactivateModal}
-                  leftIcon={<BriefcaseBusiness className="w-4 h-4" />}
-                  className="w-full sm:w-auto border-yellow-500 text-yellow-600 hover:bg-yellow-500/10"
-                >
-                  {t('settings.pauseProfile')}
-                </Button>
               </div>
-            )}
-          </div>
-        </Card>
+              <Button
+                size="sm"
+                onClick={handleReactivateProfile}
+                loading={isReactivating}
+                leftIcon={<Check className="w-3.5 h-3.5" />}
+                className="w-full"
+              >
+                {t('settings.reactivateProfile')}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                  {t('settings.temporarilyPause')}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                  {t('settings.temporarilyHideYourProfileFrom')}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onOpenDeactivateModal}
+                className="w-full text-yellow-600 border-yellow-400 hover:bg-yellow-50"
+              >
+                {t('settings.pauseProfile')}
+              </Button>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Danger Zone */}
       <Card className="overflow-hidden border-red-500/30 bg-gradient-to-br from-red-500/5 to-red-500/10">
-        <div className="px-5 py-4 border-b border-red-500/15">
+        <div className="px-4 py-3 border-b border-red-500/15">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-500" />
-            <h3 className="font-semibold text-red-600 dark:text-red-400">
+            <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+            <h3 className="text-sm font-semibold text-red-600 dark:text-red-400">
               {t('settings.dangerZone')}
             </h3>
           </div>
         </div>
 
-        <div className="p-5">
-          <div className="space-y-4">
+        <div className="p-4">
+          <div className="space-y-3">
             <div>
-              <h4 className="font-medium text-neutral-900 dark:text-white">
+              <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
                 {t('settings.deleteAccount')}
               </h4>
               <p className="text-sm mt-1 text-neutral-500">

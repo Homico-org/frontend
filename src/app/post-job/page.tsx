@@ -1,6 +1,7 @@
 "use client";
 
-import { CategoryIcon, CategorySelector } from "@/components/categories";
+import { CategoryIcon } from "@/components/categories";
+import JobServicePicker, { JobServiceSelection } from "@/components/post-job/JobServicePicker";
 import AddressPicker from "@/components/common/AddressPicker";
 import AuthGuard from "@/components/common/AuthGuard";
 import BudgetSelector, { BudgetType } from "@/components/post-job/BudgetSelector";
@@ -95,6 +96,7 @@ function PostJobPageContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
   const [subcategorySearch, setSubcategorySearch] = useState("");
+  const [selectedJobServices, setSelectedJobServices] = useState<JobServiceSelection[]>([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -282,7 +284,8 @@ function PostJobPageContent() {
   const getStepLabel = (step: Step) => t(`postJob.steps.${step}`);
 
   const canProceedFromCategory = () => {
-    if (!selectedCategory || !selectedSubcategory || !formData.propertyType) return false;
+    if (!selectedCategory || !formData.propertyType) return false;
+    if (selectedJobServices.length === 0) return false;
     // Also validate required category-specific fields shown on this step
     const activeFields = getActiveFields();
     for (const field of activeFields) {
@@ -399,6 +402,22 @@ function PostJobPageContent() {
         budgetMin: formData.budgetType === "negotiable" ? 0 : Number(formData.budgetMin),
         budgetMax: formData.budgetType === "negotiable" ? 0 : (formData.budgetMax ? Number(formData.budgetMax) : Number(formData.budgetMin)),
       };
+
+      if (selectedJobServices.length > 0) {
+        jobData.services = selectedJobServices.map(svc => ({
+          key: svc.serviceKey,
+          quantity: 1,
+          unitPrice: svc.budget,
+          unit: svc.unit,
+        }));
+        jobData.skills = selectedJobServices.map(s => s.serviceKey);
+        const totalBudget = selectedJobServices.reduce((sum, s) => sum + s.budget, 0);
+        if (totalBudget > 0) {
+          jobData.budgetType = 'fixed';
+          jobData.budgetMin = totalBudget;
+          jobData.budgetMax = totalBudget;
+        }
+      }
 
       // All jobs have a 30-day deadline
       jobData.deadline = deadline;
@@ -569,16 +588,14 @@ function PostJobPageContent() {
                   <label className="block text-sm font-semibold text-neutral-700 mb-3">
                     {t('job.categoryService')} <span className="text-[#C4735B]">*</span>
                   </label>
-                  <CategorySelector
-                    mode="single"
+                  <JobServicePicker
                     selectedCategory={selectedCategory}
-                    selectedSubcategory={selectedSubcategory}
                     onCategoryChange={(key) => {
                       setSelectedCategory(key);
                       setSelectedSubcategory("");
-                      setSubcategorySearch("");
                     }}
-                    onSubcategoryChange={setSelectedSubcategory}
+                    selectedServices={selectedJobServices}
+                    onServicesChange={setSelectedJobServices}
                   />
                 </div>
 

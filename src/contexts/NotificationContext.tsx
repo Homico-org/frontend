@@ -5,6 +5,13 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
+export const CRITICAL_NOTIFICATION_TYPES = [
+  'new_booking',
+  'booking_confirmed',
+  'booking_started',
+  'booking_completed',
+] as const;
+
 export type NotificationType =
   | 'new_proposal'
   | 'proposal_accepted'
@@ -16,7 +23,15 @@ export type NotificationType =
   | 'new_review'
   | 'account_verified'
   | 'profile_update'
-  | 'system_announcement';
+  | 'system_announcement'
+  | 'profile_approved'
+  | 'profile_rejected'
+  | 'new_booking'
+  | 'booking_confirmed'
+  | 'booking_started'
+  | 'booking_cancelled'
+  | 'booking_completed'
+  | 'review_prompt';
 
 export interface Notification {
   id: string;
@@ -192,7 +207,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     // Play notification sound (optional)
     try {
-      const audio = new Audio('/sounds/notification.mp3');
+      const audio = new Audio('/sounds/notification.wav');
       audio.volume = 0.3;
       audio.play().catch(() => {
         // Ignore autoplay errors
