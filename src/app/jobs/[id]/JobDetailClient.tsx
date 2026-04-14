@@ -2214,29 +2214,12 @@ export default function JobDetailClient() {
             !isCheckingProposal &&
             isAuthValidated && (
               <div className="flex justify-end mb-4">
-                {user?.verificationStatus === "verified" ? (
-                  <Button
-                    onClick={() => setShowProposalForm(true)}
-                    leftIcon={<Send className="w-4 h-4" />}
-                  >
-                    {t("jobDetail.submitProposal")}
-                  </Button>
-                ) : (
-                  <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-                    <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
-                        {t("jobDetail.verificationRequiredToSubmitProposals")}
-                      </p>
-                      <Link
-                        href="/settings"
-                        className="text-sm text-amber-700 dark:text-amber-300 underline hover:no-underline"
-                      >
-                        {t("jobDetail.completeVerificationCta")}
-                      </Link>
-                    </div>
-                  </div>
-                )}
+                <Button
+                  onClick={() => setShowProposalForm(true)}
+                  leftIcon={<Send className="w-4 h-4" />}
+                >
+                  {t("jobDetail.submitProposal")}
+                </Button>
               </div>
             )}
           {isPro && !isOwner && isOpen && !isHired && (isCheckingProposal || !isAuthValidated) && (
@@ -3441,8 +3424,7 @@ export default function JobDetailClient() {
         !isHired &&
         !myProposal &&
         !isCheckingProposal &&
-        isAuthValidated &&
-        user?.verificationStatus === "verified" && (
+        isAuthValidated && (
           <div className="sm:hidden fixed bottom-16 left-0 right-0 z-40 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 p-3 safe-area-bottom">
             <Button
               onClick={() => setShowProposalForm(true)}
