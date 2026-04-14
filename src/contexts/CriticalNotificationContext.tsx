@@ -171,8 +171,7 @@ export function CriticalNotificationProvider({ children }: { children: React.Rea
     try {
       const response = await api.get('/notifications?unreadOnly=true&limit=20');
       const allNotifications: Notification[] = (response.data.notifications || []).map(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (n: any) => ({
+        (n: Record<string, string>) => ({
           id: n._id || n.id || '',
           userId: n.userId,
           type: n.type,
