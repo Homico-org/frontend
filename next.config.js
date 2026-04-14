@@ -1,3 +1,7 @@
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -30,9 +34,11 @@ const nextConfig = {
   },
   // Experimental optimizations
   experimental: {
-    optimizePackageImports: ['lucide-react', 'date-fns'],
+    optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion'],
   },
 }
+
+const nextConfigWithAnalyzer = withBundleAnalyzer(nextConfig);
 
 const withPWA = require('next-pwa')({
   dest: 'public',
@@ -43,7 +49,7 @@ const withPWA = require('next-pwa')({
     document: '/offline',
   },
 });
-const nextConfigWithPWA = withPWA(nextConfig);
+const nextConfigWithPWA = withPWA(nextConfigWithAnalyzer);
 
 // Only enable Sentry release/sourcemap upload in production *when auth is configured*.
 // Runtime Sentry (capturing errors) is still controlled by sentry.*.config.ts and does NOT require an auth token.
