@@ -2417,44 +2417,68 @@ export default function ProfessionalDetailClient({
                                       </span>
                                     )}
                                   </div>
-                                  <div className="space-y-1">
-                                    {services.map((svc) => (
-                                      <div
-                                        key={svc.serviceKey}
-                                        className="py-0.5"
-                                      >
-                                        <div className="flex items-center justify-between">
-                                          <span className="text-sm text-neutral-600 dark:text-neutral-300">
-                                            {svcNameMap[svc.serviceKey] || svc.serviceKey}
-                                          </span>
-                                          <span className="text-sm font-semibold text-[#C4735B]">
-                                            {svc.price}₾
-                                          </span>
-                                        </div>
-                                        {(svc as any).discountTiers?.length >
-                                          0 && (
-                                          <div className="flex flex-wrap gap-1 mt-0.5">
-                                            {(svc as any).discountTiers.map(
-                                              (
-                                                tier: {
-                                                  minQuantity: number;
-                                                  percent: number;
-                                                },
-                                                i: number,
-                                              ) => (
-                                                <span
-                                                  key={i}
-                                                  className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-medium"
-                                                >
-                                                  {tier.minQuantity}+ → -
-                                                  {tier.percent}%
-                                                </span>
-                                              ),
-                                            )}
+                                  <div className="space-y-1.5">
+                                    {services.map((svc) => {
+                                      const tiers = ((svc as Record<string, unknown>).discountTiers as { minQuantity: number; percent: number }[]) || [];
+                                      const hasDiscounts = tiers.length > 0;
+                                      return (
+                                        <div
+                                          key={svc.serviceKey}
+                                          className="rounded-xl p-3"
+                                          style={{
+                                            backgroundColor: 'var(--color-bg-elevated)',
+                                            border: '1px solid var(--color-border-subtle)',
+                                          }}
+                                        >
+                                          {/* Service name + base price */}
+                                          <div className="flex items-center justify-between">
+                                            <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                                              {svcNameMap[svc.serviceKey] || svc.serviceKey}
+                                            </span>
+                                            <span className="text-sm font-bold" style={{ color: '#C4735B' }}>
+                                              {svc.price}₾
+                                            </span>
                                           </div>
-                                        )}
-                                      </div>
-                                    ))}
+
+                                          {/* Discount tiers — human-readable */}
+                                          {hasDiscounts && (
+                                            <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: '1px dashed var(--color-border-subtle)' }}>
+                                              <p className="text-[10px] font-medium flex items-center gap-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                                                🏷️ {locale === "ka" ? "ფასდაკლება რაოდენობაზე" : "Volume discounts"}
+                                              </p>
+                                              {tiers.map((tier, i) => {
+                                                const discounted = Math.round(svc.price * (1 - tier.percent / 100));
+                                                const savings = svc.price - discounted;
+                                                return (
+                                                  <div
+                                                    key={i}
+                                                    className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg text-[12px]"
+                                                    style={{ backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)' }}
+                                                  >
+                                                    <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                                                      {tier.minQuantity}+
+                                                    </span>
+                                                    <span style={{ color: 'var(--color-text-tertiary)' }}>
+                                                      {locale === "ka" ? "ერთეული" : "units"}
+                                                    </span>
+                                                    <span className="mx-0.5" style={{ color: 'var(--color-text-tertiary)' }}>→</span>
+                                                    <span className="font-bold text-emerald-600">
+                                                      {discounted}₾
+                                                    </span>
+                                                    <span className="text-[10px] line-through opacity-40" style={{ color: 'var(--color-text-secondary)' }}>
+                                                      {svc.price}₾
+                                                    </span>
+                                                    <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold">
+                                                      {locale === "ka" ? "დაზოგე" : "save"} {savings}₾
+                                                    </span>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 </div>
                               ),

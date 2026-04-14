@@ -471,9 +471,8 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
     ? comments.filter((c) => c.isMarkedInteresting)
     : comments;
 
-  const isVerified = user?.verificationStatus === 'verified';
-  const canComment = user && !isJobOwner && !hasCommented && isVerified;
-  const showVerificationWarning = user && !isJobOwner && !hasCommented && !isVerified;
+  const canComment = user && !isJobOwner && !hasCommented;
+  const showVerificationWarning = false; // removed for MVP — all pros can comment
 
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">

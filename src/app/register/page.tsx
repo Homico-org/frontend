@@ -1,9 +1,8 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import UserTypeSelector from '@/components/register/UserTypeSelector';
 import LanguageSelector from '@/components/common/LanguageSelector';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -11,106 +10,151 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackEvent } from '@/hooks/useTracker';
-import { HelpCircle } from 'lucide-react';
+import { ArrowRight, Briefcase, CheckCircle2, Search, Shield, Star, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
-// Logo component
-function Logo({ className = '' }: { className?: string }) {
-  return (
-    <Link href="/" className={`flex items-center ${className}`}>
-      <span className="flex items-center gap-2">
-        <Image src="/favicon.png" alt="Homico" width={28} height={28} className="h-7 w-7 rounded-[8px]" />
-        <span className="text-[18px] font-semibold tracking-wide text-neutral-900 dark:text-white">
-          Homico
-        </span>
-      </span>
-    </Link>
-  );
-}
 
 function RegisterContent() {
   const { t, locale } = useLanguage();
   const { openLoginModal } = useAuthModal();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const router = useRouter();
+  const [isVisible, setIsVisible] = useState(false);
 
-  // Redirect authenticated users
+  const isKa = locale === 'ka';
+  const pick = (en: string, ka: string) => isKa ? ka : en;
+
+  useEffect(() => { setIsVisible(true); }, []);
+
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
-      if (user.role === 'admin') {
-        router.replace('/admin');
-      } else if (user.role === 'pro' && user.isProfileCompleted === true) {
-        router.replace('/jobs');
-      } else if (user.role === 'client') {
-        router.replace('/portfolio');
-      }
+      if (user.role === 'admin') router.replace('/admin');
+      else if (user.role === 'pro') router.replace('/my-space');
+      else if (user.role === 'client') router.replace('/professionals');
     }
   }, [authLoading, isAuthenticated, user, router]);
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">
+      <div className="min-h-[100dvh] flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
         <LoadingSpinner size="xl" variant="border" color="#C4735B" />
       </div>
     );
   }
 
+  const features = [
+    { icon: <Shield className="w-4 h-4" />, text: pick('Verified professionals', 'ვერიფიცირებული სპეციალისტები') },
+    { icon: <Star className="w-4 h-4" />, text: pick('Real reviews', 'რეალური შეფასებები') },
+    { icon: <Users className="w-4 h-4" />, text: pick('200+ professionals', '200+ სპეციალისტი') },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FBF9F7] via-[#FAF8F5] to-[#F5F0EC] flex flex-col">
-      {/* Header - Mobile optimized */}
-      <header className="px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
-        <Logo />
-        <div className="flex items-center gap-2 sm:gap-3">
+    <div className="min-h-[100dvh] flex flex-col" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+      {/* Header */}
+      <header className="px-4 sm:px-6 py-3 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/favicon.png" alt="Homico" width={28} height={28} className="h-7 w-7 rounded-[8px]" />
+          <span className="text-[18px] font-semibold" style={{ color: 'var(--color-text-primary)' }}>Homico</span>
+        </Link>
+        <div className="flex items-center gap-2">
           <LanguageSelector variant="compact" />
-          <Link
-            href="/help"
-            className="hidden sm:block text-xs text-neutral-500 hover:text-neutral-800 transition-colors"
-          >
-            {t('common.help')}
-          </Link>
-          <Link
-            href="/help"
-            className="sm:hidden w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-500"
-          >
-            <HelpCircle className="w-4 h-4" />
-          </Link>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => openLoginModal()}
-            className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm"
-          >
-            {t('register.logIn')}
+          <Button variant="outline" size="sm" onClick={() => openLoginModal()}>
+            {pick('Log In', 'შესვლა')}
           </Button>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-3 sm:px-4 py-8 sm:py-12">
-        <div className="w-full">
-          <div className="text-center mb-6">
-            <h1 className="text-lg sm:text-xl font-bold text-neutral-900 mb-1">
-              {t('register.joinHomico')}
+      {/* Main */}
+      <main className="flex-1 flex items-center justify-center px-4 py-8 sm:py-16">
+        <div className="w-full max-w-lg">
+          {/* Hero */}
+          <div
+            className={`text-center mb-8 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+          >
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#C4735B] to-[#D4937B] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#C4735B]/20">
+              <Image src="/favicon.png" alt="" width={32} height={32} className="rounded-lg" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+              {pick('Welcome to Homico', 'კეთილი იყოს შენი მობრძანება')}
             </h1>
-            <p className="text-xs sm:text-sm text-neutral-500">
-              {t('register.chooseHowYouWantTo')}
+            <p className="text-sm sm:text-base" style={{ color: 'var(--color-text-secondary)' }}>
+              {pick('How do you want to use Homico?', 'როგორ გსურს Homico-ს გამოყენება?')}
             </p>
           </div>
 
-          <UserTypeSelector
-            onSelect={(type) => {
-              trackEvent('register_click', type);
-              if (type === 'pro') {
-                router.push('/register/professional');
-              } else {
-                router.push('/register/client');
-              }
-            }}
-            locale={locale as 'en' | 'ka' | 'ru'}
-          />
+          {/* Cards */}
+          <div
+            className={`space-y-3 mb-8 transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+          >
+            {/* Client card */}
+            <button
+              onClick={() => { trackEvent('register_click', 'client'); router.push('/register/client'); }}
+              className="w-full group flex items-center gap-4 p-4 sm:p-5 rounded-2xl text-left transition-all hover:shadow-md active:scale-[0.99]"
+              style={{
+                backgroundColor: 'var(--color-bg-elevated)',
+                border: '1px solid var(--color-border-subtle)',
+              }}
+            >
+              <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+                <Search className="w-6 h-6 text-blue-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-bold mb-0.5" style={{ color: 'var(--color-text-primary)' }}>
+                  {pick('I need a professional', 'მჭირდება სპეციალისტი')}
+                </h3>
+                <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                  {pick('Find and hire verified home service pros', 'იპოვე და დაიქირავე ვერიფიცირებული სპეციალისტი')}
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 shrink-0 opacity-30 group-hover:opacity-70 group-hover:translate-x-0.5 transition-all" />
+            </button>
+
+            {/* Pro card */}
+            <button
+              onClick={() => { trackEvent('register_click', 'pro'); router.push('/register/professional'); }}
+              className="w-full group flex items-center gap-4 p-4 sm:p-5 rounded-2xl text-left transition-all hover:shadow-md active:scale-[0.99]"
+              style={{
+                backgroundColor: 'rgba(196,115,91,0.06)',
+                border: '1px solid rgba(196,115,91,0.2)',
+              }}
+            >
+              <div className="w-12 h-12 rounded-xl bg-[#C4735B]/15 flex items-center justify-center shrink-0">
+                <Briefcase className="w-6 h-6 text-[#C4735B]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-bold mb-0.5" style={{ color: 'var(--color-text-primary)' }}>
+                  {pick('I am a professional', 'ვარ სპეციალისტი')}
+                </h3>
+                <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                  {pick('Join our network, find clients, grow your business', 'შემოგვიერთდი, იპოვე კლიენტები, გაზარდე შემოსავალი')}
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 shrink-0 opacity-30 group-hover:opacity-70 group-hover:translate-x-0.5 transition-all" />
+            </button>
+          </div>
+
+          {/* Trust signals */}
+          <div
+            className={`flex items-center justify-center gap-4 sm:gap-6 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+          >
+            {features.map((f, i) => (
+              <div key={i} className="flex items-center gap-1.5 text-[11px] sm:text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                <span className="text-emerald-500">{f.icon}</span>
+                {f.text}
+              </div>
+            ))}
+          </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="text-center pb-6 px-4">
+        <p className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>
+          {pick('Already have an account?', 'უკვე გაქვს ანგარიში?')}{' '}
+          <button onClick={() => openLoginModal()} className="font-medium text-[#C4735B] hover:underline">
+            {pick('Log in', 'შესვლა')}
+          </button>
+        </p>
+      </footer>
     </div>
   );
 }
@@ -119,7 +163,7 @@ export default function RegisterPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">
+        <div className="min-h-[100dvh] flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
           <LoadingSpinner size="xl" variant="border" color="#C4735B" />
         </div>
       }
