@@ -7,6 +7,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ViewModeProvider } from '@/contexts/ViewModeContext';
+import { CriticalNotificationProvider } from '@/contexts/CriticalNotificationContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -18,9 +19,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             <AuthModalProvider>
               <ViewModeProvider>
                 <NotificationProvider>
-                  <ToastProvider>
-                    {children}
-                  </ToastProvider>
+                  <CriticalNotificationProvider>
+                    <ToastProvider>
+                      {children}
+                    </ToastProvider>
+                  </CriticalNotificationProvider>
                 </NotificationProvider>
               </ViewModeProvider>
             </AuthModalProvider>

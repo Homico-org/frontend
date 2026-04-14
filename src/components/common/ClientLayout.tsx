@@ -10,6 +10,16 @@ const LoginModal = dynamic(() => import("@/components/auth/LoginModal"), {
   ssr: false,
 });
 
+const CriticalNotificationOverlay = dynamic(
+  () => import("@/components/critical-notification/CriticalNotificationOverlay"),
+  { ssr: false }
+);
+
+const CriticalNotificationBanner = dynamic(
+  () => import("@/components/critical-notification/CriticalNotificationBanner"),
+  { ssr: false }
+);
+
 const PWAInstallPrompt = dynamic(() => import("./PWAInstallPrompt"), {
   ssr: false,
 });
@@ -28,6 +38,8 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         </AppLayout>
       </ProProfileGuard>
       <LoginModal />
+      <CriticalNotificationBanner />
+      <CriticalNotificationOverlay />
       {/* <PWAInstallPrompt /> */}
     </>
   );

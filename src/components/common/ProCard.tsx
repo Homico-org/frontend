@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import BeforeAfterSlider from "@/components/ui/BeforeAfterSlider";
 import { StarRating } from "@/components/ui/StarRating";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { useCategories } from "@/contexts/CategoriesContext";
@@ -8,34 +9,18 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { storage } from "@/services/storage";
 import { ProProfile, ProStatus } from "@/types";
-import { motion } from "framer-motion";
-import { Briefcase, CheckCircle2, Clock, Eye, Sparkles, Wallet } from "lucide-react";
+import { Briefcase, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, Play, Sparkles, Wallet, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trackEvent } from "@/hooks/useTracker";
-
-const STATUS_CONFIG = {
-  [ProStatus.ACTIVE]: {
-    labelKey: "status.available",
-    color: "bg-emerald-500",
-    ringColor: "ring-emerald-500/30",
-  },
-  [ProStatus.BUSY]: {
-    labelKey: "status.busy",
-    color: "bg-amber-500",
-    ringColor: "ring-amber-500/30",
-  },
-  [ProStatus.AWAY]: {
-    labelKey: "status.away",
-    color: "bg-neutral-400",
-    ringColor: "ring-neutral-400/30",
-  },
-};
 
 interface ProCardProps {
   profile: ProProfile;
   variant?: "default" | "compact" | "horizontal";
+  /** Active browse filters — used to show relevant price/experience */
+  activeCategory?: string;
+  activeSubcategories?: string[];
   onLike?: () => void;
   showLikeButton?: boolean;
 }
@@ -43,17 +28,19 @@ interface ProCardProps {
 export default function ProCard({
   profile,
   variant = "default",
+  activeCategory,
+  activeSubcategories = [],
 }: ProCardProps) {
   const { t, locale } = useLanguage();
   const { getCategoryLabel } = useCategoryLabels();
-  const { getSubcategoriesForCategory } = useCategories();
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const { categories: catalogCategories, getSubcategoriesForCategory } = useCategories();
   const [imageError, setImageError] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const autoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Get the user's categories and subcategories
-  // Priority: selectedServices (new flow) > selectedSubcategories (old flow) > subcategories (fallback)
+  // Services and categories
   const { userCategories, userSubcategories, servicesWithExperience } = useMemo(() => {
-    // Check if user has new selectedServices structure
     const selectedServices = profile.selectedServices as Array<{
       key: string;
       name: string;
@@ -61,557 +48,480 @@ export default function ProCard({
       categoryKey: string;
       experience: string;
     }> | undefined;
-    
+
     if (selectedServices && selectedServices.length > 0) {
-      // Extract unique categories from selectedServices
       const categories = [...new Set(selectedServices.map(s => s.categoryKey))];
-      // Extract subcategory keys
       const subcategories = selectedServices.map(s => s.key);
-      return { 
-        userCategories: categories, 
-        userSubcategories: subcategories,
-        servicesWithExperience: selectedServices
-      };
+      return { userCategories: categories, userSubcategories: subcategories, servicesWithExperience: selectedServices };
     }
-    
-    // Fallback to old structure
+
     const categories = (profile.selectedCategories?.length ? profile.selectedCategories : profile.categories) || [];
     const subcategories = (profile.selectedSubcategories?.length ? profile.selectedSubcategories : profile.subcategories) || [];
-    return { 
-      userCategories: categories, 
-      userSubcategories: subcategories,
-      servicesWithExperience: null
-    };
+    return { userCategories: categories, userSubcategories: subcategories, servicesWithExperience: null };
   }, [profile.selectedServices, profile.selectedCategories, profile.categories, profile.selectedSubcategories, profile.subcategories]);
 
-  // Filter subcategories that belong to a specific category
   const getSubcatsForCategory = useMemo(() => (categoryKey: string) => {
-    // If using new selectedServices, filter by categoryKey directly
     if (servicesWithExperience) {
-      return servicesWithExperience
-        .filter(s => s.categoryKey === categoryKey)
-        .map(s => s.key);
+      return servicesWithExperience.filter(s => s.categoryKey === categoryKey).map(s => s.key);
     }
-    // Fallback: filter using category definitions
     const categorySubcats = getSubcategoriesForCategory(categoryKey);
     const categorySubcatKeys = categorySubcats.map(s => s.key);
     return userSubcategories.filter(subKey => categorySubcatKeys.includes(subKey));
   }, [getSubcategoriesForCategory, userSubcategories, servicesWithExperience]);
-  
-  // Get experience label for a service
-  const getServiceExperience = useMemo(() => (serviceKey: string): string | null => {
-    if (!servicesWithExperience) return null;
-    const service = servicesWithExperience.find(s => s.key === serviceKey);
-    if (!service) return null;
-    
-    const expMap: Record<string, string> = {
-      '1-2': `1-2${t('timeUnits.year')}`,
-      '3-5': `3-5${t('timeUnits.year')}`,
-      '5-10': `5-10${t('timeUnits.year')}`,
-      '10+': `10+${t('timeUnits.year')}`,
-    };
-    return expMap[service.experience] || null;
-  }, [servicesWithExperience, t]);
 
-  const currentStatus =
-    STATUS_CONFIG[profile.status || ProStatus.AWAY] ||
-    STATUS_CONFIG[ProStatus.AWAY];
-  const isTopRated = profile.avgRating >= 4.8 && (profile.completedProjects || 0) >= 5;
   const isPremium = profile.isPremium || false;
 
-  // Avatar URL - use consistent storage.getFileUrl
   const avatarUrl = profile.avatar ? storage.getFileUrl(profile.avatar) : null;
 
-  // Use the maximum of all available project count sources
-  // This handles cases where counters weren't incremented for old projects
+  // Completed jobs count
   const portfolioCount = profile.portfolioProjects?.length || 0;
-  const portfolioItemCount = profile.portfolioItemCount || 0; // From PortfolioItem collection
+  const portfolioItemCount = profile.portfolioItemCount || 0;
   const externalJobs = profile.externalCompletedJobs || 0;
   const completedProjects = profile.completedProjects || 0;
   const completedJobsCounter = profile.completedJobs || 0;
   const completedJobs = Math.max(completedJobsCounter, portfolioCount, portfolioItemCount, completedProjects, externalJobs);
 
-  // TODO: Temporary fix for pricing model
-  const pricing = useMemo(() => {
-    const model = (profile.pricingModel as unknown as string | undefined) || undefined;
-    const base = typeof profile.basePrice === "number" ? profile.basePrice : undefined;
-    const max = typeof profile.maxPrice === "number" ? profile.maxPrice : undefined;
+  // Filter-aware pricing: show price only for the filtered service(s)
+  const matchedPricing = useMemo(() => {
+    const sp = profile.servicePricing;
+    if (!sp || sp.length === 0) return null;
 
-    const hasBase = typeof base === "number" && base > 0;
-    const hasMax = typeof max === "number" && max > 0;
-
-    // Normalize legacy values to canonical product requirement:
-    // fixed | range | byAgreement | per_sqm
-    const normalizedIncoming =
-      model === "hourly"
-        ? "byAgreement"
-        : model === "per_sqm" || model === "sqm"
-          ? "per_sqm"
-          : model === "daily" || model === "from"
-            ? "fixed"
-          : model === "project_based"
-            ? "range"
-            : model;
-
-    const normalizedModel =
-      normalizedIncoming === "range"
-        ? hasBase && hasMax && max! > base!
-          ? "range"
-          : hasBase || hasMax
-            ? "fixed"
-            : "byAgreement"
-        : normalizedIncoming === "per_sqm"
-          ? hasBase || hasMax
-            ? "per_sqm"
-            : "byAgreement"
-        : normalizedIncoming === "fixed"
-          ? hasBase || hasMax
-            ? "fixed"
-            : "byAgreement"
-          : normalizedIncoming === "byAgreement"
-            ? "byAgreement"
-            : undefined;
-
-    if (normalizedModel === "byAgreement") {
-      return {
-        label: t("common.negotiable"),
-        value: null as string | null,
-      };
+    // If user filtered by specific subcategories, find matching service prices
+    if (activeSubcategories.length > 0) {
+      const matched = sp.filter(s => s.isActive && activeSubcategories.includes(s.serviceKey));
+      if (matched.length === 1) return { value: `${matched[0].price}₾` };
+      if (matched.length > 1) {
+        const min = Math.min(...matched.map(s => s.price));
+        const max = Math.max(...matched.map(s => s.price));
+        return min === max ? { value: `${min}₾` } : { value: `${min}₾ - ${max}₾` };
+      }
     }
 
-    if (normalizedModel === "per_sqm" && (hasBase || hasMax)) {
-      const val = hasBase ? base! : max!;
-      return {
-        label: t("professional.perSqm"),
-        value: `${val}₾${t("timeUnits.perSqm")}`,
-      };
+    // If user filtered by category, show price range for that category
+    if (activeCategory) {
+      const catServices = sp.filter(s => s.isActive && s.categoryKey === activeCategory);
+      if (catServices.length === 1) return { value: `${catServices[0].price}₾` };
+      if (catServices.length > 1) {
+        const min = Math.min(...catServices.map(s => s.price));
+        const max = Math.max(...catServices.map(s => s.price));
+        return min === max ? { value: `${min}₾` } : { value: `${min}₾ - ${max}₾` };
+      }
     }
 
-    if (normalizedModel === "range" && hasBase && hasMax) {
-      return {
-        label: t("common.priceRange"),
-        value: `${base}₾ - ${max}₾`,
-      };
-    }
-
-    if (normalizedModel === "fixed" && (hasBase || hasMax)) {
-      const val = hasBase ? base! : max!;
-      return {
-        label: t("common.fixed"),
-        value: `${val}₾`,
-      };
-    }
-
+    // No filter — don't show a misleading aggregate price
     return null;
-  }, [profile.pricingModel, profile.basePrice, profile.maxPrice, t]);
+  }, [profile.servicePricing, activeCategory, activeSubcategories]);
 
-  const viewsCount = profile.profileViewCount ?? 0;
+  // Filter-aware experience: show experience for the filtered service
+  const matchedExperience = useMemo(() => {
+    if (!servicesWithExperience || servicesWithExperience.length === 0) return null;
+    const expToLabel: Record<string, string> = {
+      '1-2': `1-2${t('timeUnits.year')}`,
+      '3-5': `3-5${t('timeUnits.year')}`,
+      '5-10': `5-10${t('timeUnits.year')}`,
+      '10+': `10+${t('timeUnits.year')}`,
+    };
+
+    if (activeSubcategories.length > 0) {
+      const matched = servicesWithExperience.filter(s => activeSubcategories.includes(s.key));
+      if (matched.length > 0) {
+        const expToYears: Record<string, number> = { '1-2': 2, '3-5': 5, '5-10': 10, '10+': 15 };
+        const best = matched.reduce((a, b) => (expToYears[a.experience] || 0) >= (expToYears[b.experience] || 0) ? a : b);
+        return expToLabel[best.experience] || null;
+      }
+    }
+
+    if (activeCategory) {
+      const catServices = servicesWithExperience.filter(s => s.categoryKey === activeCategory);
+      if (catServices.length > 0) {
+        const expToYears: Record<string, number> = { '1-2': 2, '3-5': 5, '5-10': 10, '10+': 15 };
+        const best = catServices.reduce((a, b) => (expToYears[a.experience] || 0) >= (expToYears[b.experience] || 0) ? a : b);
+        return expToLabel[best.experience] || null;
+      }
+    }
+
+    // No filter — don't show misleading aggregate
+    return null;
+  }, [servicesWithExperience, activeCategory, activeSubcategories, t]);
+
+  // All media slides: images, before/after pairs, videos
+  type MediaSlide =
+    | { type: 'image'; src: string }
+    | { type: 'beforeAfter'; before: string; after: string }
+    | { type: 'video'; src: string };
+
+  const mediaSlides = useMemo<MediaSlide[]>(() => {
+    const slides: MediaSlide[] = [];
+    const images = profile.portfolioPreviewImages || [];
+    const baPairs = profile.portfolioPreviewBeforeAfter || [];
+    const videos = profile.portfolioPreviewVideos || [];
+
+    // If no backend previews, fall back to embedded projects
+    if (images.length === 0 && baPairs.length === 0 && videos.length === 0) {
+      for (const project of (profile.portfolioProjects || [])) {
+        for (const img of (project.images || [])) slides.push({ type: 'image', src: img });
+        for (const ba of (project.beforeAfterPairs || [])) {
+          slides.push({ type: 'beforeAfter', before: ba.beforeImage, after: ba.afterImage });
+        }
+      }
+      return slides;
+    }
+
+    // Before/after pairs first (most interesting), then images, then videos
+    for (const ba of baPairs) slides.push({ type: 'beforeAfter', before: ba.before, after: ba.after });
+    for (const img of images) slides.push({ type: 'image', src: img });
+    for (const vid of videos) slides.push({ type: 'video', src: vid });
+    return slides;
+  }, [profile.portfolioPreviewImages, profile.portfolioPreviewBeforeAfter, profile.portfolioPreviewVideos, profile.portfolioProjects]);
+
+  const totalMediaCount = useMemo(() => {
+    const previewImages = profile.portfolioPreviewImages?.length || 0;
+    const previewBA = profile.portfolioPreviewBeforeAfter?.length || 0;
+    const previewVid = profile.portfolioPreviewVideos?.length || 0;
+    const total = previewImages + previewBA + previewVid;
+    return Math.max(total, portfolioItemCount);
+  }, [profile.portfolioPreviewImages, profile.portfolioPreviewBeforeAfter, profile.portfolioPreviewVideos, portfolioItemCount]);
+
+  // Track card visibility — only auto-slide when in viewport
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const [isInView, setIsInView] = useState(false);
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => setIsInView(e.isIntersecting), { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  // Auto-advance slides every 4s, pause on hover or when offscreen
+  useEffect(() => {
+    if (isHovered || !isInView || mediaSlides.length <= 1) {
+      if (autoSlideRef.current) clearInterval(autoSlideRef.current);
+      autoSlideRef.current = null;
+      return;
+    }
+    autoSlideRef.current = setInterval(() => {
+      setActiveSlide((p) => (p + 1) % mediaSlides.length);
+    }, 4000);
+    return () => { if (autoSlideRef.current) clearInterval(autoSlideRef.current); };
+  }, [isHovered, isInView, mediaSlides.length]);
+
+  const isTopRated = profile.avgRating >= 4.8 && (profile.completedProjects || 0) >= 5;
+
+  // Online/active status based on lastLoginAt
+  const isOnline = useMemo(() => {
+    if (!profile.lastLoginAt) return false;
+    const diff = Date.now() - new Date(profile.lastLoginAt).getTime();
+    return diff < 1000 * 60 * 30; // within 30 minutes
+  }, [profile.lastLoginAt]);
 
   const handleClick = useCallback(() => {
     trackEvent('pro_click', profile.id, profile.name);
+    // Save scroll position for back navigation
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('browseScrollY', window.scrollY.toString());
+    }
   }, [profile.id, profile.name]);
 
-  // Default/Compact variant
-  if (variant === "compact" || variant === "default") {
-    return (
-      <Link href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick}>
-        {/* Card Container with Premium Effects */}
-        <motion.div
-          className={`relative transition-all duration-500 h-full ${isPremium ? 'game-card-premium' : ''}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          {/* Premium border glow effect - hidden on mobile for performance */}
-          <div className="hidden sm:block absolute -inset-[1px] rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/25 group-hover:via-[#D4937B]/15 group-hover:to-[#C4735B]/25 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
+  // Build catalog lookup: key → localized name (covers categories, subcategories, services)
+  const catalogLabelMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const cat of catalogCategories) {
+      map.set(cat.key, locale === 'ka' ? cat.nameKa : cat.name);
+      for (const sub of cat.subcategories) {
+        map.set(sub.key, locale === 'ka' ? sub.nameKa : sub.name);
+        for (const svc of (sub.services || [])) {
+          map.set(svc.key, locale === 'ka' ? svc.nameKa : svc.name);
+        }
+      }
+    }
+    return map;
+  }, [catalogCategories, locale]);
 
-          {/* Main Card */}
-          <div className="relative h-full flex flex-col bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm sm:shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 sm:group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] sm:group-hover:-translate-y-0.5 p-3 sm:p-5">
+  // All subcategories for display — filtered against current catalog
+  const allSubcats = useMemo(() => {
+    const raw = userCategories.flatMap(cat => getSubcatsForCategory(cat));
+    return raw.filter(key => catalogLabelMap.has(key));
+  }, [userCategories, getSubcatsForCategory, catalogLabelMap]);
 
-            {/* Shine effect overlay - desktop only */}
-            <div className="hidden sm:block absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30">
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
-            </div>
+  const displaySubcats = allSubcats.slice(0, 3);
+  const remainingSubcats = allSubcats.length - 3;
 
-            {/* Top Row - Avatar + Info (Mobile: Horizontal layout) */}
-            <div className="flex items-center gap-3 sm:flex-col sm:items-center">
-              {/* Avatar */}
-              <div className="relative flex-shrink-0">
-                <div className="relative w-12 h-12 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 ring-2 ring-white dark:ring-neutral-900 shadow-md">
-                  {avatarUrl && !imageError ? (
-                    <Image
-                      src={avatarUrl}
-                      alt={profile.name}
-                      fill
-                      sizes="(max-width: 640px) 48px, 80px"
-                      className={`object-cover transition-all duration-500 group-hover:scale-105 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
-                      onLoad={() => setImageLoaded(true)}
-                      onError={() => setImageError(true)}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-lg sm:text-2xl font-bold text-neutral-400 dark:text-neutral-500">
-                      {profile.name.charAt(0)}
-                    </div>
-                  )}
-                </div>
-                {/* Status indicator */}
-                <span
-                  className={`absolute bottom-0 right-0 w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full ${currentStatus.color} border-2 sm:border-[3px] border-white dark:border-neutral-900 shadow-sm`}
-                />
-              </div>
-
-              {/* Info section */}
-              <div className="flex-1 min-w-0 sm:w-full sm:text-center sm:mt-3">
-                {/* Name + Badges */}
-                <div className="flex items-center gap-1.5 sm:justify-center mb-0.5 sm:mb-1">
-                  <h3 className="font-semibold text-sm sm:text-[15px] text-neutral-900 dark:text-white leading-snug truncate group-hover:text-[#C4735B] transition-colors duration-300">
-                    {profile.name}
-                  </h3>
-                  {profile.verificationStatus === 'verified' && (
-                    <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0" />
-                  )}
-                  {isTopRated && (
-                    <span className="hidden sm:inline-flex">
-                      <StatusPill variant="topRated" size="xs" locale={locale} label="Top" />
-                    </span>
-                  )}
-                </div>
-
-                {/* Mobile: Rating + Stats inline */}
-                <div className="flex items-center gap-2 sm:hidden mb-1.5">
-                  {(profile.totalReviews || 0) > 0 ? (
-                    <StarRating
-                      rating={profile.avgRating > 0 ? profile.avgRating : 5.0}
-                      reviewCount={profile.totalReviews}
-                      showCount
-                      size="xs"
-                    />
-                  ) : (
-                    <Badge variant="success" size="xs" icon={<Sparkles className="w-2.5 h-2.5" />}>
-                      {t('card.new')}
-                    </Badge>
-                  )}
-                  <span className="text-neutral-300 dark:text-neutral-600">·</span>
-                  <span className="flex items-center gap-0.5 text-[10px] text-neutral-500 dark:text-neutral-400">
-                    <Clock className="w-3 h-3" />
-                    {(() => {
-                      if (servicesWithExperience && servicesWithExperience.length > 0) {
-                        const expToYears: Record<string, number> = { '1-2': 2, '3-5': 5, '5-10': 10, '10+': 15 };
-                        const maxYears = Math.max(...servicesWithExperience.map(s => expToYears[s.experience] || 0));
-                        return maxYears > 0 ? maxYears : (profile.yearsExperience || 0);
-                      }
-                      return profile.yearsExperience || 0;
-                    })()}{t('timeUnits.year')}
-                  </span>
-                  <span className="text-neutral-300 dark:text-neutral-600">·</span>
-                  <span className="flex items-center gap-0.5 text-[10px] text-neutral-500 dark:text-neutral-400">
-                    <Briefcase className="w-3 h-3" />
-                    {completedJobs}
-                  </span>
-                  {pricing && (
-                    <>
-                      <span className="text-neutral-300 dark:text-neutral-600">·</span>
-                      <span className="text-[10px] font-medium text-[#C4735B]">
-                        {pricing.value || pricing.label}
-                      </span>
-                    </>
-                  )}
-                </div>
-
-                {/* Mobile: Subcategory pills */}
-                <div className="sm:hidden flex flex-wrap gap-1">
-                  {(userSubcategories.length > 0 ? userSubcategories : userCategories).slice(0, 4).map((key) => (
-                    <span key={key} className="text-[10px] font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full">
-                      {getCategoryLabel(key)}
-                    </span>
-                  ))}
-                  {userSubcategories.length > 4 && (
-                    <span className="text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 px-1.5 py-0.5 rounded-full">
-                      +{userSubcategories.length - 4}
-                    </span>
-                  )}
-                </div>
-
-                {/* Desktop: Rating */}
-                <div className="hidden sm:flex items-center justify-center mb-1.5 sm:mb-3">
-                  {(profile.totalReviews || 0) > 0 ? (
-                    <StarRating
-                      rating={profile.avgRating > 0 ? profile.avgRating : 5.0}
-                      reviewCount={profile.totalReviews}
-                      showCount
-                      size="xs"
-                    />
-                  ) : (
-                    <Badge variant="success" size="xs" icon={<Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}>
-                      {t('card.new')}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Desktop: Full stats and categories */}
-            <div className="hidden sm:block">
-              {/* Stats Row */}
-              <div className="flex items-center justify-center gap-3 mb-3 mt-4">
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-50 dark:bg-neutral-800/50">
-                  <Clock className="w-3 h-3 text-neutral-400" />
-                  <span className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
-                    {(() => {
-                      if (servicesWithExperience && servicesWithExperience.length > 0) {
-                        const expToYears: Record<string, number> = { '1-2': 2, '3-5': 5, '5-10': 10, '10+': 15 };
-                        const maxYears = Math.max(...servicesWithExperience.map(s => expToYears[s.experience] || 0));
-                        return maxYears > 0 ? maxYears : (profile.yearsExperience || 0);
-                      }
-                      return profile.yearsExperience || 0;
-                    })()} {t('timeUnits.year')}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-50 dark:bg-neutral-800/50">
-                  <Briefcase className="w-3 h-3 text-neutral-400" />
-                  <span className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
-                    {completedJobs} {t('admin.job')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Pricing */}
-              {pricing && (
-                <div className="flex justify-center mb-3">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C4735B]/10 border border-[#C4735B]/20">
-                    <Wallet className="w-3 h-3 text-[#C4735B]" />
-                    <span className="text-[11px] font-semibold text-neutral-700 dark:text-neutral-200">
-                      {pricing.value ? (
-                        <span className="text-[#C4735B]">{pricing.value}</span>
-                      ) : (
-                        pricing.label
-                      )}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Divider */}
-              <div className="h-px bg-gradient-to-r from-transparent via-neutral-200 dark:via-neutral-700 to-transparent mb-3" />
-
-              {/* Categories with Subcategories - Enhanced Display */}
-              <div className="space-y-2">
-                {(() => {
-                  // Collect all subcategories across all categories
-                  const allSubcats = userCategories.flatMap(cat =>
-                    getSubcatsForCategory(cat).map(subKey => ({ subKey, catKey: cat }))
-                  );
-                  const totalSubcats = allSubcats.length;
-
-                  // If 4 or fewer subcategories, show them all in a flowing layout
-                  if (totalSubcats <= 4) {
-                    return (
-                      <motion.div
-                        className="flex flex-wrap justify-center gap-1.5"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.1 }}
-                      >
-                        {allSubcats.map(({ subKey }, j) => (
-                          <motion.span
-                            key={j}
-                            className="px-2.5 py-1 text-[10px] font-medium text-neutral-600 dark:text-neutral-300 bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-800/50 rounded-full border border-neutral-200/50 dark:border-neutral-700/50 shadow-sm"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.1 + j * 0.05 }}
-                            whileHover={{ scale: 1.05, backgroundColor: "rgba(196, 115, 91, 0.1)" }}
-                          >
-                            {getCategoryLabel(subKey)}
-                          </motion.span>
-                        ))}
-                      </motion.div>
-                    );
-                  }
-
-                  // If more than 4 subcategories, show first 3 + overflow badge
-                  const displaySubcats = allSubcats.slice(0, 3);
-                  const remaining = totalSubcats - 3;
-
-                  return (
-                    <motion.div
-                      className="flex flex-wrap justify-center gap-1.5"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.1 }}
-                    >
-                      {displaySubcats.map(({ subKey }, j) => (
-                        <motion.span
-                          key={j}
-                          className="px-2.5 py-1 text-[10px] font-medium text-neutral-600 dark:text-neutral-300 bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-800/50 rounded-full border border-neutral-200/50 dark:border-neutral-700/50 shadow-sm"
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.1 + j * 0.05 }}
-                          whileHover={{ scale: 1.05, backgroundColor: "rgba(196, 115, 91, 0.1)" }}
-                        >
-                          {getCategoryLabel(subKey)}
-                        </motion.span>
-                      ))}
-                      <motion.span
-                        className="px-2.5 py-1 text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 rounded-full border border-[#C4735B]/20"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.25 }}
-                        whileHover={{ scale: 1.1 }}
-                      >
-                        +{remaining} {t('common.more')}
-                      </motion.span>
-                    </motion.div>
-                  );
-                })()}
-              </div>
-            </div>
-          </div>
-
-          {/* Premium Badge */}
-          {isPremium && (
-            <motion.div
-              className="absolute -top-1 -right-1 z-20"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            >
-              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-white">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 sm:w-4 sm:h-4 text-white">
-                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-                </svg>
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
-      </Link>
-    );
-  }
-
-  // Horizontal variant - Enhanced
   if (variant === "horizontal") {
+    // Keep horizontal variant simple — used in recommendations etc.
     return (
       <Link href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick}>
-        <motion.div
-          className={`relative transition-all duration-500 h-full ${isPremium ? 'game-card-premium' : ''}`}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-        >
-          {/* Premium border glow */}
-          <div className="absolute -inset-[1px] rounded-xl bg-gradient-to-r from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/20 group-hover:via-[#D4937B]/10 group-hover:to-[#C4735B]/20 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
-
-          <div className="relative h-full bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-[0_1px_0_rgba(0,0,0,0.03),0_10px_24px_-22px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 group-hover:shadow-lg p-3.5">
-            <div className="flex items-center gap-3.5">
-              {/* Avatar - Enhanced */}
-              <div className="relative flex-shrink-0 group/avatar">
-                <div className="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 ring-2 ring-white dark:ring-neutral-800 shadow-md">
-                  {avatarUrl && !imageError ? (
-                    <Image
-                      src={avatarUrl}
-                      alt={profile.name}
-                      fill
-                      sizes="56px"
-                      className="object-cover transition-transform duration-300 group-hover/avatar:scale-105"
-                      onError={() => setImageError(true)}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-lg font-bold text-neutral-400">
-                      {profile.name.charAt(0)}
-                    </div>
-                  )}
-                </div>
-                <span
-                  className={`absolute bottom-0 right-0 w-4 h-4 rounded-full ${currentStatus.color} border-2 border-white dark:border-neutral-900 shadow-sm`}
-                />
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <h3 className="font-semibold text-[13px] text-neutral-900 dark:text-white truncate group-hover:text-[#C4735B] transition-colors duration-300">
-                    {profile.name}
-                  </h3>
-                  {isPremium && (
-                    <StatusPill variant="premium" size="xs" label="PRO" showIcon={false} />
-                  )}
-                  {profile.verificationStatus === 'verified' && (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                  )}
-                </div>
-                {profile.bio ? (
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mb-1.5">
-                    {profile.bio}
-                  </p>
+        <div className="relative h-full bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm group-hover:border-[#C4735B]/25 transition-all duration-300 group-hover:shadow-md p-3.5">
+          <div className="flex items-center gap-3.5">
+            <div className="relative flex-shrink-0">
+              <div className="w-14 h-14 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 ring-2 ring-white dark:ring-neutral-800 shadow-md">
+                {avatarUrl && !imageError ? (
+                  <Image src={avatarUrl} alt={profile.name} fill sizes="56px" className="object-cover" onError={() => setImageError(true)} />
                 ) : (
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mb-1.5">
-                    {getCategoryLabel(userCategories[0])}
-                  </p>
+                  <div className="w-full h-full flex items-center justify-center text-lg font-bold text-neutral-400">{profile.name.charAt(0)}</div>
                 )}
-                <div className="flex items-center gap-2.5 text-[11px]">
-                  {(profile.totalReviews || 0) > 0 ? (
-                    <StarRating
-                      rating={profile.avgRating > 0 ? profile.avgRating : 5.0}
-                      reviewCount={profile.totalReviews}
-                      showCount
-                      size="xs"
-                    />
-                  ) : (
-                    <StatusPill variant="new" size="xs" locale={locale} />
-                  )}
-                  <span className="w-px h-3 bg-neutral-200 dark:bg-neutral-700" />
-                  <span className="text-neutral-500 dark:text-neutral-400 font-medium">
-                    {(() => {
-                      if (servicesWithExperience && servicesWithExperience.length > 0) {
-                        const expToYears: Record<string, number> = { '1-2': 2, '3-5': 5, '5-10': 10, '10+': 15 };
-                        const maxYears = Math.max(...servicesWithExperience.map(s => expToYears[s.experience] || 0));
-                        return maxYears > 0 ? maxYears : (profile.yearsExperience || 0);
-                      }
-                      return profile.yearsExperience || 0;
-                    })()} {t('timeUnits.year')}
-                  </span>
-                  <span className="text-neutral-500 dark:text-neutral-400 font-medium">
-                    {completedJobs} {t('admin.jobs')}
-                  </span>
-                  <span className="text-neutral-400 dark:text-neutral-600">•</span>
-                  {pricing && (
-                    <span className="inline-flex items-center gap-1 text-[#C4735B] dark:text-[#D4937B] font-semibold">
-                      <Wallet className="w-3.5 h-3.5" />
-                      {pricing.value ? pricing.value : pricing.label}
-                    </span>
-                  )}
-                  <span className="text-neutral-400 dark:text-neutral-600">•</span>
-                  <span className="inline-flex items-center gap-1 text-neutral-500 dark:text-neutral-400 font-medium">
-                    <Eye className="w-3.5 h-3.5" />
-                    {viewsCount}
-                  </span>
-                </div>
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <h3 className="font-semibold text-[13px] text-neutral-900 dark:text-white truncate group-hover:text-[#C4735B] transition-colors">{profile.name}</h3>
+                {profile.verificationStatus === 'verified' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />}
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-neutral-500">
+                {(profile.totalReviews || 0) > 0 ? (
+                  <StarRating rating={profile.avgRating > 0 ? profile.avgRating : 5.0} reviewCount={profile.totalReviews} showCount size="xs" />
+                ) : (
+                  <StatusPill variant="new" size="xs" locale={locale} />
+                )}
+                {matchedExperience && (
+                  <>
+                    <span className="text-neutral-300">·</span>
+                    <span>{matchedExperience}</span>
+                  </>
+                )}
+                {matchedPricing && (
+                  <>
+                    <span className="text-neutral-300">·</span>
+                    <span className="text-[#C4735B] font-medium">{matchedPricing.value}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
-
-          {/* Premium Badge */}
-          {isPremium && (
-            <motion.div
-              className="absolute -top-1 -right-1 z-20"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            >
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-white">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-white">
-                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-                </svg>
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
+        </div>
       </Link>
     );
   }
 
-  return null;
+  // Default / Compact variant — unified card with portfolio photos
+  return (
+    <Link ref={cardRef} href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} — ${t('browse.professionals')}`}>
+      <div className={`relative h-full flex flex-col bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm group-hover:border-[#C4735B]/25 transition-all duration-300 group-hover:shadow-lg ${isPremium ? 'ring-1 ring-amber-300/30' : ''}`}>
+
+        {/* Portfolio media carousel */}
+        {mediaSlides.length > 0 ? (
+          <div
+            className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-800 overflow-hidden"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            {/* Current slide */}
+            {(() => {
+              const slide = mediaSlides[activeSlide] || mediaSlides[0];
+              if (!slide) return null;
+              if (slide.type === 'beforeAfter') {
+                return (
+                  <BeforeAfterSlider
+                    beforeImage={storage.getOptimizedImageUrl(slide.before, { width: 400, quality: 70 })}
+                    afterImage={storage.getOptimizedImageUrl(slide.after, { width: 400, quality: 70 })}
+                    className="absolute inset-0 h-full"
+                    aspectRatio=""
+                    handleSize="sm"
+                    sizes="(max-width: 640px) 100vw, 400px"
+                  />
+                );
+              }
+              if (slide.type === 'video') {
+                return (
+                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-900">
+                    <video src={slide.src} className="w-full h-full object-cover" muted preload="metadata" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                        <Play className="w-4 h-4 text-neutral-700 ml-0.5" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <Image
+                  src={storage.getOptimizedImageUrl(slide.src, { width: 500, quality: 70 })}
+                  alt=""
+                  fill
+                  sizes="(max-width: 640px) 100vw, 400px"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+              );
+            })()}
+
+            {/* Slide nav arrows */}
+            {mediaSlides.length > 1 && (
+              <>
+                <button
+                  aria-label="Previous image"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide((p) => (p - 1 + mediaSlides.length) % mediaSlides.length); }}
+                  className="absolute left-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10"
+                >
+                  <ChevronLeft className="w-4 h-4 text-neutral-700" />
+                </button>
+                <button
+                  aria-label="Next image"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide((p) => (p + 1) % mediaSlides.length); }}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10"
+                >
+                  <ChevronRight className="w-4 h-4 text-neutral-700" />
+                </button>
+              </>
+            )}
+
+            {/* Dot indicators */}
+            {mediaSlides.length > 1 && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                {mediaSlides.slice(0, 6).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide(i); }}
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${activeSlide === i ? 'bg-white w-3' : 'bg-white/50'}`}
+                  />
+                ))}
+                {mediaSlides.length > 6 && (
+                  <span className="text-[8px] text-white/70 font-medium self-center ml-0.5">+{mediaSlides.length - 6}</span>
+                )}
+              </div>
+            )}
+
+            {/* Count badge */}
+            {totalMediaCount > 1 && (
+              <span className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full flex items-center gap-1 z-10">
+                <Camera className="w-3 h-3" />
+                {totalMediaCount}
+              </span>
+            )}
+          </div>
+        ) : (
+          <div className="relative aspect-[4/3] bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 flex items-center justify-center">
+            <div className="text-center">
+              <Camera className="w-5 h-5 text-neutral-300 dark:text-neutral-600 mx-auto mb-1" />
+              <span className="text-[10px] text-neutral-400 dark:text-neutral-500">{t('professional.noPortfolioItemsYet')}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Avatar overlapping carousel bottom */}
+        <div className="relative -mt-6 ml-3 sm:ml-4 mb-0">
+          <div className="w-12 h-12 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 ring-3 ring-white dark:ring-neutral-900 shadow-md relative">
+            {avatarUrl && !imageError ? (
+              <Image
+                src={avatarUrl}
+                alt={profile.name}
+                fill
+                sizes="48px"
+                className="object-cover"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-base font-bold text-neutral-400">
+                {profile.name.charAt(0)}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Card body */}
+        <div className="flex-1 flex flex-col px-3 sm:px-4 pb-3 sm:pb-4 pt-1.5">
+          {/* Pro identity */}
+          <div className="mb-2">
+            <div className="flex items-center gap-1.5">
+                <h3 className="font-semibold text-sm text-neutral-900 dark:text-white truncate group-hover:text-[#C4735B] transition-colors">
+                  {profile.name}
+                </h3>
+                {isOnline && (
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Online" />
+                )}
+                {profile.verificationStatus === 'verified' && (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                )}
+                {isTopRated && (
+                  <span className="hidden sm:inline-flex">
+                    <StatusPill variant="topRated" size="xs" locale={locale} label="Top" />
+                  </span>
+                )}
+            </div>
+            {/* Rating */}
+            <div className="flex items-center gap-1.5 mt-0.5">
+              {(profile.totalReviews || 0) > 0 ? (
+                <StarRating
+                  rating={profile.avgRating > 0 ? profile.avgRating : 5.0}
+                  reviewCount={profile.totalReviews}
+                  showCount
+                  size="xs"
+                />
+              ) : (
+                <Badge variant="success" size="xs" icon={<Sparkles className="w-2.5 h-2.5" />}>
+                  {t('card.new')}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Stats row */}
+          <div className="flex items-center gap-2 text-[11px] text-neutral-500 dark:text-neutral-400 mb-2.5 flex-wrap">
+            {matchedExperience && (
+              <>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {matchedExperience}
+                </span>
+                <span className="text-neutral-300 dark:text-neutral-600">·</span>
+              </>
+            )}
+            <span className="flex items-center gap-1">
+              {completedJobs} {t('professional.completedJobsCount')}
+            </span>
+            {matchedPricing && (
+              <>
+                <span className="text-neutral-300 dark:text-neutral-600">·</span>
+                <span className="flex items-center gap-1 text-[#C4735B] font-semibold">
+                  <Wallet className="w-3 h-3" />
+                  {matchedPricing.value}
+                </span>
+              </>
+            )}
+            {profile.avgResponseTime != null && profile.avgResponseTime > 0 && profile.avgResponseTime <= 24 && (
+              <>
+                <span className="text-neutral-300 dark:text-neutral-600">·</span>
+                <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                  <Zap className="w-3 h-3" />
+                  {profile.avgResponseTime < 1
+                    ? t('professional.lessThanHour')
+                    : profile.avgResponseTime <= 4
+                    ? t('professional.lessThanHours', { count: 4 })
+                    : t('professional.lessThanHours', { count: 24 })}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Service pills */}
+          <div className="flex flex-wrap gap-1 mt-auto">
+            {displaySubcats.map((key) => (
+              <span
+                key={key}
+                className="px-2 py-0.5 text-[10px] font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 rounded-full"
+              >
+                {catalogLabelMap.get(key) || getCategoryLabel(key)}
+              </span>
+            ))}
+            {remainingSubcats > 0 && (
+              <span className="px-2 py-0.5 text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 rounded-full">
+                +{remainingSubcats}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Premium badge */}
+        {isPremium && (
+          <div className="absolute top-2 right-2 z-10">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-white">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-white">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+              </svg>
+            </div>
+          </div>
+        )}
+      </div>
+    </Link>
+  );
 }

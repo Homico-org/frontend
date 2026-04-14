@@ -95,16 +95,10 @@ export default function PasswordChangeForm({
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-4 ${className}`}>
       <div>
-        <h2
-          className="text-base sm:text-lg font-semibold"
-          style={{ color: 'var(--color-text-primary)' }}
-        >
-          {t('settings.changePassword')}
-        </h2>
         <p
-          className="mt-1 text-sm"
+          className="text-sm"
           style={{ color: 'var(--color-text-secondary)' }}
         >
           {t('settings.enterYourCurrentPasswordAnd')}

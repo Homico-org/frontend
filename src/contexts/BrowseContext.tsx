@@ -76,8 +76,10 @@ export function BrowseProvider({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Sync state to URL when filters change
+  // Sync state to URL when filters change (only on professionals page)
   useEffect(() => {
+    if (!pathname.includes('/professionals')) return;
+
     const params = new URLSearchParams();
 
     if (selectedCategory) {
@@ -102,12 +104,15 @@ export function BrowseProvider({
     const queryString = params.toString();
     const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
 
-    // Only update if URL actually changed
-    const currentParams = searchParams.toString();
-    if (queryString !== currentParams) {
-      router.replace(newUrl, { scroll: false });
+    // Use replaceState directly to avoid Next.js router re-render loops
+    if (typeof window !== 'undefined') {
+      const currentUrl = window.location.pathname + window.location.search;
+      const targetUrl = queryString ? `${pathname}?${queryString}` : pathname;
+      if (currentUrl !== targetUrl) {
+        window.history.replaceState(null, '', targetUrl);
+      }
     }
-  }, [selectedCategory, selectedSubcategories, minRating, budgetMin, budgetMax, searchQuery, pathname, router, searchParams]);
+  }, [selectedCategory, selectedSubcategories, minRating, budgetMin, budgetMax, searchQuery, pathname]);
 
   // For backward compatibility - return first subcategory or null
   const selectedSubcategory = selectedSubcategories.length > 0 ? selectedSubcategories[0] : null;

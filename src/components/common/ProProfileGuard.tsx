@@ -12,10 +12,10 @@ interface ProProfileGuardProps {
 // Pages that incomplete pro users are allowed to access
 const ALLOWED_PATHS_FOR_INCOMPLETE_PRO = [
   '/pro/profile-setup',
-  '/settings',
   '/logout',
   '/register',
   '/invite',
+  '/help',
 ];
 
 // Check if path starts with any allowed path

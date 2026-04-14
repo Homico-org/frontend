@@ -1,5 +1,6 @@
 "use client";
 
+import JobsFilterBar from "@/components/browse/JobsFilterBar";
 import EmptyState from "@/components/common/EmptyState";
 import JobCard from "@/components/common/JobCard";
 import MyJobCard from "@/components/common/MyJobCard";
@@ -20,6 +21,7 @@ import {
   Plus,
 } from "lucide-react";
 import Link from "next/link";
+// URL sync for jobs filters is handled by the sidebar state
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function JobsPage() {
@@ -28,8 +30,11 @@ export default function JobsPage() {
   const { openLoginModal } = useAuthModal();
   const { trackEvent } = useAnalytics();
   const { filters, savedJobIds, handleSaveJob, appliedJobIds } = useJobsContext();
+  // Filters managed in-memory via JobsContext
 
   const isPro = user?.role === "pro" || user?.role === "admin";
+
+  // URL sync removed — causes re-render loop with JobsContext defaults
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,22 +65,13 @@ export default function JobsPage() {
           params.append("status", "open");
         }
 
-        // For pros, filter by their selected subcategories (unless specific filter is applied)
-        if (
-          isPro &&
-          !filters.category &&
-          !filters.subcategory &&
-          user?.selectedSubcategories &&
-          user.selectedSubcategories.length > 0
-        ) {
-          user.selectedSubcategories.forEach((sub) => {
-            params.append("subcategories", sub);
-          });
-        }
-
-        // Apply sidebar filters
+        // Apply filters
         if (filters.category) params.append("category", filters.category);
-        if (filters.subcategory) params.append("subcategories", filters.subcategory);
+        if (filters.subcategories?.length > 0) {
+          params.append("subcategories", filters.subcategories.join(","));
+        } else if (filters.subcategory) {
+          params.append("subcategories", filters.subcategory);
+        }
         if (filters.budgetMin !== null)
           params.append("budgetMin", filters.budgetMin.toString());
         if (filters.budgetMax !== null)
@@ -85,6 +81,7 @@ export default function JobsPage() {
         if (filters.location !== "all") params.append("location", filters.location);
         if (filters.searchQuery) params.append("search", filters.searchQuery);
         if (filters.deadline !== "all") params.append("deadline", filters.deadline);
+        if (filters.sort && filters.sort !== "newest") params.append("sort", filters.sort);
         if (filters.showFavoritesOnly) params.append("savedOnly", "true");
 
         const response = await api.get(`/jobs?${params.toString()}`);
@@ -151,6 +148,7 @@ export default function JobsPage() {
     const filterKey = JSON.stringify({
       category: filters.category,
       subcategory: filters.subcategory,
+      subcategories: filters.subcategories,
       budgetMin: filters.budgetMin,
       budgetMax: filters.budgetMax,
       propertyType: filters.propertyType,
@@ -158,6 +156,7 @@ export default function JobsPage() {
       searchQuery: filters.searchQuery,
       deadline: filters.deadline,
       showFavoritesOnly: filters.showFavoritesOnly,
+      sort: filters.sort,
     });
 
     if (prevFiltersRef.current === filterKey && hasFetchedRef.current) return;
@@ -184,6 +183,7 @@ export default function JobsPage() {
     isAuthLoading,
     filters.category,
     filters.subcategory,
+    filters.subcategories,
     filters.budgetMin,
     filters.budgetMax,
     filters.propertyType,
@@ -191,6 +191,7 @@ export default function JobsPage() {
     filters.searchQuery,
     filters.deadline,
     filters.showFavoritesOnly,
+    filters.sort,
     fetchJobs,
     trackEvent,
   ]);
@@ -268,6 +269,8 @@ export default function JobsPage() {
 
   return (
     <div className="space-y-4 sm:space-y-8">
+      <JobsFilterBar />
+
       {/* Add Job CTA — show for all authenticated users */}
       {isAuthenticated && (
         <Link

@@ -91,17 +91,13 @@ export default function PaymentSettings({ onOpenAddCardModal }: PaymentSettingsP
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
-            {t('settings.paymentMethods')}
-          </h2>
-          <p className="text-sm mt-1 text-neutral-500">
-            {t('settings.manageYourSavedCards')}
-          </p>
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
+        <p className="text-sm text-neutral-500">
+          {t('settings.manageYourSavedCards')}
+        </p>
         <Button
+          size="sm"
           onClick={onOpenAddCardModal}
           leftIcon={<CreditCard className="w-4 h-4" />}
         >

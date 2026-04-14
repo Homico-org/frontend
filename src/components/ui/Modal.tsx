@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { X } from 'lucide-react';
 import { ReactNode, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ACCENT_COLOR, ACCENT_HOVER } from '@/constants/theme';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
@@ -142,8 +143,8 @@ export function Modal({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
+  const modalContent = (
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4" style={{ zIndex: 9999 }}>
       {/* Backdrop with blur */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-backdrop"
@@ -178,6 +179,11 @@ export function Modal({
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+  return modalContent;
 }
 
 interface ModalHeaderProps {
@@ -254,7 +260,7 @@ interface ModalFooterProps {
  */
 export function ModalFooter({ children, className }: ModalFooterProps) {
   return (
-    <div className={cn('flex gap-3 px-4 sm:px-6 pb-8 sm:pb-6', className)}>{children}</div>
+    <div className={cn('flex gap-3 px-4 sm:px-6 pt-3 pb-8 sm:pb-6', className)}>{children}</div>
   );
 }
 

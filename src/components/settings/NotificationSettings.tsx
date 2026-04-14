@@ -175,16 +175,10 @@ export default function NotificationSettings({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-base sm:text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          {texts.title}
-        </h2>
-        <p className="mt-1 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-          {texts.subtitle}
-        </p>
-      </div>
+    <div className="space-y-4">
+      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+        {texts.subtitle}
+      </p>
 
       {/* Message */}
       {message && (

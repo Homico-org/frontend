@@ -16,6 +16,61 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+interface DemoAccount {
+  name: string;
+  phone: string;
+  role: string;
+  avatar: string;
+  title: string;
+}
+
+function DevAccountPicker({ onSelect }: { onSelect: (phone: string) => void }) {
+  const [accounts, setAccounts] = useState<DemoAccount[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (loaded) return;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    fetch(`${API_URL}/auth/demo-accounts`)
+      .then(res => res.json())
+      .then(data => { setAccounts(data); setLoaded(true); })
+      .catch(() => setLoaded(true));
+  }, [loaded]);
+
+  if (!loaded || accounts.length === 0) return null;
+
+  const roleEmoji: Record<string, string> = { pro: '🔧', client: '👤', admin: '🛡️' };
+
+  return (
+    <div className="mt-3 border-t border-neutral-100 dark:border-neutral-800 pt-3">
+      <p className="text-[10px] text-neutral-400 mb-2 text-center">DEV: Quick login</p>
+      <div className="grid grid-cols-2 gap-1.5 max-h-[200px] overflow-y-auto">
+        {accounts.map((acc) => {
+          const localPhone = acc.phone.replace(/^\+995/, '');
+          return (
+            <button
+              key={acc.phone}
+              type="button"
+              onClick={() => onSelect(localPhone)}
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-left bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+            >
+              {acc.avatar ? (
+                <img src={acc.avatar} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
+              ) : (
+                <span className="text-sm">{roleEmoji[acc.role] || '👤'}</span>
+              )}
+              <div className="min-w-0">
+                <p className="text-[10px] font-medium text-neutral-700 dark:text-neutral-300 truncate">{acc.name}</p>
+                <p className="text-[8px] text-neutral-400 truncate">{acc.title || acc.role}</p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function LoginModal() {
   const router = useRouter();
   const { login } = useAuth();
@@ -93,7 +148,7 @@ export default function LoginModal() {
         // Ignore localStorage errors
       }
 
-      login(data.access_token, data.user);
+      login(data.access_token, data.user, data.refresh_token);
       trackEvent(AnalyticsEvent.LOGIN, { userRole: data.user.role, authMethod: 'mobile' });
       closeLoginModal();
 
@@ -229,6 +284,17 @@ export default function LoginModal() {
                   {t('auth.signIn')}
                 </Button>
               </form>
+
+              {/* Dev quick-fill test accounts */}
+              {process.env.NODE_ENV === 'development' && (
+                <DevAccountPicker
+                  onSelect={(phone) => {
+                    setPhone(phone);
+                    setPhoneCountry('GE' as CountryCode);
+                    setPassword('Demo123!');
+                  }}
+                />
+              )}
 
               {/* Sign Up Link */}
               <p className="text-center text-sm sm:text-xs text-neutral-500 mt-5 sm:mt-4">

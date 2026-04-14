@@ -3,6 +3,7 @@
 import AvatarCropper from '@/components/common/AvatarCropper';
 import { Input, Textarea } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { getSubcategoryConfig, getLocalizedField } from '@/constants/subcategoryConfig';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { aiService } from '@/services/ai';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ interface AboutStepProps {
   hideExperience?: boolean; // Hide experience field (experience is now per-service)
   customServices?: string[];
   onCustomServicesChange?: (services: string[]) => void;
+  subcategoryKey?: string;
 }
 
 export default function AboutStep({
@@ -46,8 +48,10 @@ export default function AboutStep({
   hideExperience = false,
   customServices = [],
   onCustomServicesChange,
+  subcategoryKey,
 }: AboutStepProps) {
   const { t, locale } = useLanguage();
+  const subcatConfig = getSubcategoryConfig(subcategoryKey || '');
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // State for cropper
@@ -325,7 +329,7 @@ export default function AboutStep({
               variant="filled"
               textareaSize="lg"
               success={validation.bio}
-              placeholder={t('common.bioPlaceholderExample')}
+              placeholder={getLocalizedField(subcatConfig.bio.placeholder, locale)}
             />
             {isGeneratingBio && (
               <div className="absolute inset-0 bg-[var(--color-bg-elevated)]/80 backdrop-blur-[2px] rounded-xl flex items-center justify-center">
@@ -386,9 +390,32 @@ export default function AboutStep({
                 {t('common.optional')}
               </span>
             </div>
-            <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-              {t('register.customSkillHint')}
+            <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+              {getLocalizedField(subcatConfig.skills.description, locale)}
             </p>
+
+            {/* Suggested skills */}
+            {subcatConfig.skills.suggestions.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {subcatConfig.skills.suggestions
+                  .filter((s) => !customServices.includes(s))
+                  .slice(0, 6)
+                  .map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => {
+                        if (onCustomServicesChange && !customServices.includes(suggestion)) {
+                          onCustomServicesChange([...customServices, suggestion]);
+                        }
+                      }}
+                      className="px-2.5 py-1 rounded-full text-xs font-medium transition-all border border-dashed border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5"
+                    >
+                      + {suggestion}
+                    </button>
+                  ))}
+              </div>
+            )}
 
             {/* Custom skills list */}
             {customServices.length > 0 && (
@@ -418,7 +445,7 @@ export default function AboutStep({
                 onChange={(e) => setCustomSkillInput(e.target.value)}
                 variant="filled"
                 inputSize="default"
-                placeholder={t('register.addCustomSkill')}
+                placeholder={getLocalizedField(subcatConfig.skills.placeholder, locale)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();

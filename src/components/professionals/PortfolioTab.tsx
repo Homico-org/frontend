@@ -11,7 +11,7 @@ export interface PortfolioTabProps {
   /** List of portfolio projects */
   projects: PortfolioProject[];
   /** Handler when a project is clicked */
-  onProjectClick?: (project: { images: string[]; videos?: string[]; title: string; currentIndex: number }) => void;
+  onProjectClick?: (project: { images: string[]; videos?: string[]; beforeAfter?: { before: string; after: string }[]; title: string; currentIndex: number }) => void;
   /** Locale for translations */
   locale?: 'en' | 'ka' | 'ru';
   /** Is current user viewing their own profile */
@@ -103,14 +103,10 @@ export default function PortfolioTab({
               project={project}
               locale={locale}
               onClick={(imageIndex) => {
-                // Include before/after 'after' images in the images array for lightbox
-                const allImages = [
-                  ...(project.images || []),
-                  ...((project.beforeAfter || []).map(pair => pair.after)),
-                ];
                 onProjectClick?.({
-                  images: allImages,
+                  images: project.images || [],
                   videos: (project as { videos?: string[] }).videos || [],
+                  beforeAfter: project.beforeAfter,
                   title: project.title,
                   currentIndex: imageIndex ?? activeIndexes[project.id] ?? 0,
                 });

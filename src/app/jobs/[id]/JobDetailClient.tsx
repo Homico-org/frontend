@@ -1,5 +1,6 @@
 "use client";
 
+import { useCategories } from "@/contexts/CategoriesContext";
 import Avatar from "@/components/common/Avatar";
 import BackButton from "@/components/common/BackButton";
 import DatePicker from "@/components/common/DatePicker";
@@ -41,7 +42,6 @@ import type {
   ProjectStage,
   Proposal,
 } from "@/types/shared";
-import { isHighLevelCategory } from "@/utils/categoryHelpers";
 import { formatBudget as formatBudgetUtil } from "@/utils/currencyUtils";
 import { formatDateMonthDay, formatTimeAgoCompact } from "@/utils/dateUtils";
 import {
@@ -699,6 +699,20 @@ export default function JobDetailClient() {
 
   const { t } = useLanguage();
   const { getCategoryLabel, locale } = useCategoryLabels();
+  const { categories: catalogCats } = useCategories();
+
+  const getLabel = useCallback((key: string): string => {
+    for (const cat of catalogCats) {
+      if (cat.key === key) return locale === 'ka' ? cat.nameKa : cat.name;
+      for (const sub of cat.subcategories) {
+        if (sub.key === key) return locale === 'ka' ? sub.nameKa : sub.name;
+        for (const svc of (sub.services || [])) {
+          if (svc.key === key) return locale === 'ka' ? svc.nameKa : svc.name;
+        }
+      }
+    }
+    return getCategoryLabel(key);
+  }, [catalogCats, locale, getCategoryLabel]);
   const { trackEvent } = useAnalytics();
   const toast = useToast();
 
@@ -843,6 +857,10 @@ export default function JobDetailClient() {
   const [showTitleEdit, setShowTitleEdit] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [isSavingTitle, setIsSavingTitle] = useState(false);
+
+  // Proposals/applicants for job owner
+  const [proposals, setProposals] = useState<any[]>([]);
+  const [proposalsLoading, setProposalsLoading] = useState(false);
 
   const isOwner = user && job?.clientId && user.id === job.clientId.id;
   const isPro = user?.role === "pro" || user?.role === "admin";
@@ -1012,6 +1030,16 @@ export default function JobDetailClient() {
     job?.id,
     fetchHistory,
   ]);
+
+  // Fetch proposals for job owner
+  useEffect(() => {
+    if (!job || !isOwner) return;
+    setProposalsLoading(true);
+    api.get(`/jobs/${job.id}/proposals`)
+      .then(res => setProposals(res.data?.data || res.data || []))
+      .catch(() => {})
+      .finally(() => setProposalsLoading(false));
+  }, [job?.id, isOwner]);
 
   // Helper to get event icon and color
   const getEventConfig = (eventType: HistoryEventType) => {
@@ -1964,11 +1992,11 @@ export default function JobDetailClient() {
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
                     style={{ backgroundColor: `${ACCENT}10`, color: ACCENT }}
                   >
-                    {getCategoryLabel(job.category)}
+                    {getLabel(job.category)}
                     {job.subcategory && (
                       <>
                         <span className="opacity-50">/</span>
-                        {getCategoryLabel(job.subcategory)}
+                        {getLabel(job.subcategory)}
                       </>
                     )}
                   </span>
@@ -1981,19 +2009,19 @@ export default function JobDetailClient() {
 
                 {/* Quick stats */}
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-1.5 sm:mb-2">
-                  {job.location && (
-                    <span className="flex items-center gap-1 sm:gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                      <span className="truncate max-w-[140px] sm:max-w-[180px]">
-                        {job.location}
-                      </span>
-                    </span>
-                  )}
                   <span className="flex items-center gap-1 sm:gap-1.5">
                     <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                     {getTimeAgo(job.createdAt)}
                   </span>
                 </div>
+
+                {/* Full address */}
+                {job.location && (
+                  <div className="flex items-start gap-1.5 text-sm text-neutral-600 dark:text-neutral-400 mb-2">
+                    <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>{job.location}</span>
+                  </div>
+                )}
 
                 {/* Budget + Stats row */}
                 <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm mb-1.5 sm:mb-2">
@@ -2007,25 +2035,14 @@ export default function JobDetailClient() {
                       {job.viewCount || 0} {t("jobDetail.views")}
                     </span>
                   </div>
-                  {!isHired &&
-                    (isOwner ? (
-                      <Link
-                        href={`/my-jobs/${job.id}/proposals`}
-                        className="flex items-center gap-1.5 sm:gap-2 text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] active:opacity-70 transition-colors"
-                      >
-                        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        <span className="underline underline-offset-2">
-                          {job.proposalCount || 0} {t("jobDetail.proposals")}
-                        </span>
-                      </Link>
-                    ) : (
-                      <div className="flex items-center gap-1.5 sm:gap-2 text-neutral-600 dark:text-neutral-400">
-                        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        <span>
-                          {job.proposalCount || 0} {t("jobDetail.proposals")}
-                        </span>
-                      </div>
-                    ))}
+                  {!isHired && (
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-neutral-600 dark:text-neutral-400">
+                      <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <span>
+                        {job.proposalCount || 0} {t("jobDetail.proposals")}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Compact Status Bar in Hero (for hired projects) */}
@@ -2110,25 +2127,14 @@ export default function JobDetailClient() {
                     {job.viewCount || 0} {t("jobDetail.views")}
                   </span>
                 </div>
-                {!isHired &&
-                  (isOwner ? (
-                    <Link
-                      href={`/my-jobs/${job.id}/proposals`}
-                      className="flex items-center gap-1.5 hover:text-[#C4735B] transition-colors"
-                    >
-                      <Users className="w-4 h-4" />
-                      <span className="underline underline-offset-2">
-                        {job.proposalCount || 0} {t("jobDetail.proposals")}
-                      </span>
-                    </Link>
-                  ) : (
-                    <div className="flex items-center gap-1.5">
-                      <Users className="w-4 h-4" />
-                      <span>
-                        {job.proposalCount || 0} {t("jobDetail.proposals")}
-                      </span>
-                    </div>
-                  ))}
+                {!isHired && (
+                  <div className="flex items-center gap-1.5">
+                    <Users className="w-4 h-4" />
+                    <span>
+                      {job.proposalCount || 0} {t("jobDetail.proposals")}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Budget + Quick Specs — compact inline row */}
@@ -2199,15 +2205,14 @@ export default function JobDetailClient() {
       {/* Main Content */}
       <main className="relative z-10 bg-[#FAFAFA] dark:bg-[#0A0A0A]">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-3">
-          {/* Submit Proposal button for pro - only for design/architecture categories */}
+          {/* Submit Proposal button for pro */}
           {isPro &&
             !isOwner &&
             isOpen &&
             !isHired &&
             !myProposal &&
             !isCheckingProposal &&
-            isAuthValidated &&
-            isHighLevelCategory(job?.category) && (
+            isAuthValidated && (
               <div className="flex justify-end mb-4">
                 {user?.verificationStatus === "verified" ? (
                   <Button
@@ -2773,6 +2778,123 @@ export default function JobDetailClient() {
                     );
                   })()}
 
+                  {/* Inline Applicants */}
+                  {isOwner && proposals.length > 0 && (
+                    <section className="bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-200/50 dark:border-neutral-800">
+                      <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
+                        <Users className="w-4 h-4 text-[#C4735B]" />
+                        {t("jobDetail.applicants")} ({proposals.length})
+                      </h2>
+                      <div className="space-y-3">
+                        {proposals.slice(0, 10).map((proposal: any) => {
+                          const pro = proposal.proId || {};
+                          const isPending = proposal.status === 'pending';
+                          const isShortlisted = proposal.status === 'shortlisted';
+                          return (
+                            <div
+                              key={proposal._id || proposal.id}
+                              className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${
+                                isShortlisted
+                                  ? 'border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-900/10'
+                                  : 'border-neutral-200/50 dark:border-neutral-800'
+                              }`}
+                            >
+                              <Link href={`/professionals/${pro.uid || pro.id || pro._id}`}>
+                                {pro.avatar ? (
+                                  <img src={pro.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-sm font-bold text-neutral-500">
+                                    {(pro.name || '?')[0]}
+                                  </div>
+                                )}
+                              </Link>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <Link
+                                    href={`/professionals/${pro.uid || pro.id || pro._id}`}
+                                    className="text-sm font-medium text-neutral-900 dark:text-white hover:text-[#C4735B] transition-colors"
+                                  >
+                                    {pro.name}
+                                  </Link>
+                                  {proposal.proposedPrice && (
+                                    <span className="text-xs font-semibold text-[#C4735B]">
+                                      {proposal.proposedPrice}₾
+                                    </span>
+                                  )}
+                                  {isShortlisted && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-medium">
+                                      {t("common.shortlisted")}
+                                    </span>
+                                  )}
+                                </div>
+                                {proposal.coverLetter && (
+                                  <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2">
+                                    {proposal.coverLetter}
+                                  </p>
+                                )}
+                                {isPending && (
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <button
+                                      onClick={async () => {
+                                        try {
+                                          await api.post(`/jobs/proposals/${proposal._id || proposal.id}/shortlist`, { hiringChoice: 'homico' });
+                                          setProposals(prev => prev.map(p =>
+                                            (p._id || p.id) === (proposal._id || proposal.id)
+                                              ? { ...p, status: 'shortlisted' }
+                                              : p
+                                          ));
+                                        } catch {}
+                                      }}
+                                      className="px-3 py-1 rounded-lg text-xs font-medium bg-[#C4735B] text-white hover:bg-[#B5624A] transition-colors"
+                                    >
+                                      {t("common.interested")}
+                                    </button>
+                                    <button
+                                      onClick={async () => {
+                                        try {
+                                          await api.post(`/jobs/proposals/${proposal._id || proposal.id}/reject`);
+                                          setProposals(prev => prev.map(p =>
+                                            (p._id || p.id) === (proposal._id || proposal.id)
+                                              ? { ...p, status: 'rejected' }
+                                              : p
+                                          ));
+                                        } catch {}
+                                      }}
+                                      className="px-3 py-1 rounded-lg text-xs font-medium text-neutral-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border border-neutral-200 dark:border-neutral-700 transition-colors"
+                                    >
+                                      {t("common.reject")}
+                                    </button>
+                                  </div>
+                                )}
+                                {isShortlisted && (
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <button
+                                      onClick={async () => {
+                                        try {
+                                          await api.post(`/jobs/proposals/${proposal._id || proposal.id}/accept`);
+                                          window.location.reload();
+                                        } catch {}
+                                      }}
+                                      className="px-3 py-1 rounded-lg text-xs font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
+                                    >
+                                      {t("common.hire")}
+                                    </button>
+                                    <Link
+                                      href={`/professionals/${pro.uid || pro.id || pro._id}`}
+                                      className="px-3 py-1 rounded-lg text-xs font-medium text-neutral-500 border border-neutral-200 dark:border-neutral-700 hover:border-[#C4735B]/40 transition-colors"
+                                    >
+                                      {t("common.viewProfile")}
+                                    </Link>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  )}
+
                   {/* My Proposal - only show when not hired (pending/rejected/withdrawn) */}
                   {myProposal &&
                     isPro &&
@@ -3072,8 +3194,8 @@ export default function JobDetailClient() {
 
               {/* LEGACY: Project Chat moved to sidebar tabs - HIDDEN */}
 
-              {/* Comments Section - Interest Board (only for open jobs, NOT for design/architecture) */}
-              {job.status === "open" && !isHighLevelCategory(job.category) && (
+              {/* Comments Section - Interest Board (for open jobs) */}
+              {job.status === "open" && (
                 <section className="mt-8">
                   <JobCommentsSection
                     jobId={job.id}
@@ -3312,7 +3434,7 @@ export default function JobDetailClient() {
         </div>
       </main>
 
-      {/* Mobile Sticky CTA for Submit Proposal - only for design/architecture */}
+      {/* Mobile Sticky CTA for Submit Proposal */}
       {isPro &&
         !isOwner &&
         isOpen &&
@@ -3320,9 +3442,8 @@ export default function JobDetailClient() {
         !myProposal &&
         !isCheckingProposal &&
         isAuthValidated &&
-        user?.verificationStatus === "verified" &&
-        isHighLevelCategory(job?.category) && (
-          <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 p-4 safe-area-bottom">
+        user?.verificationStatus === "verified" && (
+          <div className="sm:hidden fixed bottom-16 left-0 right-0 z-40 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 p-3 safe-area-bottom">
             <Button
               onClick={() => setShowProposalForm(true)}
               leftIcon={<Send className="w-4 h-4" />}

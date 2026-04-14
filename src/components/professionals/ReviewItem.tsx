@@ -63,9 +63,9 @@ export default function ReviewItem({
     : isExternal 
       ? (review.externalClientName || '?')
       : (review.clientId?.name || '?');
-  const avatarSrc = review.isAnonymous || isExternal 
-    ? undefined 
-    : review.clientId?.avatar;
+  const avatarSrc = review.isAnonymous
+    ? undefined
+    : review.clientId?.avatar || undefined;
 
   return (
     <div

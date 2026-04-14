@@ -2,6 +2,7 @@
 
 import Avatar from "@/components/common/Avatar";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { useCategories } from "@/contexts/CategoriesContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { storage } from "@/services/storage";
 import type { Job } from "@/types/shared";
@@ -36,6 +37,21 @@ const JobCard = React.memo(function JobCard({
 }: JobCardProps) {
   const { getCategoryLabel, locale } = useCategoryLabels();
   const { t } = useLanguage();
+  const { categories: catalogCats } = useCategories();
+
+  // Catalog-aware label lookup
+  const getLabel = useCallback((key: string): string => {
+    for (const cat of catalogCats) {
+      if (cat.key === key) return locale === 'ka' ? cat.nameKa : cat.name;
+      for (const sub of cat.subcategories) {
+        if (sub.key === key) return locale === 'ka' ? sub.nameKa : sub.name;
+        for (const svc of (sub.services || [])) {
+          if (svc.key === key) return locale === 'ka' ? svc.nameKa : svc.name;
+        }
+      }
+    }
+    return getCategoryLabel(key);
+  }, [catalogCats, locale, getCategoryLabel]);
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -222,7 +238,7 @@ const JobCard = React.memo(function JobCard({
             {/* Top row: Category + badges + time */}
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-[#C4735B]/10 text-[#C4735B]">
-                {getCategoryLabel(job.category)}
+                {getLabel(job.category)}
               </span>
               {isNew && !hasApplied && (
                 <StatusPill variant="new" size="xs" locale={locale} />

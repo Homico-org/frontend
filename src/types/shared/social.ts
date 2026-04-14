@@ -112,6 +112,10 @@ export interface PortfolioItem extends BaseEntity {
   category?: string;
   rating?: number;
   review?: string;
+  clientId?: string | { id?: string; _id?: string };
+  clientName?: string;
+  clientAvatar?: string;
+  bookingId?: string;
   // Legacy single before/after fields
   beforeImage?: string;
   afterImage?: string;

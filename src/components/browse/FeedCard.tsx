@@ -1,10 +1,12 @@
 "use client";
 
 import Avatar from "@/components/common/Avatar";
+import BeforeAfterSlider from "@/components/ui/BeforeAfterSlider";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { StarRating } from "@/components/ui/StarRating";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { ACCENT_COLOR } from "@/constants/theme";
+import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getCategoryLabelStatic } from "@/hooks/useCategoryLabels";
 import { storage } from "@/services/storage";
@@ -42,19 +44,33 @@ const FeedCard = React.memo(function FeedCard({
   const autoSlideRef = useRef<NodeJS.Timeout | null>(null);
 
   const { t } = useLanguage();
-  const [sliderPosition, setSliderPosition] = useState(50);
-  const [isDragging, setIsDragging] = useState(false);
+  const { categories } = useCategories();
+
+  // Build service key → localized name map from catalog
+  const svcNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const cat of categories) {
+      map[cat.key] = locale === 'ka' ? cat.nameKa : cat.name;
+      for (const sub of cat.subcategories || []) {
+        map[sub.key] = locale === 'ka' ? sub.nameKa : sub.name;
+        for (const svc of sub.services || []) {
+          map[svc.key] = locale === 'ka' ? svc.nameKa : svc.name;
+        }
+      }
+    }
+    return map;
+  }, [categories, locale]);
+
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const hasVideos = item.videos && item.videos.length > 0;
   const hasMultipleImages = item.images.length > 1 || hasVideos;
   // Support both direct beforeImage/afterImage and beforeAfterPairs array
-  const firstBeforeAfterPair = item.beforeAfterPairs?.[0];
-  const beforeImage = item.beforeImage || firstBeforeAfterPair?.beforeImage;
-  const afterImage = item.afterImage || firstBeforeAfterPair?.afterImage;
-  const isBeforeAfter =
-    item.type === FeedItemType.BEFORE_AFTER && beforeImage && afterImage;
+  const firstPair = item.beforeAfterPairs?.[0];
+  const beforeImage = item.beforeImage || firstPair?.beforeImage || (firstPair as { before?: string })?.before;
+  const afterImage = item.afterImage || firstPair?.afterImage || (firstPair as { after?: string })?.after;
+  const isBeforeAfter = !!(beforeImage && afterImage);
   // Combine images and videos for navigation
   const allMedia = [...item.images, ...(item.videos || [])];
   const totalImages = allMedia.length;
@@ -117,22 +133,11 @@ const FeedCard = React.memo(function FeedCard({
     [currentImageIndex]
   );
 
-  const handleSliderMove = (
-    e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
-  ) => {
-    if (!isDragging && e.type !== "click") return;
-    const container = e.currentTarget;
-    const rect = container.getBoundingClientRect();
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const x = clientX - rect.left;
-    const percentage = Math.max(5, Math.min(95, (x / rect.width) * 100));
-    setSliderPosition(percentage);
-  };
 
-  // Get category label for the tag
+  // Get category label — try catalog lookup first, then static labels
   const getCategoryLabel = () => {
     const category = item.category || "design";
-    return getCategoryLabelStatic(category, locale);
+    return svcNameMap[category] || getCategoryLabelStatic(category, locale);
   };
 
   // Check if pro is premium (if available in the data)
@@ -149,14 +154,12 @@ const FeedCard = React.memo(function FeedCard({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
       >
         {/* Premium border glow effect - hidden on mobile for performance */}
         <div className="hidden sm:block absolute -inset-[1px] rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/30 group-hover:via-[#D4937B]/15 group-hover:to-[#C4735B]/30 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
 
         {/* Main Card */}
-        <div className="relative h-full flex flex-col bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm sm:shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 sm:group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)] sm:group-hover:-translate-y-0.5">
+        <div className="relative h-full flex flex-col bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm sm:shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 sm:group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)]">
           {/* Shine effect overlay - desktop only */}
           <div className="hidden sm:block absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30">
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
@@ -186,69 +189,11 @@ const FeedCard = React.memo(function FeedCard({
             )}
 
             {isBeforeAfter ? (
-              <div
-                className="relative w-full aspect-[4/3] cursor-ew-resize select-none bg-neutral-100 dark:bg-neutral-800 overflow-hidden"
-                onMouseDown={() => setIsDragging(true)}
-                onMouseUp={() => setIsDragging(false)}
-                onMouseLeave={() => setIsDragging(false)}
-                onMouseMove={handleSliderMove}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSliderMove(e);
-                }}
-                onTouchStart={() => setIsDragging(true)}
-                onTouchEnd={() => setIsDragging(false)}
-                onTouchMove={handleSliderMove}
-              >
-                <Image
-                  src={storage.getFeedCardImageUrl(afterImage)}
-                  alt="After"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 100vw, 400px"
-                  priority={false}
-                />
-                <div
-                  className="absolute inset-0 overflow-hidden"
-                  style={{ width: `${sliderPosition}%` }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <Image
-                    src={storage.getFeedCardImageUrl(beforeImage)}
-                    alt="Before"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 100vw, 400px"
-                    priority={false}
-                  />
-                </div>
-
-                {/* Slider handle - enhanced */}
-                <div
-                  className="absolute top-0 bottom-0 z-10"
-                  style={{
-                    left: `${sliderPosition}%`,
-                    transform: "translateX(-50%)",
-                  }}
-                >
-                  <div className="absolute inset-0 w-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-xl flex items-center justify-center border-2 border-[#C4735B]/20">
-                    <div className="flex items-center gap-0.5">
-                      <ChevronLeft className="w-3 h-3 text-neutral-500" />
-                      <ChevronRight className="w-3 h-3 text-neutral-500" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Before/After labels - enhanced */}
-                <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-black/70 backdrop-blur-sm text-white text-[11px] font-semibold rounded-full">
-                  {t("common.before")}
-                </div>
-                <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-white/95 backdrop-blur-sm text-neutral-900 text-[11px] font-semibold rounded-full shadow-lg">
-                  {t("common.after")}
-                </div>
-              </div>
+              <BeforeAfterSlider
+                beforeImage={storage.getFeedCardImageUrl(beforeImage)}
+                afterImage={storage.getFeedCardImageUrl(afterImage)}
+                sizes="(max-width: 640px) 100vw, 400px"
+              />
             ) : (
               <div
                 className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-800 overflow-hidden"
@@ -454,7 +399,7 @@ const FeedCard = React.memo(function FeedCard({
             <div className="flex items-start justify-between gap-2 sm:gap-3 mb-1.5 sm:mb-2">
               <div className="relative min-w-0 flex-1">
                 <h3 className="font-semibold text-[13px] sm:text-base text-neutral-900 dark:text-white leading-tight line-clamp-2 group-hover:text-[#C4735B] transition-colors duration-300">
-                  {item.title}
+                  {svcNameMap[item.title?.toLowerCase().replace(/[\s-]+/g, '_')] || svcNameMap[item.category || ''] || item.title}
                 </h3>
                 {/* Animated underline - desktop only */}
                 <span className="hidden sm:block absolute -bottom-0.5 left-0 w-0 h-[2px] bg-gradient-to-r from-[#C4735B] via-[#D4937B] to-[#C4735B] group-hover:w-full transition-all duration-500 ease-out rounded-full" />

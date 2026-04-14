@@ -812,7 +812,7 @@ function SettingsPageContent() {
         />
       )}
 
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
         {/* Profile */}
         <section className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <SectionHeader icon={User} label={t('common.profile')} />

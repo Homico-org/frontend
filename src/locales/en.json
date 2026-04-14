@@ -26,10 +26,14 @@
     "yes": "Yes",
     "no": "No",
     "close": "Close",
+    "discount": "Discount",
+    "done": "Done",
     "open": "Open",
     "update": "Update",
     "create": "Create",
     "share": "Share",
+    "addEmail": "Add Email",
+    "addEmailPrompt": "Add your email to receive job and booking notifications",
     "copyLink": "Copy link",
     "linkCopied": "Link copied",
     "confirm": "Confirm",
@@ -255,12 +259,21 @@
     "whereYouWork": "Where You Work",
     "writeWhatServicesYouOffer": "Write What Services You Offer",
     "yearsExperience": "Years Experience",
-    "yearsOfExperience": "Years Of Experience"
+    "yearsOfExperience": "Years Of Experience",
+    "servicePrices": "Service prices",
+    "setYourPricePerService": "Set your price for each service",
+    "recommendedPrice": "Recommended",
+    "noServicesConfigured": "Set your general price range",
+    "shortlisted": "Shortlisted",
+    "hire": "Hire",
+    "interested": "Interested",
+    "reject": "Reject"
   },
   "nav": {
     "portfolios": "Portfolios",
     "tools": "Tools",
     "jobs": "Jobs",
+    "bookings": "Bookings",
     "forBusiness": "For Business"
   },
   "validation": {
@@ -480,7 +493,32 @@
     "selectMinimum": "Select Minimum",
     "spec": "Spec",
     "stars": "Stars",
-    "viaHomico": "Via Homico"
+    "viaHomico": "Via Homico",
+    "filters": "Filters",
+    "allCities": "All cities",
+    "city": "City",
+    "rating": "Rating",
+    "budget": "Budget",
+    "sort": {
+      "recommended": "Recommended",
+      "rating": "By rating",
+      "reviews": "By reviews",
+      "priceLow": "Price ↑",
+      "priceHigh": "Price ↓",
+      "newest": "Newest",
+      "budgetHigh": "Budget ↓",
+      "budgetLow": "Budget ↑"
+    },
+    "selectCategory": "Select Category",
+    "searchServices": "Search services...",
+    "selectServices": "select services",
+    "selectedCount": "selected",
+    "showResults": "Show results",
+    "searchingAI": "AI is searching...",
+    "aiSuggested": "AI suggested",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "category": "Category"
   },
   "job": {
     "title": "Title",
@@ -670,7 +708,16 @@
     "yourProjectHasBeenSuccessfully": "Your Project Has Been Successfully",
     "yourProposal": "Your Proposal",
     "yourRating": "Your Rating",
-    "youreHired": "Youre Hired"
+    "youreHired": "Youre Hired",
+    "selectCategoryFirst": "Select a category first",
+    "selectServices": "Select services",
+    "marketPrice": "Market price",
+    "yourBudget": "Your budget",
+    "totalBudget": "Total budget",
+    "servicesSelected": "services selected",
+    "aboveMarket": "Above market",
+    "belowMarket": "Below market",
+    "switchCategoryConfirm": "Switching category will clear your selected services. Continue?"
   },
   "jobComments": {
     "title": "Interested Professionals",
@@ -790,7 +837,8 @@
     "youHiredTheProfessional": "You Hired The Professional",
     "yourFeedbackHelpsOtherClients": "Your Feedback Helps Other Clients",
     "youveBeenHiredForThis": "Youve Been Hired For This",
-    "youveBeenHired": "You've been hired for this job!"
+    "youveBeenHired": "You've been hired for this job!",
+    "applicants": "Applicants"
   },
   "postJob": {
     "steps": {
@@ -947,6 +995,10 @@
     "noBio": "No bio added",
     "noDescription": "No Description",
     "noPortfolioItemsYet": "No Portfolio Items Yet",
+    "completedJobsCount": "completed jobs",
+    "respondsIn": "Responds in",
+    "lessThanHour": "< 1 hour",
+    "lessThanHours": "< {count} hours",
     "noReviewsYet": "No Reviews Yet",
     "noHomicoReviews": "No Homico reviews yet",
     "noExternalReviews": "No external reviews yet",
@@ -1125,7 +1177,111 @@
     "allCaughtUp": "All Caught Up",
     "clearAll": "Clear All",
     "older": "Older",
-    "swipeLeftToDelete": "Swipe Left To Delete"
+    "swipeLeftToDelete": "Swipe Left To Delete",
+    "allRead": "You've read all your notifications",
+    "newWillAppear": "New notifications will appear here",
+    "types": {
+      "new_booking": {
+        "title": "New Booking Request",
+        "message": "You have a new booking request for {date} at {time}"
+      },
+      "booking_confirmed": {
+        "title": "Booking Confirmed",
+        "message": "Your booking for {date} at {time} has been confirmed"
+      },
+      "booking_started": {
+        "title": "Work Started",
+        "message": "Pro has started work on your booking for {date}"
+      },
+      "booking_cancelled": {
+        "title": "Booking Cancelled",
+        "message": "Booking for {date} at {time} has been cancelled"
+      },
+      "booking_completed": {
+        "title": "Booking Completed",
+        "message": "Booking for {date} at {time} has been completed"
+      },
+      "review_prompt": {
+        "title": "How was your experience?",
+        "message": "Leave a review for your booking"
+      },
+      "new_proposal": {
+        "title": "New Proposal",
+        "message": "You have received a new proposal"
+      },
+      "proposal_accepted": {
+        "title": "Proposal Accepted",
+        "message": "Your proposal has been accepted"
+      },
+      "proposal_rejected": {
+        "title": "Proposal Rejected",
+        "message": "Your proposal has been rejected"
+      },
+      "job_completed": {
+        "title": "Job Completed",
+        "message": "The job has been completed"
+      },
+      "job_cancelled": {
+        "title": "Job Cancelled",
+        "message": "The job has been cancelled"
+      },
+      "job_invitation": {
+        "title": "Job Invitation",
+        "message": "You have been invited to a job"
+      },
+      "new_message": {
+        "title": "New Message",
+        "message": "You have a new message"
+      },
+      "new_review": {
+        "title": "New Review",
+        "message": "You have received a new review"
+      },
+      "account_verified": {
+        "title": "Account Verified",
+        "message": "Your account has been verified"
+      },
+      "profile_update": {
+        "title": "Profile Update",
+        "message": "Your profile has been updated"
+      },
+      "profile_approved": {
+        "title": "Profile Approved",
+        "message": "Your professional profile has been approved"
+      },
+      "profile_rejected": {
+        "title": "Profile Needs Updates",
+        "message": "Your profile was not approved"
+      },
+      "system_announcement": {
+        "title": "System Announcement",
+        "message": "New system announcement"
+      },
+      "work_completed": {
+        "title": "Work Completed",
+        "message": "Work completed, leave a review"
+      }
+    }
+  },
+  "criticalNotification": {
+    "new_booking": {
+      "title": "New Booking Request",
+      "action": "View Booking"
+    },
+    "booking_confirmed": {
+      "title": "Booking Confirmed",
+      "action": "View Booking"
+    },
+    "booking_started": {
+      "title": "Work Has Started",
+      "action": "View Details"
+    },
+    "booking_completed": {
+      "title": "Work Completed",
+      "action": "Leave Review"
+    },
+    "dismiss": "Dismiss",
+    "more": "more"
   },
   "messages": {
     "title": "Messages",
@@ -1213,7 +1369,13 @@
     "loginRequired": "Please log in to leave a review",
     "phoneRequired": "Phone number is required",
     "verifiedUser": "Verified user",
-    "phoneVerificationNote": "Your phone will be verified to confirm your review"
+    "phoneVerificationNote": "Your phone will be verified to confirm your review",
+    "howWasExperience": "How was your experience?",
+    "rateYourExperience": "Rate your experience",
+    "tellOthers": "Tell others about your experience...",
+    "uploadWorkPhotos": "Upload photos of the completed work",
+    "reviewSubmittedSuccessfully": "Review submitted successfully",
+    "bookingNotCompleted": "This booking is not yet completed."
   },
   "analytics": {
     "title": "Analytics",
@@ -1257,6 +1419,7 @@
     "addACardForFaster": "Add A Card For Faster",
     "addCard": "Add Card",
     "addEmail": "Add Email",
+    "addEmailPrompt": "Add your email to receive notifications about jobs and bookings",
     "addNewCard": "Add New Card",
     "addPaymentMethod": "Add Payment Method",
     "addYourEmailToReceive": "Add Your Email To Receive",
@@ -2482,7 +2645,34 @@
     "viewMyProfile": "View My Profile",
     "goToDashboard": "Go to Dashboard",
     "lookingForPro": "Looking for a professional?",
-    "registerAsClient": "Register as a client"
+    "registerAsClient": "Register as a client",
+    "servicesPricingTitle": "Services & Pricing",
+    "servicesPricingDescription": "Select your services and set a price for each",
+    "selectSubcategories": "Select your specializations",
+    "setPricing": "Set your prices",
+    "experienceYears": "Years of experience",
+    "exp1to2": "1–2 years",
+    "exp3to5": "3–5 years",
+    "exp5to10": "5–10 years",
+    "exp10plus": "10+ years",
+    "noServicesForSubcategory": "Prices will be set after profile review",
+    "priceWillBeSetLater": "Prices will be set later",
+    "servicePriceHint": "Leave blank to show \"by agreement\"",
+    "filterSubcategories": "Search specializations...",
+    "subcategoriesSelected": "selected",
+    "selectSubcategoriesToSetPrices": "Select specializations on the left to set your prices",
+    "setAtLeastOnePrice": "Set a price for at least one service",
+    "bulkDiscounts": "Bulk discounts (when ordering multiple)",
+    "addDiscount": "Add bulk discount",
+    "configurePricing": "Configure pricing",
+    "setPrices": "Set prices →",
+    "setPricesForServices": "Set your prices",
+    "pricesFilled": "Prices filled",
+    "welcomeBanner": "Complete your profile to start receiving clients",
+    "benefit1": "Get found by clients searching for your services",
+    "benefit2": "Receive matching job notifications",
+    "benefit3": "Build trust with verified reviews",
+    "getStarted": "Get Started"
   },
   "categories": {
     "renovation": "Renovation",
@@ -2994,7 +3184,18 @@
     "welcomeBack": "Welcome back",
     "workWillAppear": "Accepted jobs and projects will show up here",
     "noReviewsYet": "No reviews yet",
-    "requestReviewsHint": "Share your review link with past clients to collect reviews"
+    "requestReviewsHint": "Share your review link with past clients to collect reviews",
+    "noPostedJobs": "No posted jobs yet",
+    "myPostedJobs": "My Posted Jobs",
+    "profileCompletion": "Profile Completion",
+    "profileCompletionSubtitle": "Complete your profile to attract more clients",
+    "addProfilePhoto": "Add profile photo",
+    "writeAboutYourself": "Write about yourself",
+    "selectYourServices": "Select your services",
+    "setServiceAreas": "Set service areas",
+    "addPortfolioProjects": "Add portfolio projects",
+    "getFirstReview": "Get your first review",
+    "shareReviewLink": "Share review link"
   },
   "feedback": {
     "title": "Feedback",
@@ -3104,6 +3305,7 @@
   },
   "booking": {
     "title": "My Bookings",
+    "subtitle": "Manage your bookings and schedule",
     "bookAppointment": "Book Appointment",
     "selectDate": "Select Date",
     "selectTime": "Select Time",
@@ -3123,11 +3325,13 @@
     "past": "Past",
     "cancelled": "Cancelled",
     "bookingSuccess": "Booking created successfully!",
+    "viewBookings": "View Bookings",
     "bookingCancelled": "Booking has been cancelled",
     "bookingConfirmed": "Booking has been confirmed",
     "bookingCompleted": "Booking marked as completed",
     "noBookings": "No bookings yet",
     "noBookingsDescription": "Your bookings will appear here",
+    "findProfessional": "Find a Professional",
     "with": "with",
     "confirmAction": "Confirm",
     "completeAction": "Complete",
@@ -3135,7 +3339,31 @@
     "scheduleOverview": "Schedule",
     "closed": "Closed",
     "notAvailable": "Not available on this date",
-    "loginToBook": "Log in to book an appointment"
+    "loginToBook": "Log in to book an appointment",
+    "requestService": "Request Service",
+    "selectServices": "Select Services",
+    "pickDateTime": "Pick Date & Time",
+    "confirmBooking": "Confirm Booking",
+    "quantity": "Quantity",
+    "addNote": "Add a note",
+    "noAvailableSlots": "No available slots",
+    "startWork": "Start Work",
+    "completeWork": "Complete Work",
+    "inProgress": "In Progress",
+    "statusInProgress": "In Progress",
+    "uploadBeforePhotos": "Upload before photos (optional)",
+    "uploadAfterPhotos": "Upload photos of completed work",
+    "atLeastOnePhoto": "Upload at least one photo",
+    "skip": "Skip",
+    "services": "Services",
+    "total": "Total",
+    "address": "Address",
+    "beforePhotos": "Before",
+    "afterPhotos": "After",
+    "photos": "Photos",
+    "you": "You",
+    "client": "Client",
+    "pro": "Professional"
   },
   "invite": {
     "subtitle": "New platform for service professionals",
@@ -3161,6 +3389,8 @@
     "passwordPlaceholder": "Enter password",
     "passwordHint": "Minimum 6 characters",
     "passwordTooShort": "Password must be at least 6 characters",
+    "confirmPasswordPlaceholder": "Repeat password",
+    "passwordMismatch": "Passwords do not match",
     "activateAccount": "Activate account"
   }
 }

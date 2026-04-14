@@ -26,10 +26,14 @@
     "yes": "დიახ",
     "no": "არა",
     "close": "დახურვა",
+    "discount": "ფასდაკლება",
+    "done": "დასრულება",
     "open": "ღია",
     "update": "განახლება",
     "create": "შექმნა",
     "share": "გაზიარება",
+    "addEmail": "ელ-ფოსტის დამატება",
+    "addEmailPrompt": "დაამატე ელ-ფოსტა სამუშაოებისა და ჯავშნების შეტყობინებების მისაღებად",
     "copyLink": "ლინკის კოპირება",
     "linkCopied": "ლინკი დაკოპირდა",
     "confirm": "დადასტურება",
@@ -167,7 +171,7 @@
     "addProject": "პროექტის დამატება",
     "addYourFirstProject": "დაამატე პირველი პროექტი",
     "adjustPhoto": "სურათის მორგება",
-    "beforeafter": "მანამ/სანამ",
+    "beforeafter": "მანამდე/შემდეგ",
     "brieflyDescribeWhatYouDid": "დეტალურად აღწერეთ თქვენი სამუშაო გამოცდილება",
     "brieflyDescribeYourExperienceAnd": "დეტალურად აღწერეთ თქვენი გამოცდილება",
     "byAgreement": "დადასტურებით",
@@ -251,16 +255,25 @@
     "uploadPhoto": "ატვირთეთ ფოტო",
     "uploaded": "ატვირთული",
     "videos": "ვიდეოები",
-    "visible": "ნანახი",
-    "whereYouWork": "სად მუშაობდი",
+    "visible": "გამოჩნდეს მთავარ გვერდზე",
+    "whereYouWork": "აირჩიეთ რეგიონები სადაც შეგიძლიათ მუშაობა",
     "writeWhatServicesYouOffer": "დაწერე რა სერვისები გაგზავნდი",
     "yearsExperience": "წელი",
-    "yearsOfExperience": "წელი"
+    "yearsOfExperience": "წელი",
+    "servicePrices": "სერვისების ფასები",
+    "setYourPricePerService": "დააყენეთ ფასი თითოეულ სერვისზე",
+    "recommendedPrice": "რეკომენდებული",
+    "noServicesConfigured": "დააყენეთ ზოგადი ფასის დიაპაზონი",
+    "shortlisted": "შერჩეული",
+    "hire": "დაქირავება",
+    "interested": "დაინტერესებული",
+    "reject": "უარყოფა"
   },
   "nav": {
     "portfolios": "ნამუშევრები",
     "tools": "კალკულატორები",
     "jobs": "სამუშაოები",
+    "bookings": "ჯავშნები",
     "forBusiness": "კომპანიებისთვის"
   },
   "validation": {
@@ -462,7 +475,7 @@
     "availability": "ხელმისაწვდომობა",
     "availableNow": "ახლა ხელმისაწვდომი",
     "resetAll": "ყველას გაწმენდა",
-    "applyFilters": "ფილტრების გამოყენება",
+    "applyFilters": "გაფილტვრა",
     "browse": "დათვალიერება",
     "clearAll": "ყველას გასუფთავება",
     "deadline": "ვადა",
@@ -480,7 +493,32 @@
     "selectMinimum": "მინიმუმის არჩევა",
     "spec": "სპეციალიზაცია",
     "stars": "ვარსკვლავები",
-    "viaHomico": "Homico-დან"
+    "viaHomico": "Homico-დან",
+    "filters": "ფილტრები",
+    "allCities": "ყველა ქალაქი",
+    "city": "ქალაქი",
+    "rating": "რეიტინგი",
+    "budget": "ბიუჯეტი",
+    "sort": {
+      "recommended": "რეკომენდებული",
+      "rating": "რეიტინგით",
+      "reviews": "შეფასებებით",
+      "priceLow": "ფასი ↑",
+      "priceHigh": "ფასი ↓",
+      "newest": "ახალი",
+      "budgetHigh": "ბიუჯეტი ↓",
+      "budgetLow": "ბიუჯეტი ↑"
+    },
+    "selectCategory": "კატეგორიის არჩევა",
+    "searchServices": "სერვისების ძებნა...",
+    "selectServices": "სერვისების არჩევა",
+    "selectedCount": "არჩეული",
+    "showResults": "გაფილტვრა",
+    "searchingAI": "AI ეძებს...",
+    "aiSuggested": "AI რეკომენდაცია",
+    "selectAll": "ყველას არჩევა",
+    "deselectAll": "ყველას მოხსნა",
+    "category": "კატეგორია"
   },
   "job": {
     "title": "სათაური",
@@ -670,7 +708,16 @@
     "yourProjectHasBeenSuccessfully": "თქვენი პროექტი წარმატებით",
     "yourProposal": "თქვენი შეთავაზება",
     "yourRating": "თქვენი შეფასება",
-    "youreHired": "თქვენ დაგიქირავეს"
+    "youreHired": "თქვენ დაგიქირავეს",
+    "selectCategoryFirst": "ჯერ აირჩიეთ კატეგორია",
+    "selectServices": "აირჩიეთ სერვისები",
+    "marketPrice": "საბაზრო ფასი",
+    "yourBudget": "თქვენი ბიუჯეტი",
+    "totalBudget": "ჯამური ბიუჯეტი",
+    "servicesSelected": "სერვისი არჩეულია",
+    "aboveMarket": "ბაზარზე მეტი",
+    "belowMarket": "ბაზარზე ნაკლები",
+    "switchCategoryConfirm": "კატეგორიის შეცვლა გასუფთავებს შერჩეულ სერვისებს. გავაგრძელოთ?"
   },
   "jobComments": {
     "title": "დაინტერესებული პროფესიონალები",
@@ -790,7 +837,8 @@
     "youHiredTheProfessional": "თქვენ დაიქირავეთ პროფესიონალი",
     "yourFeedbackHelpsOtherClients": "თქვენი შეფასება ეხმარება სხვა კლიენტებს",
     "youveBeenHiredForThis": "თქვენ დაგიქირავეს ამ პროექტისთვის",
-    "youveBeenHired": "თქვენ დაგიქირავეს ამ სამუშაოზე!"
+    "youveBeenHired": "თქვენ დაგიქირავეს ამ სამუშაოზე!",
+    "applicants": "კანდიდატები"
   },
   "postJob": {
     "steps": {
@@ -921,7 +969,7 @@
     "addYourFirstProject": "დაამატეთ პირველი პროექტი",
     "areYouSureYouWant": "დარწმუნებული ხართ რომ გსურთ",
     "atLeastOneMediaItem": "მინიმუმ ერთი მედია ფაილი",
-    "ba": "მანამ/სანამ",
+    "ba": "მანამდე/შემდეგ",
     "contactSocial": "სოციალური ქსელები",
     "noOpenJobsToInvite": "თქვენ არ გაქვთ აქტიური სამუშაოები დასაპატიჟებლად",
     "noMatchingJobsToInvite": "შესაბამისი სამუშაოები არ მოიძებნა დასაპატიჟებლად",
@@ -947,6 +995,10 @@
     "noBio": "ბიო არ არის დამატებული",
     "noDescription": "აღწერა არ არის",
     "noPortfolioItemsYet": "პორტფოლიო ჯერ არ არის",
+    "completedJobsCount": "შესრულებული სამუშაო",
+    "respondsIn": "პასუხობს",
+    "lessThanHour": "< 1 საათი",
+    "lessThanHours": "< {count} საათი",
     "noReviewsYet": "შეფასებები ჯერ არ არის",
     "noHomicoReviews": "Homico შეფასებები ჯერ არ არის",
     "noExternalReviews": "გარე შეფასებები ჯერ არ არის",
@@ -1125,7 +1177,111 @@
     "allCaughtUp": "ყველა შეტყობინება წაკითხულია",
     "clearAll": "ყველას გასუფთავება",
     "older": "ძველი",
-    "swipeLeftToDelete": "დახურეთ მარცხნივ წაშლა"
+    "swipeLeftToDelete": "გადაასრიალეთ მარცხნივ წასაშლელად",
+    "allRead": "ყველა შეტყობინება წაკითხულია",
+    "newWillAppear": "ახალი შეტყობინებები აქ გამოჩნდება",
+    "types": {
+      "new_booking": {
+        "title": "ახალი ჯავშნის მოთხოვნა",
+        "message": "თქვენ გაქვთ ახალი ჯავშნის მოთხოვნა {date} {time}-ზე"
+      },
+      "booking_confirmed": {
+        "title": "ჯავშანი დადასტურდა",
+        "message": "თქვენი ჯავშანი {date} {time}-ზე დადასტურდა"
+      },
+      "booking_started": {
+        "title": "სამუშაო დაიწყო",
+        "message": "სპეციალისტმა დაიწყო მუშაობა თქვენს ჯავშანზე {date}"
+      },
+      "booking_cancelled": {
+        "title": "ჯავშანი გაუქმდა",
+        "message": "ჯავშანი {date} {time}-ზე გაუქმდა"
+      },
+      "booking_completed": {
+        "title": "ჯავშანი დასრულდა",
+        "message": "ჯავშანი {date} {time}-ზე დასრულდა"
+      },
+      "review_prompt": {
+        "title": "როგორი იყო თქვენი გამოცდილება?",
+        "message": "დატოვეთ შეფასება თქვენს ჯავშანზე"
+      },
+      "new_proposal": {
+        "title": "ახალი შეთავაზება",
+        "message": "თქვენ მიიღეთ ახალი შეთავაზება"
+      },
+      "proposal_accepted": {
+        "title": "შეთავაზება მიღებულია",
+        "message": "თქვენი შეთავაზება მიღებულ იქნა"
+      },
+      "proposal_rejected": {
+        "title": "შეთავაზება უარყოფილია",
+        "message": "თქვენი შეთავაზება უარყოფილ იქნა"
+      },
+      "job_completed": {
+        "title": "სამუშაო დასრულდა",
+        "message": "სამუშაო დასრულებულია"
+      },
+      "job_cancelled": {
+        "title": "სამუშაო გაუქმდა",
+        "message": "სამუშაო გაუქმებულია"
+      },
+      "job_invitation": {
+        "title": "სამუშაო მოწვევა",
+        "message": "თქვენ მოგიწვიეთ სამუშაოზე"
+      },
+      "new_message": {
+        "title": "ახალი შეტყობინება",
+        "message": "თქვენ გაქვთ ახალი შეტყობინება"
+      },
+      "new_review": {
+        "title": "ახალი შეფასება",
+        "message": "თქვენ მიიღეთ ახალი შეფასება"
+      },
+      "account_verified": {
+        "title": "ანგარიში ვერიფიცირებულია",
+        "message": "თქვენი ანგარიში ვერიფიცირებულია"
+      },
+      "profile_update": {
+        "title": "პროფილის განახლება",
+        "message": "თქვენი პროფილი განახლდა"
+      },
+      "profile_approved": {
+        "title": "პროფილი დამტკიცდა",
+        "message": "თქვენი პროფესიონალური პროფილი დამტკიცდა"
+      },
+      "profile_rejected": {
+        "title": "პროფილს განახლება სჭირდება",
+        "message": "თქვენი პროფილი არ დამტკიცდა"
+      },
+      "system_announcement": {
+        "title": "სისტემური შეტყობინება",
+        "message": "ახალი სისტემური შეტყობინება"
+      },
+      "work_completed": {
+        "title": "სამუშაო დასრულდა",
+        "message": "სამუშაო დასრულდა, დატოვეთ შეფასება"
+      }
+    }
+  },
+  "criticalNotification": {
+    "new_booking": {
+      "title": "ახალი ჯავშანი",
+      "action": "ჯავშნის ნახვა"
+    },
+    "booking_confirmed": {
+      "title": "ჯავშანი დადასტურდა",
+      "action": "ჯავშნის ნახვა"
+    },
+    "booking_started": {
+      "title": "სამუშაო დაიწყო",
+      "action": "დეტალების ნახვა"
+    },
+    "booking_completed": {
+      "title": "სამუშაო დასრულდა",
+      "action": "შეფასების დატოვება"
+    },
+    "dismiss": "გათავისუფლება",
+    "more": "სხვა"
   },
   "messages": {
     "title": "შეტყობინებები",
@@ -1213,7 +1369,13 @@
     "loginRequired": "გთხოვთ შეხვიდეთ სისტემაში შეფასების დასატოვებლად",
     "phoneRequired": "ტელეფონის ნომერი აუცილებელია",
     "verifiedUser": "დადასტურებული მომხმარებელი",
-    "phoneVerificationNote": "თქვენი ტელეფონი დადასტურდება შეფასების დასადასტურებლად"
+    "phoneVerificationNote": "თქვენი ტელეფონი დადასტურდება შეფასების დასადასტურებლად",
+    "howWasExperience": "როგორი იყო გამოცდილება?",
+    "rateYourExperience": "შეაფასეთ გამოცდილება",
+    "tellOthers": "მოგვიყევით გამოცდილების შესახებ...",
+    "uploadWorkPhotos": "ატვირთეთ შესრულებული სამუშაოს ფოტოები",
+    "reviewSubmittedSuccessfully": "შეფასება წარმატებით გაიგზავნა",
+    "bookingNotCompleted": "ეს ჯავშანი ჯერ არ დასრულებულა."
   },
   "analytics": {
     "title": "ანალიტიკა",
@@ -1257,6 +1419,7 @@
     "addACardForFaster": "ბარათის დამატება მეტად სწრაფად",
     "addCard": "ბარათის დამატება",
     "addEmail": "ელფოსტის დამატება",
+    "addEmailPrompt": "დაამატეთ ელ-ფოსტა სამუშაოებისა და ჯავშნების შეტყობინებების მისაღებად",
     "addNewCard": "ახალი ბარათის დამატება",
     "addPaymentMethod": "გადახდის მეთოდის დამატება",
     "addYourEmailToReceive": "დაამატეთ ელ-ფოსტა მისაღებად",
@@ -1343,7 +1506,7 @@
     "noEmailAdded": "ელფოსტა დამატებული არაა",
     "noPaymentMethodAdded": "გადახდის მეთოდი დამატებული არაა",
     "noPhoneAdded": "ნომეირ დამატებული არ არის",
-    "notSpecified": "არასწორი ნომერი",
+    "notSpecified": "მითითებული არ არის",
     "notificationPreferences": "შეტყობინებების პარამეტრები",
     "onlyImageFilesAreAllowed": "ნებადართულია მხოლოდ სურათები",
     "passwordChangedSuccessfully": "პაროლი წარმატებით შეიცვალა",
@@ -2373,7 +2536,7 @@
     "media": "მედია",
     "photos": "ფოტოები",
     "multiplePhotos": "რამდენიმე ფოტო",
-    "beforeAfter": "სანამ/შემდეგ",
+    "beforeAfter": "მანამდე/შემდეგ",
     "selectExactly2": "აირჩიეთ 2 სურათი",
     "saveChanges": "შენახვა",
     "addAProject": "პროექტის დამატება",
@@ -2482,7 +2645,33 @@
     "viewMyProfile": "ჩემი პროფილის ნახვა",
     "goToDashboard": "დაფაზე გადასვლა",
     "lookingForPro": "ეძებთ სპეციალისტს?",
-    "registerAsClient": "დარეგისტრირდით კლიენტად"
+    "registerAsClient": "დარეგისტრირდით კლიენტად",
+    "servicesPricingTitle": "სერვისები და ფასები",
+    "servicesPricingDescription": "აირჩიეთ სერვისები და მიუთითეთ ფასი თითოეულზე",
+    "selectSubcategories": "აირჩიეთ სპეციალიზაციები",
+    "setPricing": "მიუთითეთ ფასები",
+    "experienceYears": "გამოცდილება",
+    "exp1to2": "1–2 წელი",
+    "exp3to5": "3–5 წელი",
+    "exp5to10": "5–10 წელი",
+    "exp10plus": "10+ წელი",
+    "noServicesForSubcategory": "ფასები დაზუსტდება პროფილის გადამოწმების შემდეგ",
+    "priceWillBeSetLater": "ფასი დაყენდება მოგვიანებით",
+    "servicePriceHint": "დატოვეთ ცარიელი \"შეთანხმებით\" მისაღებად",
+    "filterSubcategories": "სპეციალიზაციის ძებნა...",
+    "subcategoriesSelected": "არჩეულია",
+    "selectSubcategoriesToSetPrices": "აირჩიეთ სპეციალიზაციები მარცხნივ ფასების დასაყენებლად",
+    "setAtLeastOnePrice": "დააყენეთ ფასი მინიმუმ ერთ სერვისზე",
+    "bulkDiscounts": "დიდი რაოდენობის შემთხვევაში ფასდაკლება",
+    "addDiscount": "ფასდაკლების დამატება",
+    "configurePricing": "ფასების კონფიგურაცია",
+    "setPricesForServices": "დააყენეთ ფასები",
+    "pricesFilled": "ფასები შევსებულია",
+    "welcomeBanner": "შეავსე პროფილი კლიენტების მოსაპოვებლად",
+    "benefit1": "კლიენტები გიპოვიან შენი სერვისებით",
+    "benefit2": "მიიღე შესაბამისი სამუშაოების შეტყობინებები",
+    "benefit3": "ააშენე ნდობა ვერიფიცირებული შეფასებებით",
+    "getStarted": "დაწყება"
   },
   "categories": {
     "renovation": "რემონტი",
@@ -2994,7 +3183,18 @@
     "welcomeBack": "გამარჯობა",
     "workWillAppear": "მიღებული სამუშაოები და პროექტები აქ გამოჩნდება",
     "noReviewsYet": "შეფასებები ჯერ არ არის",
-    "requestReviewsHint": "გააზიარეთ ლინკი ძველ კლიენტებთან შეფასებების მისაღებად"
+    "requestReviewsHint": "გააზიარეთ ლინკი ძველ კლიენტებთან შეფასებების მისაღებად",
+    "noPostedJobs": "განცხადებები ჯერ არ არის",
+    "myPostedJobs": "ჩემი განცხადებები",
+    "profileCompletion": "პროფილის შევსება",
+    "profileCompletionSubtitle": "შეავსე პროფილი მეტი კლიენტის მოსაზიდად",
+    "addProfilePhoto": "დაამატე პროფილის ფოტო",
+    "writeAboutYourself": "დაწერე შენს შესახებ",
+    "selectYourServices": "აირჩიე სერვისები",
+    "setServiceAreas": "დააყენე სერვისის ზონები",
+    "addPortfolioProjects": "დაამატე პორტფოლიოს პროექტები",
+    "getFirstReview": "მიიღე პირველი შეფასება",
+    "shareReviewLink": "გააზიარე შეფასების ლინკი"
   },
   "feedback": {
     "title": "უკუკავშირი",
@@ -3104,6 +3304,7 @@
   },
   "booking": {
     "title": "ჩემი ჯავშნები",
+    "subtitle": "მართეთ თქვენი ჯავშნები და განრიგი",
     "bookAppointment": "დაჯავშნე",
     "selectDate": "აირჩიე თარიღი",
     "selectTime": "აირჩიე დრო",
@@ -3116,18 +3317,20 @@
     "cancelReason": "გაუქმების მიზეზი",
     "cancelReasonPlaceholder": "რატომ აუქმებთ?",
     "statusPending": "მოლოდინში",
-    "statusConfirmed": "დადასტურებული",
+    "statusConfirmed": "დანიშნული",
     "statusCancelled": "გაუქმებული",
     "statusCompleted": "დასრულებული",
-    "upcoming": "მომავალი",
-    "past": "წარსული",
+    "upcoming": "მიმდინარე",
+    "past": "ისტორია",
     "cancelled": "გაუქმებული",
     "bookingSuccess": "ჯავშანი წარმატებით შეიქმნა!",
+    "viewBookings": "ჯავშნების ნახვა",
     "bookingCancelled": "ჯავშანი გაუქმებულია",
     "bookingConfirmed": "ჯავშანი დადასტურებულია",
     "bookingCompleted": "ჯავშანი დასრულებულია",
     "noBookings": "ჯავშნები ჯერ არ არის",
     "noBookingsDescription": "თქვენი ჯავშნები აქ გამოჩნდება",
+    "findProfessional": "სპეციალისტის მოძებნა",
     "with": "-თან",
     "confirmAction": "დადასტურება",
     "completeAction": "დასრულება",
@@ -3135,7 +3338,31 @@
     "scheduleOverview": "განრიგი",
     "closed": "დახურული",
     "notAvailable": "ამ თარიღზე არ არის ხელმისაწვდომი",
-    "loginToBook": "შედით ჯავშნის გასაკეთებლად"
+    "loginToBook": "შედით ჯავშნის გასაკეთებლად",
+    "requestService": "სერვისის მოთხოვნა",
+    "selectServices": "აირჩიეთ სერვისები",
+    "pickDateTime": "აირჩიეთ თარიღი და დრო",
+    "confirmBooking": "დაჯავშნა",
+    "quantity": "რაოდენობა",
+    "addNote": "დაამატეთ შენიშვნა",
+    "noAvailableSlots": "თავისუფალი სლოტები არ არის",
+    "startWork": "სამუშაოს დაწყება",
+    "completeWork": "სამუშაოს დასრულება",
+    "inProgress": "მიმდინარე",
+    "statusInProgress": "მიმდინარე",
+    "uploadBeforePhotos": "ატვირთეთ მანამდე ფოტოები (არასავალდებულო)",
+    "uploadAfterPhotos": "ატვირთეთ შესრულებული სამუშაოს ფოტოები",
+    "atLeastOnePhoto": "ატვირთეთ მინიმუმ ერთი ფოტო",
+    "skip": "გამოტოვება",
+    "services": "სერვისები",
+    "total": "ჯამი",
+    "address": "მისამართი",
+    "beforePhotos": "მანამდე",
+    "afterPhotos": "შემდეგ",
+    "photos": "ფოტოები",
+    "you": "თქვენ",
+    "client": "კლიენტი",
+    "pro": "სპეციალისტი"
   },
   "invite": {
     "subtitle": "ახალი პლატფორმა სერვისის სპეციალისტებისთვის",
@@ -3161,6 +3388,8 @@
     "passwordPlaceholder": "შეიყვანეთ პაროლი",
     "passwordHint": "მინიმუმ 6 სიმბოლო",
     "passwordTooShort": "პაროლი მინიმუმ 6 სიმბოლო უნდა იყოს",
+    "confirmPasswordPlaceholder": "გაიმეორეთ პაროლი",
+    "passwordMismatch": "პაროლები არ ემთხვევა",
     "activateAccount": "ანგარიშის გააქტიურება"
   }
 }
