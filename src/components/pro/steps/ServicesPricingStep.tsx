@@ -61,7 +61,7 @@ function buildServiceEntries(
     unitLabel: locale === "ka" ? svc.unitNameKa : svc.unitName,
     basePrice: svc.basePrice,
     price: 0,
-    isActive: true,
+    isActive: false,
     discountTiers: [],
   }));
 }
@@ -82,6 +82,7 @@ export default function ServicesPricingStep({
   const { t, locale } = useLanguage();
   const { categories, loading } = useCategories();
 
+  // Always start on category grid — user navigates into subcategories themselves
   const [panel, setPanel] = useState<"categories" | "subcategories">("categories");
   const [activeCategoryKey, setActiveCategoryKey] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -266,7 +267,12 @@ export default function ServicesPricingStep({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {categories.map((cat) => {
               const catName = locale === "ka" ? cat.nameKa : cat.name;
-              const selectedCount = cat.subcategories.filter((s) => selectedKeys.has(s.key)).length;
+              // Only count subcategories that have at least 1 active service with price
+              const selectedCount = cat.subcategories.filter((s) => {
+                if (!selectedKeys.has(s.key)) return false;
+                const subData = selectedSubcategories.find(ss => ss.key === s.key);
+                return subData?.services.some(svc => svc.isActive && svc.price > 0) ?? false;
+              }).length;
               const hasSelections = selectedCount > 0;
 
               return (
@@ -274,7 +280,7 @@ export default function ServicesPricingStep({
                   key={cat.key}
                   type="button"
                   onClick={() => goToCategory(cat.key)}
-                  className="group relative flex items-center gap-3 p-3.5 rounded-xl text-left transition-all duration-150 hover:shadow-sm active:scale-[0.98]"
+                  className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 hover:shadow-sm active:scale-[0.98]"
                   style={{
                     backgroundColor: hasSelections ? 'rgba(196,115,91,0.06)' : 'var(--color-bg-elevated)',
                     border: `1px solid ${hasSelections ? 'rgba(196,115,91,0.25)' : 'var(--color-border-subtle)'}`,
@@ -293,7 +299,7 @@ export default function ServicesPricingStep({
 
                   {/* Name */}
                   <div className="flex-1 min-w-0">
-                    <span className="text-[13px] font-medium block leading-tight truncate" style={{ color: 'var(--color-text-primary)' }}>
+                    <span className="text-[12px] sm:text-[13px] font-medium block leading-tight" style={{ color: 'var(--color-text-primary)' }}>
                       {catName}
                     </span>
                     {hasSelections && (
@@ -304,7 +310,7 @@ export default function ServicesPricingStep({
                   </div>
 
                   {/* Arrow */}
-                  <ChevronRight className="w-4 h-4 shrink-0 opacity-30 group-hover:opacity-60 transition-opacity" />
+                  <ChevronRight className="w-4 h-4 shrink-0 opacity-30 group-hover:opacity-60 transition-opacity hidden sm:block" />
                 </button>
               );
             })}
@@ -393,58 +399,91 @@ export default function ServicesPricingStep({
                       </div>
                     </div>
 
+                    {/* Warning: no services selected */}
+                    {subData.services.length > 0 && !subData.services.some(s => s.isActive) && (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]" style={{ backgroundColor: 'rgba(245,158,11,0.08)', color: 'rgb(180,110,10)' }}>
+                        <span>⚠</span>
+                        <span>{locale === 'ka' ? 'აირჩიე მინიმუმ ერთი სერვისი' : 'Select at least one service'}</span>
+                      </div>
+                    )}
+
                     {/* Services + inline pricing */}
                     {subData.services.length > 0 && (
-                      <div className="space-y-1.5">
-                        <p className="text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                          {t("register.setPricesForServices")}
-                        </p>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                            {t("register.setPricesForServices")}
+                          </p>
+                          {(() => {
+                            const active = subData.services.filter(s => s.isActive);
+                            const filled = active.filter(s => s.price > 0).length;
+                            if (active.length === 0) return null;
+                            return (
+                              <span className={`text-[10px] font-semibold ${filled === active.length ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                {filled}/{active.length}
+                              </span>
+                            );
+                          })()}
+                        </div>
                         {subData.services.map((svc) => (
                           <div
                             key={svc.serviceKey}
-                            className="flex items-center gap-2 py-2 px-3 rounded-lg"
+                            className="rounded-xl overflow-hidden transition-all"
                             style={{
-                              backgroundColor: svc.isActive ? 'var(--color-bg-tertiary)' : 'transparent',
-                              opacity: svc.isActive ? 1 : 0.4,
+                              backgroundColor: svc.isActive ? 'var(--color-bg-elevated)' : 'var(--color-bg-primary)',
+                              border: `1px solid ${svc.isActive ? 'var(--color-border-subtle)' : 'var(--color-border-subtle)'}`,
                             }}
                           >
-                            <Toggle
-                              size="sm"
-                              checked={svc.isActive}
-                              onChange={() =>
-                                updateSub(sub.key, (s) => ({
-                                  ...s,
-                                  services: s.services.map((sv) =>
-                                    sv.serviceKey === svc.serviceKey ? { ...sv, isActive: !sv.isActive } : sv
-                                  ),
-                                }))
-                              }
-                            />
-                            <div className="flex-1 min-w-0">
-                              <span className="text-[13px] font-medium block truncate" style={{ color: 'var(--color-text-primary)' }}>
-                                {svc.label}
-                              </span>
-                              <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
-                                {svc.unitLabel}
-                              </span>
+                            {/* Service name + toggle row */}
+                            <div className="flex items-center gap-2.5 py-2.5 px-3">
+                              <Toggle
+                                size="sm"
+                                checked={svc.isActive}
+                                onChange={() =>
+                                  updateSub(sub.key, (s) => ({
+                                    ...s,
+                                    services: s.services.map((sv) =>
+                                      sv.serviceKey === svc.serviceKey ? { ...sv, isActive: !sv.isActive } : sv
+                                    ),
+                                  }))
+                                }
+                              />
+                              <div className="flex-1 min-w-0">
+                                <span className="text-[13px] font-medium block truncate" style={{ color: 'var(--color-text-primary)' }}>
+                                  {svc.label}
+                                </span>
+                              </div>
+                              {svc.isActive && svc.price > 0 && (
+                                <span className="text-[13px] font-bold text-[#C4735B] shrink-0">
+                                  {svc.discountTiers.length > 0
+                                    ? `${Math.round(svc.price * (1 - Math.max(...svc.discountTiers.map(t => t.percent)) / 100))}–${svc.price}₾`
+                                    : `${svc.price}₾`}
+                                </span>
+                              )}
+                              {svc.isActive && svc.price === 0 && (
+                                <span className="text-[10px] font-medium text-amber-500 shrink-0">{locale === 'ka' ? 'ფასი?' : 'price?'}</span>
+                              )}
                             </div>
+                            {/* Price input row — separate line for clarity */}
                             {svc.isActive && (
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <div className="relative">
-                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>₾</span>
-                                  <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*"
-                                    value={svc.price > 0 ? svc.price.toString() : ""}
-                                    onChange={(e) => {
-                                      const val = parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0;
-                                      updateSub(sub.key, (s) => ({
-                                        ...s,
-                                        services: s.services.map((sv) =>
-                                          sv.serviceKey === svc.serviceKey ? { ...sv, price: val } : sv
-                                        ),
-                                      }));
+                              <div className="flex items-center gap-2 px-3 pb-2.5 pt-0">
+                                <span className="text-[10px] shrink-0" style={{ color: 'var(--color-text-muted)' }}>{svc.unitLabel}</span>
+                                <div className="flex items-center gap-1.5 ml-auto shrink-0">
+                                  <div className="relative">
+                                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>₾</span>
+                                    <input
+                                      type="text"
+                                      inputMode="numeric"
+                                      pattern="[0-9]*"
+                                      value={svc.price > 0 ? svc.price.toString() : ""}
+                                      onChange={(e) => {
+                                        const val = parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0;
+                                        updateSub(sub.key, (s) => ({
+                                          ...s,
+                                          services: s.services.map((sv) =>
+                                            sv.serviceKey === svc.serviceKey ? { ...sv, price: val } : sv
+                                          ),
+                                        }));
                                     }}
                                     placeholder={svc.basePrice > 0 ? `${svc.basePrice}` : "0"}
                                     className="w-20 pl-6 pr-2 py-1.5 text-sm font-semibold rounded-lg border outline-none transition-colors"
@@ -472,91 +511,143 @@ export default function ServicesPricingStep({
                                   </button>
                                 )}
                               </div>
+                              </div>
                             )}
 
-                            {/* Discount tiers — inline under price */}
+                            {/* Discount tiers — simplified */}
                             {svc.isActive && svc.price > 0 && (
-                              <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: '1px dashed var(--color-border-subtle)' }}>
+                              <div className="px-3 pb-3 space-y-2">
+                                {svc.discountTiers.length > 0 && (
+                                  <p className="text-[10px] font-medium pt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                                    {locale === 'ka' ? 'ფასდაკლება რაოდენობაზე' : 'Volume discounts'}
+                                  </p>
+                                )}
                                 {svc.discountTiers.map((tier, tidx) => {
                                   const discountedPrice = Math.round(svc.price * (1 - tier.percent / 100));
+                                  const prevQty = tidx > 0 ? svc.discountTiers[tidx - 1].minQuantity : 1;
+                                  const prevPercent = tidx > 0 ? svc.discountTiers[tidx - 1].percent : 0;
+                                  const minQty = prevQty + 1;
+                                  const minPercent = prevPercent + 1;
+                                  const updateTier = (updates: { minQuantity?: number; percent?: number }) => {
+                                    updateSub(sub.key, (s) => ({
+                                      ...s,
+                                      services: s.services.map((sv) =>
+                                        sv.serviceKey === svc.serviceKey
+                                          ? { ...sv, discountTiers: sv.discountTiers.map((dt, i) => i === tidx ? { ...dt, ...updates } : dt) }
+                                          : sv
+                                      ),
+                                    }));
+                                  };
+                                  // Validate on blur — clamp to minimums
+                                  const validateTier = () => {
+                                    const fixes: { minQuantity?: number; percent?: number } = {};
+                                    if (tier.minQuantity < minQty) fixes.minQuantity = minQty;
+                                    if (tier.percent < minPercent) fixes.percent = minPercent;
+                                    if (tier.percent > 99) fixes.percent = 99;
+                                    if (Object.keys(fixes).length > 0) updateTier(fixes);
+                                  };
+                                  const removeTier = () => {
+                                    updateSub(sub.key, (s) => ({
+                                      ...s,
+                                      services: s.services.map((sv) =>
+                                        sv.serviceKey === svc.serviceKey
+                                          ? { ...sv, discountTiers: sv.discountTiers.filter((_, i) => i !== tidx) }
+                                          : sv
+                                      ),
+                                    }));
+                                  };
                                   return (
-                                    <div key={tidx} className="flex items-center gap-1.5 text-[11px]">
-                                      <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        value={tier.minQuantity}
-                                        onChange={(e) => {
-                                          const val = parseInt(e.target.value.replace(/[^0-9]/g, "")) || 1;
-                                          updateSub(sub.key, (s) => ({
-                                            ...s,
-                                            services: s.services.map((sv) =>
-                                              sv.serviceKey === svc.serviceKey
-                                                ? { ...sv, discountTiers: sv.discountTiers.map((dt, i) => i === tidx ? { ...dt, minQuantity: val } : dt) }
-                                                : sv
-                                            ),
-                                          }));
-                                        }}
-                                        className="w-8 px-1 py-0.5 text-center rounded border outline-none text-[11px] font-semibold"
-                                        style={{ borderColor: 'var(--color-border-subtle)', backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}
-                                      />
-                                      <span style={{ color: 'var(--color-text-muted)' }}>+ →</span>
-                                      <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        value={tier.percent}
-                                        onChange={(e) => {
-                                          const val = parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0;
-                                          updateSub(sub.key, (s) => ({
-                                            ...s,
-                                            services: s.services.map((sv) =>
-                                              sv.serviceKey === svc.serviceKey
-                                                ? { ...sv, discountTiers: sv.discountTiers.map((dt, i) => i === tidx ? { ...dt, percent: val } : dt) }
-                                                : sv
-                                            ),
-                                          }));
-                                        }}
-                                        className="w-10 px-1 py-0.5 text-center rounded border outline-none text-[11px] font-semibold"
-                                        style={{ borderColor: 'var(--color-border-subtle)', backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}
-                                      />
-                                      <span style={{ color: 'var(--color-text-muted)' }}>%</span>
-                                      <span className="font-medium text-emerald-600 ml-auto">= {discountedPrice}₾</span>
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          updateSub(sub.key, (s) => ({
-                                            ...s,
-                                            services: s.services.map((sv) =>
-                                              sv.serviceKey === svc.serviceKey
-                                                ? { ...sv, discountTiers: sv.discountTiers.filter((_, i) => i !== tidx) }
-                                                : sv
-                                            ),
-                                          }))
-                                        }
-                                        className="text-red-400 hover:text-red-600 transition-colors"
-                                      >
-                                        <X className="w-3 h-3" />
-                                      </button>
+                                    <div
+                                      key={tidx}
+                                      className="rounded-lg p-2.5 text-[12px]"
+                                      style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+                                    >
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        {/* Quantity */}
+                                        <span className="text-[11px]" style={{ color: 'var(--color-text-secondary)' }}>
+                                          {locale === 'ka' ? 'რაოდენობა' : 'Qty'}
+                                        </span>
+                                        <input
+                                          type="text"
+                                          inputMode="numeric"
+                                          value={tier.minQuantity}
+                                          onChange={(e) => updateTier({ minQuantity: parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0 })}
+                                          onBlur={validateTier}
+                                          className="w-10 px-1 py-1 text-center rounded-md border outline-none font-semibold text-[12px]"
+                                          style={{ borderColor: tier.minQuantity < minQty ? 'rgba(239,68,68,0.4)' : 'var(--color-border-subtle)', backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)' }}
+                                        />
+                                        <span className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>+</span>
+
+                                        <span className="mx-1" style={{ color: 'var(--color-border)' }}>|</span>
+
+                                        {/* Percent */}
+                                        <span className="text-[11px]" style={{ color: 'var(--color-text-secondary)' }}>%</span>
+                                        <input
+                                          type="text"
+                                          inputMode="numeric"
+                                          value={tier.percent}
+                                          onChange={(e) => updateTier({ percent: parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0 })}
+                                          onBlur={validateTier}
+                                          className="w-10 px-1 py-1 text-center rounded-md border outline-none font-semibold text-[12px]"
+                                          style={{ borderColor: tier.percent < minPercent ? 'rgba(239,68,68,0.4)' : 'var(--color-border-subtle)', backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)' }}
+                                        />
+
+                                        <span className="mx-1" style={{ color: 'var(--color-border)' }}>|</span>
+
+                                        {/* Price — editable, syncs back to percent */}
+                                        <span className="text-[11px]" style={{ color: 'var(--color-text-secondary)' }}>₾</span>
+                                        <input
+                                          type="text"
+                                          inputMode="numeric"
+                                          value={discountedPrice > 0 ? discountedPrice : ''}
+                                          onChange={(e) => {
+                                            const newPrice = parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0;
+                                            if (svc.price > 0 && newPrice < svc.price) {
+                                              const newPercent = Math.round((1 - newPrice / svc.price) * 100);
+                                              updateTier({ percent: Math.max(1, Math.min(99, newPercent)) });
+                                            }
+                                          }}
+                                          className="w-14 px-1 py-1 text-center rounded-md border outline-none font-bold text-[12px] text-emerald-600"
+                                          style={{ borderColor: 'rgba(16,185,129,0.3)', backgroundColor: 'rgba(16,185,129,0.05)' }}
+                                        />
+
+                                        {/* Remove */}
+                                        <button
+                                          type="button"
+                                          onClick={removeTier}
+                                          className="ml-auto text-neutral-300 hover:text-red-500 transition-colors"
+                                        >
+                                          <X className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                      {/* Summary text */}
+                                      <p className="text-[10px] mt-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                                        {locale === 'ka'
+                                          ? `${tier.minQuantity}+ შეკვეთისას: ${svc.price}₾ → ${discountedPrice}₾ (−${tier.percent}%)`
+                                          : `When ordering ${tier.minQuantity}+: ${svc.price}₾ → ${discountedPrice}₾ (−${tier.percent}%)`}
+                                      </p>
                                     </div>
                                   );
                                 })}
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    const lastQty = svc.discountTiers.length > 0
-                                      ? svc.discountTiers[svc.discountTiers.length - 1].minQuantity + 2
-                                      : 3;
+                                    const last = svc.discountTiers[svc.discountTiers.length - 1];
+                                    const newQty = last ? last.minQuantity + 2 : 3;
+                                    const newPercent = last ? Math.min(99, last.percent + 5) : 10;
                                     updateSub(sub.key, (s) => ({
                                       ...s,
                                       services: s.services.map((sv) =>
                                         sv.serviceKey === svc.serviceKey
-                                          ? { ...sv, discountTiers: [...sv.discountTiers, { minQuantity: lastQty, percent: 10 }] }
+                                          ? { ...sv, discountTiers: [...sv.discountTiers, { minQuantity: newQty, percent: newPercent }] }
                                           : sv
                                       ),
                                     }));
                                   }}
-                                  className="text-[10px] font-medium text-[#C4735B] hover:underline"
+                                  className="text-[11px] font-medium transition-colors hover:underline"
+                                  style={{ color: 'var(--color-text-tertiary)' }}
                                 >
-                                  + {t("register.addDiscount")}
+                                  + {locale === 'ka' ? 'ფასდაკლების დამატება' : 'Add volume discount'}
                                 </button>
                               </div>
                             )}
@@ -571,9 +662,14 @@ export default function ServicesPricingStep({
           })}
         </div>
 
-        <Button variant="secondary" size="sm" onClick={goBackToCategories} className="w-full">
-          {t("common.done")}
-        </Button>
+        <button
+          type="button"
+          onClick={goBackToCategories}
+          className="w-full py-2.5 rounded-xl text-sm font-medium transition-colors"
+          style={{ color: 'var(--color-text-secondary)', border: '1px solid var(--color-border-subtle)' }}
+        >
+          ← {locale === 'ka' ? 'სხვა კატეგორიის არჩევა' : 'Choose different category'}
+        </button>
       </div>
     );
   }
