@@ -1,10 +1,10 @@
 'use client';
 
 import { PortfolioProject } from '@/components/pro/steps/ProjectsStep';
-import { SelectedSubcategoryWithPricing } from '@/components/pro/steps/ServicesPricingStep';
+import { SelectedSubcategoryWithPricing, UnitPriceEntry } from '@/components/pro/steps/ServicesPricingStep';
 import { ExperienceLevel, SelectedService } from '@/components/register/steps/StepSelectServices';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCategories } from '@/contexts/CategoriesContext';
+import { useCategories, type Subcategory } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
@@ -136,6 +136,7 @@ export interface ProfileSetupContextValue {
     serviceKey: string;
     categoryKey: string;
     subcategoryKey: string;
+    unitKey?: string;
     price: number;
     isActive: boolean;
   }[];
@@ -161,8 +162,9 @@ export interface ProfileSetupContextValue {
   // Navigation helpers
   currentStepIndex: (slug: ProfileSetupStepSlug) => number;
   goToStep: (slug: ProfileSetupStepSlug) => void;
-  goNext: (currentSlug: ProfileSetupStepSlug) => void;
+  goNext: (currentSlug: ProfileSetupStepSlug) => Promise<void>;
   goBack: (currentSlug: ProfileSetupStepSlug) => void;
+  isSaving: boolean;
 
   // Submit
   handleSubmit: () => Promise<void>;
@@ -190,6 +192,12 @@ export function ProfileSetupProvider({
   const router = useRouter();
   const { user, isLoading: authLoading, updateUser } = useAuth();
   const { locale } = useLanguage();
+
+  // Debug: detect remounts
+  useEffect(() => {
+    console.log('[ProfileSetupProvider] MOUNTED');
+    return () => console.log('[ProfileSetupProvider] UNMOUNTED');
+  }, []);
   const { categories: allCategories, getCategoryByKey } = useCategories();
 
   const isAdminEditing = user?.role === 'admin' && !!adminTargetProId;
@@ -249,41 +257,67 @@ export function ProfileSetupProvider({
   // ── Derived ─────────────────────────────────────────────────────────────────
 
   const selectedCategories = useMemo(
-    () => [...new Set(selectedServices.map((s) => s.categoryKey))],
-    [selectedServices],
+    () => selectedSubcategoriesWithPricing.length > 0
+      ? [...new Set(selectedSubcategoriesWithPricing.map((s) => s.categoryKey))]
+      : [...new Set(selectedServices.map((s) => s.categoryKey))],
+    [selectedServices, selectedSubcategoriesWithPricing],
   );
 
   const selectedSubcategories = useMemo(
-    () => selectedServices.map((s) => s.key),
-    [selectedServices],
+    () => selectedSubcategoriesWithPricing.length > 0
+      ? selectedSubcategoriesWithPricing.map((s) => s.key)
+      : selectedServices.map((s) => s.key),
+    [selectedServices, selectedSubcategoriesWithPricing],
   );
 
   const servicePricing = useMemo(
     () =>
       selectedSubcategoriesWithPricing.flatMap((sub) =>
         sub.services
-          .filter((s) => s.isActive && s.price > 0)
-          .map((s) => ({
-            serviceKey: s.serviceKey,
-            categoryKey: s.categoryKey,
-            subcategoryKey: s.subcategoryKey,
-            price: s.price,
-            isActive: s.isActive,
-          })),
+          .filter((s) => s.isActive)
+          .flatMap((s) => {
+            // Multi-unit: emit one entry per active unit with price > 0
+            const activeUnits = s.unitPrices?.filter(u => u.isActive && u.price > 0) || [];
+            if (activeUnits.length > 0) {
+              return activeUnits.map(u => ({
+                serviceKey: s.serviceKey,
+                categoryKey: s.categoryKey,
+                subcategoryKey: s.subcategoryKey,
+                unitKey: u.unitKey,
+                price: u.price,
+                isActive: true,
+              }));
+            }
+            // Fallback: single-unit legacy
+            if (s.price > 0) {
+              return [{
+                serviceKey: s.serviceKey,
+                categoryKey: s.categoryKey,
+                subcategoryKey: s.subcategoryKey,
+                price: s.price,
+                isActive: true,
+              }];
+            }
+            return [];
+          }),
       ),
     [selectedSubcategoriesWithPricing],
   );
 
   const maxExperienceYears = useMemo(() => {
-    if (selectedServices.length === 0) return 0;
-    const expMap: Record<ExperienceLevel, number> = {
+    const expMap: Record<string, number> = {
       '1-2': 2,
       '3-5': 5,
       '5-10': 10,
       '10+': 15,
     };
+    // Use new pricing flow if available
+    if (selectedSubcategoriesWithPricing.length > 0) {
+      return Math.max(0, ...selectedSubcategoriesWithPricing.map((s) => expMap[s.experience] || 0));
+    }
+    if (selectedServices.length === 0) return 0;
     return Math.max(...selectedServices.map((s) => expMap[s.experience] || 0));
-  }, [selectedServices]);
+  }, [selectedServices, selectedSubcategoriesWithPricing]);
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -334,6 +368,15 @@ export function ProfileSetupProvider({
 
   // ── sessionStorage restore ───────────────────────────────────────────────────
 
+  // Stores draft data from sessionStorage to merge with server data later
+  const draftDataRef = useRef<{
+    formData?: Partial<FormData>;
+    selectedServices?: SelectedService[];
+    customServices?: string[];
+    portfolioProjects?: PortfolioProject[];
+    selectedSubcategoriesWithPricing?: SelectedSubcategoryWithPricing[];
+  } | null>(null);
+
   useEffect(() => {
     try {
       if (sessionStorage.getItem('proRegistrationData')) return;
@@ -344,11 +387,16 @@ export function ProfileSetupProvider({
         selectedServices?: SelectedService[];
         customServices?: string[];
         portfolioProjects?: PortfolioProject[];
+        selectedSubcategoriesWithPricing?: SelectedSubcategoryWithPricing[];
       };
+      // Store draft for merging after profile fetch
+      draftDataRef.current = draft;
+
       if (draft.formData) setFormData((prev) => ({ ...prev, ...draft.formData }));
       if (Array.isArray(draft.selectedServices)) setSelectedServices(draft.selectedServices);
       if (Array.isArray(draft.customServices)) setCustomServices(draft.customServices);
       if (Array.isArray(draft.portfolioProjects)) setPortfolioProjects(draft.portfolioProjects);
+      if (Array.isArray(draft.selectedSubcategoriesWithPricing)) setSelectedSubcategoriesWithPricing(draft.selectedSubcategoriesWithPricing);
     } catch {
       // corrupt draft — ignore
     }
@@ -365,12 +413,12 @@ export function ProfileSetupProvider({
     try {
       sessionStorage.setItem(
         'profileSetupDraft',
-        JSON.stringify({ formData, selectedServices, customServices, portfolioProjects }),
+        JSON.stringify({ formData, selectedServices, customServices, portfolioProjects, selectedSubcategoriesWithPricing }),
       );
     } catch {
       // quota exceeded — ignore
     }
-  }, [formData, selectedServices, customServices, portfolioProjects]);
+  }, [formData, selectedServices, customServices, portfolioProjects, selectedSubcategoriesWithPricing]);
 
   // ── Avatar init from localStorage ───────────────────────────────────────────
 
@@ -515,6 +563,7 @@ export function ProfileSetupProvider({
               serviceKey: string;
               categoryKey: string;
               subcategoryKey: string;
+              unitKey?: string;
               price: number;
               isActive: boolean;
               discountTiers?: { minQuantity: number; percent: number }[];
@@ -530,7 +579,9 @@ export function ProfileSetupProvider({
           setExistingProfileId(profile._id);
           setIsEditMode(true);
 
-          if (profile.selectedServices && profile.selectedServices.length > 0) {
+          const draftHasServices = (draftDataRef.current?.selectedSubcategoriesWithPricing?.length ?? 0) > 0
+            || (draftDataRef.current?.selectedServices?.length ?? 0) > 0;
+          if (!draftHasServices && profile.selectedServices && profile.selectedServices.length > 0) {
             const loadedServices: SelectedService[] = profile.selectedServices.map((s) => ({
               key: s.key,
               categoryKey: s.categoryKey,
@@ -557,7 +608,7 @@ export function ProfileSetupProvider({
           }
 
           // Populate servicePricing → selectedSubcategoriesWithPricing
-          if (profile.servicePricing && profile.servicePricing.length > 0) {
+          if (!draftHasServices && profile.servicePricing && profile.servicePricing.length > 0) {
             const grouped: Record<string, typeof profile.servicePricing> = {};
             for (const sp of profile.servicePricing) {
               const key = sp.subcategoryKey || sp.categoryKey;
@@ -567,7 +618,7 @@ export function ProfileSetupProvider({
             const subsWithPricing: SelectedSubcategoryWithPricing[] = [];
             for (const [subKey, spEntries] of Object.entries(grouped)) {
               // Find the subcategory in the catalog
-              let foundSub: { key: string; name: string; nameKa: string; services?: { key: string; name: string; nameKa: string; basePrice: number; unit: string; unitName: string; unitNameKa: string }[] } | null = null;
+              let foundSub: Subcategory | null = null;
               let foundCatKey = '';
               for (const cat of allCategories) {
                 for (const sub of cat.subcategories) {
@@ -590,7 +641,39 @@ export function ProfileSetupProvider({
                 nameKa: foundSub.nameKa,
                 experience: exp,
                 services: (foundSub.services || []).map(catSvc => {
-                  const existing = spEntries.find(sp => sp.serviceKey === catSvc.key);
+                  // Find all stored entries for this service (may have multiple unitKeys)
+                  const matchingEntries = spEntries.filter(sp => sp.serviceKey === catSvc.key);
+                  const hasAnyEntry = matchingEntries.length > 0;
+
+                  // Build unitPrices from catalog unitOptions + stored prices
+                  const unitPrices: UnitPriceEntry[] = (catSvc.unitOptions && catSvc.unitOptions.length > 0)
+                    ? catSvc.unitOptions.map(uo => {
+                        const stored = matchingEntries.find(sp => sp.unitKey === uo.key);
+                        return {
+                          unitKey: uo.key,
+                          unit: uo.unit,
+                          unitLabel: locale === 'ka' ? uo.label.ka : uo.label.en,
+                          defaultPrice: uo.defaultPrice,
+                          maxPrice: uo.maxPrice,
+                          price: stored?.price || 0,
+                          isActive: stored ? (stored.isActive ?? true) : false,
+                          discountTiers: stored?.discountTiers || [],
+                        };
+                      })
+                    : [{
+                        unitKey: catSvc.unit,
+                        unit: catSvc.unit,
+                        unitLabel: locale === 'ka' ? catSvc.unitNameKa : catSvc.unitName,
+                        defaultPrice: catSvc.basePrice,
+                        maxPrice: catSvc.maxPrice,
+                        price: matchingEntries[0]?.price || 0,
+                        isActive: hasAnyEntry,
+                        discountTiers: matchingEntries[0]?.discountTiers || [],
+                      }];
+
+                  // Legacy price = first active unit's price
+                  const firstActive = unitPrices.find(u => u.isActive && u.price > 0);
+
                   return {
                     serviceKey: catSvc.key,
                     subcategoryKey: subKey,
@@ -599,9 +682,10 @@ export function ProfileSetupProvider({
                     unit: catSvc.unit,
                     unitLabel: locale === 'ka' ? catSvc.unitNameKa : catSvc.unitName,
                     basePrice: catSvc.basePrice,
-                    price: existing?.price || 0,
-                    isActive: existing?.isActive ?? true,
-                    discountTiers: existing?.discountTiers || [],
+                    price: firstActive?.price || matchingEntries[0]?.price || 0,
+                    isActive: hasAnyEntry,
+                    discountTiers: firstActive?.discountTiers || matchingEntries[0]?.discountTiers || [],
+                    unitPrices,
                   };
                 }),
               });
@@ -615,33 +699,35 @@ export function ProfileSetupProvider({
             setCustomServices(profile.customServices);
           }
 
+          // Merge server data with draft — draft values win when non-empty
+          const draft = draftDataRef.current?.formData;
           setFormData((prev) => ({
             ...prev,
-            title: profile.title || '',
-            bio: profile.bio || '',
-            avatar: profile.avatar || user?.avatar || '',
-            portfolioUrl: profile.pinterestLinks?.[0] || '',
-            licenseNumber: profile.architectLicenseNumber || '',
-            cadastralId: profile.cadastralId || '',
-            availability: profile.availability || [],
-            basePrice: profile.basePrice?.toString() || '',
-            maxPrice: profile.maxPrice?.toString() || '',
-            pricingModel: (profile.pricingModel as FormData['pricingModel']) || '',
-            serviceAreas:
+            title: draft?.title || profile.title || prev.title || '',
+            bio: draft?.bio || profile.bio || prev.bio || '',
+            avatar: draft?.avatar || profile.avatar || user?.avatar || prev.avatar || '',
+            portfolioUrl: draft?.portfolioUrl || profile.pinterestLinks?.[0] || prev.portfolioUrl || '',
+            licenseNumber: draft?.licenseNumber || profile.architectLicenseNumber || prev.licenseNumber || '',
+            cadastralId: draft?.cadastralId || profile.cadastralId || prev.cadastralId || '',
+            availability: draft?.availability?.length ? draft.availability : (profile.availability || prev.availability || []),
+            basePrice: draft?.basePrice || profile.basePrice?.toString() || prev.basePrice || '',
+            maxPrice: draft?.maxPrice || profile.maxPrice?.toString() || prev.maxPrice || '',
+            pricingModel: draft?.pricingModel || (profile.pricingModel as FormData['pricingModel']) || prev.pricingModel || '',
+            serviceAreas: draft?.serviceAreas?.length ? draft.serviceAreas : (
               profile.serviceAreas?.includes('Countrywide') ||
               profile.serviceAreas?.includes('საქართველოს მასშტაბით')
                 ? []
-                : profile.serviceAreas || [],
-            nationwide:
-              profile.serviceAreas?.includes('Countrywide') ||
+                : profile.serviceAreas || prev.serviceAreas || []),
+            nationwide: draft?.nationwide ??
+              (profile.serviceAreas?.includes('Countrywide') ||
               profile.serviceAreas?.includes('საქართველოს მასშტაბით') ||
-              false,
-            whatsapp: profile.whatsapp || '',
-            telegram: profile.telegram || '',
-            instagram: profile.instagramUrl || '',
-            facebook: profile.facebookUrl || '',
-            linkedin: profile.linkedinUrl || '',
-            website: profile.websiteUrl || '',
+              false),
+            whatsapp: draft?.whatsapp || profile.whatsapp || prev.whatsapp || '',
+            telegram: draft?.telegram || profile.telegram || prev.telegram || '',
+            instagram: draft?.instagram || profile.instagramUrl || prev.instagram || '',
+            facebook: draft?.facebook || profile.facebookUrl || prev.facebook || '',
+            linkedin: draft?.linkedin || profile.linkedinUrl || prev.linkedin || '',
+            website: draft?.website || profile.websiteUrl || prev.website || '',
           }));
 
           // Avatar
@@ -814,9 +900,13 @@ export function ProfileSetupProvider({
 
   // Require: at least 1 active service with price > 0 across all subcategories
   const allActiveServices = selectedSubcategoriesWithPricing.flatMap(s => s.services.filter(svc => svc.isActive));
+  const isServicePriced = (svc: { price: number; unitPrices?: UnitPriceEntry[] }) => {
+    const activeUnits = svc.unitPrices?.filter(u => u.isActive && u.price > 0) || [];
+    return activeUnits.length > 0 || svc.price > 0;
+  };
   const allActiveServicesPriced =
     allActiveServices.length > 0 &&
-    allActiveServices.every((svc) => svc.price > 0);
+    allActiveServices.every(isServicePriced);
 
   const validation: ProfileSetupValidation = useMemo(
     () => ({
@@ -829,7 +919,7 @@ export function ProfileSetupProvider({
         selectedSubcategoriesWithPricing.length > 0
           ? selectedSubcategoriesWithPricing.every((s) =>
               s.services.length === 0 ||
-              s.services.filter((svc) => svc.isActive).every((svc) => svc.price > 0),
+              s.services.filter((svc) => svc.isActive).every(isServicePriced),
             )
           : servicePricing.length > 0,
       serviceAreas: formData.nationwide || formData.serviceAreas.length > 0,
@@ -905,18 +995,124 @@ export function ProfileSetupProvider({
     [router],
   );
 
-  const goNext = useCallback(
-    (currentSlug: ProfileSetupStepSlug) => {
-      const idx = STEP_SLUGS.indexOf(currentSlug);
-      if (idx < STEP_SLUGS.length - 1) {
-        router.push(`/pro/profile-setup/${STEP_SLUGS[idx + 1]}`);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        handleSubmit();
+  const [isSaving, setIsSaving] = useState(false);
+  const handleSubmitRef = useRef<() => Promise<void>>();
+
+  // Build partial payload for the current step
+  const getStepPayload = useCallback((slug: ProfileSetupStepSlug): Record<string, unknown> => {
+    switch (slug) {
+      case 'about':
+        return {
+          bio: formData.bio,
+          avatar: formData.avatar || user?.avatar,
+          whatsapp: formData.whatsapp || undefined,
+          telegram: formData.telegram || undefined,
+          instagramUrl: formData.instagram || undefined,
+          facebookUrl: formData.facebook || undefined,
+          linkedinUrl: formData.linkedin || undefined,
+          websiteUrl: formData.website || undefined,
+        };
+      case 'services': {
+        const cats = selectedSubcategoriesWithPricing.length > 0
+          ? [...new Set(selectedSubcategoriesWithPricing.map((s) => s.categoryKey))]
+          : selectedCategories;
+        const subs = selectedSubcategoriesWithPricing.length > 0
+          ? selectedSubcategoriesWithPricing.map((s) => s.key)
+          : selectedSubcategories;
+        const svcs = selectedSubcategoriesWithPricing.length > 0
+          ? selectedSubcategoriesWithPricing.map((s) => ({
+              key: s.key, categoryKey: s.categoryKey, name: s.name, nameKa: s.nameKa, experience: s.experience,
+            }))
+          : selectedServices.map((s) => ({
+              key: s.key, categoryKey: s.categoryKey, name: s.name, nameKa: s.nameKa, experience: s.experience,
+            }));
+        const pricing = selectedSubcategoriesWithPricing.flatMap((sub) =>
+          sub.services.filter((s) => s.isActive).flatMap((s) => {
+            const activeUnits = s.unitPrices?.filter(u => u.isActive && u.price > 0) || [];
+            if (activeUnits.length > 0) {
+              return activeUnits.map(u => ({
+                serviceKey: s.serviceKey, categoryKey: sub.categoryKey, subcategoryKey: sub.key,
+                unitKey: u.unitKey, price: u.price, isActive: true,
+                ...(u.discountTiers.length > 0 ? { discountTiers: u.discountTiers } : {}),
+              }));
+            }
+            if (s.price > 0) {
+              return [{ serviceKey: s.serviceKey, categoryKey: sub.categoryKey, subcategoryKey: sub.key,
+                price: s.price, isActive: true,
+                ...(s.discountTiers.length > 0 ? { discountTiers: s.discountTiers } : {}),
+              }];
+            }
+            return [];
+          }),
+        );
+        return {
+          categories: cats.length > 0 ? cats : undefined,
+          subcategories: subs.length > 0 ? subs : undefined,
+          selectedServices: svcs.length > 0 ? svcs : undefined,
+          servicePricing: pricing.length > 0 ? pricing : undefined,
+          yearsExperience: maxExperienceYears > 0 ? maxExperienceYears : undefined,
+          customServices: customServices.length > 0 ? customServices : undefined,
+        };
       }
+      case 'areas':
+        return {
+          serviceAreas: formData.nationwide && locationData
+            ? [locationData.nationwide]
+            : formData.serviceAreas,
+        };
+      case 'portfolio':
+        return {
+          portfolioProjects: portfolioProjects.map((p) => ({
+            title: p.title, description: p.description, images: p.images,
+            videos: p.videos || [], location: p.location,
+            beforeAfterPairs: (p.beforeAfterPairs || []).map((pair) => ({
+              beforeImage: pair.beforeImage, afterImage: pair.afterImage,
+            })),
+          })),
+        };
+      default:
+        return {};
+    }
+  }, [formData, selectedSubcategoriesWithPricing, selectedCategories, selectedSubcategories,
+      selectedServices, customServices, maxExperienceYears, portfolioProjects, locationData, user]);
+
+  const goNext = useCallback(
+    async (currentSlug: ProfileSetupStepSlug) => {
+      if (isSaving) return; // Prevent double-click
+
+      const idx = STEP_SLUGS.indexOf(currentSlug);
+
+      // Last step — full submit
+      if (idx >= STEP_SLUGS.length - 1) {
+        handleSubmitRef.current?.();
+        return;
+      }
+
+      // Set saving immediately and keep it until navigation completes
+      setIsSaving(true);
+
+      // Save current step data to backend
+      const payload = getStepPayload(currentSlug);
+      if (Object.keys(payload).length > 0) {
+        try {
+          const token = localStorage.getItem('access_token');
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify(payload),
+          });
+        } catch {
+          // Don't block navigation on save failure — data is still in context
+        }
+      }
+
+      // Navigate — keep isSaving true so button stays disabled during transition
+      router.push(`/pro/profile-setup/${STEP_SLUGS[idx + 1]}`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Reset after a short delay to cover the route transition
+      setTimeout(() => setIsSaving(false), 500);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [router],
+    [router, getStepPayload, isSaving],
   );
 
   const goBack = useCallback(
@@ -992,13 +1188,21 @@ export function ProfileSetupProvider({
             : selectedSubcategories.length > 0
             ? selectedSubcategories
             : user?.selectedSubcategories || [],
-        selectedServices: selectedServices.map((s) => ({
-          key: s.key,
-          categoryKey: s.categoryKey,
-          name: s.name,
-          nameKa: s.nameKa,
-          experience: s.experience,
-        })),
+        selectedServices: selectedSubcategoriesWithPricing.length > 0
+          ? selectedSubcategoriesWithPricing.map((s) => ({
+              key: s.key,
+              categoryKey: s.categoryKey,
+              name: s.name,
+              nameKa: s.nameKa,
+              experience: s.experience,
+            }))
+          : selectedServices.map((s) => ({
+              key: s.key,
+              categoryKey: s.categoryKey,
+              name: s.name,
+              nameKa: s.nameKa,
+              experience: s.experience,
+            })),
         customServices: customServices.length > 0 ? customServices : undefined,
         yearsExperience: maxExperienceYears,
         avatar: formData.avatar || user?.avatar,
@@ -1035,18 +1239,50 @@ export function ProfileSetupProvider({
           selectedSubcategoriesWithPricing.length > 0
             ? selectedSubcategoriesWithPricing.flatMap((sub) =>
                 sub.services
-                  .filter((s) => s.price > 0)
-                  .map((s) => ({
-                    serviceKey: s.serviceKey,
-                    categoryKey: sub.categoryKey,
-                    subcategoryKey: sub.key,
-                    price: s.price,
-                    isActive: s.isActive,
-                    ...(s.discountTiers.length > 0 ? { discountTiers: s.discountTiers } : {}),
-                  })),
+                  .filter((s) => s.isActive)
+                  .flatMap((s) => {
+                    // Multi-unit: emit one entry per active unit with price > 0
+                    const activeUnits = s.unitPrices?.filter(u => u.isActive && u.price > 0) || [];
+                    if (activeUnits.length > 0) {
+                      return activeUnits.map(u => ({
+                        serviceKey: s.serviceKey,
+                        categoryKey: sub.categoryKey,
+                        subcategoryKey: sub.key,
+                        unitKey: u.unitKey,
+                        price: u.price,
+                        isActive: true,
+                        ...(u.discountTiers.length > 0 ? { discountTiers: u.discountTiers } : {}),
+                      }));
+                    }
+                    // Fallback: single-unit legacy
+                    if (s.price > 0) {
+                      return [{
+                        serviceKey: s.serviceKey,
+                        categoryKey: sub.categoryKey,
+                        subcategoryKey: sub.key,
+                        price: s.price,
+                        isActive: true,
+                        ...(s.discountTiers.length > 0 ? { discountTiers: s.discountTiers } : {}),
+                      }];
+                    }
+                    return [];
+                  }),
               )
             : undefined,
       };
+
+      // Debug: log what we're about to send
+      console.log('[ProfileSetup] Submit state:', {
+        'formData.bio': formData.bio?.substring(0, 50),
+        'formData.serviceAreas': formData.serviceAreas,
+        'selectedSubcategoriesWithPricing.length': selectedSubcategoriesWithPricing.length,
+        'selectedServices.length': selectedServices.length,
+        'servicePricing.length': servicePricing.length,
+        'requestBody.bio': (requestBody.bio as string)?.substring(0, 50),
+        'requestBody.serviceAreas': requestBody.serviceAreas,
+        'requestBody.categories': requestBody.categories,
+        'requestBody.servicePricing count': (requestBody.servicePricing as unknown[])?.length,
+      });
 
       const url = isAdminEditing
         ? `${process.env.NEXT_PUBLIC_API_URL}/users/pros/${adminTargetProId}/profile`
@@ -1136,6 +1372,9 @@ export function ProfileSetupProvider({
     router,
   ]);
 
+  // Keep ref in sync so goNext can call it
+  handleSubmitRef.current = handleSubmit;
+
   const value: ProfileSetupContextValue = {
     formData,
     setFormData,
@@ -1171,6 +1410,7 @@ export function ProfileSetupProvider({
     goToStep,
     goNext,
     goBack,
+    isSaving,
     handleSubmit,
   };
 

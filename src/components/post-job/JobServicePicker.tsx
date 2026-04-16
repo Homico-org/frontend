@@ -13,8 +13,10 @@ export interface JobServiceSelection {
   name: string;
   nameKa: string;
   unit: string;
+  unitKey?: string;
   unitName: string;
   unitNameKa: string;
+  quantity: number;
   budget: number;
   marketMin: number;
   marketMax: number;
@@ -143,21 +145,36 @@ export default function JobServicePicker({
     if (existing) {
       onServicesChange(selectedServices.filter(s => s.serviceKey !== serviceKey));
     } else {
+      // Use primary unit option if available
+      const primaryUnit = svc.unitOptions?.[0];
       onServicesChange([
         ...selectedServices,
         {
           serviceKey: svc.key,
           name: svc.name,
           nameKa: svc.nameKa,
-          unit: svc.unit,
-          unitName: svc.unitName,
-          unitNameKa: svc.unitNameKa,
+          unit: primaryUnit?.unit ?? svc.unit,
+          unitKey: primaryUnit?.key,
+          unitName: primaryUnit ? (locale === 'ka' ? primaryUnit.label.ka : primaryUnit.label.en) : svc.unitName,
+          unitNameKa: primaryUnit?.label.ka ?? svc.unitNameKa,
+          quantity: 1,
           budget: 0,
-          marketMin: svc.basePrice,
-          marketMax: svc.maxPrice ?? svc.basePrice,
+          marketMin: primaryUnit?.defaultPrice ?? svc.basePrice,
+          marketMax: primaryUnit?.maxPrice ?? svc.maxPrice ?? primaryUnit?.defaultPrice ?? svc.basePrice,
         },
       ]);
     }
+  };
+
+  const handleQuantityChange = (serviceKey: string, value: string) => {
+    const num = parseInt(value);
+    onServicesChange(
+      selectedServices.map(s =>
+        s.serviceKey === serviceKey
+          ? { ...s, quantity: isNaN(num) || num < 1 ? 1 : num }
+          : s
+      )
+    );
   };
 
   const handleBudgetChange = (serviceKey: string, value: string) => {
@@ -172,7 +189,7 @@ export default function JobServicePicker({
   };
 
   const selectedCategoryData = categories.find(c => c.key === selectedCategory);
-  const totalBudget = selectedServices.reduce((sum, s) => sum + s.budget, 0);
+  const totalBudget = selectedServices.reduce((sum, s) => sum + s.budget * (s.quantity || 1), 0);
 
   return (
     <div className="space-y-4">
@@ -252,37 +269,46 @@ export default function JobServicePicker({
         </div>
       )}
 
-      {/* Category Grid — hidden when search is active */}
-      {!searchQuery && <div className="grid grid-cols-2 gap-2">
-        {categories.filter(c => c.isActive).map(cat => {
-          const isSelected = cat.key === selectedCategory;
-          return (
-            <button
-              key={cat.key}
-              type="button"
-              onClick={() => handleCategoryClick(cat.key)}
-              className={`flex items-center gap-3 px-3 py-3 rounded-xl border-2 text-left transition-all ${
-                isSelected
-                  ? 'border-[#C4735B] bg-[#C4735B]/8 text-[#C4735B]'
-                  : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:border-[#C4735B]/50 hover:bg-[#C4735B]/4'
-              }`}
-              style={isSelected ? { backgroundColor: 'rgba(196,115,91,0.08)' } : undefined}
-            >
-              <span
-                className={`w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg ${
-                  isSelected
-                    ? 'text-[#C4735B]'
-                    : 'text-neutral-500 dark:text-neutral-400'
-                }`}
-              >
-                <CategoryIcon type={cat.key} className="w-5 h-5" />
-              </span>
-              <span className="text-xs font-medium leading-tight line-clamp-2">
-                {locale === 'ka' ? cat.nameKa : cat.name}
-              </span>
-            </button>
-          );
-        })}
+      {/* Category selection — collapsed when a category is selected */}
+      {!searchQuery && selectedCategory && selectedCategoryData && (
+        <div
+          className="flex items-center gap-3 px-3.5 py-3 rounded-xl"
+          style={{ backgroundColor: 'rgba(196,115,91,0.06)', border: '1px solid rgba(196,115,91,0.25)' }}
+        >
+          <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg text-[#C4735B]">
+            <CategoryIcon type={selectedCategory} className="w-5 h-5" />
+          </span>
+          <span className="text-sm font-semibold flex-1" style={{ color: 'var(--color-text-primary)' }}>
+            {locale === 'ka' ? selectedCategoryData.nameKa : selectedCategoryData.name}
+          </span>
+          <button
+            type="button"
+            onClick={() => { onCategoryChange(''); onServicesChange([]); }}
+            className="text-[11px] font-medium px-2.5 py-1 rounded-lg transition-colors hover:bg-[rgba(196,115,91,0.1)]"
+            style={{ color: '#C4735B' }}
+          >
+            {t('common.change')}
+          </button>
+        </div>
+      )}
+
+      {/* Category Grid — only shown when no category is selected */}
+      {!searchQuery && !selectedCategory && <div className="grid grid-cols-2 gap-2">
+        {categories.filter(c => c.isActive).map(cat => (
+          <button
+            key={cat.key}
+            type="button"
+            onClick={() => handleCategoryClick(cat.key)}
+            className="flex items-center gap-3 px-3 py-3 rounded-xl border-2 text-left transition-all border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:border-[#C4735B]/50 hover:bg-[#C4735B]/4"
+          >
+            <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg text-neutral-500 dark:text-neutral-400">
+              <CategoryIcon type={cat.key} className="w-5 h-5" />
+            </span>
+            <span className="text-xs font-medium leading-tight line-clamp-2">
+              {locale === 'ka' ? cat.nameKa : cat.name}
+            </span>
+          </button>
+        ))}
       </div>}
 
       {/* Category switch confirmation */}
@@ -339,12 +365,19 @@ export default function JobServicePicker({
                   {(subcat.services ?? []).map(svc => {
                     const isChecked = selectedServices.some(s => s.serviceKey === svc.key);
                     const selection = selectedServices.find(s => s.serviceKey === svc.key);
-                    const marketMin = svc.basePrice;
-                    const marketMax = svc.maxPrice ?? svc.basePrice;
+                    const hasMultipleUnits = (svc.unitOptions?.length ?? 0) > 1;
+                    // Market prices from the selected unit option (or primary)
+                    const selectedUnit = svc.unitOptions?.find(u => u.key === selection?.unitKey) ?? svc.unitOptions?.[0];
+                    const marketMin = selectedUnit?.defaultPrice ?? svc.basePrice;
+                    const marketMax = selectedUnit?.maxPrice ?? svc.maxPrice ?? marketMin;
                     const budget = selection?.budget ?? 0;
                     const aboveMarket = budget > 0 && budget > marketMax;
                     const belowMarket = budget > 0 && budget < marketMin;
-                    const unitLabel = locale === 'ka' ? svc.unitNameKa : svc.unitName;
+                    const unitLabel = selection
+                      ? (locale === 'ka' ? selection.unitNameKa : selection.unitName)
+                      : selectedUnit
+                        ? (locale === 'ka' ? selectedUnit.label.ka : selectedUnit.label.en)
+                        : (locale === 'ka' ? svc.unitNameKa : svc.unitName);
 
                     return (
                       <div key={svc.key} className="px-4 py-3">
@@ -364,13 +397,13 @@ export default function JobServicePicker({
                             {isChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
                           </button>
 
-                          {/* Service info + budget input */}
+                          {/* Service info + unit picker + budget input */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap mb-1">
                               <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
                                 {locale === 'ka' ? svc.nameKa : svc.name}
                               </span>
-                              {unitLabel && (
+                              {!isChecked && unitLabel && (
                                 <span className="text-[11px] text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
                                   {unitLabel}
                                 </span>
@@ -378,37 +411,128 @@ export default function JobServicePicker({
                               {/* Market price hint */}
                               {marketMax > 0 && (
                                 <span className="text-[11px] text-neutral-400">
-                                  {t('job.marketPrice')}: {marketMin}–{marketMax}₾
+                                  {t('job.marketPrice')}: {marketMin === marketMax ? `${marketMin}₾` : `${marketMin}–${marketMax}₾`}
                                 </span>
                               )}
                             </div>
 
-                            {/* Budget input — only show when checked */}
+                            {/* Unit picker + Budget input — only when checked */}
                             {isChecked && (
-                              <div className="mt-2 flex items-center gap-2">
-                                <div className="relative flex-1 max-w-[160px]">
-                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-neutral-500">₾</span>
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    step="1"
-                                    value={budget === 0 ? '' : budget}
-                                    onChange={e => handleBudgetChange(svc.key, e.target.value)}
-                                    placeholder={`${marketMin}–${marketMax}`}
-                                    className="w-full pl-7 pr-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 transition-all"
-                                    aria-label={t('job.yourBudget')}
-                                  />
+                              <div className="mt-2 space-y-2">
+                                {/* Unit selector — pill buttons for multi-unit services */}
+                                {hasMultipleUnits && (
+                                  <div className="flex gap-1 flex-wrap">
+                                    {svc.unitOptions!.map(uo => {
+                                      const isActive = selection?.unitKey === uo.key;
+                                      return (
+                                        <button
+                                          key={uo.key}
+                                          type="button"
+                                          onClick={() => {
+                                            onServicesChange(selectedServices.map(s =>
+                                              s.serviceKey === svc.key
+                                                ? {
+                                                    ...s,
+                                                    unit: uo.unit,
+                                                    unitKey: uo.key,
+                                                    unitName: locale === 'ka' ? uo.label.ka : uo.label.en,
+                                                    unitNameKa: uo.label.ka,
+                                                    marketMin: uo.defaultPrice,
+                                                    marketMax: uo.maxPrice ?? uo.defaultPrice,
+                                                  }
+                                                : s
+                                            ));
+                                          }}
+                                          className={`px-2.5 py-1 text-[11px] font-medium rounded-full transition-all ${
+                                            isActive
+                                              ? 'bg-[#C4735B] text-white'
+                                              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                                          }`}
+                                          style={!isActive ? { border: '1px solid var(--color-border-subtle)' } : undefined}
+                                        >
+                                          {locale === 'ka' ? uo.label.ka : uo.label.en}
+                                          {uo.defaultPrice > 0 && (
+                                            <span className={`ml-1 ${isActive ? 'opacity-80' : 'opacity-50'}`}>~{uo.defaultPrice}₾</span>
+                                          )}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+
+                                {/* Quantity + Per-unit price */}
+                                <div
+                                  className="rounded-lg px-3 py-2.5 space-y-2"
+                                  style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    {/* Quantity */}
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                                        {locale === 'ka' ? 'რაოდენობა' : 'Qty'}
+                                      </span>
+                                      <input
+                                        type="number"
+                                        min="1"
+                                        value={selection?.quantity ?? 1}
+                                        onChange={e => handleQuantityChange(svc.key, e.target.value)}
+                                        className="w-12 px-1.5 py-1 text-[13px] font-semibold text-center rounded-md border outline-none transition-all focus:border-[#C4735B]"
+                                        style={{
+                                          borderColor: 'var(--color-border-subtle)',
+                                          backgroundColor: 'var(--color-bg-elevated)',
+                                          color: 'var(--color-text-primary)',
+                                        }}
+                                      />
+                                    </div>
+
+                                    <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>×</span>
+
+                                    {/* Per-unit price */}
+                                    <div className="flex items-center gap-1.5 flex-1">
+                                      <span className="text-[11px] font-medium shrink-0" style={{ color: 'var(--color-text-muted)' }}>
+                                        {locale === 'ka' ? 'ფასი' : 'Price'}/{unitLabel}
+                                      </span>
+                                      <div className="relative flex-1 max-w-[120px]">
+                                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>₾</span>
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          step="1"
+                                          value={budget === 0 ? '' : budget}
+                                          onChange={e => handleBudgetChange(svc.key, e.target.value)}
+                                          placeholder={`${marketMin}–${marketMax}`}
+                                          className="w-full pl-5 pr-2 py-1 text-[13px] font-semibold rounded-md border outline-none transition-all focus:border-[#C4735B]"
+                                          style={{
+                                            borderColor: 'var(--color-border-subtle)',
+                                            backgroundColor: 'var(--color-bg-elevated)',
+                                            color: 'var(--color-text-primary)',
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Total line + market warnings */}
+                                  <div className="flex items-center justify-between">
+                                    {budget > 0 && (selection?.quantity ?? 1) > 1 ? (
+                                      <span className="text-[11px] font-bold" style={{ color: '#C4735B' }}>
+                                        = {budget * (selection?.quantity ?? 1)}₾ {locale === 'ka' ? 'ჯამი' : 'total'}
+                                      </span>
+                                    ) : <span />}
+                                    <div className="flex gap-1.5">
+                                      {aboveMarket && (
+                                        <span className="text-[10px] font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded-full">
+                                          {t('job.aboveMarket')}
+                                        </span>
+                                      )}
+                                      {belowMarket && (
+                                        <span className="text-[10px] font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded-full">
+                                          {t('job.belowMarket')}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                                {aboveMarket && (
-                                  <span className="text-[11px] font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-full">
-                                    {t('job.aboveMarket')}
-                                  </span>
-                                )}
-                                {belowMarket && (
-                                  <span className="text-[11px] font-medium text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-full">
-                                    {t('job.belowMarket')}
-                                  </span>
-                                )}
                               </div>
                             )}
                           </div>

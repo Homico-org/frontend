@@ -2418,67 +2418,117 @@ export default function ProfessionalDetailClient({
                                     )}
                                   </div>
                                   <div className="space-y-1.5">
-                                    {services.map((svc) => {
-                                      const tiers = ((svc as Record<string, unknown>).discountTiers as { minQuantity: number; percent: number }[]) || [];
-                                      const hasDiscounts = tiers.length > 0;
-                                      return (
-                                        <div
-                                          key={svc.serviceKey}
-                                          className="rounded-xl p-3"
-                                          style={{
-                                            backgroundColor: 'var(--color-bg-elevated)',
-                                            border: '1px solid var(--color-border-subtle)',
-                                          }}
-                                        >
-                                          {/* Service name + base price */}
-                                          <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                                              {svcNameMap[svc.serviceKey] || svc.serviceKey}
-                                            </span>
-                                            <span className="text-sm font-bold" style={{ color: '#C4735B' }}>
-                                              {svc.price}₾
-                                            </span>
-                                          </div>
+                                    {(() => {
+                                      // Group by serviceKey for multi-unit display
+                                      const byService: Record<string, typeof services> = {};
+                                      for (const svc of services) {
+                                        if (!byService[svc.serviceKey]) byService[svc.serviceKey] = [];
+                                        byService[svc.serviceKey].push(svc);
+                                      }
+                                      return Object.entries(byService).map(([svcKey, entries]) => {
+                                        const svcName = svcNameMap[svcKey] || svcKey;
+                                        // Find catalog service for unit labels
+                                        let catalogSvc: { unitOptions?: { key: string; label: { en: string; ka: string } }[] } | undefined;
+                                        for (const cat of CATEGORIES) {
+                                          for (const sub of cat.subcategories) {
+                                            const found = (sub.services || []).find(s => s.key === svcKey);
+                                            if (found) { catalogSvc = found; break; }
+                                          }
+                                          if (catalogSvc) break;
+                                        }
 
-                                          {/* Discount tiers — human-readable */}
-                                          {hasDiscounts && (
-                                            <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: '1px dashed var(--color-border-subtle)' }}>
-                                              <p className="text-[10px] font-medium flex items-center gap-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                                                🏷️ {locale === "ka" ? "ფასდაკლება რაოდენობაზე" : "Volume discounts"}
-                                              </p>
-                                              {tiers.map((tier, i) => {
-                                                const discounted = Math.round(svc.price * (1 - tier.percent / 100));
-                                                const savings = svc.price - discounted;
-                                                return (
-                                                  <div
-                                                    key={i}
-                                                    className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg text-[12px]"
-                                                    style={{ backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)' }}
-                                                  >
-                                                    <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                                                      {tier.minQuantity}+
-                                                    </span>
-                                                    <span style={{ color: 'var(--color-text-tertiary)' }}>
-                                                      {locale === "ka" ? "ერთეული" : "units"}
-                                                    </span>
-                                                    <span className="mx-0.5" style={{ color: 'var(--color-text-tertiary)' }}>→</span>
-                                                    <span className="font-bold text-emerald-600">
-                                                      {discounted}₾
-                                                    </span>
-                                                    <span className="text-[10px] line-through opacity-40" style={{ color: 'var(--color-text-secondary)' }}>
-                                                      {svc.price}₾
-                                                    </span>
-                                                    <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold">
-                                                      {locale === "ka" ? "დაზოგე" : "save"} {savings}₾
-                                                    </span>
-                                                  </div>
-                                                );
-                                              })}
-                                            </div>
-                                          )}
-                                        </div>
-                                      );
-                                    })}
+                                        return (
+                                          <div
+                                            key={svcKey}
+                                            className="rounded-xl p-3"
+                                            style={{
+                                              backgroundColor: 'var(--color-bg-elevated)',
+                                              border: '1px solid var(--color-border-subtle)',
+                                            }}
+                                          >
+                                            {entries.length === 1 ? (
+                                              <>
+                                                {/* Single unit — simple display */}
+                                                <div className="flex items-center justify-between">
+                                                  <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                                                    {svcName}
+                                                  </span>
+                                                  <span className="text-sm font-bold" style={{ color: '#C4735B' }}>
+                                                    {entries[0].price}₾
+                                                    {(() => {
+                                                      const unitOpt = catalogSvc?.unitOptions?.find(u => u.key === (entries[0] as Record<string, unknown>).unitKey);
+                                                      const unitLabel = unitOpt ? (locale === 'ka' ? unitOpt.label.ka : unitOpt.label.en) : '';
+                                                      return unitLabel ? <span className="text-[10px] font-normal ml-1" style={{ color: 'var(--color-text-muted)' }}>/{unitLabel}</span> : null;
+                                                    })()}
+                                                  </span>
+                                                </div>
+                                                {/* Discount tiers */}
+                                                {(() => {
+                                                  const tiers = ((entries[0] as Record<string, unknown>).discountTiers as { minQuantity: number; percent: number }[]) || [];
+                                                  if (tiers.length === 0) return null;
+                                                  return (
+                                                    <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: '1px dashed var(--color-border-subtle)' }}>
+                                                      {tiers.map((tier, i) => {
+                                                        const discounted = Math.round(entries[0].price * (1 - tier.percent / 100));
+                                                        const savings = entries[0].price - discounted;
+                                                        return (
+                                                          <div key={i} className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg text-[12px]" style={{ backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)' }}>
+                                                            <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{tier.minQuantity}+</span>
+                                                            <span style={{ color: 'var(--color-text-tertiary)' }}>{locale === "ka" ? "ერთეული" : "units"}</span>
+                                                            <span className="mx-0.5" style={{ color: 'var(--color-text-tertiary)' }}>→</span>
+                                                            <span className="font-bold text-emerald-600">{discounted}₾</span>
+                                                            <span className="text-[10px] line-through opacity-40" style={{ color: 'var(--color-text-secondary)' }}>{entries[0].price}₾</span>
+                                                            <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold">{locale === "ka" ? "დაზოგე" : "save"} {savings}₾</span>
+                                                          </div>
+                                                        );
+                                                      })}
+                                                    </div>
+                                                  );
+                                                })()}
+                                              </>
+                                            ) : (
+                                              <>
+                                                {/* Multi-unit — show service name then each unit price */}
+                                                <span className="text-sm font-medium block mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                                                  {svcName}
+                                                </span>
+                                                <div className="space-y-1.5">
+                                                  {entries.map((entry) => {
+                                                    const entryAny = entry as Record<string, unknown>;
+                                                    const unitOpt = catalogSvc?.unitOptions?.find(u => u.key === entryAny.unitKey);
+                                                    const unitLabel = unitOpt ? (locale === 'ka' ? unitOpt.label.ka : unitOpt.label.en) : entryAny.unitKey as string || '';
+                                                    const tiers = (entryAny.discountTiers as { minQuantity: number; percent: number }[]) || [];
+                                                    return (
+                                                      <div key={entryAny.unitKey as string || entry.serviceKey}>
+                                                        <div className="flex items-center justify-between py-1 px-2 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
+                                                          <span className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>{unitLabel}</span>
+                                                          <span className="text-[13px] font-bold" style={{ color: '#C4735B' }}>{entry.price}₾</span>
+                                                        </div>
+                                                        {tiers.length > 0 && (
+                                                          <div className="ml-2 mt-1 space-y-0.5">
+                                                            {tiers.map((tier, i) => {
+                                                              const discounted = Math.round(entry.price * (1 - tier.percent / 100));
+                                                              return (
+                                                                <div key={i} className="flex items-center gap-1.5 text-[11px] px-2">
+                                                                  <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{tier.minQuantity}+</span>
+                                                                  <span className="mx-0.5" style={{ color: 'var(--color-text-tertiary)' }}>→</span>
+                                                                  <span className="font-bold text-emerald-600">{discounted}₾</span>
+                                                                  <span className="text-[10px] opacity-40 line-through" style={{ color: 'var(--color-text-secondary)' }}>{entry.price}₾</span>
+                                                                </div>
+                                                              );
+                                                            })}
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                    );
+                                                  })}
+                                                </div>
+                                              </>
+                                            )}
+                                          </div>
+                                        );
+                                      });
+                                    })()}
                                   </div>
                                 </div>
                               ),

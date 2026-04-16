@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Avatar from "@/components/common/Avatar";
 import { Button } from "@/components/ui/button";
+import { ConfirmModal } from "@/components/ui/Modal";
 import type { JobComment, JobCommentsResponse, CommentAuthor } from "@/types/shared";
 import Link from "next/link";
 
@@ -91,46 +92,15 @@ const CommentForm = ({
         <textarea
           value={formData.content}
           onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-          placeholder={isReply ? t("jobComments.replyPlaceholder") : t("jobComments.expressInterestPlaceholder")}
+          placeholder={isReply ? t("jobComments.replyPlaceholder") : t("jobComments.commentPlaceholder")}
           className="w-full p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg resize-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent dark:bg-neutral-800 dark:text-white"
-          rows={isReply ? 2 : 4}
+          rows={isReply ? 2 : 3}
           maxLength={2000}
         />
         <div className="text-xs text-neutral-400 text-right mt-1">
           {formData.content.length}/2000
         </div>
       </div>
-
-      {!isReply && (
-        <>
-          {/* Phone Number */}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-              {t("common.phone")} ({t("common.optional")})
-            </label>
-            <input
-              type="tel"
-              value={formData.phoneNumber}
-              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-              placeholder="+995 XXX XXX XXX"
-              className="w-full p-2 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-[#C4735B] focus:border-transparent dark:bg-neutral-800 dark:text-white"
-            />
-          </div>
-
-          {/* Show Profile Toggle */}
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.showProfile}
-              onChange={(e) => setFormData({ ...formData, showProfile: e.target.checked })}
-              className="w-4 h-4 text-[#C4735B] rounded focus:ring-[#C4735B]"
-            />
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
-              {t("jobComments.showProfileLink")}
-            </span>
-          </label>
-        </>
-      )}
 
       {error && (
         <div className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 p-2 rounded">
@@ -144,7 +114,7 @@ const CommentForm = ({
           disabled={isSubmitting || !formData.content.trim()}
           className="bg-[#C4735B] hover:bg-[#A85D4A] text-white"
         >
-          {isSubmitting ? t("common.loading") : isEditing ? t("common.update") : isReply ? t("jobComments.reply") : t("jobComments.expressInterest")}
+          {isSubmitting ? t("common.loading") : isEditing ? t("common.update") : isReply ? t("jobComments.reply") : t("jobComments.addComment")}
         </Button>
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
@@ -176,6 +146,7 @@ const CommentItem = ({
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isMarking, setIsMarking] = useState(false);
 
   const isAuthor = currentUserId === comment.authorId;
@@ -187,7 +158,6 @@ const CommentItem = ({
   const author = comment.author as CommentAuthor | undefined;
 
   const handleDelete = async () => {
-    if (!confirm(t("jobComments.confirmDelete"))) return;
     setIsDeleting(true);
     try {
       await api.delete(`/jobs/comments/${comment.id}`);
@@ -196,6 +166,7 @@ const CommentItem = ({
       console.error("Failed to delete comment", err);
     } finally {
       setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -364,7 +335,7 @@ const CommentItem = ({
             )}
             {canDelete && (
               <button
-                onClick={handleDelete}
+                onClick={() => setShowDeleteConfirm(true)}
                 disabled={isDeleting}
                 className="text-neutral-500 hover:text-red-500 transition-colors"
               >
@@ -423,6 +394,17 @@ const CommentItem = ({
           )}
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title={t("jobComments.confirmDelete")}
+        variant="danger"
+        cancelLabel={t("common.cancel")}
+        confirmLabel={t("common.delete")}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };
@@ -471,7 +453,7 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
     ? comments.filter((c) => c.isMarkedInteresting)
     : comments;
 
-  const canComment = user && !isJobOwner && !hasCommented;
+  const canComment = !!user;
   const showVerificationWarning = false; // removed for MVP — all pros can comment
 
   return (
@@ -542,7 +524,7 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
               onClick={() => setShowForm(true)}
               className="w-full p-3 text-left text-neutral-500 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:border-[#C4735B] transition-colors"
             >
-              {t("jobComments.expressInterestPlaceholder")}
+              {t("jobComments.commentPlaceholder")}
             </button>
           )}
         </div>

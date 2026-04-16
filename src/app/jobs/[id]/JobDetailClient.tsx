@@ -1993,12 +1993,6 @@ export default function JobDetailClient() {
                     style={{ backgroundColor: `${ACCENT}10`, color: ACCENT }}
                   >
                     {getLabel(job.category)}
-                    {job.subcategory && (
-                      <>
-                        <span className="opacity-50">/</span>
-                        {getLabel(job.subcategory)}
-                      </>
-                    )}
                   </span>
                 </div>
 
@@ -2025,10 +2019,14 @@ export default function JobDetailClient() {
 
                 {/* Budget + Stats row */}
                 <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm mb-1.5 sm:mb-2">
-                  <span className="font-bold text-sm sm:text-base text-neutral-900 dark:text-white" style={{ color: ACCENT }}>
-                    {budgetDisplay}
-                  </span>
-                  <span className="w-px h-4 bg-neutral-200 dark:bg-neutral-700" />
+                  {!(job.services && job.services.length > 0) && (
+                    <>
+                      <span className="font-bold text-sm sm:text-base text-neutral-900 dark:text-white" style={{ color: ACCENT }}>
+                        {budgetDisplay}
+                      </span>
+                      <span className="w-px h-4 bg-neutral-200 dark:bg-neutral-700" />
+                    </>
+                  )}
                   <div className="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
                     <Eye className="w-3.5 h-3.5" />
                     <span>
@@ -2093,12 +2091,6 @@ export default function JobDetailClient() {
                   style={{ backgroundColor: `${ACCENT}10`, color: ACCENT }}
                 >
                   {getCategoryLabel(job.category)}
-                  {job.subcategory && (
-                    <>
-                      <span className="opacity-50">/</span>
-                      {getCategoryLabel(job.subcategory)}
-                    </>
-                  )}
                 </span>
               </div>
 
@@ -2139,9 +2131,11 @@ export default function JobDetailClient() {
 
               {/* Budget + Quick Specs — compact inline row */}
               <div className="flex flex-wrap items-center gap-3 text-sm pt-1">
-                <span className="font-bold text-base" style={{ color: ACCENT }}>
-                  {budgetDisplay}
-                </span>
+                {!(job.services && job.services.length > 0) && (
+                  <span className="font-bold text-base" style={{ color: ACCENT }}>
+                    {budgetDisplay}
+                  </span>
+                )}
                 {(job.propertyType || job.areaSize != null || job.roomCount != null || job.deadline) && (
                   <>
                     <span className="w-px h-4 bg-neutral-200 dark:bg-neutral-700" />
@@ -2472,6 +2466,79 @@ export default function JobDetailClient() {
                       {job.description}
                     </p>
                   </section>
+
+                  {/* Services breakdown */}
+                  {job.services && job.services.length > 0 && (
+                    <section
+                      className={`bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden transition-all duration-700 delay-500 ${
+                        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between px-4 sm:px-5 py-3" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                        <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                          {t("job.service")}
+                        </h2>
+                      </div>
+                      <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                        {job.services.map((svc, idx) => {
+                          const svcName = getLabel(svc.key);
+                          const qty = svc.quantity || 1;
+                          const lineTotal = svc.unitPrice * qty;
+                          // Get unit label from catalog
+                          let unitLabel = '';
+                          for (const cat of catalogCats) {
+                            for (const sub of cat.subcategories) {
+                              for (const s of sub.services || []) {
+                                if (s.key === svc.key) {
+                                  // Try unitKey first, then primary unit
+                                  const uo = svc.unitKey
+                                    ? s.unitOptions?.find(u => u.key === svc.unitKey)
+                                    : s.unitOptions?.[0];
+                                  if (uo) {
+                                    unitLabel = locale === 'ka' ? uo.label.ka : uo.label.en;
+                                  } else {
+                                    unitLabel = locale === 'ka' ? s.unitNameKa : s.unitName;
+                                  }
+                                }
+                              }
+                            }
+                          }
+                          if (!unitLabel) unitLabel = svc.unit || '';
+                          return (
+                            <div key={`${svc.key}-${idx}`} className="flex items-center justify-between px-4 sm:px-5 py-3">
+                              <div className="flex-1 min-w-0">
+                                <span className="text-sm font-medium block truncate" style={{ color: 'var(--color-text-primary)' }}>
+                                  {svcName}
+                                </span>
+                                <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+                                  {qty > 1 ? `${qty} × ` : ''}{unitLabel}
+                                  {svc.unitPrice > 0 && qty > 1 && (
+                                    <span className="ml-1">· {svc.unitPrice}₾/{unitLabel}</span>
+                                  )}
+                                </span>
+                              </div>
+                              {svc.unitPrice > 0 && (
+                                <span className="text-sm font-bold shrink-0 ml-3" style={{ color: ACCENT }}>
+                                  {lineTotal}₾
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                        {/* Total */}
+                        {job.services.filter(s => s.unitPrice > 0).length > 1 && (
+                          <div className="flex items-center justify-between px-4 sm:px-5 py-3" style={{ backgroundColor: 'rgba(196,115,91,0.04)' }}>
+                            <span className="text-[12px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                              {locale === 'ka' ? 'ჯამი' : 'Total'}
+                            </span>
+                            <span className="text-sm font-bold" style={{ color: ACCENT }}>
+                              {job.services.reduce((sum, s) => sum + s.unitPrice * (s.quantity || 1), 0)}₾
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </section>
+                  )}
 
                   {/* Property Specs */}
                   {(job.propertyType ||
@@ -3457,6 +3524,7 @@ export default function JobDetailClient() {
                 subcategory: job.subcategory,
                 propertyType: job.propertyType,
                 propertySize: job.areaSize,
+                services: job.services,
               }
             : undefined
         }

@@ -226,11 +226,9 @@ function BookingsContent() {
 
   const filteredBookings = bookings.filter((b) => {
     if (activeTab === 'cancelled') return b.status === 'cancelled';
-    if (activeTab === 'past') return b.date < today || b.status === 'completed';
-    return (
-      b.date >= today &&
-      (b.status === 'pending' || b.status === 'confirmed' || b.status === 'in_progress')
-    );
+    if (activeTab === 'past') return b.status === 'completed' || (b.date < today && b.status !== 'pending' && b.status !== 'confirmed' && b.status !== 'in_progress' && b.status !== 'cancelled');
+    // Upcoming: show all active bookings (pending/confirmed/in_progress) regardless of date
+    return b.status === 'pending' || b.status === 'confirmed' || b.status === 'in_progress';
   });
 
   const updateStatus = async (bookingId: string, status: BookingStatus, reason?: string) => {

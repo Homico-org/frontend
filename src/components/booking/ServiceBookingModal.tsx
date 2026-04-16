@@ -33,6 +33,7 @@ interface DiscountTier {
 interface ServicePricingItem {
   serviceKey: string;
   subcategoryKey: string;
+  unitKey?: string;
   price: number;
   isActive: boolean;
   discountTiers?: DiscountTier[];
@@ -52,6 +53,7 @@ export interface ServiceBookingModalProps {
 interface SelectedService {
   serviceKey: string;
   subcategoryKey: string;
+  unitKey?: string;
   price: number;
   quantity: number;
   discountTiers?: DiscountTier[];
@@ -153,9 +155,9 @@ export default function ServiceBookingModal({
   const [confirmedServices, setConfirmedServices] = useState<SelectedService[]>([]);
   const [confirmedTotal, setConfirmedTotal] = useState(0);
 
-  // Build service name lookup from catalog
+  // Build service name + unit option lookup from catalog
   const svcNameMap = useMemo(() => {
-    const map: Record<string, { name: string; nameKa: string; unit: string; unitKa: string }> = {};
+    const map: Record<string, { name: string; nameKa: string; unit: string; unitKa: string; unitOptions?: { key: string; label: { en: string; ka: string } }[] }> = {};
     for (const cat of categories) {
       for (const sub of cat.subcategories || []) {
         for (const svc of sub.services || []) {
@@ -164,6 +166,7 @@ export default function ServiceBookingModal({
             nameKa: svc.nameKa,
             unit: svc.unitName,
             unitKa: svc.unitNameKa,
+            unitOptions: svc.unitOptions?.map(uo => ({ key: uo.key, label: { en: uo.label.en, ka: uo.label.ka } })),
           };
         }
       }
@@ -244,20 +247,27 @@ export default function ServiceBookingModal({
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
+  // Composite key for multi-unit: serviceKey:unitKey
+  function svcKey(svc: { serviceKey: string; unitKey?: string }) {
+    return svc.unitKey ? `${svc.serviceKey}:${svc.unitKey}` : svc.serviceKey;
+  }
+
   function handleQuantityChange(svc: ServicePricingItem, delta: number) {
+    const key = svcKey(svc);
     setSelectedServices((prev) => {
-      const current = prev[svc.serviceKey];
+      const current = prev[key];
       const newQty = Math.max(0, (current?.quantity ?? 0) + delta);
       if (newQty === 0) {
         const next = { ...prev };
-        delete next[svc.serviceKey];
+        delete next[key];
         return next;
       }
       return {
         ...prev,
-        [svc.serviceKey]: {
+        [key]: {
           serviceKey: svc.serviceKey,
           subcategoryKey: svc.subcategoryKey,
+          unitKey: svc.unitKey,
           price: svc.price,
           quantity: newQty,
           discountTiers: svc.discountTiers,
@@ -274,13 +284,17 @@ export default function ServiceBookingModal({
         .filter((s) => s.quantity > 0)
         .map((s) => {
           const info = svcNameMap[s.serviceKey];
+          const unitOpt = s.unitKey && info?.unitOptions
+            ? info.unitOptions.find(u => u.key === s.unitKey)
+            : null;
           return {
             serviceKey: s.serviceKey,
+            unitKey: s.unitKey,
             name: info?.name || s.serviceKey,
             nameKa: info?.nameKa || s.serviceKey,
             quantity: s.quantity,
             unitPrice: s.price,
-            unit: info?.unit || 'piece',
+            unit: unitOpt ? unitOpt.label.en : (info?.unit || 'piece'),
             discount: getApplicableDiscount(s.discountTiers, s.quantity),
           };
         });
@@ -361,19 +375,25 @@ export default function ServiceBookingModal({
                         ? info.nameKa || info.name
                         : info.name
                       : svc.serviceKey;
-                  const unit =
-                    info
+                  // Unit label: use unitKey to find specific option, or fall back to primary
+                  const unitOpt = svc.unitKey && info?.unitOptions
+                    ? info.unitOptions.find(u => u.key === svc.unitKey)
+                    : null;
+                  const unit = unitOpt
+                    ? (locale === 'ka' ? unitOpt.label.ka : unitOpt.label.en)
+                    : info
                       ? locale === 'ka'
                         ? info.unitKa || info.unit
                         : info.unit
                       : '';
-                  const qty = selectedServices[svc.serviceKey]?.quantity ?? 0;
+                  const key = svcKey(svc);
+                  const qty = selectedServices[key]?.quantity ?? 0;
                   const discount = getApplicableDiscount(svc.discountTiers, qty);
                   const effectivePrice = qty > 0 ? svc.price * (1 - discount / 100) : svc.price;
 
                   return (
                     <div
-                      key={svc.serviceKey}
+                      key={key}
                       className="flex items-center gap-3 rounded-xl p-3 transition-colors"
                       style={{
                         border: `1px solid ${qty > 0 ? 'rgba(196,115,91,0.4)' : 'var(--color-border)'}`,
@@ -652,16 +672,21 @@ export default function ServiceBookingModal({
                         ? info.nameKa || info.name
                         : info.name
                       : s.serviceKey;
+                  const unitOpt = s.unitKey && info?.unitOptions
+                    ? info.unitOptions.find(u => u.key === s.unitKey)
+                    : null;
+                  const unitLabel = unitOpt ? (locale === 'ka' ? unitOpt.label.ka : unitOpt.label.en) : '';
                   const discount = getApplicableDiscount(s.discountTiers, s.quantity);
                   const lineTotal = getLineTotal(s);
 
                   return (
                     <div
-                      key={s.serviceKey}
+                      key={svcKey(s)}
                       className="flex items-center justify-between text-sm"
                     >
                       <span style={{ color: 'var(--color-text-secondary)' }}>
                         {name}
+                        {unitLabel && <span className="ml-1 text-[10px] opacity-50">({unitLabel})</span>}
                         <span className="ml-1 opacity-60">× {s.quantity}</span>
                         {discount > 0 && (
                           <span
@@ -806,11 +831,16 @@ export default function ServiceBookingModal({
                       ? info.nameKa || info.name
                       : info.name
                     : s.serviceKey;
+                  const unitOpt = s.unitKey && info?.unitOptions
+                    ? info.unitOptions.find(u => u.key === s.unitKey)
+                    : null;
+                  const unitLabel = unitOpt ? (locale === 'ka' ? unitOpt.label.ka : unitOpt.label.en) : '';
                   const lineTotal = getLineTotal(s);
                   return (
-                    <div key={s.serviceKey} className="flex items-center justify-between text-sm">
+                    <div key={svcKey(s)} className="flex items-center justify-between text-sm">
                       <span style={{ color: 'var(--color-text-secondary)' }}>
                         {name}
+                        {unitLabel && <span className="ml-1 text-[10px] opacity-50">({unitLabel})</span>}
                         <span className="ml-1 opacity-60">× {s.quantity}</span>
                       </span>
                       <span className="font-semibold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>

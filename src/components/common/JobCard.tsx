@@ -128,7 +128,15 @@ const JobCard = React.memo(function JobCard({
     }
   }, [job.createdAt, job.deadline]);
 
+  // Compute services total if available
+  const servicesTotal = useMemo(() => {
+    if (!job.services || job.services.length === 0) return 0;
+    return job.services.reduce((sum, s) => sum + s.unitPrice * (s.quantity || 1), 0);
+  }, [job.services]);
+
   const formattedBudget = useMemo(() => {
+    // Use services total if services exist
+    if (servicesTotal > 0) return formatCurrency(servicesTotal);
     if (job.budgetType === "fixed") {
       const amount = job.budgetAmount ?? job.budgetMin;
       if (amount) return formatCurrency(amount);
@@ -140,7 +148,7 @@ const JobCard = React.memo(function JobCard({
       return formatPriceRange(job.budgetMin, job.budgetMax);
     }
     return t("card.negotiable");
-  }, [job.budgetType, job.budgetAmount, job.pricePerUnit, job.areaSize, job.budgetMin, job.budgetMax, t]);
+  }, [servicesTotal, job.budgetType, job.budgetAmount, job.pricePerUnit, job.areaSize, job.budgetMin, job.budgetMax, t]);
 
   const timeAgo = useMemo(() => {
     const seconds = Math.floor((new Date().getTime() - new Date(job.createdAt).getTime()) / 1000);
@@ -267,6 +275,27 @@ const JobCard = React.memo(function JobCard({
               <p className="hidden sm:block text-[13px] text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed">
                 {job.description}
               </p>
+            )}
+
+            {/* Services breakdown */}
+            {job.services && job.services.length > 0 && (
+              <div className="hidden sm:flex flex-wrap gap-1">
+                {job.services.map((svc, i) => {
+                  const svcName = getLabel(svc.key);
+                  const qty = svc.quantity || 1;
+                  return (
+                    <span
+                      key={`${svc.key}-${i}`}
+                      className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded"
+                      style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}
+                    >
+                      {svcName}
+                      {qty > 1 && <span className="opacity-60">×{qty}</span>}
+                      {svc.unitPrice > 0 && <span className="text-[#C4735B] font-bold">{svc.unitPrice * qty}₾</span>}
+                    </span>
+                  );
+                })}
+              </div>
             )}
 
             {/* Meta info row - hidden on mobile */}

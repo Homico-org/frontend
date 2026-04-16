@@ -5,6 +5,7 @@ import { Input, Textarea } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { getSubcategoryConfig, getLocalizedField } from '@/constants/subcategoryConfig';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/contexts/ToastContext';
 import { aiService } from '@/services/ai';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -51,6 +52,7 @@ export default function AboutStep({
   subcategoryKey,
 }: AboutStepProps) {
   const { t, locale } = useLanguage();
+  const toast = useToast();
   const subcatConfig = getSubcategoryConfig(subcategoryKey || '');
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -102,7 +104,7 @@ export default function AboutStep({
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         // Allow up to 5MB for cropping, final result will be smaller
-        alert(t('common.imageMustBeLessThan'));
+        toast.error(t('common.imageMustBeLessThan'));
         return;
       }
 

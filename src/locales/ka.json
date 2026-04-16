@@ -2,6 +2,7 @@
   "common": {
     "save": "შენახვა",
     "cancel": "გაუქმება",
+    "change": "შეცვლა",
     "delete": "წაშლა",
     "edit": "რედაქტირება",
     "add": "დამატება",
@@ -12,6 +13,7 @@
     "back": "უკან",
     "next": "შემდეგი",
     "continue": "გაგრძელება",
+    "saveAndContinue": "შენახვა და გაგრძელება",
     "submit": "გაგზავნა",
     "send": "გაგზავნა",
     "search": "ძებნა",
@@ -643,7 +645,7 @@
     "jobRenewedFor30Days": "სამუშაო განახლდა 30 დღით",
     "searchMyJobsPlaceholder": "ძებნა სათაურით, კატეგორიით ან მდებარეობით...",
     "land": "მიწა",
-    "locationBudget": "ლოკაცია და ბიუჯეტი",
+    "locationBudget": "ლოკაცია",
     "manageYourActiveListingsAnd": "მართეთ თქვენი აქტიური განცხადებები",
     "markedAsInterested": "დაინტერესებულად მონიშნულია",
     "max": "მაქს",
@@ -720,12 +722,13 @@
     "switchCategoryConfirm": "კატეგორიის შეცვლა გასუფთავებს შერჩეულ სერვისებს. გავაგრძელოთ?"
   },
   "jobComments": {
-    "title": "დაინტერესებული პროფესიონალები",
-    "subtitle": "{total} პროფესიონალი",
-    "subtitleWithInteresting": "{total} პროფესიონალი • {interesting} საინტერესო",
-    "expressInterestPlaceholder": "გამოხატე დაინტერესება ამ სამუშაოზე...",
+    "title": "კომენტარები",
+    "subtitle": "{total} კომენტარი",
+    "subtitleWithInteresting": "{total} კომენტარი • {interesting} საინტერესო",
+    "commentPlaceholder": "დაწერე კომენტარი...",
     "replyPlaceholder": "დაწერე პასუხი...",
     "reply": "პასუხი",
+    "addComment": "კომენტარი",
     "showProfileLink": "ჩემი პროფილის ბმულის ჩვენება",
     "expressInterest": "დაინტერესების გამოხატვა",
     "confirmDelete": "ნამდვილად გსურთ ამ კომენტარის წაშლა?",
@@ -733,9 +736,9 @@
     "verificationRequiredToExpressInterest": "დაინტერესების გამოსახატავად საჭიროა პროფილის ვერიფიკაცია",
     "completeVerificationCta": "გაიარეთ ვერიფიკაცია →",
     "alreadyExpressedInterest": "თქვენ უკვე გამოხატეთ დაინტერესება. შეგიძლიათ დაარედაქტიროთ თქვენი კომენტარი ქვემოთ.",
-    "noInterestingYet": "ჯერ არ არის საინტერესო პროფესიონალები",
-    "noInterestYet": "ჯერ არავის გამოუხატავს დაინტერესება",
-    "beFirstToReachOut": "იყავი პირველი ვინც დაეკონტაქტება დამკვეთს"
+    "noInterestingYet": "ჯერ არ არის საინტერესო კომენტარები",
+    "noInterestYet": "ჯერ არავის დაუწერია კომენტარი",
+    "beFirstToReachOut": "იყავი პირველი ვინც დაწერს კომენტარს"
   },
   "jobDetail": {
     "guestCtaTitle": "შემოგვიერთდი — დასაქმდი ასეთ პროექტებზე",
@@ -842,12 +845,12 @@
   },
   "postJob": {
     "steps": {
-      "category": "კატეგორია",
-      "location": "ლოკაცია და ბიუჯეტი",
+      "category": "სერვისი",
+      "location": "ლოკაცია",
       "details": "დეტალები",
       "review": "გადახედვა"
     },
-    "locationBudgetSubtitle": "მიუთითეთ პროექტის მისამართი და ბიუჯეტი",
+    "locationBudgetSubtitle": "მიუთითეთ პროექტის მისამართი",
     "photosRequirementHelp": "მინიმუმ 1 ფოტო საჭიროა. ფოტოები ეხმარება პროფესიონალებს უკეთ გაიგონ თქვენი პროექტი.",
     "addAtLeastOnePhotoToContinue": "გთხოვთ დაამატოთ მინიმუმ 1 ფოტო გასაგრძელებლად",
     "photosAddedSuccess": "{count} ფოტო დამატებულია - პროფესიონალები უკეთ გაიგებენ შენს პროექტს!",

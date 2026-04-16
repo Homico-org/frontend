@@ -68,6 +68,15 @@ export interface Job extends BaseEntity {
   
   // Skills
   skills?: string[];
+
+  // Services with pricing (from post-job flow)
+  services?: {
+    key: string;
+    unitKey?: string;
+    quantity: number;
+    unitPrice: number;
+    unit?: string;
+  }[];
   
   // Size specifications
   areaSize?: number;

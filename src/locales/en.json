@@ -2,6 +2,7 @@
   "common": {
     "save": "Save",
     "cancel": "Cancel",
+    "change": "Change",
     "delete": "Delete",
     "edit": "Edit",
     "add": "Add",
@@ -12,6 +13,7 @@
     "back": "Back",
     "next": "Next",
     "continue": "Continue",
+    "saveAndContinue": "Save & Continue",
     "submit": "Submit",
     "send": "Send",
     "search": "Search",
@@ -643,7 +645,7 @@
     "jobRenewedFor30Days": "Job Renewed For30 Days",
     "searchMyJobsPlaceholder": "Search by title, category, or location...",
     "land": "Land",
-    "locationBudget": "Location Budget",
+    "locationBudget": "Location",
     "manageYourActiveListingsAnd": "Manage Your Active Listings And...",
     "markedAsInterested": "Marked As Interested",
     "max": "Max",
@@ -720,12 +722,13 @@
     "switchCategoryConfirm": "Switching category will clear your selected services. Continue?"
   },
   "jobComments": {
-    "title": "Interested Professionals",
-    "subtitle": "{total} professionals",
-    "subtitleWithInteresting": "{total} professionals • {interesting} interesting",
-    "expressInterestPlaceholder": "Express your interest in this job...",
+    "title": "Comments",
+    "subtitle": "{total} comments",
+    "subtitleWithInteresting": "{total} comments • {interesting} interesting",
+    "commentPlaceholder": "Write a comment...",
     "replyPlaceholder": "Write a reply...",
     "reply": "Reply",
+    "addComment": "Comment",
     "showProfileLink": "Show link to my profile",
     "expressInterest": "Express Interest",
     "confirmDelete": "Are you sure you want to delete this comment?",
@@ -733,9 +736,9 @@
     "verificationRequiredToExpressInterest": "Profile verification required to express interest",
     "completeVerificationCta": "Complete verification →",
     "alreadyExpressedInterest": "You've already expressed interest. You can edit your comment below.",
-    "noInterestingYet": "No interesting professionals yet",
-    "noInterestYet": "No one has expressed interest yet",
-    "beFirstToReachOut": "Be the first to reach out to the client"
+    "noInterestingYet": "No interesting comments yet",
+    "noInterestYet": "No comments yet",
+    "beFirstToReachOut": "Be the first to comment"
   },
   "jobDetail": {
     "guestCtaTitle": "Join Homico — get hired for projects like this",
@@ -842,12 +845,12 @@
   },
   "postJob": {
     "steps": {
-      "category": "Category",
-      "location": "Location & Budget",
+      "category": "Service",
+      "location": "Location",
       "details": "Details",
       "review": "Review"
     },
-    "locationBudgetSubtitle": "Specify the project address and budget",
+    "locationBudgetSubtitle": "Specify the project address",
     "photosRequirementHelp": "At least 1 photo is required. Photos help professionals better understand your project.",
     "addAtLeastOnePhotoToContinue": "Please add at least 1 photo to continue",
     "photosAddedSuccess": "{count} photo{plural} added - pros will better understand your project!",
