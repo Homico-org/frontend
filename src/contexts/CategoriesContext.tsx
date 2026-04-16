@@ -14,16 +14,27 @@ export interface SubSubcategory {
   isActive: boolean;
 }
 
+export interface CatalogUnitOption {
+  key: string;
+  unit: string;
+  label: { en: string; ka: string; ru: string };
+  defaultPrice: number;
+  maxPrice?: number;
+}
+
 export interface CatalogServiceItem {
   key: string;
   name: string;
   nameKa: string;
   nameRu?: string;
+  // Backward compat — primary unit (from unitOptions[0])
   basePrice: number;
   maxPrice?: number;
   unit: string;
   unitName: string;
   unitNameKa: string;
+  // Multi-unit pricing options
+  unitOptions?: CatalogUnitOption[];
 }
 
 export interface Subcategory {

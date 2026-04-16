@@ -284,6 +284,7 @@ function PostJobPageContent() {
   const getStepLabel = (step: Step) => t(`postJob.steps.${step}`);
 
   const canProceedFromCategory = () => {
+    if (!formData.title.trim() || !formData.description.trim()) return false;
     if (!selectedCategory || !formData.propertyType) return false;
     if (selectedJobServices.length === 0) return false;
     // Also validate required category-specific fields shown on this step
@@ -293,8 +294,13 @@ function PostJobPageContent() {
     }
     return true;
   };
+  const serviceBudgetTotal = selectedJobServices.reduce((sum, s) => sum + s.budget * (s.quantity || 1), 0);
+  const hasServiceBudgets = selectedJobServices.length > 0;
+
   const canProceedFromLocation = () => {
     if (!formData.location) return false;
+    // If per-service budgets are set, skip the BudgetSelector validation
+    if (hasServiceBudgets) return true;
     if (formData.budgetType === "negotiable") return true;
     // Budget must be greater than 0
     const minBudget = parseFloat(formData.budgetMin);
@@ -307,11 +313,8 @@ function PostJobPageContent() {
     return true;
   };
   const canProceedFromDetails = () => {
-    // Check basic required fields — title, description, at least 1 photo
-    if (!formData.title.trim() || !formData.description.trim() || (existingMedia.length + mediaFiles.length) === 0) {
-      return false;
-    }
-    return true;
+    // At least 1 photo required
+    return (existingMedia.length + mediaFiles.length) > 0;
   };
 
   const handleNext = () => {
@@ -406,7 +409,8 @@ function PostJobPageContent() {
       if (selectedJobServices.length > 0) {
         jobData.services = selectedJobServices.map(svc => ({
           key: svc.serviceKey,
-          quantity: 1,
+          unitKey: svc.unitKey,
+          quantity: svc.quantity || 1,
           unitPrice: svc.budget,
           unit: svc.unit,
         }));
@@ -571,9 +575,48 @@ function PostJobPageContent() {
                 </p>
               </div>
 
+                {/* Title */}
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                    {t('common.title')} <span className="text-[#C4735B]">*</span>
+                  </label>
+                  <Input
+                    value={formData.title}
+                    onChange={(e) => updateFormData("title", e.target.value)}
+                    placeholder={t('job.egKitchenPipeRepair')}
+                    className="text-base py-3"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                    {t('common.description')} <span className="text-[#C4735B]">*</span>
+                  </label>
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) => updateFormData("description", e.target.value)}
+                    rows={3}
+                    placeholder={t('job.describeTheProblemOrWhat')}
+                    className="text-base"
+                  />
+                </div>
+
+                {/* Timing Selection */}
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
+                    {t('job.whenDoYouNeedIt')} <span className="text-[#C4735B]">*</span>
+                  </label>
+                  <TimingSelector
+                    value={formData.timing}
+                    onChange={(value) => updateFormData("timing", value)}
+                    locale={locale as "en" | "ka" | "ru"}
+                  />
+                </div>
+
                 {/* Property Type Selection with Icons */}
                 <div>
-                  <label className="block text-sm font-semibold text-neutral-700 mb-3">
+                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
                     {t('job.propertyType')} <span className="text-[#C4735B]">*</span>
                   </label>
                   <PropertyTypeSelector
@@ -585,7 +628,7 @@ function PostJobPageContent() {
 
                 {/* Category & Subcategory Selection */}
                 <div>
-                  <label className="block text-sm font-semibold text-neutral-700 mb-3">
+                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
                     {t('job.categoryService')} <span className="text-[#C4735B]">*</span>
                   </label>
                   <JobServicePicker
@@ -712,7 +755,7 @@ function PostJobPageContent() {
             </div>
           )}
 
-          {/* STEP 2: Location & Budget */}
+          {/* STEP 2: Location */}
           {currentStep === "location" && (
             <div className="max-w-2xl mx-auto">
               <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5">
@@ -726,7 +769,7 @@ function PostJobPageContent() {
                 <div className="space-y-5 sm:space-y-6">
                   {/* Address */}
                   <div>
-                    <label className="block text-sm font-semibold text-neutral-700 mb-2">
+                    <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
                       {t('job.jobAddress')} <span className="text-[#C4735B]">*</span>
                     </label>
                     <AddressPicker
@@ -737,40 +780,45 @@ function PostJobPageContent() {
                     />
                   </div>
 
-                  {/* Budget Type Selection and Inputs */}
-                  <div>
-                    <label className="block text-sm font-semibold text-neutral-700 mb-3">
-                      {t('common.budget')} <span className="text-[#C4735B]">*</span>
-                    </label>
-                    <BudgetSelector
-                      budgetType={formData.budgetType}
-                      onBudgetTypeChange={(value) => {
-                        updateFormData("budgetType", value);
-                        if (value === "fixed") updateFormData("budgetMax", "");
-                        if (value === "negotiable") {
-                          updateFormData("budgetMin", "0");
-                          updateFormData("budgetMax", "");
-                        }
-                      }}
-                      budgetMin={formData.budgetMin}
-                      onBudgetMinChange={(value) => updateFormData("budgetMin", value)}
-                      budgetMax={formData.budgetMax}
-                      onBudgetMaxChange={(value) => updateFormData("budgetMax", value)}
-                      locale={locale as "en" | "ka" | "ru"}
-                    />
-                  </div>
+                  {/* Budget Type Selection — hidden when per-service budgets are set */}
+                  {hasServiceBudgets ? (
+                    serviceBudgetTotal > 0 ? (
+                      <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(196,115,91,0.06)', border: '1px solid rgba(196,115,91,0.2)' }}>
+                        <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                          {t('common.budget')}
+                        </p>
+                        <p className="text-lg font-bold mt-1" style={{ color: '#C4735B' }}>
+                          {serviceBudgetTotal}₾
+                        </p>
+                        <p className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                          {locale === 'ka' ? 'სერვისების ბიუჯეტიდან' : 'From per-service budgets'}
+                        </p>
+                      </div>
+                    ) : null
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
+                        {t('common.budget')} <span className="text-[#C4735B]">*</span>
+                      </label>
+                      <BudgetSelector
+                        budgetType={formData.budgetType}
+                        onBudgetTypeChange={(value) => {
+                          updateFormData("budgetType", value);
+                          if (value === "fixed") updateFormData("budgetMax", "");
+                          if (value === "negotiable") {
+                            updateFormData("budgetMin", "0");
+                            updateFormData("budgetMax", "");
+                          }
+                        }}
+                        budgetMin={formData.budgetMin}
+                        onBudgetMinChange={(value) => updateFormData("budgetMin", value)}
+                        budgetMax={formData.budgetMax}
+                        onBudgetMaxChange={(value) => updateFormData("budgetMax", value)}
+                        locale={locale as "en" | "ka" | "ru"}
+                      />
+                    </div>
+                  )}
 
-                  {/* Timing Selection */}
-                  <div>
-                    <label className="block text-sm font-semibold text-neutral-700 mb-3">
-                      {t('job.whenDoYouNeedIt')} <span className="text-[#C4735B]">*</span>
-                    </label>
-                    <TimingSelector
-                      value={formData.timing}
-                      onChange={(value) => updateFormData("timing", value)}
-                      locale={locale as "en" | "ka" | "ru"}
-                    />
-                  </div>
                 </div>
               </div>
             </div>
@@ -781,42 +829,14 @@ function PostJobPageContent() {
             <div className="max-w-2xl mx-auto space-y-4">
               <div>
                 <h1 className="text-lg font-bold text-neutral-900 dark:text-white mb-0.5">
-                  {t("job.projectDetails")}
+                  {t('job.addPhotos')}
                 </h1>
                 <p className="text-xs text-neutral-500">
-                  {t('job.describeWhatNeedsToBe')}
+                  {t("postJob.photosRequirementHelp")}
                 </p>
               </div>
 
               <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 space-y-4">
-                {/* Title */}
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                    {t('common.title')} <span className="text-[#C4735B]">*</span>
-                  </label>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => updateFormData("title", e.target.value)}
-                    placeholder={t('job.egKitchenPipeRepair')}
-                    className="text-base py-3"
-                  />
-                </div>
-
-                {/* Description */}
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                    {t('common.description')} <span className="text-[#C4735B]">*</span>
-                  </label>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => updateFormData("description", e.target.value)}
-                    rows={4}
-                    placeholder={t('job.describeTheProblemOrWhat')}
-                    className="text-base"
-                  />
-                </div>
-
-
                 {/* Photos - Enhanced with explanation */}
                 <div className={`p-4 sm:p-5 lg:p-6 rounded-2xl border-2 transition-all ${
                   (existingMedia.length + mediaFiles.length) > 0
@@ -947,8 +967,8 @@ function PostJobPageContent() {
 
           {/* STEP 4: Review */}
           {currentStep === "review" && (
-            <div className="max-w-2xl mx-auto space-y-3">
-              <div className="mb-2">
+            <div className="max-w-2xl mx-auto space-y-4">
+              <div className="mb-1">
                 <h1 className="text-lg font-bold text-neutral-900 dark:text-white mb-0.5">
                   {t('job.reviewYourJobPost')}
                 </h1>
@@ -957,29 +977,126 @@ function PostJobPageContent() {
                 </p>
               </div>
 
-              {/* All review items in a single card */}
-              <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
-                {/* Service */}
-                <ReviewRow
-                  label={t('job.service')}
-                  onEdit={() => goToStep("category")}
-                  editLabel={t("common.edit")}
+              {/* Hero card — Title + Category + Timing + Budget */}
+              <div
+                className="rounded-2xl p-4 sm:p-5 relative overflow-hidden"
+                style={{ backgroundColor: 'rgba(196,115,91,0.06)', border: '1px solid rgba(196,115,91,0.15)' }}
+              >
+                <button
+                  onClick={() => goToStep("category")}
+                  className="absolute top-3 right-3 text-[11px] font-medium px-2.5 py-1 rounded-lg transition-colors hover:bg-[rgba(196,115,91,0.1)]"
+                  style={{ color: '#C4735B' }}
                 >
-                  <span className="text-sm font-medium text-neutral-900 dark:text-white">
-                    {locale === "ka" ? selectedCategoryData?.nameKa : selectedCategoryData?.name}
-                    {" · "}
-                    {(() => {
-                      const sub = selectedCategoryData?.subcategories.find((s) => s.key === selectedSubcategory);
-                      return locale === "ka" ? sub?.nameKa : sub?.name;
-                    })()}
-                  </span>
-                </ReviewRow>
+                  <Pencil className="w-3 h-3 inline mr-1" />{t('common.edit')}
+                </button>
 
-                {/* Location */}
-                <ReviewRow label={t('common.location')} onEdit={() => goToStep("location")} editLabel={t("common.edit")}>
-                  <p className="text-sm font-medium text-neutral-900 dark:text-white line-clamp-1">{formData.location}</p>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                {/* Title */}
+                <h2 className="text-base sm:text-lg font-bold pr-16" style={{ color: 'var(--color-text-primary)' }}>
+                  {formData.title}
+                </h2>
+                <p className="text-[13px] mt-1 line-clamp-2" style={{ color: 'var(--color-text-secondary)' }}>
+                  {formData.description}
+                </p>
+
+                {/* Meta pills */}
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {selectedCategoryData && (
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(196,115,91,0.12)', color: '#C4735B' }}>
+                      <CategoryIcon type={selectedCategory} className="w-3.5 h-3.5" />
+                      {locale === "ka" ? selectedCategoryData.nameKa : selectedCategoryData.name}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                    <Clock className="w-3 h-3" />
+                    {formData.timing === "flexible" && t('job.flexible')}
+                    {formData.timing === "asap" && t('job.asap')}
+                    {formData.timing === "this_week" && t('common.thisWeek')}
+                    {formData.timing === "this_month" && t('common.thisMonth')}
+                  </span>
+                  {(() => {
+                    const budgetText = hasServiceBudgets
+                      ? (serviceBudgetTotal > 0 ? `${serviceBudgetTotal}₾` : null)
+                      : formData.budgetType === "range"
+                        ? `${formData.budgetMin}–${formData.budgetMax}₾`
+                        : formData.budgetType === "negotiable" ? null
+                          : formData.budgetMin ? `${formData.budgetMin}₾` : null;
+                    return budgetText ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(196,115,91,0.12)', color: '#C4735B' }}>
+                        {budgetText}
+                      </span>
+                    ) : null;
+                  })()}
+                </div>
+              </div>
+
+              {/* Services card */}
+              {selectedJobServices.length > 0 && (
+                <div
+                  className="rounded-2xl overflow-hidden"
+                  style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+                >
+                  <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                      {t('job.service')} ({selectedJobServices.length})
+                    </span>
+                    <button onClick={() => goToStep("category")} className="text-[11px] font-medium" style={{ color: '#C4735B' }}>
+                      {t('common.edit')}
+                    </button>
+                  </div>
+                  <div className="divide-y" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                    {selectedJobServices.map(svc => {
+                      const qty = svc.quantity || 1;
+                      const lineTotal = svc.budget * qty;
+                      return (
+                        <div key={svc.serviceKey} className="flex items-center justify-between px-4 py-2.5">
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[13px] font-medium block truncate" style={{ color: 'var(--color-text-primary)' }}>
+                              {locale === 'ka' ? svc.nameKa : svc.name}
+                            </span>
+                            <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+                              {qty > 1 ? `${qty} × ` : ''}{locale === 'ka' ? svc.unitNameKa : svc.unitName}
+                              {svc.budget > 0 && qty > 1 && (
+                                <span className="ml-1">· {svc.budget}₾/{locale === 'ka' ? svc.unitNameKa : svc.unitName}</span>
+                              )}
+                            </span>
+                          </div>
+                          {svc.budget > 0 && (
+                            <span className="text-[13px] font-bold shrink-0 ml-3" style={{ color: '#C4735B' }}>
+                              {lineTotal}₾
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {/* Total row when multiple services have budgets */}
+                    {serviceBudgetTotal > 0 && selectedJobServices.filter(s => s.budget > 0).length > 1 && (
+                      <div className="flex items-center justify-between px-4 py-2.5" style={{ backgroundColor: 'rgba(196,115,91,0.04)' }}>
+                        <span className="text-[12px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                          {locale === 'ka' ? 'ჯამი' : 'Total'}
+                        </span>
+                        <span className="text-[14px] font-bold" style={{ color: '#C4735B' }}>
+                          {serviceBudgetTotal}₾
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Location + Property card */}
+              <div
+                className="rounded-2xl p-4 flex items-start gap-3"
+                style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+              >
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
+                  <MapPin className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+                    {formData.location}
+                  </p>
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
                       {formData.propertyType === "apartment" && t('job.apartment')}
                       {formData.propertyType === "house" && t('job.house')}
                       {formData.propertyType === "office" && t('job.office')}
@@ -987,7 +1104,7 @@ function PostJobPageContent() {
                       {formData.propertyType === "other" && t('common.other')}
                     </span>
                     {formData.propertyCondition && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#C4735B]/10 text-[#C4735B]">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B]">
                         {formData.propertyCondition === "shell" && t('job.shell')}
                         {formData.propertyCondition === "black-frame" && t('job.blackFrame')}
                         {formData.propertyCondition === "needs-renovation" && t('job.fullRenovation')}
@@ -995,67 +1112,43 @@ function PostJobPageContent() {
                         {formData.propertyCondition === "good" && t('job.good')}
                       </span>
                     )}
+                    {formData.areaSize && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>{formData.areaSize} m²</span>}
+                    {formData.roomCount && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>{formData.roomCount} {t('job.rooms')}</span>}
                   </div>
-                </ReviewRow>
-
-                {/* Budget */}
-                <ReviewRow label={t("common.budget")} onEdit={() => goToStep("location")} editLabel={t("common.edit")}>
-                  <span className="text-sm font-bold" style={{ color: '#C4735B' }}>
-                    {formData.budgetType === "range"
-                      ? `${formData.budgetMin} – ${formData.budgetMax} ₾`
-                      : `${formData.budgetMin} ₾`}
-                  </span>
-                </ReviewRow>
-
-                {/* Timing */}
-                <ReviewRow label={t('job.whenNeeded')} onEdit={() => goToStep("location")} editLabel={t("common.edit")}>
-                  <Badge
-                    variant={formData.timing === "asap" ? "danger" : formData.timing === "this_week" ? "warning" : "default"}
-                    size="sm"
-                  >
-                    {formData.timing === "flexible" && t('job.flexible')}
-                    {formData.timing === "asap" && t('job.asap')}
-                    {formData.timing === "this_week" && t('common.thisWeek')}
-                    {formData.timing === "this_month" && t('common.thisMonth')}
-                  </Badge>
-                </ReviewRow>
-
-                {/* Specs */}
-                {(formData.areaSize || formData.roomCount || formData.pointsCount || formData.landArea) && (
-                  <ReviewRow label={t('common.details')} onEdit={() => goToStep("details")} editLabel={t("common.edit")}>
-                    <div className="flex flex-wrap gap-1">
-                      {formData.areaSize && <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">{formData.areaSize} m²</span>}
-                      {formData.roomCount && <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">{formData.roomCount} {t('job.rooms')}</span>}
-                      {formData.pointsCount && <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">{formData.pointsCount} {t('job.points')}</span>}
-                      {formData.landArea && <span className="text-xs px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">{formData.landArea} m² {t('job.land')}</span>}
-                    </div>
-                  </ReviewRow>
-                )}
-
-                {/* Description */}
-                <ReviewRow label={t("common.description")} onEdit={() => goToStep("details")} editLabel={t("common.edit")}>
-                  <p className="text-sm font-medium text-neutral-900 dark:text-white">{formData.title}</p>
-                  <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{formData.description}</p>
-                </ReviewRow>
-
-                {/* Photos */}
-                {(existingMedia.length > 0 || mediaFiles.length > 0) && (
-                  <ReviewRow label={`${t('common.photos')} (${existingMedia.length + mediaFiles.length})`} onEdit={() => goToStep("details")} editLabel={t("common.edit")}>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {existingMedia.map((media, idx) => (
-                        <div key={`re-${idx}`} className="relative w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
-                          <Image src={storage.getFileUrl(media.url)} alt="" fill className="object-cover" sizes="56px" />
-                        </div>
-                      ))}
-                      {mediaFiles.map((media, idx) => (
-                        <div key={`rn-${idx}`} className="relative w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
-                          <Image src={media.preview} alt="" fill className="object-cover" sizes="56px" unoptimized />
-                        </div>
-                      ))}
-                    </div>
-                  </ReviewRow>
-                )}
+                </div>
+                <button onClick={() => goToStep("location")} className="text-[11px] font-medium shrink-0" style={{ color: '#C4735B' }}>
+                  {t('common.edit')}
+                </button>
               </div>
+
+              {/* Photos */}
+              {(existingMedia.length > 0 || mediaFiles.length > 0) && (
+                <div
+                  className="rounded-2xl p-4"
+                  style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                      {t('common.photos')} ({existingMedia.length + mediaFiles.length})
+                    </span>
+                    <button onClick={() => goToStep("details")} className="text-[11px] font-medium" style={{ color: '#C4735B' }}>
+                      {t('common.edit')}
+                    </button>
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {existingMedia.map((media, idx) => (
+                      <div key={`re-${idx}`} className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
+                        <Image src={storage.getFileUrl(media.url)} alt="" fill className="object-cover" sizes="80px" />
+                      </div>
+                    ))}
+                    {mediaFiles.map((media, idx) => (
+                      <div key={`rn-${idx}`} className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
+                        <Image src={media.preview} alt="" fill className="object-cover" sizes="80px" unoptimized />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <p className="text-center text-[11px] text-neutral-400 pt-1">
                 {t('job.willBeReviewedByAdmins')}

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import AuthGuard from '@/components/common/AuthGuard';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ProfileSetupProvider, STEP_META, STEP_SLUGS, useProfileSetup, type ProfileSetupStepSlug } from '@/contexts/ProfileSetupContext';
@@ -43,6 +44,7 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
     goToStep,
     goNext,
     goBack,
+    isSaving,
     canProceedFromStep,
     isLoading,
     isEditMode,
@@ -290,7 +292,7 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
 
             <button
               onClick={() => canProceedFromStep(slug) && goNext(slug)}
-              disabled={isLoading || !canProceedFromStep(slug)}
+              disabled={isLoading || isSaving || !canProceedFromStep(slug)}
               className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 min-h-[44px] rounded-xl text-sm font-semibold transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
               style={{
                 backgroundColor: '#C4735B',
@@ -298,10 +300,10 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
                 boxShadow: canProceedFromStep(slug) ? '0 4px 14px rgba(196,115,91,0.25)' : 'none',
               }}
             >
-              {isLoading ? (
+              {isLoading || isSaving ? (
                 <>
                   <LoadingSpinner size="sm" color="white" />
-                  <span>{t('becomePro.text')}</span>
+                  <span>{isSaving ? t('common.saving') : t('becomePro.text')}</span>
                 </>
               ) : isLastStep ? (
                 <>
@@ -312,7 +314,7 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
                 </>
               ) : (
                 <>
-                  <span>{t('common.continue')}</span>
+                  <span>{t('common.saveAndContinue')}</span>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -326,29 +328,24 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ProfileSetupLayoutInner({ children }: { children: React.ReactNode }) {
+function AdminProIdReader({ onChange }: { onChange: (id: string | null) => void }) {
   const searchParams = useSearchParams();
-  const adminTargetProId = searchParams.get('proId');
-
-  return (
-    <ProfileSetupProvider adminTargetProId={adminTargetProId}>
-      <ProfileSetupShell>{children}</ProfileSetupShell>
-    </ProfileSetupProvider>
-  );
+  const proId = searchParams.get('proId');
+  React.useEffect(() => { onChange(proId); }, [proId]); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
 }
 
 export default function ProfileSetupLayout({ children }: { children: React.ReactNode }) {
+  const [adminTargetProId, setAdminTargetProId] = React.useState<string | null>(null);
+
   return (
     <AuthGuard>
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-page)' }}>
-            <LoadingSpinner size="xl" variant="border" color="#C4735B" />
-          </div>
-        }
-      >
-        <ProfileSetupLayoutInner>{children}</ProfileSetupLayoutInner>
+      <Suspense fallback={null}>
+        <AdminProIdReader onChange={setAdminTargetProId} />
       </Suspense>
+      <ProfileSetupProvider adminTargetProId={adminTargetProId}>
+        <ProfileSetupShell>{children}</ProfileSetupShell>
+      </ProfileSetupProvider>
     </AuthGuard>
   );
 }

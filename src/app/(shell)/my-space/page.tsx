@@ -44,6 +44,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, ReactNode } from "react";
 
 type WorkProposal = Omit<Proposal, "jobId"> & { jobId: Job };
@@ -252,6 +253,7 @@ function MySpaceContent() {
   const { t, locale } = useLanguage();
   const { getCategoryLabel } = useCategoryLabels();
   const toast = useToast();
+  const router = useRouter();
 
   const [loading, setLoading] = useState(true);
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
@@ -326,9 +328,8 @@ function MySpaceContent() {
       }
       if (myJobsRes.status === "fulfilled") {
         const raw = myJobsRes.value.data;
-        const allJobs: (Job & { services?: unknown[] })[] = Array.isArray(raw) ? raw : raw?.data || raw?.jobs || [];
-        // Filter out mobile-created orders (those with services populated)
-        setMyPostedJobs(allJobs.filter((j) => !j.services || j.services.length === 0));
+        const allJobs: Job[] = Array.isArray(raw) ? raw : raw?.data || raw?.jobs || [];
+        setMyPostedJobs(allJobs);
       }
     } catch {
       // silently fail
@@ -338,6 +339,13 @@ function MySpaceContent() {
   }, [user?.id]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Refetch when page becomes visible (e.g., returning from profile-setup)
+  useEffect(() => {
+    const handleFocus = () => fetchData();
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchData]);
 
   /* ── Active work ── */
   const activeWork = useMemo(() => {
@@ -443,28 +451,28 @@ function MySpaceContent() {
         label: t("mySpace.writeAboutYourself"),
         done: bioText.length >= 20,
         weight: 15,
-        action: () => { window.location.href = "/pro/profile-setup"; },
+        action: () => { router.push("/pro/profile-setup/about"); },
       },
       {
         key: "services",
         label: t("mySpace.selectYourServices"),
         done: (userServicePricing?.length ?? 0) > 0 || (userServices?.length ?? 0) > 0,
         weight: 20,
-        action: () => { window.location.href = "/pro/profile-setup"; },
+        action: () => { router.push("/pro/profile-setup/services"); },
       },
       {
         key: "serviceAreas",
         label: t("mySpace.setServiceAreas"),
         done: (userAreas?.length ?? 0) > 0,
         weight: 10,
-        action: () => { window.location.href = "/pro/profile-setup"; },
+        action: () => { router.push("/pro/profile-setup/areas"); },
       },
       {
         key: "portfolio",
         label: t("mySpace.addPortfolioProjects"),
         done: (userPortfolio?.length ?? 0) > 0,
         weight: 20,
-        action: () => { window.location.href = "/pro/profile-setup"; },
+        action: () => { router.push("/pro/profile-setup/portfolio"); },
       },
       {
         key: "review",

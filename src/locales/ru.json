@@ -2,6 +2,7 @@
   "common": {
     "save": "Сохранить",
     "cancel": "Отмена",
+    "change": "Изменить",
     "delete": "Удалить",
     "edit": "Редактировать",
     "add": "Добавить",
@@ -12,6 +13,7 @@
     "back": "Назад",
     "next": "Далее",
     "continue": "Продолжить",
+    "saveAndContinue": "Сохранить и продолжить",
     "submit": "Отправить",
     "send": "Отправить",
     "search": "Поиск",
@@ -642,7 +644,7 @@
     "jobRenewedFor30Days": "Работа продлена на 30 дней",
     "searchMyJobsPlaceholder": "Поиск по названию, категории или локации...",
     "land": "Земля",
-    "locationBudget": "Местоположение и бюджет",
+    "locationBudget": "Местоположение",
     "manageYourActiveListingsAnd": "Управляйте активными объявлениями и...",
     "markedAsInterested": "Отмечено как интересное",
     "max": "Макс",
@@ -719,12 +721,13 @@
     "switchCategoryConfirm": "Смена категории сбросит выбранные услуги. Продолжить?"
   },
   "jobComments": {
-    "title": "Заинтересованные специалисты",
-    "subtitle": "{total} специалист(ов)",
-    "subtitleWithInteresting": "{total} специалист(ов) • {interesting} интересн.",
-    "expressInterestPlaceholder": "Выразите интерес к этой работе...",
+    "title": "Комментарии",
+    "subtitle": "{total} комментариев",
+    "subtitleWithInteresting": "{total} комментариев • {interesting} интересн.",
+    "commentPlaceholder": "Напишите комментарий...",
     "replyPlaceholder": "Напишите ответ...",
     "reply": "Ответить",
+    "addComment": "Комментировать",
     "showProfileLink": "Показывать ссылку на мой профиль",
     "expressInterest": "Выразить интерес",
     "confirmDelete": "Вы уверены, что хотите удалить этот комментарий?",
@@ -732,9 +735,9 @@
     "verificationRequiredToExpressInterest": "Для выражения интереса требуется верификация профиля",
     "completeVerificationCta": "Пройти верификацию →",
     "alreadyExpressedInterest": "Вы уже выразили интерес. Вы можете отредактировать ваш комментарий ниже.",
-    "noInterestingYet": "Пока нет интересных специалистов",
-    "noInterestYet": "Пока никто не выразил интерес",
-    "beFirstToReachOut": "Будьте первым, кто свяжется с клиентом"
+    "noInterestingYet": "Пока нет интересных комментариев",
+    "noInterestYet": "Пока нет комментариев",
+    "beFirstToReachOut": "Будьте первым, кто оставит комментарий"
   },
   "jobDetail": {
     "guestCtaTitle": "Присоединяйтесь — получайте заказы как этот",
@@ -841,12 +844,12 @@
   },
   "postJob": {
     "steps": {
-      "category": "Категория",
-      "location": "Местоположение и бюджет",
+      "category": "Услуга",
+      "location": "Местоположение",
       "details": "Детали",
       "review": "Обзор"
     },
-    "locationBudgetSubtitle": "Укажите адрес проекта и бюджет",
+    "locationBudgetSubtitle": "Укажите адрес проекта",
     "photosRequirementHelp": "Требуется минимум 1 фото. Фото помогают специалистам лучше понять ваш проект.",
     "addAtLeastOnePhotoToContinue": "Пожалуйста, добавьте минимум 1 фото, чтобы продолжить",
     "photosAddedSuccess": "Добавлено фото: {count} — специалистам будет проще понять ваш проект!",

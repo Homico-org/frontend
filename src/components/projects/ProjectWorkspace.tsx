@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Avatar from '@/components/common/Avatar';
 import MediaLightbox from '@/components/common/MediaLightbox';
 import { Button } from '@/components/ui/button';
+import { ConfirmModal } from '@/components/ui/Modal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Input, Textarea } from '@/components/ui/input';
 import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
@@ -125,6 +126,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
   const [showSectionModal, setShowSectionModal] = useState(false);
   const [showItemModal, setShowItemModal] = useState<string | null>(null); // sectionId or null
   const [editingSection, setEditingSection] = useState<WorkspaceSection | null>(null);
+  const [deletingSectionId, setDeletingSectionId] = useState<string | null>(null);
 
   // Comment state
   const [activeCommentItem, setActiveCommentItem] = useState<string | null>(null);
@@ -213,14 +215,14 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
   };
 
   const handleDeleteSection = async (sectionId: string) => {
-    if (!confirm(t('projects.deleteThisSection'))) return;
-
     try {
       await api.delete(`/jobs/projects/${jobId}/workspace/sections/${sectionId}`);
       setSections(prev => prev.filter(s => getId(s) !== sectionId));
       toast.success(t('projects.deleted'));
     } catch (error) {
       toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
+    } finally {
+      setDeletingSectionId(null);
     }
   };
 
@@ -349,7 +351,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
                 user={user}
                 onToggle={() => toggleSection(getId(section))}
                 onEdit={() => setEditingSection(section)}
-                onDelete={() => handleDeleteSection(getId(section))}
+                onDelete={() => setDeletingSectionId(getId(section))}
                 onAddItem={() => setShowItemModal(getId(section))}
                 onDeleteItem={(itemId) => handleDeleteItem(getId(section), itemId)}
                 onReaction={(itemId, type) => handleReaction(getId(section), itemId, type)}
@@ -410,6 +412,16 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
         locale={locale as "en" | "ka" | "ru"}
         showThumbnails={lightboxImages.length > 1}
         showInfo={false}
+      />
+
+      <ConfirmModal
+        isOpen={!!deletingSectionId}
+        onClose={() => setDeletingSectionId(null)}
+        onConfirm={() => deletingSectionId && handleDeleteSection(deletingSectionId)}
+        title={t('projects.deleteThisSection')}
+        variant="danger"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('common.delete')}
       />
     </>
   );
