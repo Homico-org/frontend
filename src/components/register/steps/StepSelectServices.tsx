@@ -33,7 +33,7 @@ export default function StepSelectServices({
   selectedServices,
   onServicesChange,
 }: StepSelectServicesProps) {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { categories, loading: categoriesLoading } = useCategories();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedService, setExpandedService] = useState<string | null>(null);
@@ -41,9 +41,7 @@ export default function StepSelectServices({
   const getExperienceLabel = (value: ExperienceLevel) => {
     const opt = EXPERIENCE_OPTIONS.find(e => e.value === value);
     if (!opt) return value;
-    if (locale === 'ka') return opt.labelKa;
-    if (locale === 'ru') return opt.labelRu;
-    return opt.labelEn;
+    return pick({ en: opt.labelEn, ka: opt.labelKa, ru: opt.labelRu });
   };
 
   // Flatten all subcategories for search
@@ -174,7 +172,7 @@ export default function StepSelectServices({
                   }`}
                 >
                   <span className="text-xs sm:text-sm font-medium text-[var(--hm-fg-primary)] max-w-[120px] sm:max-w-none truncate">
-                    {locale === 'ka' ? service.nameKa : service.name}
+                    {pick({ en: service.name, ka: service.nameKa })}
                   </span>
                   <button
                     onClick={() => setExpandedService(expandedService === service.key ? null : service.key)}
@@ -202,7 +200,7 @@ export default function StepSelectServices({
                           service.experience === opt.value ? 'bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)] font-medium' : 'text-neutral-700'
                         }`}
                       >
-                        {locale === 'ka' ? opt.labelKa : locale === 'ru' ? opt.labelRu : opt.labelEn}
+                        {pick({ en: opt.labelEn, ka: opt.labelKa, ru: opt.labelRu })}
                       </button>
                     ))}
                   </div>
@@ -244,7 +242,7 @@ export default function StepSelectServices({
           </div>
         ) : (
           Object.entries(groupedServices).map(([categoryKey, services]) => {
-            const categoryName = locale === 'ka' ? services[0].categoryNameKa : services[0].categoryName;
+            const categoryName = pick({ en: services[0].categoryName, ka: services[0].categoryNameKa });
             return (
               <div key={categoryKey}>
                 {/* Category Header */}
@@ -266,7 +264,7 @@ export default function StepSelectServices({
                         }`}
                       >
                         <p className={`text-xs sm:text-sm font-medium pr-2 ${selected ? 'text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-primary)]'}`}>
-                          {locale === 'ka' ? service.nameKa : service.name}
+                          {pick({ en: service.name, ka: service.nameKa })}
                         </p>
                         <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                           selected

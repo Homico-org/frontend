@@ -61,6 +61,7 @@
     "duration": "Длительность",
     "amount": "Сумма",
     "price": "Цена",
+    "qty": "Кол.",
     "budget": "Бюджет",
     "negotiable": "По договорённости",
     "perSqmShort": "/м²",
@@ -132,6 +133,7 @@
     "noMoreResults": "Больше нет результатов",
     "years": "лет",
     "months": "месяцев",
+    "weeks": "недель",
     "days": "дней",
     "hours": "часов",
     "minutes": "минут",
@@ -524,7 +526,13 @@
     "aiSuggested": "AI рекомендует",
     "selectAll": "Выбрать все",
     "deselectAll": "Снять все",
-    "category": "Категория"
+    "category": "Категория",
+    "addYourProject": "Добавьте свой проект",
+    "addYourProjectDescription": "Покажите свои работы, чтобы привлечь клиентов",
+    "registerAsProfessionalCta": "Зарегистрируйтесь как специалист",
+    "registerAsProfessionalDescription": "Покажите свои работы и найдите клиентов",
+    "postAJobToFindPro": "Разместите работу, чтобы найти специалиста",
+    "postAJobToFindProDescription": "Опишите проект и получите предложения"
   },
   "job": {
     "title": "Название",
@@ -2753,7 +2761,9 @@
     "addPricingOption": "Добавить вариант цены",
     "selectAtLeastOneService": "Выберите хотя бы одну услугу",
     "priceQuestion": "цена?",
-    "chooseDifferentCategory": "Выбрать другую категорию"
+    "chooseDifferentCategory": "Выбрать другую категорию",
+    "selectedCategoriesCount": "Выбранные категории: {selected}/{max}",
+    "selectedServicesCount": "Выбранные услуги: {selected}/{max}"
   },
   "categories": {
     "renovation": "Ремонт",

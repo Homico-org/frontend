@@ -49,21 +49,21 @@ export default function ProposalFormModal({
   onDataChange,
   job,
 }: ProposalFormModalProps) {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { categories: catalogCats } = useCategories();
 
   const getLabel = useCallback((key: string): string => {
     for (const cat of catalogCats) {
-      if (cat.key === key) return locale === 'ka' ? cat.nameKa : cat.name;
+      if (cat.key === key) return pick({ en: cat.name, ka: cat.nameKa });
       for (const sub of cat.subcategories) {
-        if (sub.key === key) return locale === 'ka' ? sub.nameKa : sub.name;
+        if (sub.key === key) return pick({ en: sub.name, ka: sub.nameKa });
         for (const svc of sub.services || []) {
-          if (svc.key === key) return locale === 'ka' ? svc.nameKa : svc.name;
+          if (svc.key === key) return pick({ en: svc.name, ka: svc.nameKa });
         }
       }
     }
     return key;
-  }, [catalogCats, locale]);
+  }, [catalogCats, pick]);
 
   const getUnitLabel = useCallback((serviceKey: string, unitKey?: string): string => {
     for (const cat of catalogCats) {
@@ -73,14 +73,14 @@ export default function ProposalFormModal({
             const uo = unitKey
               ? svc.unitOptions?.find(u => u.key === unitKey)
               : svc.unitOptions?.[0];
-            if (uo) return locale === 'ka' ? uo.label.ka : uo.label.en;
-            return locale === 'ka' ? svc.unitNameKa : svc.unitName;
+            if (uo) return pick({ en: uo.label.en, ka: uo.label.ka });
+            return pick({ en: svc.unitName, ka: svc.unitNameKa });
           }
         }
       }
     }
     return '';
-  }, [catalogCats, locale]);
+  }, [catalogCats, pick]);
 
   if (!isOpen) return null;
 
@@ -110,9 +110,9 @@ export default function ProposalFormModal({
   })();
 
   const durationUnits = [
-    { value: 'days', label: locale === 'ka' ? 'დღე' : 'days' },
-    { value: 'weeks', label: locale === 'ka' ? 'კვირა' : 'weeks' },
-    { value: 'months', label: locale === 'ka' ? 'თვე' : 'months' },
+    { value: 'days', label: t('common.days') },
+    { value: 'weeks', label: t('common.weeks') },
+    { value: 'months', label: t('common.months') },
   ];
 
   return (

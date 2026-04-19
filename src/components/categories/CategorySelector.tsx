@@ -68,7 +68,7 @@ export default function CategorySelector({
   compact = false,
   columns = 4,
 }: CategorySelectorProps) {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { categories, loading } = useCategories();
   const [subcategorySearch, setSubcategorySearch] = useState('');
 
@@ -198,7 +198,7 @@ export default function CategorySelector({
               <h3 className={`text-xs font-medium transition-colors ${
                 isSelected ? 'text-[var(--hm-brand-500)]' : 'text-neutral-700'
               }`}>
-                {locale === 'ka' ? category.nameKa : category.name}
+                {pick({ en: category.name, ka: category.nameKa })}
               </h3>
               
               {/* Selection indicator for multi mode */}
@@ -252,7 +252,7 @@ export default function CategorySelector({
                       : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]'
                   }`}
                 >
-                  {locale === 'ka' ? sub.nameKa : sub.name}
+                  {pick({ en: sub.name, ka: sub.nameKa })}
                 </button>
               );
             })}
@@ -275,7 +275,7 @@ export default function CategorySelector({
                       <CategoryIcon type={categoryData.icon || categoryData.key} className="w-3.5 h-3.5 text-[var(--hm-brand-500)]" />
                     </div>
                     <span className="font-medium text-sm text-[var(--hm-fg-primary)]">
-                      {locale === 'ka' ? categoryData.nameKa : categoryData.name}
+                      {pick({ en: categoryData.name, ka: categoryData.nameKa })}
                     </span>
                   </div>
                   <button
@@ -299,7 +299,7 @@ export default function CategorySelector({
                             : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]'
                         }`}
                       >
-                        {locale === 'ka' ? sub.nameKa : sub.name}
+                        {pick({ en: sub.name, ka: sub.nameKa })}
                       </button>
                     );
                   })}
@@ -314,14 +314,10 @@ export default function CategorySelector({
       {mode === 'multi' && (
         <div className="flex items-center justify-between text-xs text-[var(--hm-fg-muted)]">
           <span>
-            {locale === 'ka' 
-              ? `არჩეული კატეგორიები: ${selected.length}/${maxCategories}`
-              : `Selected categories: ${selected.length}/${maxCategories}`}
+            {t('register.selectedCategoriesCount', { selected: selected.length, max: maxCategories })}
           </span>
           <span>
-            {locale === 'ka'
-              ? `არჩეული სერვისები: ${selectedSubs.length}/${maxSubcategories}`
-              : `Selected services: ${selectedSubs.length}/${maxSubcategories}`}
+            {t('register.selectedServicesCount', { selected: selectedSubs.length, max: maxSubcategories })}
           </span>
         </div>
       )}

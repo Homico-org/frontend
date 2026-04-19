@@ -60,6 +60,7 @@
     "duration": "ხანგრძლივობა",
     "amount": "თანხა",
     "price": "ფასი",
+    "qty": "რაოდ.",
     "budget": "ბიუჯეტი",
     "negotiable": "მოლაპარაკებით",
     "perSqmShort": "/მ²",
@@ -131,6 +132,7 @@
     "noMoreResults": "მეტი შედეგი არ არის",
     "years": "წელი",
     "months": "თვე",
+    "weeks": "კვირა",
     "days": "დღე",
     "hours": "საათი",
     "minutes": "წუთი",
@@ -525,7 +527,13 @@
     "aiSuggested": "AI რეკომენდაცია",
     "selectAll": "ყველას არჩევა",
     "deselectAll": "ყველას მოხსნა",
-    "category": "კატეგორია"
+    "category": "კატეგორია",
+    "addYourProject": "დაამატე შენი პროექტი",
+    "addYourProjectDescription": "აჩვენე შენი ნამუშევრები კლიენტებს",
+    "registerAsProfessionalCta": "დარეგისტრირდი პროფესიონალად",
+    "registerAsProfessionalDescription": "აჩვენე შენი ნამუშევრები და იპოვე კლიენტები",
+    "postAJobToFindPro": "განათავსე დავალება",
+    "postAJobToFindProDescription": "აღწერე დავალება და მიიღე შეთავაზებები"
   },
   "job": {
     "title": "სათაური",
@@ -2755,7 +2763,9 @@
     "addPricingOption": "ფასის ვარიანტის დამატება",
     "selectAtLeastOneService": "აირჩიე მინიმუმ ერთი სერვისი",
     "priceQuestion": "ფასი?",
-    "chooseDifferentCategory": "სხვა კატეგორიის არჩევა"
+    "chooseDifferentCategory": "სხვა კატეგორიის არჩევა",
+    "selectedCategoriesCount": "არჩეული კატეგორიები: {selected}/{max}",
+    "selectedServicesCount": "არჩეული სერვისები: {selected}/{max}"
   },
   "categories": {
     "renovation": "რემონტი",

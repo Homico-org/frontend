@@ -14,7 +14,6 @@ import { Bell, Briefcase, Building2, ChevronRight, ExternalLink, LayoutGrid, Log
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import HomicoLogo from "./HomicoLogo";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { trackEvent } from "@/hooks/useTracker";
@@ -92,13 +91,10 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   return (
     <header className={`${fixed ? "fixed top-0 left-0 right-0" : "relative"} z-50 h-14`} style={{ borderBottom: '1px solid var(--hm-border)', backgroundColor: 'var(--hm-bg-elevated)' }}>
       <div className="h-full max-w-[1800px] mx-auto px-4 sm:px-6 flex items-center justify-between">
-        {/* Logo */}
+        {/* Wordmark */}
         <Link href={homeHref} className="flex items-center flex-shrink-0">
-          <span className="flex items-center gap-2">
-            <HomicoLogo size={28} className="h-7 w-7" />
-            <span className="hidden sm:inline text-[22px] font-semibold tracking-[-0.02em]" style={{ fontFamily: 'var(--hm-font-display)', color: 'var(--hm-fg-primary)' }}>
-              Homico
-            </span>
+          <span className="text-[22px] font-semibold tracking-[-0.02em]" style={{ fontFamily: 'var(--hm-font-display)', color: 'var(--hm-fg-primary)' }}>
+            Homico
           </span>
         </Link>
 
@@ -423,7 +419,9 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
             {/* Menu Header */}
             <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--hm-border-subtle)' }}>
               <div className="flex items-center gap-3">
-                <HomicoLogo size={28} className="h-7 w-7" />
+                <span className="text-[18px] font-semibold tracking-[-0.02em]" style={{ fontFamily: 'var(--hm-font-display)', color: 'var(--hm-fg-primary)' }}>
+                  Homico
+                </span>
                 <ThemeToggle />
                 <LanguageSelector variant="icon" />
               </div>

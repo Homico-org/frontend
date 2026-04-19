@@ -57,7 +57,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   // For pages that use the global layout (my-jobs, my-work, post-job)
   return (
-    <div className="min-h-screen flex flex-col bg-[#fafafa]">
+    <div className="min-h-screen flex flex-col bg-[var(--hm-bg-page)]">
       {/* Fixed Header */}
       <Header />
       <HeaderSpacer />

@@ -191,7 +191,7 @@ export function ProfileSetupProvider({
 }) {
   const router = useRouter();
   const { user, isLoading: authLoading, updateUser } = useAuth();
-  const { locale } = useLanguage();
+  const { locale, pick } = useLanguage();
 
   // Debug: detect remounts
   useEffect(() => {
@@ -652,7 +652,7 @@ export function ProfileSetupProvider({
                         return {
                           unitKey: uo.key,
                           unit: uo.unit,
-                          unitLabel: locale === 'ka' ? uo.label.ka : uo.label.en,
+                          unitLabel: pick({ en: uo.label.en, ka: uo.label.ka }),
                           defaultPrice: uo.defaultPrice,
                           maxPrice: uo.maxPrice,
                           price: stored?.price || 0,
@@ -663,7 +663,7 @@ export function ProfileSetupProvider({
                     : [{
                         unitKey: catSvc.unit,
                         unit: catSvc.unit,
-                        unitLabel: locale === 'ka' ? catSvc.unitNameKa : catSvc.unitName,
+                        unitLabel: pick({ en: catSvc.unitName, ka: catSvc.unitNameKa }),
                         defaultPrice: catSvc.basePrice,
                         maxPrice: catSvc.maxPrice,
                         price: matchingEntries[0]?.price || 0,
@@ -678,9 +678,9 @@ export function ProfileSetupProvider({
                     serviceKey: catSvc.key,
                     subcategoryKey: subKey,
                     categoryKey: foundCatKey,
-                    label: locale === 'ka' ? catSvc.nameKa : catSvc.name,
+                    label: pick({ en: catSvc.name, ka: catSvc.nameKa }),
                     unit: catSvc.unit,
-                    unitLabel: locale === 'ka' ? catSvc.unitNameKa : catSvc.unitName,
+                    unitLabel: pick({ en: catSvc.unitName, ka: catSvc.unitNameKa }),
                     basePrice: catSvc.basePrice,
                     price: firstActive?.price || matchingEntries[0]?.price || 0,
                     isActive: hasAnyEntry,
@@ -1173,7 +1173,7 @@ export function ProfileSetupProvider({
         profileType: 'personal',
         title:
           formData.title ||
-          (locale === 'ka' ? categoryInfo?.nameKa : categoryInfo?.name) ||
+          pick({ en: categoryInfo?.name, ka: categoryInfo?.nameKa }) ||
           '',
         bio: formData.bio,
         categories:
@@ -1365,7 +1365,7 @@ export function ProfileSetupProvider({
     isAdminEditing,
     adminTargetProId,
     user,
-    locale,
+    pick,
     allCategories,
     getCategoryByKey,
     updateUser,
