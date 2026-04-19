@@ -25,7 +25,7 @@ interface RichContentRendererProps {
 }
 
 // Locale-aware field picker
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line
 function pickLocale(obj: any, field: string, locale: string): string {
   const localeSuffix: Record<string, string> = { ka: "Ka", ru: "Ru" };
   const suffix = localeSuffix[locale];
