@@ -1,6 +1,8 @@
 'use client';
 
+import Avatar from '@/components/common/Avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import BeforeAfterSlider from '@/components/ui/BeforeAfterSlider';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { storage } from '@/services/storage';
@@ -52,7 +54,7 @@ export default function PortfolioCard({
 }: PortfolioCardProps) {
   const [activeThumb, setActiveThumb] = useState(0);
 
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
   const { categories } = useCategories();
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -60,11 +62,11 @@ export default function PortfolioCard({
   const svcLabel = useMemo(() => {
     if (!project.category) return '';
     for (const cat of categories) {
-      if (cat.key === project.category) return locale === 'ka' ? cat.nameKa : cat.name;
+      if (cat.key === project.category) return pick({ en: cat.name, ka: cat.nameKa });
       for (const sub of cat.subcategories || []) {
-        if (sub.key === project.category) return locale === 'ka' ? sub.nameKa : sub.name;
+        if (sub.key === project.category) return pick({ en: sub.name, ka: sub.nameKa });
         for (const svc of sub.services || []) {
-          if (svc.key === project.category) return locale === 'ka' ? svc.nameKa : svc.name;
+          if (svc.key === project.category) return pick({ en: svc.name, ka: svc.nameKa });
         }
       }
     }
@@ -172,9 +174,11 @@ export default function PortfolioCard({
             </div>
           </div>
         ) : (
-          <button
+          <Button
+            variant="ghost"
             onClick={() => onClick?.(activeThumb)}
-            className="relative w-full aspect-[4/3] overflow-hidden"
+            className="relative w-full aspect-[4/3] h-auto p-0 overflow-hidden hover:bg-transparent"
+            aria-label={t('common.viewMore') || 'View'}
           >
             {/* Loading skeleton */}
             {!imageLoaded && (
@@ -235,7 +239,7 @@ export default function PortfolioCard({
                 )}
               </div>
             </div>
-          </button>
+          </Button>
         )}
 
         {/* Thumbnail Strip */}
@@ -247,17 +251,18 @@ export default function PortfolioCard({
               const baPair = isBaPair ? baPairs[baIdx] : null;
 
               return (
-                <button
+                <Button
                   key={imgIdx}
+                  variant="ghost"
                   onClick={(e) => {
                     e.stopPropagation();
                     setActiveThumb(imgIdx);
                   }}
                   onMouseEnter={() => setActiveThumb(imgIdx)}
-                  className={`relative flex-1 aspect-square rounded-lg overflow-hidden transition-all duration-300 ${
+                  className={`relative flex-1 aspect-square h-auto p-0 rounded-lg overflow-hidden transition-all duration-300 hover:bg-transparent ${
                     activeThumb === imgIdx
                       ? 'ring-2 ring-[var(--hm-brand-500)] scale-[1.04] shadow-md'
-                      : 'ring-1 ring-neutral-200/50 hover:ring-[var(--hm-brand-500)]/50 hover:scale-[1.02]'
+                      : 'ring-1 ring-[var(--hm-border-subtle)]/50 hover:ring-[var(--hm-brand-500)]/50 hover:scale-[1.02]'
                   }`}
                 >
                   {baPair ? (
@@ -300,7 +305,7 @@ export default function PortfolioCard({
                       </span>
                     </div>
                   )}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -335,14 +340,12 @@ export default function PortfolioCard({
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-2 min-w-0 hover:text-[var(--hm-brand-500)] transition-colors"
               >
-                {project.clientAvatar ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={storage.getOptimizedImageUrl(project.clientAvatar, 'avatar')} alt="" className="w-5 h-5 rounded-full object-cover" />
-                ) : (
-                  <div className="w-5 h-5 rounded-full bg-[var(--hm-n-200)] flex items-center justify-center text-[8px] font-bold text-[var(--hm-fg-muted)]">
-                    {project.clientName.charAt(0)}
-                  </div>
-                )}
+                <Avatar
+                  src={project.clientAvatar}
+                  name={project.clientName}
+                  size="xs"
+                  className="w-5 h-5"
+                />
                 <span className="text-[11px] text-[var(--hm-fg-muted)] truncate hover:underline">{project.clientName}</span>
               </Link>
             ) : project.location ? (

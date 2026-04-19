@@ -51,19 +51,19 @@ Replace hardcoded Tailwind colors with `--hm-*` tokens. File-by-file:
 - [x] `src/app/privacy/page.tsx` — 4 buttons → `<Button>`, 9 inline SVG → Lucide (Shield/Clock/ArrowRight/Menu/X/Mail/MapPin), 4 locale ternaries → `pick()` / `t()`, 3 color hardcodes → tokens
 - [x] `src/app/pro/premium/checkout/page.tsx` — 7 locale ternaries → `pick()` / `t()` (3 new keys: `premium.readyToGrow`/`payAmount`/`saveAmount`), 5 color hardcodes → tokens. Buttons/inputs intentionally kept raw — they use per-tier dynamic `style={{ borderColor: tier.accentColor }}` etc. that the static design-system Button/Input can't reproduce.
 - [x] `src/app/jobs/[id]/JobDetailClient.tsx` (4227 lines) — **all 16 raw `<button>` → `<Button>`, all 11 raw `<input>` → `<Input>`/`<Checkbox>`, all 6 locale ternaries → `t()`/`pick()`**, color tokens fixed. Skipped: 22 custom category illustration SVGs (bespoke art, not icons) + 1 Pinterest brand mark.
-- [ ] `src/components/common/Header.tsx` (17)
-- [ ] `src/app/pro/premium/page.tsx` (16)
-- [ ] `src/components/pro/steps/ProjectsStep.tsx` (13)
-- [ ] `src/components/common/PWAInstallPrompt.tsx` (13)
+- [x] `src/components/common/Header.tsx` — partially completed in earlier phases; now finished: 1 button → `<Button outline>`, 8 inline SVG → Lucide (Shield/Briefcase/LayoutGrid/SlidersHorizontal/LogOut/ChevronRight/Search), 1 ternary → `pick()`. File 735 → 591 lines.
+- [x] `src/app/pro/premium/page.tsx` — 7 locale ternaries → `pick()` / `t()` (2 new keys: `premium.headlinePrefix`, `premium.headlineHighlight`), 1 color hardcode → token. 4 buttons kept raw (tier-themed gradients/shadows + animated billing toggle slider).
+- [x] `src/components/pro/steps/ProjectsStep.tsx` — all 10 buttons → `<Button>`, 5 of 7 raw `<img>` → Next `<Image>`, all 14 inline SVG → Lucide. 2 imgs in BeforeAfterSlider widget kept (clipPath/pointer-events).
+- [x] `src/components/common/PWAInstallPrompt.tsx` — 3 buttons → `<Button>`, 2 SVG components (`IOSShareIcon`, `IOSAddIcon`) → Lucide (`Share`, `SquarePlus`), 2 spinner divs → `<LoadingSpinner>`. iOS/Android UI mock illustrations kept (intentional Safari/iOS chrome simulation).
 - [ ] `src/components/common/Card.tsx` (12)
-- [ ] `src/components/browse/FeedCard.tsx` (12)
+- [x] `src/components/browse/FeedCard.tsx` — 2 SVG → Lucide (`ImageIcon`, `Star`), 1 raw `<img>` → Next `<Image fill>`, 3 locale ternaries → `pick()`. Color overlays on image/branded backdrops kept (intentional).
 - [ ] `src/app/tools/page.tsx` (12)
-- [ ] `src/components/ai-assistant/AiChatWidget.tsx` (10)
+- [x] `src/components/ai-assistant/AiChatWidget.tsx` — 4 locale ternaries → `pick()` (refactored `SuggestedActionButton` to use `useLanguage` internally instead of locale prop).
 - [ ] `src/app/for-business/page.tsx` (10)
-- [ ] `src/components/professionals/PortfolioCard.tsx` (9)
-- [ ] `src/components/critical-notification/CriticalNotificationOverlay.tsx` (9)
-- [ ] `src/app/how-it-works/page.tsx` (9)
-- [ ] `src/components/proposals/HiringChoiceModal.tsx` (8)
+- [x] `src/components/professionals/PortfolioCard.tsx` — 2 buttons → `<Button>`, 1 raw `<img>` → `<Avatar>`, 3 locale ternaries → `pick()`.
+- [x] `src/components/critical-notification/CriticalNotificationOverlay.tsx` — 1 button → `<Button>`, 1 hardcoded `bg-neutral-900` → token.
+- [x] `src/app/how-it-works/page.tsx` — 2 buttons → `<Button>`, 13 SVG → Lucide, 4 ternaries → 32 new `howItWorks.*` translation keys, 4 hex colors → brand tokens.
+- [x] `src/components/proposals/HiringChoiceModal.tsx` — 3 ternaries → 3 new `proposal.*` keys (hiringName/freeBadge/tempFreeNotice). 2 buttons kept raw (heavy dynamic gradient/transform/shadow card-style buttons).
 
 ### Find/replace map
 | Hardcoded | Replace with |
@@ -91,19 +91,19 @@ Replace `<button>` with `<Button variant="…">`. Map common patterns:
 | `bg-red-…` | `variant="destructive"` |
 
 ### Top 15 offenders
-- [ ] `src/app/admin/service-catalog/page.tsx` (40)
-- [ ] `src/app/professionals/[id]/ProfessionalDetailClient.tsx` (26)
-- [ ] `src/app/jobs/[id]/JobDetailClient.tsx` (16)
-- [ ] `src/app/admin/jobs/page.tsx` (15)
-- [ ] `src/components/pro/steps/ServicesPricingStep.tsx` (12)
-- [ ] `src/components/browse/BrowseFilterBar.tsx` (12)
-- [ ] `src/app/post-job/page.tsx` (12)
-- [ ] `src/app/admin/invites/page.tsx` (12)
-- [ ] `src/components/projects/ProjectWorkspace.tsx` (11)
+- [SKIP] `src/app/admin/service-catalog/page.tsx` (40) — admin uses `ADMIN_THEME` inline style system, deliberately outside design tokens
+- [x] `src/app/professionals/[id]/ProfessionalDetailClient.tsx` (26 → 0)
+- [x] `src/app/jobs/[id]/JobDetailClient.tsx` (16 → 0)
+- [SKIP] `src/app/admin/jobs/page.tsx` (15) — uses `ADMIN_THEME`
+- [x] `src/components/pro/steps/ServicesPricingStep.tsx` — 10 of 12 buttons → `<Button>` (2 multi-element selectable cards kept), 5 inputs → `<Input>`, 15 ternaries → `pick()`/`t()` (4 new `register.*` keys), 1 spinner → `<LoadingSpinner>`
+- [x] `src/components/browse/BrowseFilterBar.tsx` — 1 of 12 buttons → `<Button link>`, 2 inputs → `<Input filled>`, 5 ternaries → `pick()` (refactored `getCityLabel`/`getLabel` signatures). 11 dropdown/pill buttons kept (custom per-state Tailwind sizing).
+- [x] `src/app/post-job/page.tsx` — 11 of 12 buttons → `<Button>` (1 stepper tab kept), 2 of 3 inputs → `<Input>` (1 hidden file input legitimate), 6 ternaries → `pick()`/`t()` (1 new `postJob.fromServiceBudgets` key), 3 colors → tokens
+- [SKIP] `src/app/admin/invites/page.tsx` (12) — uses `ADMIN_THEME`
+- [x] `src/components/projects/ProjectWorkspace.tsx` — 5 of 11 buttons → `<Button>` (6 dynamic-state kept), 3 raw `<img>` → Next `<Image>`, 13 ternaries → `t()`, 2 modals → `<Modal>`
 - [ ] `src/components/pro/steps/ProjectsStep.tsx` (10)
-- [ ] `src/components/browse/JobsFilterBar.tsx` (10)
+- [x] `src/components/browse/JobsFilterBar.tsx` — 1 of 10 buttons → `<Button link>`, 2 inputs → `<Input filled>`, 5 ternaries → `pick()`. 9 dropdown/pill buttons kept (custom per-state Tailwind sizing).
 - [ ] `src/app/tools/analyzer/page.tsx` (10)
-- [ ] `src/app/admin/reports/page.tsx` (10)
+- [SKIP] `src/app/admin/reports/page.tsx` (10) — uses `ADMIN_THEME`
 - [ ] `src/components/post-job/JobServicePicker.tsx` (8)
 - [ ] `src/app/tools/compare/page.tsx` (8)
 
@@ -116,8 +116,8 @@ Replace `<textarea>` with `<Textarea>`.
 
 ### Top 15 offenders
 - [ ] `src/app/admin/service-catalog/page.tsx` (52)
-- [ ] `src/app/jobs/[id]/JobDetailClient.tsx` (11)
-- [ ] `src/app/professionals/[id]/ProfessionalDetailClient.tsx` (9)
+- [x] `src/app/jobs/[id]/JobDetailClient.tsx` (11 → 0)
+- [x] `src/app/professionals/[id]/ProfessionalDetailClient.tsx` (9 → 4 hidden file inputs)
 - [ ] `src/components/professionals/AboutTab.tsx` (7 + 1 textarea)
 - [ ] `src/app/pro/premium/checkout/page.tsx` (6)
 - [ ] `src/components/pro/steps/ServicesPricingStep.tsx` (5)
@@ -138,20 +138,20 @@ Replace `<textarea>` with `<Textarea>`.
 Replace `locale === 'ka' ? '…' : '…'` with `t('…')`. Add keys to `en.json`, `ka.json`, `ru.json`.
 
 ### Top 15 offenders
-- [ ] `src/app/professionals/[id]/ProfessionalDetailClient.tsx` (31)
+- [x] `src/app/professionals/[id]/ProfessionalDetailClient.tsx` (31 → 0)
 - [ ] `src/components/pro/steps/ServicesPricingStep.tsx` (15)
 - [ ] `src/components/post-job/JobServicePicker.tsx` (14)
 - [ ] `src/components/projects/ProjectWorkspace.tsx` (13)
 - [ ] `src/components/booking/ServiceBookingModal.tsx` (9)
 - [ ] `src/components/jobs/ProposalFormModal.tsx` (8)
-- [ ] `src/app/pro/premium/page.tsx` (7)
-- [ ] `src/app/pro/premium/checkout/page.tsx` (7)
+- [x] `src/app/pro/premium/page.tsx` (7 → 0)
+- [x] `src/app/pro/premium/checkout/page.tsx` (7 → 0)
 - [ ] `src/components/register/steps/StepSelectServices.tsx` (6)
 - [ ] `src/components/categories/CategorySelector.tsx` (6)
 - [ ] `src/components/browse/FeedSection.tsx` (6)
 - [ ] `src/components/ai-assistant/RichContentRenderer.tsx` (6)
 - [ ] `src/app/post-job/page.tsx` (6)
-- [ ] `src/app/jobs/[id]/JobDetailClient.tsx` (6)
+- [x] `src/app/jobs/[id]/JobDetailClient.tsx` (6 → 0)
 - [ ] `src/contexts/ProfileSetupContext.tsx` (5)
 
 ---

@@ -7,7 +7,21 @@ import { Input, Textarea } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Edit3,
+  Eye,
+  EyeOff,
+  Image as ImageIcon,
+  MapPin,
+  Play,
+  Plus,
+  Trash2,
+  Video,
+  X,
+} from "lucide-react";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { StarRating } from "@/components/ui/StarRating";
 
@@ -133,20 +147,12 @@ function BeforeAfterPreview({
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--hm-bg-elevated)] rounded-full shadow-lg flex items-center justify-center ${compact ? "w-6 h-6" : "w-10 h-10"}`}
         >
           <div className="flex items-center gap-0.5">
-            <svg
+            <ChevronLeft
               className={`text-[var(--hm-fg-secondary)] ${compact ? "w-2 h-2" : "w-3 h-3"}`}
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-            </svg>
-            <svg
+            />
+            <ChevronRight
               className={`text-[var(--hm-fg-secondary)] ${compact ? "w-2 h-2" : "w-3 h-3"}`}
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" />
-            </svg>
+            />
           </div>
         </div>
       </div>
@@ -603,19 +609,7 @@ export default function ProjectsStep({
                         )}
                         {project.location && (
                           <p className="text-xs text-[var(--hm-fg-muted)] flex items-center gap-1 mt-1">
-                            <svg
-                              className="w-3 h-3 flex-shrink-0"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                              />
-                            </svg>
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
                             {project.location}
                           </p>
                         )}
@@ -623,10 +617,12 @@ export default function ProjectsStep({
                         {isHomico && project.clientName && (
                           <div className="flex items-center gap-2 mt-2">
                             {project.clientAvatar && (
-                              <img
+                              <Image
                                 src={project.clientAvatar}
                                 alt=""
-                                className="w-5 h-5 rounded-full"
+                                width={20}
+                                height={20}
+                                className="w-5 h-5 rounded-full object-cover"
                               />
                             )}
                             <span className="text-xs text-[var(--hm-success-500)]">
@@ -644,14 +640,21 @@ export default function ProjectsStep({
                       {/* Actions (only for external projects) */}
                       {!isHomico && (
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={() => toggleVisibility(project.id)}
-                            className={`p-2 rounded-lg transition-colors ${
+                            className={
                               isVisible
                                 ? "text-[var(--hm-warning-500)] hover:bg-[var(--hm-warning-50)]"
                                 : "text-[var(--hm-fg-muted)] hover:bg-[var(--hm-bg-tertiary)]"
-                            }`}
+                            }
+                            aria-label={
+                              isVisible
+                                ? "Hide from portfolio"
+                                : "Show in portfolio"
+                            }
                             title={
                               isVisible
                                 ? "Hide from portfolio"
@@ -659,79 +662,31 @@ export default function ProjectsStep({
                             }
                           >
                             {isVisible ? (
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                />
-                              </svg>
+                              <Eye className="w-4 h-4" />
                             ) : (
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                                />
-                              </svg>
+                              <EyeOff className="w-4 h-4" />
                             )}
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={() => handleEditProject(project)}
-                            className="p-2 rounded-lg text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/10 transition-colors"
+                            className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/10"
+                            aria-label={t('common.edit')}
                           >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                              />
-                            </svg>
-                          </button>
-                          <button
+                            <Edit3 className="w-4 h-4" />
+                          </Button>
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={() => handleDeleteProject(project.id)}
-                            className="p-2 rounded-lg text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)] transition-colors"
+                            className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)]"
+                            aria-label={t('common.delete')}
                           >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                          </button>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -764,9 +719,7 @@ export default function ProjectsStep({
                               playsInline
                             />
                             <div className="absolute top-1 left-1 px-1 py-0.5 bg-[var(--hm-brand-500)] rounded text-[8px] font-bold text-white flex items-center gap-0.5">
-                              <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" />
-                              </svg>
+                              <Play className="w-2 h-2" fill="currentColor" />
                             </div>
                           </div>
                         ))}
@@ -775,12 +728,14 @@ export default function ProjectsStep({
                         .map((url, idx) => (
                           <div
                             key={idx}
-                            className="aspect-square rounded-lg overflow-hidden bg-[var(--hm-bg-tertiary)]"
+                            className="relative aspect-square rounded-lg overflow-hidden bg-[var(--hm-bg-tertiary)]"
                           >
-                            <img
+                            <Image
                               src={url}
                               alt=""
-                              className="w-full h-full object-cover"
+                              fill
+                              sizes="(max-width: 640px) 25vw, 20vw"
+                              className="object-cover"
                             />
                           </div>
                         ))}
@@ -817,16 +772,15 @@ export default function ProjectsStep({
 
       {/* Empty State — compact, auto-opens form */}
       {projects.length === 0 && !isAddingProject && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={handleAddProject}
-          className="w-full py-8 rounded-xl border-2 border-dashed border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/40 bg-[var(--hm-bg-elevated)] transition-all group"
+          className="w-full h-auto py-8 rounded-xl border-2 border-dashed border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/40 bg-[var(--hm-bg-elevated)] hover:bg-[var(--hm-bg-elevated)] transition-all group"
         >
           <div className="flex flex-col items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-[var(--hm-brand-500)]/10 flex items-center justify-center group-hover:bg-[var(--hm-brand-500)]/20 transition-colors">
-              <svg className="w-5 h-5 text-[var(--hm-brand-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
+              <Plus className="w-5 h-5 text-[var(--hm-brand-500)]" />
             </div>
             <p className="text-sm font-medium text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-brand-500)] transition-colors">
               {t('common.addYourFirstProject')}
@@ -835,7 +789,7 @@ export default function ProjectsStep({
               {t('common.showcaseYourWorkWithPhotos')}
             </p>
           </div>
-        </button>
+        </Button>
       )}
 
       {/* Add/Edit Project Form */}
@@ -848,13 +802,16 @@ export default function ProjectsStep({
                 ? t('common.editProject')
                 : t('common.newProject')}
             </h4>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-sm"
               onClick={resetForm}
-              className="p-1.5 rounded-lg hover:bg-[var(--hm-bg-tertiary)] transition-colors text-[var(--hm-fg-muted)]"
+              className="text-[var(--hm-fg-muted)] hover:bg-[var(--hm-bg-tertiary)]"
+              aria-label={t('common.close')}
             >
               <X className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
 
           <div className="p-4 space-y-4">
@@ -924,24 +881,39 @@ export default function ProjectsStep({
                   {currentProject.beforeAfterPairs.map((pair) => (
                     <div key={pair.id} className="relative group col-span-2 aspect-[2/1] rounded-lg overflow-hidden bg-[var(--hm-bg-tertiary)] flex">
                       <div className="w-1/2 h-full relative">
-                        <img src={pair.beforeImage} alt="Before" className="w-full h-full object-cover" />
+                        <Image
+                          src={pair.beforeImage}
+                          alt="Before"
+                          fill
+                          sizes="(max-width: 640px) 33vw, 25vw"
+                          className="object-cover"
+                        />
                         <span className="absolute bottom-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[8px] font-bold text-white">
                           {t('common.before')}
                         </span>
                       </div>
                       <div className="w-1/2 h-full relative">
-                        <img src={pair.afterImage} alt="After" className="w-full h-full object-cover" />
+                        <Image
+                          src={pair.afterImage}
+                          alt="After"
+                          fill
+                          sizes="(max-width: 640px) 33vw, 25vw"
+                          className="object-cover"
+                        />
                         <span className="absolute bottom-1 right-1 px-1 py-0.5 bg-[var(--hm-success-500)] rounded text-[8px] font-bold text-white">
                           {t('common.after')}
                         </span>
                       </div>
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon-sm"
                         onClick={() => handleRemoveBeforeAfterPair(pair.id)}
-                        className="absolute top-1 right-1 p-1 bg-[var(--hm-error-500)] rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        className="absolute top-1 right-1 h-auto w-auto p-1 bg-[var(--hm-error-500)] hover:bg-[var(--hm-error-500)]/90 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        aria-label={t('common.remove')}
                       >
                         <X className="w-3 h-3" />
-                      </button>
+                      </Button>
                     </div>
                   ))}
                   {currentProject.videos.map((url, idx) => (
@@ -961,61 +933,43 @@ export default function ProjectsStep({
                         }}
                       />
                       <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-[var(--hm-brand-500)] rounded text-[8px] font-bold text-white shadow flex items-center gap-0.5">
-                        <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
+                        <Play className="w-2.5 h-2.5" fill="currentColor" />
                         Video
                       </div>
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon-sm"
                         onClick={() => handleRemoveVideo(idx)}
-                        className="absolute top-1 right-1 p-1 bg-[var(--hm-error-500)] rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        className="absolute top-1 right-1 h-auto w-auto p-1 bg-[var(--hm-error-500)] hover:bg-[var(--hm-error-500)]/90 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        aria-label={t('common.remove')}
                       >
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
+                        <X className="w-3 h-3" />
+                      </Button>
                     </div>
                   ))}
                   {currentProject.images.map((url, idx) => (
                     <div
                       key={idx}
-                      className="relative aspect-square rounded-lg overflow-hidden group"
+                      className="relative aspect-square rounded-lg overflow-hidden group bg-[var(--hm-bg-tertiary)]"
                     >
-                      <img
+                      <Image
                         src={url}
                         alt=""
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(max-width: 640px) 33vw, 25vw"
+                        className="object-cover"
                       />
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon-sm"
                         onClick={() => handleRemoveGalleryImage(idx)}
-                        className="absolute top-1 right-1 p-1 bg-[var(--hm-error-500)] rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        className="absolute top-1 right-1 h-auto w-auto p-1 bg-[var(--hm-error-500)] hover:bg-[var(--hm-error-500)]/90 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        aria-label={t('common.remove')}
                       >
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
+                        <X className="w-3 h-3" />
+                      </Button>
                       {idx === 0 &&
                         currentProject.beforeAfterPairs.length === 0 &&
                         currentProject.videos.length === 0 && (
@@ -1039,11 +993,12 @@ export default function ProjectsStep({
                   onChange={handleGalleryUpload}
                   className="hidden"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => galleryInputRef.current?.click()}
                   disabled={uploadingType === "gallery"}
-                  className="w-full p-4 rounded-xl border-2 border-dashed border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/40 bg-[var(--hm-bg-tertiary)] transition-all duration-200 flex flex-col items-center gap-2 text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)] group"
+                  className="w-full h-auto p-4 rounded-xl border-2 border-dashed border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/40 bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-bg-tertiary)] transition-all duration-200 flex flex-col items-center gap-2 text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)] group"
                 >
                   {uploadingType === "gallery" ? (
                     <>
@@ -1053,19 +1008,7 @@ export default function ProjectsStep({
                   ) : (
                     <>
                       <div className="w-10 h-10 rounded-xl bg-[var(--hm-brand-500)]/10 group-hover:bg-[var(--hm-brand-500)]/20 flex items-center justify-center transition-colors">
-                        <svg
-                          className="w-5 h-5 text-[var(--hm-brand-500)]"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
+                        <ImageIcon className="w-5 h-5 text-[var(--hm-brand-500)]" />
                       </div>
                       <span className="text-sm font-medium">
                         {t('common.photos')}
@@ -1075,7 +1018,7 @@ export default function ProjectsStep({
                       </span>
                     </>
                   )}
-                </button>
+                </Button>
 
                 <input
                   ref={videoInputRef}
@@ -1085,11 +1028,12 @@ export default function ProjectsStep({
                   onChange={handleVideoUpload}
                   className="hidden"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => videoInputRef.current?.click()}
                   disabled={uploadingType === "video"}
-                  className="w-full p-4 rounded-xl border-2 border-dashed border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/40 bg-[var(--hm-bg-tertiary)] transition-all duration-200 flex flex-col items-center gap-2 text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)] group"
+                  className="w-full h-auto p-4 rounded-xl border-2 border-dashed border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/40 bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-bg-tertiary)] transition-all duration-200 flex flex-col items-center gap-2 text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)] group"
                 >
                   {uploadingType === "video" ? (
                     <>
@@ -1099,19 +1043,7 @@ export default function ProjectsStep({
                   ) : (
                     <>
                       <div className="w-10 h-10 rounded-xl bg-[var(--hm-brand-500)]/10 group-hover:bg-[var(--hm-brand-500)]/20 flex items-center justify-center transition-colors">
-                        <svg
-                          className="w-5 h-5 text-[var(--hm-brand-500)]"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                          />
-                        </svg>
+                        <Video className="w-5 h-5 text-[var(--hm-brand-500)]" />
                       </div>
                       <span className="text-sm font-medium">
                         {t('common.videos')}
@@ -1121,7 +1053,7 @@ export default function ProjectsStep({
                       </span>
                     </>
                   )}
-                </button>
+                </Button>
 
               </div>
                 {/* Before/After upload */}

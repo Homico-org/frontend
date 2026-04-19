@@ -35,7 +35,7 @@ export default function HiringChoiceModal({
   proName,
   isLoading = false,
 }: HiringChoiceModalProps) {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
   const [isAnimating, setIsAnimating] = useState(false);
   const [hoveredOption, setHoveredOption] = useState<'homico' | 'direct' | null>(null);
 
@@ -148,9 +148,7 @@ export default function HiringChoiceModal({
                   {t('proposal.chooseHowToProceed')}
                 </h2>
                 <p className="text-sm text-white/60">
-                  {locale === 'ka'
-                    ? `დაქირავება: ${proName}`
-                    : `Hiring: ${proName}`}
+                  {t('proposal.hiringName', { name: proName })}
                 </p>
               </div>
             </div>
@@ -185,7 +183,7 @@ export default function HiringChoiceModal({
                 className="absolute -right-8 top-4 rotate-45 px-10 py-1 text-[10px] font-bold uppercase tracking-wider text-white"
                 style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' }}
               >
-                {locale === 'ka' ? 'უფასოა' : 'FREE'}
+                {t('proposal.freeBadge')}
               </div>
 
               {/* Header */}
@@ -265,9 +263,7 @@ export default function HiringChoiceModal({
               <div className="mb-3 flex items-center gap-2 rounded-lg bg-[var(--hm-success-50)]/20 px-3 py-2 border border-emerald-200/50">
                 <Sparkles className="h-4 w-4 text-[var(--hm-success-500)] flex-shrink-0" />
                 <p className="text-xs text-[var(--hm-success-500)]">
-                  {locale === 'ka' 
-                    ? 'დროებით უფასოა! მალე დაემატება ესქრო და პროექტის მართვა' 
-                    : 'Temporarily free! Escrow & project management coming soon'}
+                  {t('proposal.tempFreeNotice')}
                 </p>
               </div>
 

@@ -130,7 +130,7 @@ export default function TermsPage() {
                       <span className={`w-5 h-5 rounded text-xs flex items-center justify-center flex-shrink-0 transition-colors ${
                         activeSection === section.id
                           ? 'bg-[var(--hm-brand-500)] text-white'
-                          : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] group-hover:bg-[var(--hm-n-200)]'
+                          : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] group-hover:bg-[var(--hm-border)]'
                       }`}>
                         {index + 1}
                       </span>

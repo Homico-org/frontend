@@ -1,9 +1,10 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Download, Share, Plus, MoreVertical, X, Smartphone, CheckCircle2, ChevronDown } from 'lucide-react';
-import Image from 'next/image';
+import { Download, Share, MoreVertical, X, Smartphone, CheckCircle2, ChevronDown, SquarePlus } from 'lucide-react';
 import HomicoLogo from '@/components/common/HomicoLogo';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useCallback, useEffect, useState } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -76,25 +77,6 @@ const translations = {
     alreadyInstalled: 'Уже установлено? Откройте приложение',
   },
 };
-
-// iOS Share button SVG icon (the square with arrow)
-const IOSShareIcon = ({ className = '' }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 3v12" />
-    <path d="M8 7l4-4 4 4" />
-    <path d="M20 21H4a1 1 0 01-1-1v-9a1 1 0 011-1h4" />
-    <path d="M16 10h4a1 1 0 011 1v9a1 1 0 01-1 1" />
-  </svg>
-);
-
-// iOS Add to Home Screen icon (plus in square)
-const IOSAddIcon = ({ className = '' }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <path d="M12 8v8" />
-    <path d="M8 12h8" />
-  </svg>
-);
 
 export default function PWAInstallPrompt() {
   const { locale } = useLanguage();
@@ -206,12 +188,15 @@ export default function PWAInstallPrompt() {
         <div className={`relative bg-gradient-to-br from-[var(--hm-brand-500)] to-[var(--hm-brand-700)] px-6 text-center flex-shrink-0 ${isIOS ? 'pt-5 pb-8' : 'pt-8 pb-12'}`}>
           {/* Close button - only after delay */}
           {canShowContinue && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={handleDismiss}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors z-10"
+              aria-label="Close"
+              className="absolute top-3 right-3 rounded-full bg-white/20 text-white hover:bg-white/30 hover:text-white z-10"
             >
               <X className="w-5 h-5" />
-            </button>
+            </Button>
           )}
 
           {/* App Icon */}
@@ -273,20 +258,22 @@ export default function PWAInstallPrompt() {
         <div className="px-6 py-5">
           {/* Native install button for Android/Chrome */}
           {deferredPrompt && (
-            <button
+            <Button
+              variant="default"
+              size="lg"
               onClick={handleInstall}
               disabled={isInstalling}
-              className="w-full py-3.5 rounded-xl font-semibold text-white bg-[var(--hm-brand-500)] hover:bg-[#A85D47] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+              className="w-full"
             >
               {isInstalling ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <LoadingSpinner size="md" color="white" variant="border" />
               ) : (
                 <>
                   <Download className="w-5 h-5" />
                   {t.installButton}
                 </>
               )}
-            </button>
+            </Button>
           )}
 
           {/* iOS Instructions - Visual Animated Guide */}
@@ -310,7 +297,7 @@ export default function PWAInstallPrompt() {
                       {/* Highlighted Share button */}
                       <div className="relative">
                         <div className="w-10 h-10 rounded-lg bg-[var(--hm-info-500)] flex items-center justify-center animate-pulse-scale shadow-lg shadow-blue-500/50">
-                          <IOSShareIcon className="w-6 h-6 text-white" />
+                          <Share className="w-6 h-6 text-white" />
                         </div>
                         {/* Pulsing ring */}
                         <div className="absolute inset-0 rounded-lg border-2 border-blue-400 animate-ping-slow" />
@@ -347,7 +334,7 @@ export default function PWAInstallPrompt() {
                   {/* Highlighted Add to Home Screen */}
                   <div className="px-4 py-3 flex items-center gap-3 bg-[var(--hm-info-50)]/30 relative">
                     <div className="w-8 h-8 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
-                      <IOSAddIcon className="w-5 h-5 text-[var(--hm-fg-secondary)]" />
+                      <SquarePlus className="w-5 h-5 text-[var(--hm-fg-secondary)]" />
                     </div>
                     <span className="text-sm font-medium text-[var(--hm-fg-primary)]">Add to Home Screen</span>
                     {/* Highlight indicator */}
@@ -363,7 +350,7 @@ export default function PWAInstallPrompt() {
                   </div>
                 </div>
 
-                <p className="text-[11px] text-[var(--hm-fg-muted)] text-center mt-3">{t.iosLookForThis}: <IOSAddIcon className="w-4 h-4 inline-block align-middle" /></p>
+                <p className="text-[11px] text-[var(--hm-fg-muted)] text-center mt-3">{t.iosLookForThis}: <SquarePlus className="w-4 h-4 inline-block align-middle" /></p>
               </div>
 
               {/* Step 3: Confirm */}
@@ -422,16 +409,17 @@ export default function PWAInstallPrompt() {
         {/* Continue anyway button - Fixed at bottom */}
         <div className="px-6 pb-6 pt-2 flex-shrink-0 border-t border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]">
           {canShowContinue ? (
-            <button
+            <Button
+              variant="ghost"
               onClick={handleDismiss}
-              className="w-full py-3 text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors active:scale-95"
+              className="w-full"
             >
               {t.continueAnyway}
-            </button>
+            </Button>
           ) : (
             <div className="h-12 flex items-center justify-center">
               <div className="flex items-center gap-2 text-[var(--hm-fg-muted)] text-sm">
-                <div className="w-4 h-4 border-2 border-[var(--hm-border-strong)] border-t-[var(--hm-brand-500)] rounded-full animate-spin" />
+                <LoadingSpinner size="sm" />
                 <span>Loading...</span>
               </div>
             </div>

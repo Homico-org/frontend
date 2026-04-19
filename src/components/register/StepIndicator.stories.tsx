@@ -183,7 +183,7 @@ export const Interactive: Story = {
           <button
             onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
             disabled={currentStep === 0}
-            className="px-4 py-2 text-sm rounded-lg bg-neutral-100 hover:bg-neutral-200 disabled:opacity-50"
+            className="px-4 py-2 text-sm rounded-lg bg-neutral-100 hover:bg-[var(--hm-border)] disabled:opacity-50"
           >
             Previous
           </button>

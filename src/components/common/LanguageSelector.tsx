@@ -87,15 +87,15 @@ export default function LanguageSelector({ variant = 'default' }: LanguageSelect
           className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${
             isOpen
               ? 'bg-[var(--hm-brand-500)]/10 ring-2 ring-[var(--hm-brand-500)]/20'
-              : 'bg-[var(--hm-bg-tertiary)] hover:bg-neutral-200'
+              : 'bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-border)]'
           }`}
           title={t('common.changeLanguage')}
         >
           <span className="text-base leading-none">{currentLang.flag}</span>
-          <span className={`text-[13px] font-semibold ${isOpen ? 'text-[var(--hm-brand-500)]' : 'text-neutral-700'}`}>
+          <span className={`text-[13px] font-semibold ${isOpen ? 'text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-primary)]'}`}>
             {currentLang.short}
           </span>
-          <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[var(--hm-brand-500)]' : 'text-neutral-400'}`} />
+          <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-muted)]'}`} />
         </button>
         <LanguageDropdown isOpen={isOpen} locale={locale} onSelect={handleSelect} />
       </div>
@@ -115,10 +115,10 @@ export default function LanguageSelector({ variant = 'default' }: LanguageSelect
           }`}
         >
           <span className="text-base leading-none">{currentLang.flag}</span>
-          <span className={`font-semibold ${isOpen ? 'text-[var(--hm-brand-500)]' : 'text-neutral-700'}`}>
+          <span className={`font-semibold ${isOpen ? 'text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-primary)]'}`}>
             {currentLang.short}
           </span>
-          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[var(--hm-brand-500)]' : 'text-neutral-400'}`} />
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-muted)]'}`} />
         </button>
         <LanguageDropdown isOpen={isOpen} locale={locale} onSelect={handleSelect} />
       </div>
@@ -137,10 +137,10 @@ export default function LanguageSelector({ variant = 'default' }: LanguageSelect
         }`}
       >
         <span className="text-base leading-none">{currentLang.flag}</span>
-        <span className={`font-semibold ${isOpen ? 'text-[var(--hm-brand-500)]' : 'text-neutral-700'}`}>
+        <span className={`font-semibold ${isOpen ? 'text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-primary)]'}`}>
           {currentLang.short}
         </span>
-        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[var(--hm-brand-500)]' : 'text-neutral-400'}`} />
+        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-muted)]'}`} />
       </button>
       <LanguageDropdown isOpen={isOpen} locale={locale} onSelect={handleSelect} align="left" />
     </div>

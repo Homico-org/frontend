@@ -51,7 +51,7 @@ function CounterInput({
       <div className="flex items-center gap-2">
         <button
           onClick={() => onChange(Math.max(min, value - 1))}
-          className="w-8 h-8 rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)] transition-colors flex items-center justify-center text-sm font-medium"
+          className="w-8 h-8 rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)] transition-colors flex items-center justify-center text-sm font-medium"
         >
           −
         </button>

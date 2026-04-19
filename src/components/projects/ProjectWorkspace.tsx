@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Avatar from '@/components/common/Avatar';
 import MediaLightbox from '@/components/common/MediaLightbox';
 import { Button } from '@/components/ui/button';
-import { ConfirmModal } from '@/components/ui/Modal';
+import { ConfirmModal, Modal } from '@/components/ui/Modal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Input, Textarea } from '@/components/ui/input';
 import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
@@ -210,7 +210,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
       setEditingSection(null);
       toast.success(t('projects.saved'));
     } catch (error) {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
+      toast.error(t('common.error'));
     }
   };
 
@@ -220,7 +220,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
       setSections(prev => prev.filter(s => getId(s) !== sectionId));
       toast.success(t('projects.deleted'));
     } catch (error) {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
+      toast.error(t('common.error'));
     } finally {
       setDeletingSectionId(null);
     }
@@ -238,7 +238,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
       setShowItemModal(null);
       toast.success(t('projects.added'));
     } catch (error) {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
+      toast.error(t('common.error'));
     }
   };
 
@@ -250,9 +250,9 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
           ? { ...s, items: s.items.filter(i => getId(i) !== itemId) }
           : s
       ));
-      toast.success(locale === 'ka' ? 'წაიშალა' : 'Deleted');
+      toast.success(t('projects.deleted'));
     } catch (error) {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
+      toast.error(t('common.error'));
     }
   };
 
@@ -271,7 +271,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
           : s
       ));
     } catch (error) {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
+      toast.error(t('common.error'));
     }
   };
 
@@ -295,7 +295,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
       ));
       setCommentText('');
     } catch (error) {
-      toast.error(locale === 'ka' ? 'შეცდომა' : 'Error');
+      toast.error(t('common.error'));
     }
   };
 
@@ -440,9 +440,10 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
   return (
     <div className="border-t border-[var(--hm-border)]">
       {/* Header Toggle */}
-      <button
+      <Button
+        variant="ghost"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
+        className="w-full h-auto justify-between p-4 rounded-none hover:bg-[var(--hm-bg-tertiary)]/50"
       >
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--hm-bg-tertiary)]">
@@ -465,7 +466,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
         <ChevronRight
           className={`w-5 h-5 text-[var(--hm-fg-muted)] transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}
         />
-      </button>
+      </Button>
 
       {/* Expanded Content */}
       {isExpanded && (
@@ -627,12 +628,14 @@ function SectionCard({
                     <button
                       key={getId(att)}
                       onClick={() => onOpenImageLightbox(imageAtts, idx)}
-                      className="aspect-square rounded-lg overflow-hidden bg-[var(--hm-bg-page)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-500)] transition-colors group cursor-pointer"
+                      className="relative aspect-square rounded-lg overflow-hidden bg-[var(--hm-bg-page)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-500)] transition-colors group cursor-pointer"
                     >
-                      <img
+                      <Image
                         src={storage.getFileUrl(att.fileUrl)}
                         alt={att.fileName}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        fill
+                        sizes="(min-width: 640px) 16vw, 25vw"
+                        className="object-cover group-hover:scale-105 transition-transform"
                       />
                     </button>
                   ))}
@@ -751,12 +754,14 @@ function ItemRow({
     <div className="px-4 py-3 hover:bg-[var(--hm-bg-tertiary)]/30 transition-colors">
       <div className="flex items-start gap-3">
         {/* Thumbnail or Icon */}
-        <div className="w-12 h-12 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0 overflow-hidden border border-[var(--hm-border)]">
+        <div className="relative w-12 h-12 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0 overflow-hidden border border-[var(--hm-border)]">
           {isImage && item.fileUrl ? (
-            <img
+            <Image
               src={storage.getFileUrl(item.fileUrl)}
-              alt=""
-              className="w-full h-full object-cover"
+              alt={item.title}
+              fill
+              sizes="48px"
+              className="object-cover"
             />
           ) : (
             <span className="text-[var(--hm-fg-muted)]">{getItemIcon()}</span>
@@ -1056,9 +1061,8 @@ function SectionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[var(--hm-bg-elevated)] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 shadow-xl">
+    <Modal isOpen={true} onClose={onClose} size="lg">
+      <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
             {section
@@ -1099,7 +1103,7 @@ function SectionModal({
           {/* Attachments Section */}
           <div>
             <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
-              {locale === 'ka' ? 'დანართები' : 'Attachments'}
+              {t('projects.attachments')}
             </label>
 
             {/* Upload Error */}
@@ -1119,24 +1123,17 @@ function SectionModal({
               accept={ALLOWED_FILE_EXTENSIONS}
             />
 
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-[var(--hm-border)] text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] transition-colors disabled:opacity-50"
+              loading={isUploading}
+              leftIcon={!isUploading ? <Upload className="w-4 h-4" /> : undefined}
+              className="w-full h-auto py-3 rounded-xl border-2 border-dashed border-[var(--hm-border)] bg-transparent text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] hover:bg-transparent"
             >
-              {isUploading ? (
-                <>
-                  <LoadingSpinner size="sm" color="currentColor" />
-                  {t('common.uploading')}
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4" />
-                  {t('projects.uploadFiles')}
-                </>
-              )}
-            </button>
+              {isUploading ? t('common.uploading') : t('projects.uploadFiles')}
+            </Button>
 
             {/* Attachments List */}
             {attachments.length > 0 && (
@@ -1147,11 +1144,13 @@ function SectionModal({
                     className="flex items-center gap-3 p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)]"
                   >
                     {att.fileType === 'image' ? (
-                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-[var(--hm-bg-page)] flex-shrink-0">
-                        <img
+                      <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-[var(--hm-bg-page)] flex-shrink-0">
+                        <Image
                           src={storage.getFileUrl(att.fileUrl)}
                           alt={att.fileName}
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="40px"
+                          className="object-cover"
                         />
                       </div>
                     ) : (
@@ -1165,13 +1164,15 @@ function SectionModal({
                         <p className="text-xs text-[var(--hm-fg-muted)]">{formatFileSize(att.fileSize)}</p>
                       )}
                     </div>
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="icon-sm"
                       onClick={() => removeAttachment(index)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)] transition-colors flex-shrink-0"
+                      className="flex-shrink-0 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)]"
                     >
                       <X className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -1196,7 +1197,7 @@ function SectionModal({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -1256,7 +1257,7 @@ function ItemModal({
       if (!title) setTitle(file.name.split(".")[0]);
     } catch (error) {
       console.error('Upload failed:', error);
-      setUploadError(locale === 'ka' ? 'ატვირთვა ვერ მოხერხდა' : 'Upload failed');
+      setUploadError(t('common.uploadFailed'));
     } finally {
       setIsUploading(false);
     }
@@ -1296,9 +1297,8 @@ function ItemModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[var(--hm-bg-elevated)] rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 shadow-xl">
+    <Modal isOpen={true} onClose={onClose} size="md">
+      <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
             {t('projects.addItem')}
@@ -1338,7 +1338,7 @@ function ItemModal({
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
-              {locale === 'ka' ? 'სათაური' : 'Title'} *
+              {t('common.title')} *
             </label>
             <Input
               type="text"
@@ -1350,7 +1350,7 @@ function ItemModal({
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
-              {locale === 'ka' ? 'აღწერა' : 'Description'}
+              {t('common.description')}
             </label>
             <Textarea
               value={description}
@@ -1363,7 +1363,7 @@ function ItemModal({
           {(type === 'image' || type === 'file' || type === 'product') && (
             <div>
               <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
-                {type === 'image' ? (locale === 'ka' ? 'სურათი' : 'Image') : (locale === 'ka' ? 'ფაილი' : 'File')}
+                {type === 'image' ? t('common.image') : t('common.file')}
               </label>
               {uploadError && (
                 <div className="mb-2 p-2 rounded-lg bg-[var(--hm-error-50)] text-[var(--hm-error-500)] text-xs">
@@ -1386,29 +1386,27 @@ function ItemModal({
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-[var(--hm-fg-primary)] truncate">{fileUrl.split("/").pop()}</p>
-                    <button
+                    <Button
+                      variant="link"
                       onClick={() => setFileUrl('')}
-                      className="text-xs text-[var(--hm-error-500)] hover:underline"
+                      className="text-xs text-[var(--hm-error-500)] h-auto"
                     >
                       {t('common.remove')}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
-                <button
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-8 rounded-xl border-2 border-dashed border-[var(--hm-border)] text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] transition-colors"
+                  loading={isUploading}
+                  leftIcon={!isUploading ? <Upload className="w-5 h-5" /> : undefined}
+                  className="w-full h-auto py-8 rounded-xl border-2 border-dashed border-[var(--hm-border)] bg-transparent text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] hover:bg-transparent"
                 >
-                  {isUploading ? (
-                    <LoadingSpinner size="md" color="currentColor" />
-                  ) : (
-                    <>
-                      <Upload className="w-5 h-5" />
-                      {t('projects.upload')}
-                    </>
-                  )}
-                </button>
+                  {!isUploading && t('projects.upload')}
+                </Button>
               )}
             </div>
           )}
@@ -1476,13 +1474,13 @@ function ItemModal({
 
         <div className="flex justify-end gap-2 mt-6">
           <Button variant="secondary" onClick={onClose}>
-            {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleSave} disabled={!title.trim()}>
             {t('common.add')}
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

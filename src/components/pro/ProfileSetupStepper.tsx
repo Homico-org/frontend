@@ -139,7 +139,7 @@ export default function ProfileSetupStepper({
                       : isCompleted
                         ? 'bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/20'
                         : isClickable
-                          ? 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)]'
+                          ? 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]'
                           : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] cursor-not-allowed opacity-60'
                     }
                   `}

@@ -75,7 +75,6 @@ function MessageBubble({
                 <SuggestedActionButton
                   key={idx}
                   action={action}
-                  locale={locale}
                   onAction={onAction}
                 />
               ))}
@@ -89,19 +88,13 @@ function MessageBubble({
 // Suggested action button
 function SuggestedActionButton({
   action,
-  locale,
   onAction,
 }: {
   action: SuggestedAction;
-  locale: string;
   onAction: (action: SuggestedAction) => void;
 }): React.ReactElement {
-  const label =
-    locale === "ka" && action.labelKa
-      ? action.labelKa
-      : locale === "ru" && action.labelRu
-        ? action.labelRu
-        : action.label;
+  const { pick } = useLanguage();
+  const label = pick({ en: action.label, ka: action.labelKa, ru: action.labelRu });
 
   if (action.type === "link" && action.url) {
     return (
@@ -314,7 +307,7 @@ export default function AiChatWidget(): React.ReactElement | null {
     return () => window.removeEventListener("resize", onResize);
   }, [fabPosition, snapToSide]);
 
-  const { locale, t } = useLanguage();
+  const { locale, t, pick } = useLanguage();
   const { user, isAuthenticated } = useAuth();
   const { openLoginModal } = useAuthModal();
   const pathname = usePathname();
@@ -414,12 +407,7 @@ export default function AiChatWidget(): React.ReactElement | null {
   const handleSuggestedAction = useCallback(
     async (action: SuggestedAction) => {
       if (action.type === "action") {
-        const localizedAction =
-          locale === "ka"
-            ? action.actionKa
-            : locale === "ru"
-              ? action.actionRu
-              : action.action;
+        const localizedAction = pick({ en: action.action, ka: action.actionKa, ru: action.actionRu });
 
         const text = localizedAction || action.action || action.label;
         if (!text?.trim()) return;

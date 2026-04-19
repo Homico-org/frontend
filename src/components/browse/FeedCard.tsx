@@ -18,7 +18,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Globe,
+  ImageIcon,
   Play,
+  Star,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -43,23 +45,23 @@ const FeedCard = React.memo(function FeedCard({
   const [isHovered, setIsHovered] = useState(false);
   const autoSlideRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
   const { categories } = useCategories();
 
   // Build service key → localized name map from catalog
   const svcNameMap = useMemo(() => {
     const map: Record<string, string> = {};
     for (const cat of categories) {
-      map[cat.key] = locale === 'ka' ? cat.nameKa : cat.name;
+      map[cat.key] = pick({ en: cat.name, ka: cat.nameKa });
       for (const sub of cat.subcategories || []) {
-        map[sub.key] = locale === 'ka' ? sub.nameKa : sub.name;
+        map[sub.key] = pick({ en: sub.name, ka: sub.nameKa });
         for (const svc of sub.services || []) {
-          map[svc.key] = locale === 'ka' ? svc.nameKa : svc.name;
+          map[svc.key] = pick({ en: svc.name, ka: svc.nameKa });
         }
       }
     }
     return map;
-  }, [categories, locale]);
+  }, [categories, pick]);
 
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -258,12 +260,13 @@ const FeedCard = React.memo(function FeedCard({
                           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
                           className="absolute inset-0"
                         >
-                          <img
+                          <Image
                             src={storage.getFeedCardImageUrl(currentMedia)}
                             alt={item.title}
+                            fill
+                            sizes="(max-width: 640px) 100vw, 400px"
                             loading="lazy"
-                            decoding="async"
-                            className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+                            className={`object-cover transition-transform duration-700 group-hover:scale-105 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
                             onLoad={() => setImageLoaded(true)}
                             onError={() => setImageError(true)}
                           />
@@ -272,19 +275,10 @@ const FeedCard = React.memo(function FeedCard({
                     })()
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--hm-bg-tertiary)] to-[var(--hm-border)]">
-                      <svg
+                      <ImageIcon
                         className="w-12 h-12 text-[var(--hm-n-300)]"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="1"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-                        />
-                      </svg>
+                        strokeWidth={1}
+                      />
                     </div>
                   )}
                 </AnimatePresence>
@@ -460,13 +454,10 @@ const FeedCard = React.memo(function FeedCard({
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
           >
             <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-[1.5px] sm:border-2 border-white">
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
+              <Star
                 className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-white"
-              >
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-              </svg>
+                fill="currentColor"
+              />
             </div>
           </motion.div>
         )}

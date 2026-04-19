@@ -338,7 +338,7 @@ function SuccessContent() {
 
             <Link
               href="/jobs"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl font-semibold text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] hover:bg-[var(--hm-n-200)] transition-all"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl font-semibold text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] hover:bg-[var(--hm-border)] transition-all"
             >
               {t('premium.browseJobs')}
             </Link>

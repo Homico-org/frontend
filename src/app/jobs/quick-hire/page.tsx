@@ -194,7 +194,7 @@ export default function QuickHirePage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 href="/professionals"
-                className="px-6 py-3 bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-n-200)] text-[var(--hm-fg-secondary)] font-medium rounded-xl transition-colors"
+                className="px-6 py-3 bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-border)] text-[var(--hm-fg-secondary)] font-medium rounded-xl transition-colors"
               >
                 Back to Browse
               </Link>

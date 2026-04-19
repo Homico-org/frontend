@@ -1,181 +1,125 @@
 'use client';
 
 import Header, { HeaderSpacer } from '@/components/common/Header';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  ArrowRight,
+  Check,
+  CheckCircle,
+  ClipboardCheck,
+  MessageSquare,
+  PenSquare,
+  Search,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  User,
+  Zap,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
 type UserType = 'client' | 'pro';
 
 export default function HowItWorksPage() {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<UserType>('client');
 
   const clientSteps = [
     {
       number: 1,
-      titleEn: 'Post Your Project',
-      titleKa: 'განათავსეთ პროექტი',
-      descriptionEn: 'Describe what you need done, set your budget, and add photos if helpful. It takes just a few minutes.',
-      descriptionKa: 'აღწერეთ რა გჭირდებათ, დააყენეთ ბიუჯეტი და დაამატეთ ფოტოები. ამას მხოლოდ რამდენიმე წუთი სჭირდება.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      ),
+      titleKey: 'howItWorks.clientStep1Title',
+      descriptionKey: 'howItWorks.clientStep1Description',
+      icon: <PenSquare className="w-8 h-8" />,
     },
     {
       number: 2,
-      titleEn: 'Receive Proposals',
-      titleKa: 'მიიღეთ შეთავაზებები',
-      descriptionEn: 'Qualified professionals will send you proposals with their price, timeline, and approach to your project.',
-      descriptionKa: 'კვალიფიციური პროფესიონალები გამოგიგზავნიან შეთავაზებებს ფასით, ვადებით და მიდგომით თქვენი პროექტისადმი.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-        </svg>
-      ),
+      titleKey: 'howItWorks.clientStep2Title',
+      descriptionKey: 'howItWorks.clientStep2Description',
+      icon: <MessageSquare className="w-8 h-8" />,
     },
     {
       number: 3,
-      titleEn: 'Review & Compare',
-      titleKa: 'შეადარეთ და აირჩიეთ',
-      descriptionEn: 'Browse professional profiles, check reviews, view portfolios, and chat to find the perfect match.',
-      descriptionKa: 'დაათვალიერეთ პროფილები, შეამოწმეთ შეფასებები, ნახეთ პორტფოლიო და დაუკავშირდით საუკეთესოს მოსაძებნად.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-        </svg>
-      ),
+      titleKey: 'howItWorks.clientStep3Title',
+      descriptionKey: 'howItWorks.clientStep3Description',
+      icon: <ClipboardCheck className="w-8 h-8" />,
     },
     {
       number: 4,
-      titleEn: 'Hire Your Pro',
-      titleKa: 'დაიქირავეთ პროფესიონალი',
-      descriptionEn: 'Choose the professional you like best and start working together. Contact them directly to discuss details.',
-      descriptionKa: 'აირჩიეთ საუკეთესო პროფესიონალი და დაიწყეთ თანამშრომლობა. დაუკავშირდით პირდაპირ დეტალების განსახილველად.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
+      titleKey: 'howItWorks.clientStep4Title',
+      descriptionKey: 'howItWorks.clientStep4Description',
+      icon: <CheckCircle className="w-8 h-8" />,
     },
     {
       number: 5,
-      titleEn: 'Get It Done',
-      titleKa: 'დაასრულეთ პროექტი',
-      descriptionEn: 'Your pro completes the work. Once satisfied, leave a review to help others find great professionals.',
-      descriptionKa: 'პროფესიონალი ასრულებს სამუშაოს. კმაყოფილების შემდეგ დატოვეთ შეფასება, რათა სხვებმაც იპოვონ კარგი ხელოსნები.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-        </svg>
-      ),
+      titleKey: 'howItWorks.clientStep5Title',
+      descriptionKey: 'howItWorks.clientStep5Description',
+      icon: <Sparkles className="w-8 h-8" />,
     },
   ];
 
   const proSteps = [
     {
       number: 1,
-      titleEn: 'Create Your Profile',
-      titleKa: 'შექმენით პროფილი',
-      descriptionEn: 'Sign up, add your skills, experience, and portfolio. A complete profile helps clients trust you.',
-      descriptionKa: 'დარეგისტრირდით, დაამატეთ უნარები, გამოცდილება და პორტფოლიო. სრული პროფილი ზრდის კლიენტების ნდობას.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      ),
+      titleKey: 'howItWorks.proStep1Title',
+      descriptionKey: 'howItWorks.proStep1Description',
+      icon: <User className="w-8 h-8" />,
     },
     {
       number: 2,
-      titleEn: 'Get Verified',
-      titleKa: 'გაიარეთ ვერიფიკაცია',
-      descriptionEn: 'Upload your ID and add social links for verification. Verified pros get more trust and visibility.',
-      descriptionKa: 'ატვირთეთ პირადობა და დაამატეთ სოციალური ბმულები. ვერიფიცირებული პროფესიონალები იღებენ მეტ ნდობას.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-        </svg>
-      ),
+      titleKey: 'howItWorks.proStep2Title',
+      descriptionKey: 'howItWorks.proStep2Description',
+      icon: <ShieldCheck className="w-8 h-8" />,
     },
     {
       number: 3,
-      titleEn: 'Browse Jobs',
-      titleKa: 'დაათვალიერეთ პროექტები',
-      descriptionEn: 'Find projects matching your skills and location. Filter by category, budget, and timeline.',
-      descriptionKa: 'იპოვეთ პროექტები თქვენი უნარებისა და ადგილმდებარეობის მიხედვით. გაფილტრეთ კატეგორიით, ბიუჯეტით.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      ),
+      titleKey: 'howItWorks.proStep3Title',
+      descriptionKey: 'howItWorks.proStep3Description',
+      icon: <Search className="w-8 h-8" />,
     },
     {
       number: 4,
-      titleEn: 'Submit Proposals',
-      titleKa: 'გაგზავნეთ შეთავაზებები',
-      descriptionEn: 'Send personalized proposals with your price and approach. Stand out with a compelling pitch.',
-      descriptionKa: 'გაგზავნეთ პერსონალიზებული შეთავაზებები თქვენი ფასით და მიდგომით. გამოირჩიეთ დამაჯერებელი წინადადებით.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-        </svg>
-      ),
+      titleKey: 'howItWorks.proStep4Title',
+      descriptionKey: 'howItWorks.proStep4Description',
+      icon: <Send className="w-8 h-8" />,
     },
     {
       number: 5,
-      titleEn: 'Win & Deliver',
-      titleKa: 'მოიგეთ და შეასრულეთ',
-      descriptionEn: 'When hired, deliver quality work. Great reviews lead to more clients and a growing reputation.',
-      descriptionKa: 'დაქირავების შემდეგ მიაწოდეთ ხარისხიანი სამუშაო. კარგი შეფასებები მოიტანს მეტ კლიენტს.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-        </svg>
-      ),
+      titleKey: 'howItWorks.proStep5Title',
+      descriptionKey: 'howItWorks.proStep5Description',
+      icon: <Star className="w-8 h-8" />,
     },
   ];
 
   const benefits = {
     client: [
       {
-        titleEn: 'Free to Use',
-        titleKa: 'უფასოა',
-        descriptionEn: 'Posting jobs and hiring professionals is completely free for clients.',
-        descriptionKa: 'პროექტების განთავსება და პროფესიონალების დაქირავება კლიენტებისთვის სრულიად უფასოა.',
+        titleKey: 'howItWorks.clientBenefit1Title',
+        descriptionKey: 'howItWorks.clientBenefit1Description',
       },
       {
-        titleEn: 'Verified Professionals',
-        titleKa: 'ვერიფიცირებული ხელოსნები',
-        descriptionEn: 'Browse verified pros with real reviews and portfolio work.',
-        descriptionKa: 'დაათვალიერეთ ვერიფიცირებული პროფესიონალები რეალური შეფასებებით და პორტფოლიოთი.',
+        titleKey: 'howItWorks.clientBenefit2Title',
+        descriptionKey: 'howItWorks.clientBenefit2Description',
       },
       {
-        titleEn: 'Direct Communication',
-        titleKa: 'პირდაპირი კომუნიკაცია',
-        descriptionEn: 'Chat directly with pros to discuss your project and negotiate terms.',
-        descriptionKa: 'დაუკავშირდით პროფესიონალებს პირდაპირ პროექტის განსახილველად და პირობების შესათანხმებლად.',
+        titleKey: 'howItWorks.clientBenefit3Title',
+        descriptionKey: 'howItWorks.clientBenefit3Description',
       },
     ],
     pro: [
       {
-        titleEn: 'Find Local Clients',
-        titleKa: 'იპოვეთ ადგილობრივი კლიენტები',
-        descriptionEn: 'Get matched with clients in your area looking for your services.',
-        descriptionKa: 'დაუკავშირდით კლიენტებს თქვენს რეგიონში, რომლებსაც სჭირდებათ თქვენი მომსახურება.',
+        titleKey: 'howItWorks.proBenefit1Title',
+        descriptionKey: 'howItWorks.proBenefit1Description',
       },
       {
-        titleEn: 'Build Your Reputation',
-        titleKa: 'ააშენეთ რეპუტაცია',
-        descriptionEn: 'Collect reviews and showcase your work to attract more clients.',
-        descriptionKa: 'შეაგროვეთ შეფასებები და წარმოაჩინეთ თქვენი სამუშაო მეტი კლიენტის მოსაზიდად.',
+        titleKey: 'howItWorks.proBenefit2Title',
+        descriptionKey: 'howItWorks.proBenefit2Description',
       },
       {
-        titleEn: 'Grow Your Business',
-        titleKa: 'გაზარდეთ ბიზნესი',
-        descriptionEn: 'Expand your client base and increase your income with Homico.',
-        descriptionKa: 'გააფართოეთ კლიენტთა ბაზა და გაზარდეთ შემოსავალი Homico-თ.',
+        titleKey: 'howItWorks.proBenefit3Title',
+        descriptionKey: 'howItWorks.proBenefit3Description',
       },
     ],
   };
@@ -190,16 +134,14 @@ export default function HowItWorksPage() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--hm-brand-500)] via-[#D13C14] to-[#A92B08]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--hm-brand-500)] via-[var(--hm-brand-600)] to-[var(--hm-brand-700)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.1),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(0,0,0,0.1),transparent_60%)]" />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
           <div className="text-center">
             <span className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white/90 text-sm font-medium mb-6">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+              <Zap className="w-4 h-4" />
               {t('howItWorks.simpleFast')}
             </span>
 
@@ -212,26 +154,28 @@ export default function HowItWorksPage() {
 
             {/* Tab Switcher */}
             <div className="inline-flex p-1.5 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setActiveTab('client')}
                 className={`px-6 py-3 rounded-xl text-sm font-medium transition-all ${
                   activeTab === 'client'
-                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] shadow-lg'
+                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] shadow-lg hover:bg-[var(--hm-bg-elevated)] hover:text-[var(--hm-brand-500)]'
                     : 'text-white/80 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {t('howItWorks.forClients')}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={() => setActiveTab('pro')}
                 className={`px-6 py-3 rounded-xl text-sm font-medium transition-all ${
                   activeTab === 'pro'
-                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] shadow-lg'
+                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] shadow-lg hover:bg-[var(--hm-bg-elevated)] hover:text-[var(--hm-brand-500)]'
                     : 'text-white/80 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {t('howItWorks.forProfessionals')}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -251,7 +195,7 @@ export default function HowItWorksPage() {
                 {/* Step Number & Icon */}
                 <div className="flex-shrink-0">
                   <div className="relative">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)] to-[#A92B08] flex items-center justify-center text-white shadow-lg shadow-[var(--hm-brand-500)]/20">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)] to-[var(--hm-brand-700)] flex items-center justify-center text-white shadow-lg shadow-[var(--hm-brand-500)]/20">
                       {step.icon}
                     </div>
                     <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-[var(--hm-bg-elevated)] shadow-md flex items-center justify-center">
@@ -263,10 +207,10 @@ export default function HowItWorksPage() {
                 {/* Content */}
                 <div className={`flex-1 ${index % 2 === 1 ? 'sm:text-right' : ''}`}>
                   <h3 className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-2">
-                    {locale === 'ka' ? step.titleKa : step.titleEn}
+                    {t(step.titleKey)}
                   </h3>
                   <p className="text-[var(--hm-fg-secondary)] leading-relaxed">
-                    {locale === 'ka' ? step.descriptionKa : step.descriptionEn}
+                    {t(step.descriptionKey)}
                   </p>
                 </div>
 
@@ -296,15 +240,13 @@ export default function HowItWorksPage() {
                 className="bg-[var(--hm-bg-elevated)] rounded-2xl p-6 border border-[var(--hm-border-subtle)]"
               >
                 <div className="w-12 h-12 rounded-xl bg-[var(--hm-brand-500)]/10 flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-[var(--hm-brand-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Check className="w-6 h-6 text-[var(--hm-brand-500)]" />
                 </div>
                 <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)] mb-2">
-                  {locale === 'ka' ? benefit.titleKa : benefit.titleEn}
+                  {t(benefit.titleKey)}
                 </h3>
                 <p className="text-sm text-[var(--hm-fg-secondary)]">
-                  {locale === 'ka' ? benefit.descriptionKa : benefit.descriptionEn}
+                  {t(benefit.descriptionKey)}
                 </p>
               </div>
             ))}
@@ -328,18 +270,16 @@ export default function HowItWorksPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href={activeTab === 'client' ? '/post-job' : '/register/professional'}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[var(--hm-brand-500)] to-[#A92B08] text-white font-medium shadow-lg shadow-[var(--hm-brand-500)]/20 hover:shadow-xl hover:shadow-[var(--hm-brand-500)]/30 transition-all hover:scale-105"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[var(--hm-brand-500)] to-[var(--hm-brand-700)] text-white font-medium shadow-lg shadow-[var(--hm-brand-500)]/20 hover:shadow-xl hover:shadow-[var(--hm-brand-500)]/30 transition-all hover:scale-105"
             >
               {activeTab === 'client'
                 ? (t('howItWorks.postAProject'))
                 : (t('howItWorks.registerAsPro'))}
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
+              <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
               href="/portfolio"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] font-medium hover:bg-[var(--hm-n-200)] transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] font-medium hover:bg-[var(--hm-border)] transition-all"
             >
               {t('howItWorks.browseProfessionals')}
             </Link>

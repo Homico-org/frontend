@@ -125,7 +125,7 @@ export default function SimilarProfessionals({
 
           <Link
             href={browseUrl}
-            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[var(--hm-bg-tertiary)] text-xs sm:text-sm font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[var(--hm-bg-tertiary)] text-xs sm:text-sm font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)] transition-colors"
           >
             {t('common.viewAll')}
             <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

@@ -513,7 +513,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
           <button
             onClick={handlePrev}
             disabled={currentStep === 1}
-            className="flex items-center gap-2 px-5 py-3 text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-n-200)] rounded-xl font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-5 py-3 text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-border)] rounded-xl font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
             {t('tools.calculator.back')}

@@ -93,7 +93,7 @@ const CommentForm = ({
           value={formData.content}
           onChange={(e) => setFormData({ ...formData, content: e.target.value })}
           placeholder={isReply ? t("jobComments.replyPlaceholder") : t("jobComments.commentPlaceholder")}
-          className="w-full p-3 border border-[var(--hm-border)] rounded-lg resize-none focus:ring-2 focus:ring-[var(--hm-brand-500)] focus:border-transparent"
+          className="w-full p-3 border border-[var(--hm-border)] rounded-lg resize-none focus:ring-2 focus:ring-[var(--hm-brand-500)] focus:border-transparent bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)]"
           rows={isReply ? 2 : 3}
           maxLength={2000}
         />
@@ -228,11 +228,11 @@ const CommentItem = ({
           {/* Header */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium text-[var(--hm-fg-primary)]">
-              {author?.name || "Anonymous"}
+              {author?.name || t("jobComments.anonymous")}
             </span>
             {comment.isClientReply && (
-              <span className="px-2 py-0.5 bg-[var(--hm-info-100)]/30 text-blue-700 text-xs rounded-full">
-                Job Owner
+              <span className="px-2 py-0.5 bg-[var(--hm-info-100)]/30 text-[var(--hm-info-500)] text-xs rounded-full">
+                {t("jobComments.jobOwner")}
               </span>
             )}
             {comment.isMarkedInteresting && (
@@ -240,7 +240,7 @@ const CommentItem = ({
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
-                Interesting
+                {t("jobComments.interesting")}
               </span>
             )}
             {author?.rating && (
@@ -276,7 +276,7 @@ const CommentItem = ({
           {/* Portfolio Items */}
           {comment.portfolioDetails && comment.portfolioDetails.length > 0 && (
             <div className="mt-3">
-              <div className="text-xs text-[var(--hm-fg-muted)] mb-2">Shared Projects:</div>
+              <div className="text-xs text-[var(--hm-fg-muted)] mb-2">{t("jobComments.sharedProjects")}</div>
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {comment.portfolioDetails.map((item) => (
                   <Link
@@ -308,7 +308,7 @@ const CommentItem = ({
               href={`/professionals/${comment.authorId}`}
               className="mt-2 inline-flex items-center gap-1 text-sm text-[var(--hm-brand-500)] hover:underline"
             >
-              View Full Profile
+              {t("jobComments.viewFullProfile")}
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -322,7 +322,7 @@ const CommentItem = ({
                 onClick={() => setIsReplying(!isReplying)}
                 className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors"
               >
-                Reply
+                {t("jobComments.reply")}
               </button>
             )}
             {canEdit && (
@@ -330,7 +330,7 @@ const CommentItem = ({
                 onClick={() => setIsEditing(true)}
                 className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-info-500)] transition-colors"
               >
-                Edit
+                {t("common.edit")}
               </button>
             )}
             {canDelete && (
@@ -339,7 +339,7 @@ const CommentItem = ({
                 disabled={isDeleting}
                 className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] transition-colors"
               >
-                {isDeleting ? "Deleting..." : "Delete"}
+                {isDeleting ? t("common.deleting") : t("common.delete")}
               </button>
             )}
             {canMarkInteresting && (
@@ -355,7 +355,7 @@ const CommentItem = ({
                 <svg className="w-4 h-4" fill={comment.isMarkedInteresting ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                 </svg>
-                {isMarking ? "..." : comment.isMarkedInteresting ? "Interesting" : "Mark Interesting"}
+                {isMarking ? "..." : comment.isMarkedInteresting ? t("jobComments.interesting") : t("jobComments.markInteresting")}
               </button>
             )}
           </div>
@@ -554,8 +554,8 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
 
       {/* Already Commented Notice */}
       {user && !isJobOwner && hasCommented && (
-        <div className="p-4 border-b border-[var(--hm-border)] bg-green-50">
-          <div className="flex items-center gap-2 text-green-700">
+        <div className="p-4 border-b border-[var(--hm-border)] bg-[var(--hm-success-50)]/20">
+          <div className="flex items-center gap-2 text-[var(--hm-success-500)]">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
@@ -572,11 +572,11 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
               <div key={i} className="animate-pulse flex gap-3">
-                <div className="w-10 h-10 rounded-full bg-[var(--hm-n-200)]" />
+                <div className="w-10 h-10 rounded-full bg-[var(--hm-bg-tertiary)]" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 w-1/4 bg-[var(--hm-n-200)] rounded" />
-                  <div className="h-4 w-3/4 bg-[var(--hm-n-200)] rounded" />
-                  <div className="h-4 w-1/2 bg-[var(--hm-n-200)] rounded" />
+                  <div className="h-4 w-1/4 bg-[var(--hm-bg-tertiary)] rounded" />
+                  <div className="h-4 w-3/4 bg-[var(--hm-bg-tertiary)] rounded" />
+                  <div className="h-4 w-1/2 bg-[var(--hm-bg-tertiary)] rounded" />
                 </div>
               </div>
             ))}

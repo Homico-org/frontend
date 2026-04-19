@@ -85,7 +85,7 @@ export function StepDimensions({
           <button
             onClick={handlePrevRoom}
             disabled={activeIndex === 0}
-            className="p-2 rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="p-2 rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
           </button>
@@ -117,7 +117,7 @@ export function StepDimensions({
           <button
             onClick={handleNextRoom}
             disabled={activeIndex === rooms.length - 1}
-            className="p-2 rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="p-2 rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
           </button>
@@ -171,7 +171,7 @@ export function StepDimensions({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleDimensionChange(key, Math.max(min, activeRoom.dimensions[key] - 1))}
-                  className="w-10 h-10 rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)] transition-colors flex items-center justify-center text-lg font-medium"
+                  className="w-10 h-10 rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)] transition-colors flex items-center justify-center text-lg font-medium"
                 >
                   −
                 </button>
