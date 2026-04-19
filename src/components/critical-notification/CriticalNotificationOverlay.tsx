@@ -28,8 +28,8 @@ const typeConfig: Record<string, {
 }> = {
   new_booking: {
     icon: Calendar,
-    gradient: 'from-[#C4735B] to-[#A85D4A]',
-    accentColor: '#C4735B',
+    gradient: 'from-[var(--hm-brand-500)] to-[#A92B08]',
+    accentColor: 'var(--hm-brand-500)',
   },
   booking_confirmed: {
     icon: CheckCircle2,
@@ -177,14 +177,14 @@ export default function CriticalNotificationOverlay() {
           <div className="px-6 py-5 space-y-3">
             {/* Date & Time */}
             {(date || time) && (
-              <div className="flex items-center gap-3 text-neutral-300">
+              <div className="flex items-center gap-3 text-[var(--hm-n-300)]">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-neutral-500" />
+                  <Calendar className="w-4 h-4 text-[var(--hm-fg-muted)]" />
                   <span className="text-sm">{date}</span>
                 </div>
                 {time && (
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-neutral-500" />
+                    <Clock className="w-4 h-4 text-[var(--hm-fg-muted)]" />
                     <span className="text-sm">{time}</span>
                   </div>
                 )}
@@ -195,7 +195,7 @@ export default function CriticalNotificationOverlay() {
             <div className="flex gap-3 pt-2">
               <Button
                 variant="ghost"
-                className="flex-1 text-neutral-400 hover:text-white hover:bg-white/10 border border-white/10"
+                className="flex-1 text-[var(--hm-fg-muted)] hover:text-white hover:bg-white/10 border border-white/10"
                 onClick={dismissCurrent}
               >
                 {t('criticalNotification.dismiss')}

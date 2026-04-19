@@ -194,16 +194,16 @@ function ServiceUnitPricing({
           <div
             className="flex items-center gap-2 py-2 px-2.5 rounded-lg"
             style={{
-              backgroundColor: 'var(--color-bg-tertiary)',
-              border: '1px solid var(--color-border-subtle)',
+              backgroundColor: 'var(--hm-bg-tertiary)',
+              border: '1px solid var(--hm-border-subtle)',
             }}
           >
-            <span className="text-[12px] font-medium flex-1" style={{ color: 'var(--color-text-primary)' }}>
+            <span className="text-[12px] font-medium flex-1" style={{ color: 'var(--hm-fg-primary)' }}>
               {up.unitLabel}
             </span>
             <div className="flex items-center gap-1.5 shrink-0">
               <div className="relative">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>₾</span>
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -216,9 +216,9 @@ function ServiceUnitPricing({
                   placeholder={up.defaultPrice > 0 ? `${up.defaultPrice}` : "0"}
                   className="w-18 pl-5 pr-2 py-1 text-[13px] font-semibold rounded-md border outline-none"
                   style={{
-                    borderColor: 'var(--color-border-subtle)',
-                    backgroundColor: 'var(--color-bg-elevated)',
-                    color: 'var(--color-text-primary)',
+                    borderColor: 'var(--hm-border-subtle)',
+                    backgroundColor: 'var(--hm-bg-elevated)',
+                    color: 'var(--hm-fg-primary)',
                   }}
                 />
               </div>
@@ -226,7 +226,7 @@ function ServiceUnitPricing({
                 <button
                   type="button"
                   onClick={() => updateUnit(up.unitKey, { price: up.defaultPrice })}
-                  className="text-[10px] font-medium text-[#C4735B] hover:underline whitespace-nowrap"
+                  className="text-[10px] font-medium text-[var(--hm-brand-500)] hover:underline whitespace-nowrap"
                 >
                   ~{up.defaultPrice}₾
                 </button>
@@ -235,9 +235,9 @@ function ServiceUnitPricing({
                 <button
                   type="button"
                   onClick={() => deactivateUnit(up.unitKey)}
-                  className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-[var(--hm-error-50)] transition-colors"
                 >
-                  <X className="w-3 h-3 text-neutral-400 hover:text-red-500" />
+                  <X className="w-3 h-3 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)]" />
                 </button>
               )}
             </div>
@@ -268,11 +268,11 @@ function ServiceUnitPricing({
                       onChange={(e) => updateDiscount(up.unitKey, up.discountTiers, tidx, { minQuantity: parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0 })}
                       onBlur={validate}
                       className="w-9 px-1 py-0.5 text-center rounded border outline-none font-semibold"
-                      style={{ borderColor: tier.minQuantity < minQty ? 'rgba(239,68,68,0.4)' : 'var(--color-border-subtle)', backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)' }}
+                      style={{ borderColor: tier.minQuantity < minQty ? 'rgba(239,68,68,0.4)' : 'var(--hm-border-subtle)', backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-primary)' }}
                     />
-                    <span style={{ color: 'var(--color-text-tertiary)' }}>+</span>
-                    <span style={{ color: 'var(--color-text-muted)' }}>→</span>
-                    <span style={{ color: 'var(--color-text-secondary)' }}>%</span>
+                    <span style={{ color: 'var(--hm-fg-muted)' }}>+</span>
+                    <span style={{ color: 'var(--hm-fg-muted)' }}>→</span>
+                    <span style={{ color: 'var(--hm-fg-secondary)' }}>%</span>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -280,10 +280,10 @@ function ServiceUnitPricing({
                       onChange={(e) => updateDiscount(up.unitKey, up.discountTiers, tidx, { percent: parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0 })}
                       onBlur={validate}
                       className="w-9 px-1 py-0.5 text-center rounded border outline-none font-semibold"
-                      style={{ borderColor: tier.percent < minPercent ? 'rgba(239,68,68,0.4)' : 'var(--color-border-subtle)', backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-primary)' }}
+                      style={{ borderColor: tier.percent < minPercent ? 'rgba(239,68,68,0.4)' : 'var(--hm-border-subtle)', backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-primary)' }}
                     />
-                    <span className="font-bold text-emerald-600">= {discountedPrice}₾</span>
-                    <button type="button" onClick={() => removeDiscount(up.unitKey, up.discountTiers, tidx)} className="ml-auto text-neutral-300 hover:text-red-500">
+                    <span className="font-bold text-[var(--hm-success-500)]">= {discountedPrice}₾</span>
+                    <button type="button" onClick={() => removeDiscount(up.unitKey, up.discountTiers, tidx)} className="ml-auto text-[var(--hm-n-300)] hover:text-[var(--hm-error-500)]">
                       <X className="w-3 h-3" />
                     </button>
                   </div>
@@ -292,8 +292,8 @@ function ServiceUnitPricing({
               <button
                 type="button"
                 onClick={() => addDiscount(up.unitKey, up.discountTiers)}
-                className="text-[10px] font-medium transition-colors hover:text-[#C4735B]"
-                style={{ color: 'var(--color-text-tertiary)' }}
+                className="text-[10px] font-medium transition-colors hover:text-[var(--hm-brand-500)]"
+                style={{ color: 'var(--hm-fg-muted)' }}
               >
                 + {locale === 'ka' ? 'ფასდაკლება' : 'Discount'}
               </button>
@@ -308,8 +308,8 @@ function ServiceUnitPricing({
           <button
             type="button"
             onClick={() => setShowUnitPicker(!showUnitPicker)}
-            className="flex items-center gap-1.5 text-[11px] font-medium transition-colors hover:text-[#C4735B] py-1"
-            style={{ color: 'var(--color-text-tertiary)' }}
+            className="flex items-center gap-1.5 text-[11px] font-medium transition-colors hover:text-[var(--hm-brand-500)] py-1"
+            style={{ color: 'var(--hm-fg-muted)' }}
           >
             <Plus className="w-3 h-3" />
             {locale === 'ka' ? 'ფასის ვარიანტის დამატება' : 'Add pricing option'}
@@ -320,8 +320,8 @@ function ServiceUnitPricing({
             <div
               className="absolute left-0 top-full mt-1 z-20 rounded-lg shadow-lg py-1 min-w-[180px]"
               style={{
-                backgroundColor: 'var(--color-bg-elevated)',
-                border: '1px solid var(--color-border-subtle)',
+                backgroundColor: 'var(--hm-bg-elevated)',
+                border: '1px solid var(--hm-border-subtle)',
               }}
             >
               {inactiveUnits.map((up) => (
@@ -329,12 +329,12 @@ function ServiceUnitPricing({
                   key={up.unitKey}
                   type="button"
                   onClick={() => activateUnit(up.unitKey)}
-                  className="w-full text-left px-3 py-2 text-[12px] font-medium transition-colors hover:bg-[rgba(196,115,91,0.06)]"
-                  style={{ color: 'var(--color-text-primary)' }}
+                  className="w-full text-left px-3 py-2 text-[12px] font-medium transition-colors hover:bg-[rgba(239,78,36,0.06)]"
+                  style={{ color: 'var(--hm-fg-primary)' }}
                 >
                   <span>{up.unitLabel}</span>
                   {up.defaultPrice > 0 && (
-                    <span className="ml-2 text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                    <span className="ml-2 text-[10px]" style={{ color: 'var(--hm-fg-muted)' }}>
                       ~{up.defaultPrice}₾
                     </span>
                   )}
@@ -458,7 +458,7 @@ export default function ServicesPricingStep({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-2 border-[#C4735B] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[var(--hm-brand-500)] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -469,10 +469,10 @@ export default function ServicesPricingStep({
     return (
       <div className="space-y-5">
         <div>
-          <h3 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+          <h3 className="text-base font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>
             {t("register.servicesPricingTitle")}
           </h3>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--hm-fg-muted)' }}>
             {t("register.servicesPricingDescription")}
           </p>
         </div>
@@ -480,9 +480,9 @@ export default function ServicesPricingStep({
         {/* Search */}
         <div className="relative">
           {aiLoading ? (
-            <Sparkles className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 animate-pulse text-[#C4735B]" />
+            <Sparkles className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 animate-pulse text-[var(--hm-brand-500)]" />
           ) : (
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--color-text-muted)' }} />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--hm-fg-muted)' }} />
           )}
           <input
             type="text"
@@ -491,14 +491,14 @@ export default function ServicesPricingStep({
             placeholder={t("register.filterSubcategories")}
             className="w-full pl-10 pr-9 py-3 rounded-xl text-sm border outline-none transition-colors"
             style={{
-              borderColor: 'var(--color-border-subtle)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
+              borderColor: 'var(--hm-border-subtle)',
+              backgroundColor: 'var(--hm-bg-elevated)',
+              color: 'var(--hm-fg-primary)',
             }}
           />
           {searchQuery && (
             <button type="button" onClick={() => { setSearchQuery(""); aiClear(); }} className="absolute right-3.5 top-1/2 -translate-y-1/2">
-              <X className="w-3.5 h-3.5" style={{ color: 'var(--color-text-muted)' }} />
+              <X className="w-3.5 h-3.5" style={{ color: 'var(--hm-fg-muted)' }} />
             </button>
           )}
         </div>
@@ -507,7 +507,7 @@ export default function ServicesPricingStep({
         {searchResults !== null ? (
           <div className="space-y-1.5">
             {searchResults.length === 0 ? (
-              <p className="text-sm text-center py-6" style={{ color: 'var(--color-text-muted)' }}>
+              <p className="text-sm text-center py-6" style={{ color: 'var(--hm-fg-muted)' }}>
                 {t("common.noResults")}
               </p>
             ) : (
@@ -521,16 +521,16 @@ export default function ServicesPricingStep({
                     onClick={() => handleToggle(sub, categoryKey)}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all"
                     style={{
-                      backgroundColor: isSelected ? 'rgba(196,115,91,0.06)' : 'var(--color-bg-elevated)',
-                      border: `1px solid ${isSelected ? 'rgba(196,115,91,0.3)' : 'var(--color-border-subtle)'}`,
+                      backgroundColor: isSelected ? 'rgba(239,78,36,0.06)' : 'var(--hm-bg-elevated)',
+                      border: `1px solid ${isSelected ? 'rgba(239,78,36,0.3)' : 'var(--hm-border-subtle)'}`,
                     }}
                   >
-                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? 'bg-[#C4735B] border-[#C4735B]' : 'border-[var(--color-border)]'}`}>
+                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? 'bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)]' : 'border-[var(--hm-border)]'}`}>
                       {isSelected && <CheckCircle2 className="w-3 h-3 text-white" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className="text-sm font-medium block truncate" style={{ color: 'var(--color-text-primary)' }}>{subName}</span>
-                      <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{catName}</span>
+                      <span className="text-sm font-medium block truncate" style={{ color: 'var(--hm-fg-primary)' }}>{subName}</span>
+                      <span className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>{catName}</span>
                     </div>
                   </button>
                 );
@@ -557,16 +557,16 @@ export default function ServicesPricingStep({
                   onClick={() => goToCategory(cat.key)}
                   className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 hover:shadow-sm active:scale-[0.98]"
                   style={{
-                    backgroundColor: hasSelections ? 'rgba(196,115,91,0.06)' : 'var(--color-bg-elevated)',
-                    border: `1px solid ${hasSelections ? 'rgba(196,115,91,0.25)' : 'var(--color-border-subtle)'}`,
+                    backgroundColor: hasSelections ? 'rgba(239,78,36,0.06)' : 'var(--hm-bg-elevated)',
+                    border: `1px solid ${hasSelections ? 'rgba(239,78,36,0.25)' : 'var(--hm-border-subtle)'}`,
                   }}
                 >
                   {/* Icon */}
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors"
                     style={{
-                      backgroundColor: hasSelections ? 'rgba(196,115,91,0.12)' : 'var(--color-bg-tertiary)',
-                      color: hasSelections ? '#C4735B' : 'var(--color-text-secondary)',
+                      backgroundColor: hasSelections ? 'rgba(239,78,36,0.12)' : 'var(--hm-bg-tertiary)',
+                      color: hasSelections ? 'var(--hm-brand-500)' : 'var(--hm-fg-secondary)',
                     }}
                   >
                     <CategoryIcon type={cat.key} className="w-5 h-5" />
@@ -574,11 +574,11 @@ export default function ServicesPricingStep({
 
                   {/* Name */}
                   <div className="flex-1 min-w-0">
-                    <span className="text-[12px] sm:text-[13px] font-medium block leading-tight" style={{ color: 'var(--color-text-primary)' }}>
+                    <span className="text-[12px] sm:text-[13px] font-medium block leading-tight" style={{ color: 'var(--hm-fg-primary)' }}>
                       {catName}
                     </span>
                     {hasSelections && (
-                      <span className="text-[11px] font-medium text-[#C4735B]">
+                      <span className="text-[11px] font-medium text-[var(--hm-brand-500)]">
                         {selectedCount} {t("browse.selectedCount")}
                       </span>
                     )}
@@ -605,8 +605,8 @@ export default function ServicesPricingStep({
         <button
           type="button"
           onClick={goBackToCategories}
-          className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-[#C4735B]"
-          style={{ color: 'var(--color-text-secondary)' }}
+          className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-[var(--hm-brand-500)]"
+          style={{ color: 'var(--hm-fg-secondary)' }}
         >
           <ArrowLeft className="w-4 h-4" />
           {catName}
@@ -623,8 +623,8 @@ export default function ServicesPricingStep({
                 key={sub.key}
                 className="rounded-xl transition-all"
                 style={{
-                  backgroundColor: isSelected ? 'rgba(196,115,91,0.04)' : 'var(--color-bg-elevated)',
-                  border: `1px solid ${isSelected ? 'rgba(196,115,91,0.2)' : 'var(--color-border-subtle)'}`,
+                  backgroundColor: isSelected ? 'rgba(239,78,36,0.04)' : 'var(--hm-bg-elevated)',
+                  border: `1px solid ${isSelected ? 'rgba(239,78,36,0.2)' : 'var(--hm-border-subtle)'}`,
                 }}
               >
                 {/* Toggle row */}
@@ -636,7 +636,7 @@ export default function ServicesPricingStep({
                   />
                   <span
                     className="flex-1 text-sm font-medium truncate cursor-pointer"
-                    style={{ color: 'var(--color-text-primary)' }}
+                    style={{ color: 'var(--hm-fg-primary)' }}
                     onClick={() => handleToggle(sub, activeCategory.key)}
                   >
                     {subName}
@@ -648,7 +648,7 @@ export default function ServicesPricingStep({
                   <div className="px-4 pb-4 space-y-3">
                     {/* Experience */}
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[11px] shrink-0" style={{ color: 'var(--color-text-muted)' }}>
+                      <span className="text-[11px] shrink-0" style={{ color: 'var(--hm-fg-muted)' }}>
                         {t("register.experienceYears")}
                       </span>
                       <div className="flex gap-1">
@@ -659,12 +659,12 @@ export default function ServicesPricingStep({
                             onClick={() => updateSub(sub.key, (s) => ({ ...s, experience: opt.value }))}
                             className={`px-2.5 py-1 text-[11px] font-medium rounded-full transition-all ${
                               subData.experience === opt.value
-                                ? "bg-[#C4735B] text-white"
-                                : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]"
+                                ? "bg-[var(--hm-brand-500)] text-white"
+                                : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
                             }`}
                             style={
                               subData.experience !== opt.value
-                                ? { border: '1px solid var(--color-border-subtle)' }
+                                ? { border: '1px solid var(--hm-border-subtle)' }
                                 : undefined
                             }
                           >
@@ -686,7 +686,7 @@ export default function ServicesPricingStep({
                     {subData.services.length > 0 && (
                       <div className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <p className="text-[11px] font-medium" style={{ color: 'var(--color-text-muted)' }}>
+                          <p className="text-[11px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>
                             {t("register.setPricesForServices")}
                           </p>
                           {(() => {
@@ -694,7 +694,7 @@ export default function ServicesPricingStep({
                             const filled = active.filter(s => s.price > 0 || s.unitPrices?.some(u => u.isActive && u.price > 0)).length;
                             if (active.length === 0) return null;
                             return (
-                              <span className={`text-[10px] font-semibold ${filled === active.length ? 'text-emerald-500' : 'text-amber-500'}`}>
+                              <span className={`text-[10px] font-semibold ${filled === active.length ? 'text-[var(--hm-success-500)]' : 'text-[var(--hm-warning-500)]'}`}>
                                 {filled}/{active.length}
                               </span>
                             );
@@ -705,8 +705,8 @@ export default function ServicesPricingStep({
                             key={svc.serviceKey}
                             className="rounded-xl transition-all"
                             style={{
-                              backgroundColor: svc.isActive ? 'var(--color-bg-elevated)' : 'var(--color-bg-primary)',
-                              border: `1px solid ${svc.isActive ? 'var(--color-border-subtle)' : 'var(--color-border-subtle)'}`,
+                              backgroundColor: svc.isActive ? 'var(--hm-bg-elevated)' : 'var(--hm-bg-page)',
+                              border: `1px solid ${svc.isActive ? 'var(--hm-border-subtle)' : 'var(--hm-border-subtle)'}`,
                             }}
                           >
                             {/* Service name + toggle row */}
@@ -726,7 +726,7 @@ export default function ServicesPricingStep({
                                 }
                               />
                               <div className="flex-1 min-w-0">
-                                <span className="text-[13px] font-medium block truncate" style={{ color: 'var(--color-text-primary)' }}>
+                                <span className="text-[13px] font-medium block truncate" style={{ color: 'var(--hm-fg-primary)' }}>
                                   {svc.label}
                                 </span>
                               </div>
@@ -734,16 +734,16 @@ export default function ServicesPricingStep({
                               {svc.isActive && (() => {
                                 const activeUnits = svc.unitPrices?.filter(u => u.isActive && u.price > 0) || [];
                                 if (activeUnits.length === 0 && svc.price > 0) return (
-                                  <span className="text-[13px] font-bold text-[#C4735B] shrink-0">{svc.price}₾</span>
+                                  <span className="text-[13px] font-bold text-[var(--hm-brand-500)] shrink-0">{svc.price}₾</span>
                                 );
                                 if (activeUnits.length === 0) return (
-                                  <span className="text-[10px] font-medium text-amber-500 shrink-0">{locale === 'ka' ? 'ფასი?' : 'price?'}</span>
+                                  <span className="text-[10px] font-medium text-[var(--hm-warning-500)] shrink-0">{locale === 'ka' ? 'ფასი?' : 'price?'}</span>
                                 );
                                 const prices = activeUnits.map(u => u.price);
                                 const min = Math.min(...prices);
                                 const max = Math.max(...prices);
                                 return (
-                                  <span className="text-[12px] font-bold text-[#C4735B] shrink-0">
+                                  <span className="text-[12px] font-bold text-[var(--hm-brand-500)] shrink-0">
                                     {min === max ? `${min}₾` : `${min}–${max}₾`}
                                   </span>
                                 );
@@ -763,9 +763,9 @@ export default function ServicesPricingStep({
                             {/* Fallback: single unit (no unitOptions) */}
                             {svc.isActive && (!svc.unitPrices || svc.unitPrices.length === 0) && (
                               <div className="flex items-center gap-2 px-3 pb-2.5">
-                                <span className="text-[10px] shrink-0" style={{ color: 'var(--color-text-muted)' }}>{svc.unitLabel}</span>
+                                <span className="text-[10px] shrink-0" style={{ color: 'var(--hm-fg-muted)' }}>{svc.unitLabel}</span>
                                 <div className="relative ml-auto">
-                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] font-medium" style={{ color: 'var(--color-text-muted)' }}>₾</span>
+                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
                                   <input
                                     type="text"
                                     inputMode="numeric"
@@ -781,7 +781,7 @@ export default function ServicesPricingStep({
                                     }}
                                     placeholder={svc.basePrice > 0 ? `${svc.basePrice}` : "0"}
                                     className="w-20 pl-6 pr-2 py-1.5 text-sm font-semibold rounded-lg border outline-none"
-                                    style={{ borderColor: 'var(--color-border-subtle)', backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}
+                                    style={{ borderColor: 'var(--hm-border-subtle)', backgroundColor: 'var(--hm-bg-elevated)', color: 'var(--hm-fg-primary)' }}
                                   />
                                 </div>
                               </div>
@@ -802,7 +802,7 @@ export default function ServicesPricingStep({
           type="button"
           onClick={goBackToCategories}
           className="w-full py-2.5 rounded-xl text-sm font-medium transition-colors"
-          style={{ color: 'var(--color-text-secondary)', border: '1px solid var(--color-border-subtle)' }}
+          style={{ color: 'var(--hm-fg-secondary)', border: '1px solid var(--hm-border-subtle)' }}
         >
           ← {locale === 'ka' ? 'სხვა კატეგორიის არჩევა' : 'Choose different category'}
         </button>

@@ -21,8 +21,8 @@ function ClientRegisterContent() {
 
   if (reg.authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">
-        <LoadingSpinner size="xl" variant="border" color="#C4735B" />
+      <div className="min-h-screen flex items-center justify-center bg-[var(--hm-bg-page)]">
+        <LoadingSpinner size="xl" variant="border" color="var(--hm-brand-500)" />
       </div>
     );
   }
@@ -30,11 +30,11 @@ function ClientRegisterContent() {
   // OTP Verification overlay
   if (reg.showVerification) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#FAFAF9]">
+      <div className="min-h-screen flex flex-col bg-[var(--hm-bg-page)]">
         <header className="px-3 sm:px-4 py-3 sm:py-4 flex items-center">
           <button
             onClick={() => reg.setShowVerification(false)}
-            className="flex items-center gap-2 text-neutral-500 hover:text-neutral-900 transition-colors"
+            className="flex items-center gap-2 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm font-medium">{t('common.back')}</span>
@@ -43,16 +43,16 @@ function ClientRegisterContent() {
 
         <main className="flex-1 flex items-center justify-center px-4 pb-8">
           <Card className="w-full max-w-sm p-5 sm:p-6 text-center">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#C4735B]/10 to-[#C4735B]/5 flex items-center justify-center">
-              <svg className="w-7 h-7 sm:w-8 sm:h-8 text-[#C4735B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 flex items-center justify-center">
+              <svg className="w-7 h-7 sm:w-8 sm:h-8 text-[var(--hm-brand-500)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
             </div>
 
-            <h2 className="text-lg sm:text-xl font-bold text-neutral-900 mb-1">
+            <h2 className="text-lg sm:text-xl font-bold text-[var(--hm-fg-primary)] mb-1">
               {t('register.verification')}
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-500 mb-5 sm:mb-6">
+            <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)] mb-5 sm:mb-6">
               {reg.locale === 'ka'
                 ? `კოდი გამოგზავნილია ${reg.formData.phone}-ზე`
                 : `Code sent to ${reg.formData.phone}`
@@ -74,7 +74,7 @@ function ClientRegisterContent() {
 
             <div className="mt-4 sm:mt-5 flex items-center justify-center">
               {reg.resendTimer > 0 ? (
-                <span className="text-xs sm:text-sm text-neutral-400">
+                <span className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">
                   {reg.locale === 'ka' ? `ხელახლა გაგზავნა ${reg.resendTimer} წმ` : `Resend in ${reg.resendTimer}s`}
                 </span>
               ) : (
@@ -96,20 +96,20 @@ function ClientRegisterContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-neutral-100">
+    <div className="min-h-screen bg-[var(--hm-bg-page)] flex flex-col">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[var(--hm-border-subtle)]">
         <div className="max-w-lg mx-auto px-3 sm:px-4">
           <div className="h-12 flex items-center justify-between">
             <button
               onClick={() => router.push('/register')}
-              className="flex items-center gap-1.5 text-neutral-500 hover:text-neutral-900 transition-colors"
+              className="flex items-center gap-1.5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="text-xs font-medium">{t('common.back')}</span>
             </button>
             <div className="flex items-center gap-2">
               <LanguageSelector variant="compact" />
-              <Link href="/help" className="text-xs text-neutral-400 hover:text-neutral-700 transition-colors">
+              <Link href="/help" className="text-xs text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors">
                 {t('common.help')}
               </Link>
             </div>
@@ -162,8 +162,8 @@ export default function ClientRegisterPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">
-          <LoadingSpinner size="xl" variant="border" color="#C4735B" />
+        <div className="min-h-screen flex items-center justify-center bg-[var(--hm-bg-page)]">
+          <LoadingSpinner size="xl" variant="border" color="var(--hm-brand-500)" />
         </div>
       }
     >

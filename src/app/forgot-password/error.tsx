@@ -30,12 +30,12 @@ export default function ForgotPasswordError({
         </div>
 
         {/* Title */}
-        <h2 className="text-[26px] font-bold text-center text-neutral-900 dark:text-white mb-2">
+        <h2 className="text-[26px] font-bold text-center text-[var(--hm-fg-primary)] mb-2">
           Something went wrong
         </h2>
 
         {/* Subtitle */}
-        <p className="text-center text-neutral-500 dark:text-neutral-400 text-[15px] mb-8">
+        <p className="text-center text-[var(--hm-fg-muted)] text-[15px] mb-8">
           An unexpected error occurred. Please try again or start over.
         </p>
 
@@ -70,7 +70,7 @@ export default function ForgotPasswordError({
         </div>
 
         {/* Back to home */}
-        <p className="text-center text-sm text-neutral-500 mt-6">
+        <p className="text-center text-sm text-[var(--hm-fg-muted)] mt-6">
           <Button
             variant="link"
             onClick={() => router.push('/')}

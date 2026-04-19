@@ -276,7 +276,9 @@
     "tools": "Tools",
     "jobs": "Jobs",
     "bookings": "Bookings",
-    "forBusiness": "For Business"
+    "forBusiness": "For Business",
+    "sectionWork": "Work",
+    "sectionAccount": "Account"
   },
   "validation": {
     "required": "This field is required",
@@ -347,6 +349,7 @@
     "signInWithGoogle": "Sign in with Google",
     "orContinueWith": "Or continue with",
     "phoneNumber": "Phone number",
+    "enterPhoneNumber": "Enter your mobile number to sign in",
     "sendCode": "Send code",
     "verification": "Verification",
     "enterCode": "Enter code",
@@ -421,7 +424,9 @@
     "postAJob": "Post A Job",
     "signInOrCreateAn": "Sign In Or Create An",
     "signOut": "Sign Out",
-    "signUp": "Sign Up"
+    "signUp": "Sign Up",
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode"
   },
   "browse": {
     "title": "Browse",
@@ -920,6 +925,32 @@
     "portfolio": "Portfolio",
     "reviews": "Reviews",
     "contact": "Contact",
+    "viewsLabel": "Views",
+    "reviewsLabel": "Reviews",
+    "jobsLabel": "Jobs",
+    "yearsExpShort": "Years Exp.",
+    "unitsShort": "units",
+    "saveShort": "save",
+    "years12": "1-2 yrs",
+    "years35": "3-5 yrs",
+    "years510": "5-10 yrs",
+    "years10plus": "10+ yrs",
+    "pendingBooking": "Pending booking",
+    "confirmedBooking": "Confirmed booking",
+    "memberSince": "Member since",
+    "fileReadError": "Couldn't read the file. Please reselect it (if it's from iCloud, download it first).",
+    "monthJanuary": "January",
+    "monthFebruary": "February",
+    "monthMarch": "March",
+    "monthApril": "April",
+    "monthMay": "May",
+    "monthJune": "June",
+    "monthJuly": "July",
+    "monthAugust": "August",
+    "monthSeptember": "September",
+    "monthOctober": "October",
+    "monthNovember": "November",
+    "monthDecember": "December",
     "inviteToJob": "Invite to job",
     "services": "Services",
     "experience": "Experience",
@@ -1163,7 +1194,10 @@
     "useADifferentCard": "Use A Different Card",
     "whatOurMembersSay": "What Our Members Say",
     "yourNewBenefits": "Your New Benefits",
-    "yr": "Yr"
+    "yr": "Yr",
+    "readyToGrow": "You're one step away from growing your business",
+    "payAmount": "Pay {currency}{amount}",
+    "saveAmount": "Save {currency}{amount}/year"
   },
   "notifications": {
     "title": "Notifications",
@@ -3395,5 +3429,22 @@
     "confirmPasswordPlaceholder": "Repeat password",
     "passwordMismatch": "Passwords do not match",
     "activateAccount": "Activate account"
+  },
+  "ai": {
+    "smartAssistant": "Smart Assistant",
+    "clearChat": "Clear chat",
+    "minimize": "Minimize",
+    "hide": "Hide",
+    "greeting": "Hi! I'm Homico AI",
+    "loginPrompt": "Log in to your account to start chatting with me",
+    "tryAsking": "Try asking:",
+    "askQuestion": "Ask a question...",
+    "loginToChat": "Log in to chat...",
+    "disclaimer": "Homico AI can make mistakes. Verify important information.",
+    "dragToMove": "drag to move",
+    "pricing": "Pricing",
+    "averagePrice": "Average Price",
+    "basedOnProfessionals": "Based on {count} professionals",
+    "faqs": "FAQs"
   }
 }

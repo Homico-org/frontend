@@ -2,6 +2,7 @@
 
 import ServiceBookingModal from "@/components/booking/ServiceBookingModal";
 import AddressPicker from "@/components/common/AddressPicker";
+import Checkbox from "@/components/ui/Checkbox";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import Select from "@/components/common/Select";
 import AboutTab from "@/components/professionals/AboutTab";
@@ -37,6 +38,7 @@ import { backOrNavigate } from "@/utils/navigationUtils";
 import { formatGeorgianPhoneDisplay } from "@/utils/validationUtils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlertTriangle,
   BadgeCheck,
   Briefcase,
   Calendar,
@@ -47,8 +49,10 @@ import {
   Facebook,
   Link2,
   MapPin,
+  MessageCircle,
   MessageSquare,
   Phone,
+  Play,
   Plus,
   Settings,
   Share2,
@@ -148,7 +152,7 @@ export default function ProfessionalDetailClient({
   const pathname = usePathname();
   const { user } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { t, locale } = useLanguage();
+  const { t, locale, pick } = useLanguage();
   const toast = useToast();
   const { trackEvent } = useAnalytics();
   const { categories: CATEGORIES } = useCategories();
@@ -1432,37 +1436,37 @@ export default function ProfessionalDetailClient({
   // Loading state - skeleton preview
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0A0A0A]">
+      <div className="min-h-screen bg-[var(--hm-bg-page)]">
         <Header />
         <HeaderSpacer />
         <div className="max-w-6xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-neutral-200/60 dark:border-neutral-800 shadow-lg shadow-neutral-900/[0.03]">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-[var(--hm-border-subtle)] shadow-lg shadow-[var(--hm-n-900)]/[0.03]">
             <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl sm:rounded-2xl bg-neutral-200 dark:bg-neutral-800 animate-pulse flex-shrink-0" />
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl sm:rounded-2xl bg-[var(--hm-n-200)] animate-pulse flex-shrink-0" />
               <div className="flex-1 space-y-3 sm:space-y-4 w-full">
-                <div className="h-7 sm:h-8 w-48 sm:w-56 bg-neutral-200 dark:bg-neutral-800 rounded-lg animate-pulse" />
-                <div className="h-4 sm:h-5 w-32 sm:w-40 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse" />
+                <div className="h-7 sm:h-8 w-48 sm:w-56 bg-[var(--hm-n-200)] rounded-lg animate-pulse" />
+                <div className="h-4 sm:h-5 w-32 sm:w-40 bg-[var(--hm-n-200)] rounded animate-pulse" />
                 <div className="flex flex-wrap gap-2">
-                  <div className="h-8 sm:h-9 w-16 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
-                  <div className="h-8 sm:h-9 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
-                  <div className="h-8 sm:h-9 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
+                  <div className="h-8 sm:h-9 w-16 bg-[var(--hm-n-200)] rounded-full animate-pulse" />
+                  <div className="h-8 sm:h-9 w-24 bg-[var(--hm-n-200)] rounded-full animate-pulse" />
+                  <div className="h-8 sm:h-9 w-20 bg-[var(--hm-n-200)] rounded-full animate-pulse" />
                 </div>
                 <div className="flex gap-1.5">
-                  <div className="h-7 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
-                  <div className="h-7 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
+                  <div className="h-7 w-20 bg-[var(--hm-n-200)] rounded-full animate-pulse" />
+                  <div className="h-7 w-20 bg-[var(--hm-n-200)] rounded-full animate-pulse" />
                 </div>
               </div>
             </div>
           </div>
           {/* Tab skeleton */}
           <div className="flex gap-3 mt-6">
-            <div className="h-10 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-xl animate-pulse" />
-            <div className="h-10 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-xl animate-pulse" />
-            <div className="h-10 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-xl animate-pulse" />
+            <div className="h-10 w-24 bg-[var(--hm-n-200)] rounded-xl animate-pulse" />
+            <div className="h-10 w-24 bg-[var(--hm-n-200)] rounded-xl animate-pulse" />
+            <div className="h-10 w-24 bg-[var(--hm-n-200)] rounded-xl animate-pulse" />
           </div>
           <div className="mt-6 space-y-4">
-            <div className="h-32 bg-neutral-200 dark:bg-neutral-800 rounded-2xl animate-pulse" />
-            <div className="h-24 bg-neutral-200 dark:bg-neutral-800 rounded-2xl animate-pulse" />
+            <div className="h-32 bg-[var(--hm-n-200)] rounded-2xl animate-pulse" />
+            <div className="h-24 bg-[var(--hm-n-200)] rounded-2xl animate-pulse" />
           </div>
         </div>
       </div>
@@ -1472,19 +1476,19 @@ export default function ProfessionalDetailClient({
   // Error state
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-app)] dark:bg-[#0A0A0A]">
+      <div className="min-h-screen bg-[var(--hm-bg-page)]">
         <Header />
         <HeaderSpacer />
         <div className="py-20 text-center">
           <div className="max-w-md mx-auto px-4">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#F5F0ED] dark:bg-neutral-900 flex items-center justify-center">
-              <X className="w-8 h-8 text-neutral-400" />
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#F5F0ED] flex items-center justify-center">
+              <X className="w-8 h-8 text-[var(--hm-fg-muted)]" />
             </div>
-            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+            <h2 className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-2">
               {t("professional.profileNotFound")}
             </h2>
             {error && (
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
+              <p className="text-sm text-[var(--hm-fg-muted)] mt-2">
                 {error}
               </p>
             )}
@@ -1507,38 +1511,26 @@ export default function ProfessionalDetailClient({
   const groupedServices = getGroupedServices();
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-app)] dark:bg-[#0A0A0A]">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       <Header />
       <HeaderSpacer />
 
       {/* Pending Approval Banner - Only visible to the pro owner */}
       {canEdit && profile && profile.verificationStatus !== "verified" && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
+        <div className="bg-[var(--hm-warning-50)]/20 border-b border-amber-200">
           <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2 rounded-full bg-amber-100 dark:bg-amber-800/30 flex-shrink-0">
-              <svg
-                className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
+            <div className="p-1.5 sm:p-2 rounded-full bg-[var(--hm-warning-100)] flex-shrink-0">
+              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-warning-500)]" strokeWidth={2} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-xs sm:text-sm text-amber-800 dark:text-amber-200">
+              <p className="font-medium text-xs sm:text-sm text-[var(--hm-warning-500)]">
                 {t("professional.pendingApprovalTitle")}
               </p>
-              <p className="text-[10px] sm:text-sm text-amber-700 dark:text-amber-300 line-clamp-2 sm:line-clamp-none">
+              <p className="text-[10px] sm:text-sm text-[var(--hm-warning-500)] line-clamp-2 sm:line-clamp-none">
                 {t("professional.pendingApprovalDescription")}
               </p>
               {profile.verificationNotes && (
-                <p className="text-[10px] sm:text-sm mt-1.5 sm:mt-2 p-1.5 sm:p-2 bg-amber-100 dark:bg-amber-800/40 rounded text-amber-800 dark:text-amber-200">
+                <p className="text-[10px] sm:text-sm mt-1.5 sm:mt-2 p-1.5 sm:p-2 bg-[var(--hm-warning-100)] rounded text-[var(--hm-warning-500)]">
                   <span className="font-medium">
                     {t("admin.noteFromAdmin") || "Note from admin"}:
                   </span>{" "}
@@ -1552,16 +1544,16 @@ export default function ProfessionalDetailClient({
 
       {/* Rejected Profile Banner */}
       {canEdit && profile && profile.adminRejectionReason && (
-        <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
+        <div className="bg-[var(--hm-error-50)]/20 border-b border-red-200">
           <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2 rounded-full bg-red-100 dark:bg-red-800/30 flex-shrink-0">
-              <X className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400" />
+            <div className="p-1.5 sm:p-2 rounded-full bg-[var(--hm-error-100)] flex-shrink-0">
+              <X className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-error-500)]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-xs sm:text-sm text-red-800 dark:text-red-200">
+              <p className="font-medium text-xs sm:text-sm text-[var(--hm-error-500)]">
                 {t("professional.needsUpdatesTitle")}
               </p>
-              <p className="text-[10px] sm:text-sm text-red-700 dark:text-red-300 line-clamp-2 sm:line-clamp-none">
+              <p className="text-[10px] sm:text-sm text-[var(--hm-error-500)] line-clamp-2 sm:line-clamp-none">
                 {profile.adminRejectionReason}
               </p>
             </div>
@@ -1584,16 +1576,16 @@ export default function ProfessionalDetailClient({
 
       {/* Admin Verification Panel - Only visible to admins */}
       {isAdmin && profile && (
-        <div className="bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-200 dark:border-indigo-800">
+        <div className="bg-indigo-50 border-b border-indigo-200">
           <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2 rounded-full bg-indigo-100 dark:bg-indigo-800/30 flex-shrink-0">
-              <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 dark:text-indigo-400" />
+            <div className="p-1.5 sm:p-2 rounded-full bg-indigo-100 flex-shrink-0">
+              <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-xs sm:text-sm text-indigo-800 dark:text-indigo-200">
+              <p className="font-medium text-xs sm:text-sm text-indigo-800">
                 {t("admin.verificationPanel") || "Admin Verification Panel"}
               </p>
-              <p className="text-[10px] sm:text-sm text-indigo-700 dark:text-indigo-300 truncate sm:whitespace-normal">
+              <p className="text-[10px] sm:text-sm text-indigo-700 truncate sm:whitespace-normal">
                 {t("admin.currentStatus") || "Current Status"}:{" "}
                 <span className="font-semibold capitalize">
                   {profile.verificationStatus || "pending"}
@@ -1642,7 +1634,7 @@ export default function ProfessionalDetailClient({
               variant="ghost"
               size="sm"
               onClick={() => backOrNavigate(router, "/professionals")}
-              className="rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all h-9 sm:h-10 px-2.5 sm:px-3"
+              className="rounded-xl bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)] transition-all h-9 sm:h-10 px-2.5 sm:px-3"
               leftIcon={<ChevronLeft className="w-4 h-4" />}
             >
               <span className="hidden sm:inline">{t("common.back")}</span>
@@ -1653,26 +1645,28 @@ export default function ProfessionalDetailClient({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowShareMenu(!showShareMenu)}
-                className="rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all h-9 sm:h-10 px-2.5 sm:px-3"
+                className="rounded-xl bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)] transition-all h-9 sm:h-10 px-2.5 sm:px-3"
                 leftIcon={<Share2 className="w-4 h-4" />}
               >
                 <span className="hidden sm:inline">{t("common.share")}</span>
               </Button>
 
               {showShareMenu && (
-                <div className="absolute top-full right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 py-1.5 sm:py-2 min-w-[160px] sm:min-w-[180px] animate-in fade-in slide-in-from-top-2 duration-200 z-50">
-                  <button
+                <div className="absolute top-full right-0 mt-2 bg-[var(--hm-bg-elevated)] rounded-xl shadow-xl border border-[var(--hm-border)] py-1.5 sm:py-2 min-w-[160px] sm:min-w-[180px] animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+                  <Button
+                    variant="ghost"
                     onClick={handleShareFacebook}
-                    className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] justify-start h-auto rounded-none"
                   >
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#1877F2] flex items-center justify-center flex-shrink-0">
                       <Facebook className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                     </div>
                     <span>Facebook</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
                     onClick={handleShareWhatsApp}
-                    className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] justify-start h-auto rounded-none"
                   >
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#25D366] flex items-center justify-center flex-shrink-0">
                       <svg
@@ -1684,20 +1678,21 @@ export default function ProfessionalDetailClient({
                       </svg>
                     </div>
                     <span>WhatsApp</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
                     onClick={handleCopyLink}
-                    className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] justify-start h-auto rounded-none"
                   >
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center flex-shrink-0">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[var(--hm-n-200)] flex items-center justify-center flex-shrink-0">
                       {copySuccess ? (
-                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
+                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-success-500)]" />
                       ) : (
-                        <Link2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-600 dark:text-neutral-400" />
+                        <Link2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-fg-secondary)]" />
                       )}
                     </div>
                     <span>{t("common.copyLink")}</span>
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -1712,17 +1707,19 @@ export default function ProfessionalDetailClient({
         transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
         className="lg:hidden max-w-7xl mx-auto px-3 sm:px-6 mb-4"
       >
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl shadow-neutral-900/[0.08] dark:shadow-black/30 border border-neutral-200/60 dark:border-neutral-800 p-4 sm:p-5">
+        <div className="bg-[var(--hm-bg-elevated)] rounded-2xl shadow-xl shadow-[var(--hm-n-900)]/[0.08] border border-[var(--hm-border-subtle)] p-4 sm:p-5">
           <div className="flex items-start gap-4">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
               {avatarUrl ? (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => setShowAvatarZoom(true)}
-                  className="cursor-zoom-in group"
+                  className="cursor-zoom-in group p-0 h-auto hover:bg-transparent"
+                  aria-label={t("professional.zoomAvatar")}
                 >
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-neutral-900 shadow-xl">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden ring-4 ring-[var(--hm-bg-elevated)] shadow-xl">
                     <Image
                       src={avatarSrc}
                       alt={profile.name}
@@ -1731,14 +1728,14 @@ export default function ProfessionalDetailClient({
                       className="w-full h-full object-cover"
                     />
                   </div>
-                </button>
+                </Button>
               ) : (
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-[#C4735B] to-[#A85D4A] ring-4 ring-white dark:ring-neutral-900 shadow-xl">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-[var(--hm-brand-500)] to-[#A92B08] ring-4 ring-[var(--hm-bg-elevated)] shadow-xl">
                   {profile.name.charAt(0)}
                 </div>
               )}
               {profile.verificationStatus === "verified" && (
-                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-500 border-[3px] border-white dark:border-neutral-900 flex items-center justify-center shadow-lg">
+                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[var(--hm-success-500)] border-[3px] border-[var(--hm-bg-elevated)] flex items-center justify-center shadow-lg">
                   <BadgeCheck className="w-4 h-4 text-white" />
                 </div>
               )}
@@ -1775,33 +1772,36 @@ export default function ProfessionalDetailClient({
                 </div>
               ) : (
                 <div className="flex items-center gap-2 mb-0.5">
-                  <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white tracking-tight truncate">
+                  <h1 className="text-xl sm:text-2xl font-bold text-[var(--hm-fg-primary)] tracking-tight truncate">
                     {profile.name}
                   </h1>
                   {canEdit && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
                       onClick={() => {
                         setEditedName(profile.name);
                         setIsEditingName(true);
                       }}
-                      className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex-shrink-0"
+                      className="flex-shrink-0"
+                      aria-label={t("common.edit")}
                     >
-                      <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
-                    </button>
+                      <Edit3 className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
+                    </Button>
                   )}
                 </div>
               )}
 
               {/* Title */}
               {profile.title && !isCategoryBasedTitle(profile.title) && (
-                <p className="text-sm text-[#C4735B] font-medium mb-1 truncate">
+                <p className="text-sm text-[var(--hm-brand-500)] font-medium mb-1 truncate">
                   {profile.title}
                 </p>
               )}
 
               {/* Location */}
               {profile.serviceAreas?.length > 0 && (
-                <div className="flex items-center gap-1 text-xs text-neutral-500">
+                <div className="flex items-center gap-1 text-xs text-[var(--hm-fg-muted)]">
                   <MapPin className="w-3 h-3" />
                   <span>{translateCity(profile.serviceAreas[0])}</span>
                 </div>
@@ -1811,22 +1811,25 @@ export default function ProfessionalDetailClient({
 
           {/* Mobile pricing */}
           {pricingMeta && pricingMeta.valueLabel && (
-            <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+            <div className="mt-3 pt-3 border-t border-[var(--hm-border-subtle)] flex items-center justify-between">
               <div>
-                <span className="text-[9px] uppercase tracking-wider font-semibold text-neutral-400">
+                <span className="text-[9px] uppercase tracking-wider font-semibold text-[var(--hm-fg-muted)]">
                   {pricingMeta.typeLabel}
                 </span>
-                <p className="text-lg font-bold text-[#C4735B]">
+                <p className="text-lg font-bold text-[var(--hm-brand-500)]">
                   {pricingMeta.valueLabel}
                 </p>
               </div>
               {canEdit && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={openPricingEdit}
-                  className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B]"
+                  className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)]"
+                  aria-label={t("common.edit")}
                 >
                   <Edit3 className="w-4 h-4" />
-                </button>
+                </Button>
               )}
             </div>
           )}
@@ -1849,37 +1852,29 @@ export default function ProfessionalDetailClient({
               />
               {editedPricingModel && (
                 <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
-                      ₾
-                    </span>
-                    <input
-                      type="number"
-                      min="0"
-                      inputMode="numeric"
-                      value={editedBasePrice}
-                      onChange={(e) => setEditedBasePrice(e.target.value)}
-                      className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30"
-                      placeholder="0"
-                    />
-                  </div>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    inputSize="sm"
+                    value={editedBasePrice}
+                    onChange={(e) => setEditedBasePrice(e.target.value)}
+                    leftIcon={<span className="text-sm">₾</span>}
+                    placeholder="0"
+                    className="flex-1"
+                  />
                   {editedPricingModel === PricingModel.RANGE && (
                     <>
-                      <span className="text-neutral-400">—</span>
-                      <div className="relative flex-1">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
-                          ₾
-                        </span>
-                        <input
-                          type="number"
-                          min="0"
-                          inputMode="numeric"
-                          value={editedMaxPrice}
-                          onChange={(e) => setEditedMaxPrice(e.target.value)}
-                          className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30"
-                          placeholder="0"
-                        />
-                      </div>
+                      <span className="text-[var(--hm-fg-muted)]">—</span>
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        inputSize="sm"
+                        value={editedMaxPrice}
+                        onChange={(e) => setEditedMaxPrice(e.target.value)}
+                        leftIcon={<span className="text-sm">₾</span>}
+                        placeholder="0"
+                        className="flex-1"
+                      />
                     </>
                   )}
                 </div>
@@ -1907,34 +1902,34 @@ export default function ProfessionalDetailClient({
           )}
 
           {/* Stats row */}
-          <div className="flex items-center justify-around mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-around mt-3 pt-3 border-t border-[var(--hm-border-subtle)]">
             <div className="text-center">
-              <p className="text-base font-bold text-neutral-900 dark:text-white">
+              <p className="text-base font-bold text-[var(--hm-fg-primary)]">
                 {profile.profileViewCount ?? 0}
               </p>
-              <p className="text-[10px] text-neutral-500">
-                {locale === "ka" ? "ნახვები" : "Views"}
+              <p className="text-[10px] text-[var(--hm-fg-muted)]">
+                {t("professional.viewsLabel")}
               </p>
             </div>
             {profile.avgRating > 0 && (
               <div className="text-center">
-                <p className="text-base font-bold text-neutral-900 dark:text-white flex items-center justify-center gap-1">
+                <p className="text-base font-bold text-[var(--hm-fg-primary)] flex items-center justify-center gap-1">
                   <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                   {profile.avgRating.toFixed(1)}
                 </p>
-                <p className="text-[10px] text-neutral-500">
+                <p className="text-[10px] text-[var(--hm-fg-muted)]">
                   {reviews.length || profile.totalReviews}{" "}
-                  {locale === "ka" ? "შეფასებები" : "Reviews"}
+                  {t("professional.reviewsLabel")}
                 </p>
               </div>
             )}
             {totalCompletedJobs > 0 && (
               <div className="text-center">
-                <p className="text-base font-bold text-neutral-900 dark:text-white">
+                <p className="text-base font-bold text-[var(--hm-fg-primary)]">
                   {totalCompletedJobs}
                 </p>
-                <p className="text-[10px] text-neutral-500">
-                  {locale === "ka" ? "დასრულებული" : "Jobs"}
+                <p className="text-[10px] text-[var(--hm-fg-muted)]">
+                  {t("professional.jobsLabel")}
                 </p>
               </div>
             )}
@@ -1955,7 +1950,7 @@ export default function ProfessionalDetailClient({
             <div className="sticky top-20 space-y-4 pb-6">
               {/* Profile Card */}
               <motion.div
-                className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800 shadow-lg shadow-neutral-900/[0.05] dark:shadow-black/20"
+                className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)] shadow-lg shadow-[var(--hm-n-900)]/[0.05]"
                 initial="hidden"
                 animate="show"
                 variants={{
@@ -1976,12 +1971,14 @@ export default function ProfessionalDetailClient({
                   {/* Avatar */}
                   <div className="relative mb-3">
                     {avatarUrl ? (
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
                         onClick={() => setShowAvatarZoom(true)}
-                        className="cursor-zoom-in group"
+                        className="cursor-zoom-in group p-0 h-auto hover:bg-transparent"
+                        aria-label={t("professional.zoomAvatar")}
                       >
-                        <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-neutral-900 shadow-xl group-hover:shadow-2xl transition-all duration-300">
+                        <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-[var(--hm-bg-elevated)] shadow-xl group-hover:shadow-2xl transition-all duration-300">
                           <Image
                             src={avatarSrc}
                             alt={profile.name}
@@ -1990,14 +1987,14 @@ export default function ProfessionalDetailClient({
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         </div>
-                      </button>
+                      </Button>
                     ) : (
-                      <div className="w-24 h-24 rounded-2xl flex items-center justify-center text-white text-3xl font-bold bg-gradient-to-br from-[#C4735B] to-[#A85D4A] ring-4 ring-white dark:ring-neutral-900 shadow-xl">
+                      <div className="w-24 h-24 rounded-2xl flex items-center justify-center text-white text-3xl font-bold bg-gradient-to-br from-[var(--hm-brand-500)] to-[#A92B08] ring-4 ring-[var(--hm-bg-elevated)] shadow-xl">
                         {profile.name.charAt(0)}
                       </div>
                     )}
                     {profile.verificationStatus === "verified" && (
-                      <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-emerald-500 border-[3px] border-white dark:border-neutral-900 flex items-center justify-center shadow-lg">
+                      <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-[var(--hm-success-500)] border-[3px] border-[var(--hm-bg-elevated)] flex items-center justify-center shadow-lg">
                         <BadgeCheck className="w-4 h-4 text-white" />
                       </div>
                     )}
@@ -2034,19 +2031,21 @@ export default function ProfessionalDetailClient({
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 mb-0.5">
-                      <h1 className="text-lg font-bold text-neutral-900 dark:text-white text-center">
+                      <h1 className="text-lg font-bold text-[var(--hm-fg-primary)] text-center">
                         {profile.name}
                       </h1>
                       {canEdit && (
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
                           onClick={() => {
                             setEditedName(profile.name);
                             setIsEditingName(true);
                           }}
-                          className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                          aria-label={t("common.edit")}
                         >
-                          <Edit3 className="w-3.5 h-3.5 text-neutral-400" />
-                        </button>
+                          <Edit3 className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
+                        </Button>
                       )}
                     </div>
                   )}
@@ -2085,15 +2084,17 @@ export default function ProfessionalDetailClient({
                       <div className="flex items-center gap-1.5 mb-2">
                         {profile.title &&
                         !isCategoryBasedTitle(profile.title) ? (
-                          <p className="text-sm text-[#C4735B] font-medium text-center">
+                          <p className="text-sm text-[var(--hm-brand-500)] font-medium text-center">
                             {profile.title}
                           </p>
                         ) : (
-                          <p className="text-xs text-neutral-400 italic">
+                          <p className="text-xs text-[var(--hm-fg-muted)] italic">
                             {t("professional.addTagline")}
                           </p>
                         )}
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
                           onClick={() => {
                             setEditedTitle(
                               profile.title &&
@@ -2103,16 +2104,16 @@ export default function ProfessionalDetailClient({
                             );
                             setIsEditingTitle(true);
                           }}
-                          className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                          aria-label={t("common.edit")}
                         >
-                          <Edit3 className="w-3 h-3 text-neutral-400" />
-                        </button>
+                          <Edit3 className="w-3 h-3 text-[var(--hm-fg-muted)]" />
+                        </Button>
                       </div>
                     )
                   ) : (
                     profile.title &&
                     !isCategoryBasedTitle(profile.title) && (
-                      <p className="text-sm text-[#C4735B] font-medium text-center mb-2">
+                      <p className="text-sm text-[var(--hm-brand-500)] font-medium text-center mb-2">
                         {profile.title}
                       </p>
                     )
@@ -2120,7 +2121,7 @@ export default function ProfessionalDetailClient({
 
                   {/* Location */}
                   {profile.serviceAreas?.length > 0 && (
-                    <div className="flex items-center gap-1.5 text-xs text-neutral-500 mb-3">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--hm-fg-muted)] mb-3">
                       <MapPin className="w-3.5 h-3.5" />
                       <span>{translateCity(profile.serviceAreas[0])}</span>
                     </div>
@@ -2133,7 +2134,7 @@ export default function ProfessionalDetailClient({
                         whileHover={{ scale: 1.02, y: -1 }}
                         whileTap={{ scale: 0.97 }}
                         onClick={() => setShowSchedulePanel(true)}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[#C4735B] font-medium text-sm bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[var(--hm-brand-500)] font-medium text-sm bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 transition-colors"
                       >
                         <Calendar className="w-4 h-4" />
                         {t("settings.availability")}
@@ -2182,7 +2183,7 @@ export default function ProfessionalDetailClient({
                               damping: 25,
                             }}
                             onClick={handleContact}
-                            className="relative w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-[#C4735B] via-[#B5624A] to-[#A85D4A] shadow-lg shadow-[#C4735B]/25 overflow-hidden"
+                            className="relative w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-[var(--hm-brand-500)] via-[#D13C14] to-[#A92B08] shadow-lg shadow-[var(--hm-brand-500)]/25 overflow-hidden"
                           >
                             {/* Shine sweep */}
                             <motion.div
@@ -2223,7 +2224,7 @@ export default function ProfessionalDetailClient({
                           whileHover={{ scale: 1.02, y: -1 }}
                           whileTap={{ scale: 0.97 }}
                           onClick={() => setShowInviteToJobModal(true)}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-neutral-700 dark:text-neutral-200 font-medium text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-[#C4735B]/30 hover:bg-[#C4735B]/5 transition-colors"
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[var(--hm-fg-secondary)] font-medium text-sm bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-500)]/30 hover:bg-[var(--hm-brand-500)]/5 transition-colors"
                         >
                           <Briefcase className="w-4 h-4" />
                           {t("professional.inviteToJob")}
@@ -2233,22 +2234,18 @@ export default function ProfessionalDetailClient({
                       {existingBookings.length > 0 && (
                         <Link
                           href="/bookings"
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/30"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[var(--hm-success-50)]/20 border border-emerald-200 transition-colors hover:bg-[var(--hm-success-100)]"
                         >
-                          <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-800/40 flex items-center justify-center shrink-0">
-                            <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                          <div className="w-8 h-8 rounded-full bg-[var(--hm-success-100)] flex items-center justify-center shrink-0">
+                            <Calendar className="w-4 h-4 text-[var(--hm-success-500)]" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                            <p className="text-xs font-medium text-[var(--hm-success-500)]">
                               {existingBookings[0].status === "pending"
-                                ? locale === "ka"
-                                  ? "მომლოდინე ჯავშანი"
-                                  : "Pending booking"
-                                : locale === "ka"
-                                  ? "დადასტურებული ჯავშანი"
-                                  : "Confirmed booking"}
+                                ? t("professional.pendingBooking")
+                                : t("professional.confirmedBooking")}
                             </p>
-                            <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                            <p className="text-[10px] text-[var(--hm-success-500)]">
                               {formatDate(
                                 existingBookings[0].date,
                                 locale as "en" | "ka" | "ru",
@@ -2275,7 +2272,7 @@ export default function ProfessionalDetailClient({
                               }
                               setShowServiceBookingModal(true);
                             }}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white font-semibold text-sm bg-[#C4735B] hover:bg-[#B5624A] transition-colors"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white font-semibold text-sm bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] transition-colors"
                           >
                             <ShoppingCart className="w-4 h-4" />
                             {t("booking.requestService")}
@@ -2289,7 +2286,7 @@ export default function ProfessionalDetailClient({
                           onClick={() => {
                             window.location.href = `/chat?proId=${profile?.id || (profile as unknown as Record<string, string>)?._id}`;
                           }}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[#C4735B] font-medium text-sm bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-colors"
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[var(--hm-brand-500)] font-medium text-sm bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 transition-colors"
                         >
                           <MessageSquare className="w-4 h-4" />
                           {t("common.message")}
@@ -2299,7 +2296,7 @@ export default function ProfessionalDetailClient({
                         <Link
                           href={`/post-job?invitePro=${profile?.id}`}
                           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm border transition-colors"
-                          style={{ borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-secondary)' }}
+                          style={{ borderColor: 'var(--hm-border-subtle)', color: 'var(--hm-fg-secondary)' }}
                         >
                           <Briefcase className="w-4 h-4" />
                           {t("browse.postAJob")}
@@ -2311,7 +2308,7 @@ export default function ProfessionalDetailClient({
                             whileHover={{ scale: 1.02, y: -1 }}
                             whileTap={{ scale: 0.97 }}
                             onClick={() => setShowSchedulePanel(true)}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[#C4735B] font-medium text-sm bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-colors"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[var(--hm-brand-500)] font-medium text-sm bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 transition-colors"
                           >
                             <Calendar className="w-4 h-4" />
                             {t("settings.availability")}
@@ -2321,7 +2318,7 @@ export default function ProfessionalDetailClient({
                             whileTap={{ scale: 0.97 }}
                             onClick={() => setShowShareMenu(true)}
                             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm border transition-colors"
-                            style={{ borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-secondary)' }}
+                            style={{ borderColor: 'var(--hm-border-subtle)', color: 'var(--hm-fg-secondary)' }}
                           >
                             <Share2 className="w-4 h-4" />
                             {t("common.share")}
@@ -2341,7 +2338,7 @@ export default function ProfessionalDetailClient({
                       show: { opacity: 1, y: 0 },
                     }}
                     transition={{ duration: 0.35 }}
-                    className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3"
+                    className="border-t border-[var(--hm-border-subtle)] px-5 py-3"
                   >
                     {(profile?.servicePricing?.length ?? 0) > 0 ? (
                       (() => {
@@ -2350,11 +2347,9 @@ export default function ProfessionalDetailClient({
                         const subNameMap: Record<string, string> = {};
                         for (const cat of CATEGORIES) {
                           for (const sub of cat.subcategories || []) {
-                            subNameMap[sub.key] =
-                              locale === "ka" ? sub.nameKa : sub.name;
+                            subNameMap[sub.key] = pick({ en: sub.name, ka: sub.nameKa });
                             for (const svc of sub.services || []) {
-                              svcNameMap[svc.key] =
-                                locale === "ka" ? svc.nameKa : svc.name;
+                              svcNameMap[svc.key] = pick({ en: svc.name, ka: svc.nameKa });
                             }
                           }
                         }
@@ -2395,10 +2390,10 @@ export default function ProfessionalDetailClient({
                         }
 
                         const expLabels: Record<string, string> = {
-                          "1-2": locale === "ka" ? "1-2 წელი" : "1-2 yrs",
-                          "3-5": locale === "ka" ? "3-5 წელი" : "3-5 yrs",
-                          "5-10": locale === "ka" ? "5-10 წელი" : "5-10 yrs",
-                          "10+": locale === "ka" ? "10+ წელი" : "10+ yrs",
+                          "1-2": t("professional.years12"),
+                          "3-5": t("professional.years35"),
+                          "5-10": t("professional.years510"),
+                          "10+": t("professional.years10plus"),
                         };
 
                         return (
@@ -2407,11 +2402,11 @@ export default function ProfessionalDetailClient({
                               ([subKey, services]) => (
                                 <div key={subKey}>
                                   <div className="flex items-center justify-between mb-1.5">
-                                    <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
+                                    <span className="text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-fg-muted)]">
                                       {subNameMap[subKey] || subKey}
                                     </span>
                                     {expMap[subKey] && (
-                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B] font-medium">
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] font-medium">
                                         {expLabels[expMap[subKey]] ||
                                           expMap[subKey]}
                                       </span>
@@ -2442,23 +2437,23 @@ export default function ProfessionalDetailClient({
                                             key={svcKey}
                                             className="rounded-xl p-3"
                                             style={{
-                                              backgroundColor: 'var(--color-bg-elevated)',
-                                              border: '1px solid var(--color-border-subtle)',
+                                              backgroundColor: 'var(--hm-bg-elevated)',
+                                              border: '1px solid var(--hm-border-subtle)',
                                             }}
                                           >
                                             {entries.length === 1 ? (
                                               <>
                                                 {/* Single unit — simple display */}
                                                 <div className="flex items-center justify-between">
-                                                  <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                                                  <span className="text-sm font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
                                                     {svcName}
                                                   </span>
-                                                  <span className="text-sm font-bold" style={{ color: '#C4735B' }}>
+                                                  <span className="text-sm font-bold" style={{ color: 'var(--hm-brand-500)' }}>
                                                     {entries[0].price}₾
                                                     {(() => {
                                                       const unitOpt = catalogSvc?.unitOptions?.find(u => u.key === (entries[0] as Record<string, unknown>).unitKey);
-                                                      const unitLabel = unitOpt ? (locale === 'ka' ? unitOpt.label.ka : unitOpt.label.en) : '';
-                                                      return unitLabel ? <span className="text-[10px] font-normal ml-1" style={{ color: 'var(--color-text-muted)' }}>/{unitLabel}</span> : null;
+                                                      const unitLabel = unitOpt ? pick({ en: unitOpt.label.en, ka: unitOpt.label.ka }) : '';
+                                                      return unitLabel ? <span className="text-[10px] font-normal ml-1" style={{ color: 'var(--hm-fg-muted)' }}>/{unitLabel}</span> : null;
                                                     })()}
                                                   </span>
                                                 </div>
@@ -2467,18 +2462,18 @@ export default function ProfessionalDetailClient({
                                                   const tiers = ((entries[0] as Record<string, unknown>).discountTiers as { minQuantity: number; percent: number }[]) || [];
                                                   if (tiers.length === 0) return null;
                                                   return (
-                                                    <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: '1px dashed var(--color-border-subtle)' }}>
+                                                    <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: '1px dashed var(--hm-border-subtle)' }}>
                                                       {tiers.map((tier, i) => {
                                                         const discounted = Math.round(entries[0].price * (1 - tier.percent / 100));
                                                         const savings = entries[0].price - discounted;
                                                         return (
                                                           <div key={i} className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg text-[12px]" style={{ backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)' }}>
-                                                            <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{tier.minQuantity}+</span>
-                                                            <span style={{ color: 'var(--color-text-tertiary)' }}>{locale === "ka" ? "ერთეული" : "units"}</span>
-                                                            <span className="mx-0.5" style={{ color: 'var(--color-text-tertiary)' }}>→</span>
-                                                            <span className="font-bold text-emerald-600">{discounted}₾</span>
-                                                            <span className="text-[10px] line-through opacity-40" style={{ color: 'var(--color-text-secondary)' }}>{entries[0].price}₾</span>
-                                                            <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold">{locale === "ka" ? "დაზოგე" : "save"} {savings}₾</span>
+                                                            <span className="font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>{tier.minQuantity}+</span>
+                                                            <span style={{ color: 'var(--hm-fg-muted)' }}>{t("professional.unitsShort")}</span>
+                                                            <span className="mx-0.5" style={{ color: 'var(--hm-fg-muted)' }}>→</span>
+                                                            <span className="font-bold text-[var(--hm-success-500)]">{discounted}₾</span>
+                                                            <span className="text-[10px] line-through opacity-40" style={{ color: 'var(--hm-fg-secondary)' }}>{entries[0].price}₾</span>
+                                                            <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--hm-success-100)]/30 text-[var(--hm-success-500)] font-semibold">{t("professional.saveShort")} {savings}₾</span>
                                                           </div>
                                                         );
                                                       })}
@@ -2489,20 +2484,20 @@ export default function ProfessionalDetailClient({
                                             ) : (
                                               <>
                                                 {/* Multi-unit — show service name then each unit price */}
-                                                <span className="text-sm font-medium block mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                                                <span className="text-sm font-medium block mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
                                                   {svcName}
                                                 </span>
                                                 <div className="space-y-1.5">
                                                   {entries.map((entry) => {
                                                     const entryAny = entry as Record<string, unknown>;
                                                     const unitOpt = catalogSvc?.unitOptions?.find(u => u.key === entryAny.unitKey);
-                                                    const unitLabel = unitOpt ? (locale === 'ka' ? unitOpt.label.ka : unitOpt.label.en) : entryAny.unitKey as string || '';
+                                                    const unitLabel = unitOpt ? pick({ en: unitOpt.label.en, ka: unitOpt.label.ka }) : (entryAny.unitKey as string || '');
                                                     const tiers = (entryAny.discountTiers as { minQuantity: number; percent: number }[]) || [];
                                                     return (
                                                       <div key={entryAny.unitKey as string || entry.serviceKey}>
-                                                        <div className="flex items-center justify-between py-1 px-2 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                                                          <span className="text-[12px]" style={{ color: 'var(--color-text-secondary)' }}>{unitLabel}</span>
-                                                          <span className="text-[13px] font-bold" style={{ color: '#C4735B' }}>{entry.price}₾</span>
+                                                        <div className="flex items-center justify-between py-1 px-2 rounded-lg" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
+                                                          <span className="text-[12px]" style={{ color: 'var(--hm-fg-secondary)' }}>{unitLabel}</span>
+                                                          <span className="text-[13px] font-bold" style={{ color: 'var(--hm-brand-500)' }}>{entry.price}₾</span>
                                                         </div>
                                                         {tiers.length > 0 && (
                                                           <div className="ml-2 mt-1 space-y-0.5">
@@ -2510,10 +2505,10 @@ export default function ProfessionalDetailClient({
                                                               const discounted = Math.round(entry.price * (1 - tier.percent / 100));
                                                               return (
                                                                 <div key={i} className="flex items-center gap-1.5 text-[11px] px-2">
-                                                                  <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{tier.minQuantity}+</span>
-                                                                  <span className="mx-0.5" style={{ color: 'var(--color-text-tertiary)' }}>→</span>
-                                                                  <span className="font-bold text-emerald-600">{discounted}₾</span>
-                                                                  <span className="text-[10px] opacity-40 line-through" style={{ color: 'var(--color-text-secondary)' }}>{entry.price}₾</span>
+                                                                  <span className="font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>{tier.minQuantity}+</span>
+                                                                  <span className="mx-0.5" style={{ color: 'var(--hm-fg-muted)' }}>→</span>
+                                                                  <span className="font-bold text-[var(--hm-success-500)]">{discounted}₾</span>
+                                                                  <span className="text-[10px] opacity-40 line-through" style={{ color: 'var(--hm-fg-secondary)' }}>{entry.price}₾</span>
                                                                 </div>
                                                               );
                                                             })}
@@ -2539,22 +2534,25 @@ export default function ProfessionalDetailClient({
                     ) : !canEdit || !isEditingPricing ? (
                       <div className="flex items-center justify-between">
                         <div>
-                          <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
+                          <span className="text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-fg-muted)]">
                             {pricingMeta?.typeLabel}
                           </span>
                           {pricingMeta?.valueLabel && (
-                            <p className="text-xl font-bold text-[#C4735B] dark:text-[#D4937B]">
+                            <p className="text-xl font-bold text-[var(--hm-brand-500)]">
                               {pricingMeta.valueLabel}
                             </p>
                           )}
                         </div>
                         {canEdit && (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={openPricingEdit}
-                            className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] transition-colors"
+                            className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)]"
+                            aria-label={t("common.edit")}
                           >
                             <Edit3 className="w-3.5 h-3.5" />
-                          </button>
+                          </Button>
                         )}
                       </div>
                     ) : (
@@ -2582,43 +2580,31 @@ export default function ProfessionalDetailClient({
                         />
                         {editedPricingModel && (
                           <div className="flex items-center gap-2">
-                            <div className="relative flex-1">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
-                                ₾
-                              </span>
-                              <input
-                                type="number"
-                                min="0"
-                                inputMode="numeric"
-                                value={editedBasePrice}
-                                onChange={(e) =>
-                                  setEditedBasePrice(e.target.value)
-                                }
-                                className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30"
-                                placeholder="0"
-                              />
-                            </div>
+                            <Input
+                              type="number"
+                              inputMode="numeric"
+                              inputSize="sm"
+                              value={editedBasePrice}
+                              onChange={(e) => setEditedBasePrice(e.target.value)}
+                              leftIcon={<span className="text-sm">₾</span>}
+                              placeholder="0"
+                              className="flex-1"
+                            />
                             {editedPricingModel === PricingModel.RANGE && (
                               <>
-                                <span className="text-neutral-400 text-sm">
+                                <span className="text-[var(--hm-fg-muted)] text-sm">
                                   —
                                 </span>
-                                <div className="relative flex-1">
-                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
-                                    ₾
-                                  </span>
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    inputMode="numeric"
-                                    value={editedMaxPrice}
-                                    onChange={(e) =>
-                                      setEditedMaxPrice(e.target.value)
-                                    }
-                                    className="w-full pl-7 pr-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/30"
-                                    placeholder="0"
-                                  />
-                                </div>
+                                <Input
+                                  type="number"
+                                  inputMode="numeric"
+                                  inputSize="sm"
+                                  value={editedMaxPrice}
+                                  onChange={(e) => setEditedMaxPrice(e.target.value)}
+                                  leftIcon={<span className="text-sm">₾</span>}
+                                  placeholder="0"
+                                  className="flex-1"
+                                />
                               </>
                             )}
                           </div>
@@ -2654,53 +2640,53 @@ export default function ProfessionalDetailClient({
                     show: { opacity: 1, y: 0 },
                   }}
                   transition={{ duration: 0.35 }}
-                  className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3"
+                  className="border-t border-[var(--hm-border-subtle)] px-5 py-3"
                 >
                   <div className="grid grid-cols-2 gap-2">
                     <motion.div
                       whileHover={{
                         scale: 1.05,
-                        backgroundColor: "rgba(196,115,91,0.06)",
+                        backgroundColor: "rgba(239,78,36,0.06)",
                       }}
                       transition={{
                         type: "spring",
                         stiffness: 400,
                         damping: 25,
                       }}
-                      className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default"
+                      className="text-center p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)]/50 cursor-default"
                     >
-                      <p className="text-base font-bold text-neutral-900 dark:text-white">
+                      <p className="text-base font-bold text-[var(--hm-fg-primary)]">
                         <AnimatedCounter
                           value={profile.profileViewCount ?? 0}
                         />
                       </p>
-                      <p className="text-[10px] text-neutral-500 mt-0.5">
-                        {locale === "ka" ? "ნახვები" : "Views"}
+                      <p className="text-[10px] text-[var(--hm-fg-muted)] mt-0.5">
+                        {t("professional.viewsLabel")}
                       </p>
                     </motion.div>
                     {profile.avgRating > 0 && (
                       <motion.div
                         whileHover={{
                           scale: 1.05,
-                          backgroundColor: "rgba(196,115,91,0.06)",
+                          backgroundColor: "rgba(239,78,36,0.06)",
                         }}
                         transition={{
                           type: "spring",
                           stiffness: 400,
                           damping: 25,
                         }}
-                        className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default"
+                        className="text-center p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)]/50 cursor-default"
                       >
-                        <p className="text-base font-bold text-neutral-900 dark:text-white flex items-center justify-center gap-1">
+                        <p className="text-base font-bold text-[var(--hm-fg-primary)] flex items-center justify-center gap-1">
                           <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                           <AnimatedCounter
                             value={profile.avgRating}
                             decimals={1}
                           />
                         </p>
-                        <p className="text-[10px] text-neutral-500 mt-0.5">
+                        <p className="text-[10px] text-[var(--hm-fg-muted)] mt-0.5">
                           {reviews.length || profile.totalReviews}{" "}
-                          {locale === "ka" ? "შეფასებები" : "Reviews"}
+                          {t("professional.reviewsLabel")}
                         </p>
                       </motion.div>
                     )}
@@ -2708,20 +2694,20 @@ export default function ProfessionalDetailClient({
                       <motion.div
                         whileHover={{
                           scale: 1.05,
-                          backgroundColor: "rgba(196,115,91,0.06)",
+                          backgroundColor: "rgba(239,78,36,0.06)",
                         }}
                         transition={{
                           type: "spring",
                           stiffness: 400,
                           damping: 25,
                         }}
-                        className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default"
+                        className="text-center p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)]/50 cursor-default"
                       >
-                        <p className="text-base font-bold text-neutral-900 dark:text-white">
+                        <p className="text-base font-bold text-[var(--hm-fg-primary)]">
                           <AnimatedCounter value={totalCompletedJobs} />
                         </p>
-                        <p className="text-[10px] text-neutral-500 mt-0.5">
-                          {locale === "ka" ? "დასრულებული" : "Jobs"}
+                        <p className="text-[10px] text-[var(--hm-fg-muted)] mt-0.5">
+                          {t("professional.jobsLabel")}
                         </p>
                       </motion.div>
                     )}
@@ -2748,20 +2734,20 @@ export default function ProfessionalDetailClient({
                         <motion.div
                           whileHover={{
                             scale: 1.05,
-                            backgroundColor: "rgba(196,115,91,0.06)",
+                            backgroundColor: "rgba(239,78,36,0.06)",
                           }}
                           transition={{
                             type: "spring",
                             stiffness: 400,
                             damping: 25,
                           }}
-                          className="text-center p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 cursor-default"
+                          className="text-center p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)]/50 cursor-default"
                         >
-                          <p className="text-base font-bold text-neutral-900 dark:text-white">
+                          <p className="text-base font-bold text-[var(--hm-fg-primary)]">
                             <AnimatedCounter value={maxYears} />+
                           </p>
-                          <p className="text-[10px] text-neutral-500 mt-0.5">
-                            {locale === "ka" ? "წლის გამოცდ." : "Years Exp."}
+                          <p className="text-[10px] text-[var(--hm-fg-muted)] mt-0.5">
+                            {t("professional.yearsExpShort")}
                           </p>
                         </motion.div>
                       ) : null;
@@ -2777,56 +2763,21 @@ export default function ProfessionalDetailClient({
                       show: { opacity: 1, y: 0 },
                     }}
                     transition={{ duration: 0.35 }}
-                    className="border-t border-neutral-100 dark:border-neutral-800 px-5 py-3"
+                    className="border-t border-[var(--hm-border-subtle)] px-5 py-3"
                   >
                     <p
-                      className="text-[10px] text-neutral-400 uppercase tracking-wider"
+                      className="text-[10px] text-[var(--hm-fg-muted)] uppercase tracking-wider"
                       suppressHydrationWarning
                     >
-                      {locale === "ka"
-                        ? "წევრია"
-                        : locale === "ru"
-                          ? "Участник с"
-                          : "Member since"}
-                      :{" "}
+                      {t("professional.memberSince")}:{" "}
                       {(() => {
                         const d = new Date(profile.createdAt);
-                        const monthsKa = [
-                          "იანვარი",
-                          "თებერვალი",
-                          "მარტი",
-                          "აპრილი",
-                          "მაისი",
-                          "ივნისი",
-                          "ივლისი",
-                          "აგვისტო",
-                          "სექტემბერი",
-                          "ოქტომბერი",
-                          "ნოემბერი",
-                          "დეკემბერი",
+                        const monthKeys = [
+                          "monthJanuary", "monthFebruary", "monthMarch", "monthApril",
+                          "monthMay", "monthJune", "monthJuly", "monthAugust",
+                          "monthSeptember", "monthOctober", "monthNovember", "monthDecember",
                         ];
-                        const monthsRu = [
-                          "Январь",
-                          "Февраль",
-                          "Март",
-                          "Апрель",
-                          "Май",
-                          "Июнь",
-                          "Июль",
-                          "Август",
-                          "Сентябрь",
-                          "Октябрь",
-                          "Ноябрь",
-                          "Декабрь",
-                        ];
-                        if (locale === "ka")
-                          return `${monthsKa[d.getMonth()]} ${d.getFullYear()}`;
-                        if (locale === "ru")
-                          return `${monthsRu[d.getMonth()]} ${d.getFullYear()}`;
-                        return d.toLocaleDateString("en-US", {
-                          month: "long",
-                          year: "numeric",
-                        });
+                        return `${t(`professional.${monthKeys[d.getMonth()]}`)} ${d.getFullYear()}`;
                       })()}
                     </p>
                   </motion.div>
@@ -2847,14 +2798,10 @@ export default function ProfessionalDetailClient({
               {/* PORTFOLIO SECTION */}
               {(portfolioProjects.length > 0 || isOwner) && (
                 <section>
-                  <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-                    {locale === "ka"
-                      ? "ნამუშევრები"
-                      : locale === "ru"
-                        ? "Портфолио"
-                        : "Portfolio"}
+                  <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-4 flex items-center gap-2">
+                    {t("professional.portfolio")}
                     {portfolioProjects.length > 0 && (
-                      <span className="text-xs font-normal text-neutral-400">
+                      <span className="text-xs font-normal text-[var(--hm-fg-muted)]">
                         {portfolioProjects.length}
                       </span>
                     )}
@@ -2903,12 +2850,8 @@ export default function ProfessionalDetailClient({
 
               {/* ABOUT SECTION */}
               <section>
-                <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">
-                  {locale === "ka"
-                    ? "შესახებ"
-                    : locale === "ru"
-                      ? "О специалисте"
-                      : "About"}
+                <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-4">
+                  {t("professional.about")}
                 </h2>
                 <AboutTab
                   bio={profile.bio}
@@ -2954,14 +2897,10 @@ export default function ProfessionalDetailClient({
 
               {/* REVIEWS SECTION */}
               <section>
-                <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-                  {locale === "ka"
-                    ? "შეფასებები"
-                    : locale === "ru"
-                      ? "Отзывы"
-                      : "Reviews"}
+                <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-4 flex items-center gap-2">
+                  {t("professional.reviewsLabel")}
                   {(reviews.length || profile.totalReviews) > 0 && (
-                    <span className="text-xs font-normal text-neutral-400">
+                    <span className="text-xs font-normal text-[var(--hm-fg-muted)]">
                       {reviews.length || profile.totalReviews}
                     </span>
                   )}
@@ -3014,7 +2953,7 @@ export default function ProfessionalDetailClient({
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={() => setShowInviteToJobModal(true)}
-            className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 mb-2 rounded-xl sm:rounded-2xl text-neutral-700 dark:text-neutral-200 font-semibold text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-lg shadow-neutral-900/10 dark:shadow-black/30"
+            className="w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 mb-2 rounded-xl sm:rounded-2xl text-[var(--hm-fg-secondary)] font-semibold text-sm bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] shadow-lg shadow-neutral-900/10"
           >
             <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" />
             {t("professional.inviteToJob")}
@@ -3047,7 +2986,7 @@ export default function ProfessionalDetailClient({
               key="mobile-contact-cta"
               whileTap={{ scale: 0.97 }}
               onClick={handleContact}
-              className="relative w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-white font-semibold text-sm sm:text-base bg-gradient-to-r from-[#C4735B] to-[#A85D4A] shadow-xl shadow-[#C4735B]/30 overflow-hidden"
+              className="relative w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-white font-semibold text-sm sm:text-base bg-gradient-to-r from-[var(--hm-brand-500)] to-[#A92B08] shadow-xl shadow-[var(--hm-brand-500)]/30 overflow-hidden"
             >
               {/* Shine sweep */}
               <motion.div
@@ -3209,7 +3148,7 @@ export default function ProfessionalDetailClient({
                         alt="Before"
                         className="w-full h-full object-contain rounded-lg"
                       />
-                      <span className="absolute bottom-3 left-3 px-3 py-1 rounded-lg bg-red-500/80 text-sm font-bold text-white">
+                      <span className="absolute bottom-3 left-3 px-3 py-1 rounded-lg bg-[var(--hm-error-500)]/80 text-sm font-bold text-white">
                         Before
                       </span>
                     </div>
@@ -3223,7 +3162,7 @@ export default function ProfessionalDetailClient({
                         alt="After"
                         className="w-full h-full object-contain rounded-lg"
                       />
-                      <span className="absolute bottom-3 right-3 px-3 py-1 rounded-lg bg-emerald-500/80 text-sm font-bold text-white">
+                      <span className="absolute bottom-3 right-3 px-3 py-1 rounded-lg bg-[var(--hm-success-500)]/80 text-sm font-bold text-white">
                         After
                       </span>
                     </div>
@@ -3249,16 +3188,17 @@ export default function ProfessionalDetailClient({
                   <div className="flex justify-start gap-1.5 sm:gap-2 overflow-x-auto pb-2">
                     {/* Image thumbnails */}
                     {selectedProject.images.map((img, idx) => (
-                      <button
+                      <Button
                         key={`img-${idx}`}
+                        variant="ghost"
                         onClick={() =>
                           setSelectedProject((prev) =>
                             prev ? { ...prev, currentIndex: idx } : null,
                           )
                         }
-                        className={`relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-md sm:rounded-lg overflow-hidden flex-shrink-0 transition-all ${
+                        className={`relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-md sm:rounded-lg overflow-hidden flex-shrink-0 p-0 h-auto hover:bg-transparent ${
                           idx === selectedProject.currentIndex
-                            ? "ring-2 ring-[#C4735B] ring-offset-1 sm:ring-offset-2 ring-offset-black"
+                            ? "ring-2 ring-[var(--hm-brand-500)] ring-offset-1 sm:ring-offset-2 ring-offset-black"
                             : "opacity-60 hover:opacity-100"
                         }`}
                       >
@@ -3272,22 +3212,23 @@ export default function ProfessionalDetailClient({
                           loading="lazy"
                           className="w-full h-full object-cover"
                         />
-                      </button>
+                      </Button>
                     ))}
                     {/* Before/After thumbnails */}
                     {baPairs.map((pair, idx) => {
                       const mediaIdx = selectedProject.images.length + idx;
                       return (
-                        <button
+                        <Button
                           key={`ba-${idx}`}
+                          variant="ghost"
                           onClick={() =>
                             setSelectedProject((prev) =>
                               prev ? { ...prev, currentIndex: mediaIdx } : null,
                             )
                           }
-                          className={`relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-md sm:rounded-lg overflow-hidden flex-shrink-0 transition-all flex ${
+                          className={`relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-md sm:rounded-lg overflow-hidden flex-shrink-0 flex p-0 h-auto hover:bg-transparent ${
                             mediaIdx === selectedProject.currentIndex
-                              ? "ring-2 ring-[#C4735B] ring-offset-1 sm:ring-offset-2 ring-offset-black"
+                              ? "ring-2 ring-[var(--hm-brand-500)] ring-offset-1 sm:ring-offset-2 ring-offset-black"
                               : "opacity-60 hover:opacity-100"
                           }`}
                         >
@@ -3312,7 +3253,7 @@ export default function ProfessionalDetailClient({
                           <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 px-1 py-0.5 rounded bg-black/70 text-[6px] font-bold text-white">
                             B/A
                           </span>
-                        </button>
+                        </Button>
                       );
                     })}
                     {/* Video thumbnails */}
@@ -3320,14 +3261,15 @@ export default function ProfessionalDetailClient({
                       const mediaIdx =
                         selectedProject.images.length + baPairs.length + idx;
                       return (
-                        <button
+                        <Button
                           key={`vid-${idx}`}
+                          variant="ghost"
                           onClick={() =>
                             setSelectedProject((prev) =>
                               prev ? { ...prev, currentIndex: mediaIdx } : null,
                             )
                           }
-                          className={`relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-md sm:rounded-lg overflow-hidden flex-shrink-0 transition-all ${
+                          className={`relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-md sm:rounded-lg overflow-hidden flex-shrink-0 p-0 h-auto hover:bg-transparent ${
                             mediaIdx === selectedProject.currentIndex
                               ? "ring-2 ring-indigo-500 ring-offset-1 sm:ring-offset-2 ring-offset-black"
                               : "opacity-60 hover:opacity-100"
@@ -3341,15 +3283,9 @@ export default function ProfessionalDetailClient({
                           />
                           {/* Play icon badge */}
                           <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-indigo-500/80 flex items-center justify-center pointer-events-none">
-                            <svg
-                              className="w-2.5 h-2.5 text-white ml-0.5"
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
+                            <Play className="w-2.5 h-2.5 text-white ml-0.5" fill="currentColor" />
                           </div>
-                        </button>
+                        </Button>
                       );
                     })}
                   </div>
@@ -3372,17 +3308,19 @@ export default function ProfessionalDetailClient({
           role="dialog"
           aria-modal="true"
         >
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={(e) => {
               e.stopPropagation();
               setShowAvatarZoom(false);
             }}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/10 hover:bg-white/20 text-white hover:text-white"
             aria-label={t("common.close") || "Close"}
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
+          </Button>
 
           <div
             className="relative w-full max-w-4xl h-[70vh] sm:h-[75vh] md:h-[80vh]"
@@ -3501,12 +3439,12 @@ export default function ProfessionalDetailClient({
         onClose={() => setShowAdminVerificationModal(false)}
       >
         <div className="space-y-4 p-6">
-          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
+          <h2 className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-4">
             {t("admin.updateVerificationStatus") ||
               "Update Verification Status"}
           </h2>
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1">
               {t("admin.verificationStatus") || "Verification Status"}
             </label>
             <Select
@@ -3535,7 +3473,7 @@ export default function ProfessionalDetailClient({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1">
               {t("admin.verificationNotes") ||
                 "Notes (visible to professional)"}
             </label>
@@ -3546,22 +3484,20 @@ export default function ProfessionalDetailClient({
                 t("admin.notesPlaceholder") ||
                 "Add notes for the professional..."
               }
-              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white resize-none"
+              className="w-full px-3 py-2 border border-[var(--hm-border-strong)] rounded-lg bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] resize-none"
               rows={3}
             />
           </div>
 
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={adminNotifyUser}
-              onChange={(e) => setAdminNotifyUser(e.target.checked)}
-              className="w-4 h-4 rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500"
-            />
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+          <Checkbox
+            checked={adminNotifyUser}
+            onChange={setAdminNotifyUser}
+            size="sm"
+          >
+            <span className="text-sm text-[var(--hm-fg-secondary)]">
               {t("admin.notifyUserSms") || "Notify user via SMS"}
             </span>
-          </label>
+          </Checkbox>
 
           <div className="flex gap-3 pt-2">
             <Button
@@ -3675,12 +3611,7 @@ function ProjectFormModal({
     );
   };
 
-  const fileReadErrorText =
-    locale === "ka"
-      ? "ფაილი ვერ წაიკითხა. სცადეთ ისევ არჩევა (iCloud-იდან გადმოწერეთ და შემდეგ ატვირთეთ)."
-      : locale === "ru"
-        ? "Не удалось прочитать файл. Выберите заново (если iCloud — сначала скачайте)."
-        : "Couldn't read the file. Please reselect it (if it's from iCloud, download it first).";
+  const fileReadErrorText = t("professional.fileReadError");
 
   // File size limits
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -3934,7 +3865,7 @@ function ProjectFormModal({
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <div className="max-h-[90vh] sm:max-h-[80vh] overflow-hidden flex flex-col rounded-t-2xl sm:rounded-2xl">
         {/* Premium Header with Gradient */}
-        <div className="relative px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-br from-[#C4735B] via-[#B8654D] to-[#A65D47]">
+        <div className="relative px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-br from-[var(--hm-brand-500)] via-[#D13C14] to-[#A92B08]">
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10 blur-xl" />
             <div className="absolute bottom-0 left-0 w-32 h-16 rounded-full bg-black/5 blur-2xl" />
@@ -3948,12 +3879,15 @@ function ProjectFormModal({
                 {t("professional.showcaseYourBestWork")}
               </p>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={onClose}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+              className="rounded-full text-white/70 hover:text-white hover:bg-white/10"
+              aria-label={t("common.close")}
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -3961,12 +3895,12 @@ function ProjectFormModal({
         <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-5 px-4 sm:px-6 py-4 sm:py-6 pb-6 sm:pb-6">
           {/* Title */}
           <div>
-            <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-1.5 sm:mb-2">
-              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-[10px] sm:text-xs">
+            <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-[var(--hm-fg-primary)] mb-1.5 sm:mb-2">
+              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-[var(--hm-brand-500)]/10 flex items-center justify-center text-[var(--hm-brand-500)] text-[10px] sm:text-xs">
                 1
               </span>
               {t("common.title")}
-              <span className="text-red-400">*</span>
+              <span className="text-[var(--hm-error-500)]">*</span>
             </label>
             <Input
               value={title}
@@ -3977,8 +3911,8 @@ function ProjectFormModal({
 
           {/* Location */}
           <div>
-            <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-1.5 sm:mb-2">
-              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C4735B]" />
+            <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-[var(--hm-fg-primary)] mb-1.5 sm:mb-2">
+              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-brand-500)]" />
               {t("common.location")}
             </label>
             <AddressPicker
@@ -3991,8 +3925,8 @@ function ProjectFormModal({
 
           {/* Description */}
           <div>
-            <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-1.5 sm:mb-2">
-              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-[10px] sm:text-xs">
+            <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-[var(--hm-fg-primary)] mb-1.5 sm:mb-2">
+              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-[var(--hm-brand-500)]/10 flex items-center justify-center text-[var(--hm-brand-500)] text-[10px] sm:text-xs">
                 2
               </span>
               {t("common.description")}
@@ -4002,22 +3936,22 @@ function ProjectFormModal({
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t("professional.whatDidYouDoMaterials")}
               rows={2}
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 text-sm sm:text-base text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#C4735B] focus:border-transparent focus:bg-white dark:focus:bg-neutral-800 resize-none transition-all"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-tertiary)]/50 text-sm sm:text-base text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] focus:border-transparent focus:bg-[var(--hm-bg-elevated)] resize-none transition-all"
             />
           </div>
 
           {/* Media Section */}
-          <div className="bg-neutral-50 dark:bg-neutral-800/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-neutral-100 dark:border-neutral-800">
+          <div className="bg-[var(--hm-bg-tertiary)]/30 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-[var(--hm-border-subtle)]">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-[#C4735B]/10 flex items-center justify-center text-[#C4735B] text-[10px] sm:text-xs">
+              <label className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-[var(--hm-fg-primary)]">
+                <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-[var(--hm-brand-500)]/10 flex items-center justify-center text-[var(--hm-brand-500)] text-[10px] sm:text-xs">
                   3
                 </span>
                 {t("professional.mediaFiles")}
-                <span className="text-red-400">*</span>
+                <span className="text-[var(--hm-error-500)]">*</span>
               </label>
               {totalMedia > 0 && (
-                <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#C4735B] text-white text-[10px] sm:text-xs font-medium rounded-full">
+                <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[var(--hm-brand-500)] text-white text-[10px] sm:text-xs font-medium rounded-full">
                   {totalMedia} {t("common.files")}
                 </span>
               )}
@@ -4048,20 +3982,21 @@ function ProjectFormModal({
                 const Icon = tab.icon;
                 const isActive = activeMediaTab === tab.key;
                 return (
-                  <button
+                  <Button
                     key={tab.key}
+                    variant="outline"
                     onClick={() => setActiveMediaTab(tab.key)}
-                    className={`relative flex flex-col items-center gap-1 sm:gap-1.5 p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 transition-all ${
+                    className={`relative flex flex-col items-center gap-1 sm:gap-1.5 p-2 sm:p-3 rounded-lg sm:rounded-xl border-2 h-auto ${
                       isActive
-                        ? "border-[#C4735B] bg-[#C4735B]/5 shadow-sm"
-                        : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-600"
+                        ? "border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 shadow-sm"
+                        : "border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] hover:border-[var(--hm-border-strong)]"
                     }`}
                   >
                     <Icon
-                      className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? "text-[#C4735B]" : "text-neutral-400"}`}
+                      className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? "text-[var(--hm-brand-500)]" : "text-[var(--hm-fg-muted)]"}`}
                     />
                     <span
-                      className={`text-[10px] sm:text-xs font-medium ${isActive ? "text-[#C4735B]" : "text-neutral-500"}`}
+                      className={`text-[10px] sm:text-xs font-medium ${isActive ? "text-[var(--hm-brand-500)]" : "text-[var(--hm-fg-muted)]"}`}
                     >
                       {tab.label}
                     </span>
@@ -4069,14 +4004,14 @@ function ProjectFormModal({
                       <span
                         className={`absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 w-4 h-4 sm:w-5 sm:h-5 rounded-full text-[9px] sm:text-[10px] font-bold flex items-center justify-center ${
                           isActive
-                            ? "bg-[#C4735B] text-white"
-                            : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300"
+                            ? "bg-[var(--hm-brand-500)] text-white"
+                            : "bg-[var(--hm-n-200)] text-[var(--hm-fg-secondary)]"
                         }`}
                       >
                         {tab.count}
                       </span>
                     )}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -4086,34 +4021,35 @@ function ProjectFormModal({
               <div className="space-y-2 sm:space-y-3">
                 {images.length === 0 ? (
                   // Empty State - Large Upload Area
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => imageInputRef.current?.click()}
                     disabled={isUploading}
-                    className="w-full py-8 sm:py-10 rounded-lg sm:rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800/50 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all group"
+                    className="w-full py-8 sm:py-10 h-auto rounded-lg sm:rounded-xl border-2 border-dashed border-[var(--hm-border-strong)] bg-[var(--hm-bg-elevated)]/50 flex flex-col items-center justify-center text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/5 group"
                   >
                     {isUploading && uploadingType === "images" ? (
-                      <LoadingSpinner size="lg" color="#C4735B" />
+                      <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
                     ) : (
                       <>
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-[#C4735B]/10 group-hover:scale-110 transition-all">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-[var(--hm-brand-500)]/10 group-hover:scale-110 transition-all">
                           <ImageIcon className="w-6 h-6 sm:w-7 sm:h-7" />
                         </div>
                         <span className="text-xs sm:text-sm font-medium">
                           {t("professional.choosePhotos")}
                         </span>
-                        <span className="text-[10px] sm:text-xs mt-1 text-neutral-400">
+                        <span className="text-[10px] sm:text-xs mt-1 text-[var(--hm-fg-muted)]">
                           {t("professional.orDragAndDrop")}
                         </span>
                       </>
                     )}
-                  </button>
+                  </Button>
                 ) : (
                   // Image Grid with Add Button
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 sm:gap-2">
                     {images.map((img, idx) => (
                       <div
                         key={idx}
-                        className="relative aspect-square rounded-xl overflow-hidden group ring-1 ring-neutral-200 dark:ring-neutral-700"
+                        className="relative aspect-square rounded-xl overflow-hidden group ring-1 ring-neutral-200"
                       >
                         <Image
                           src={storage.getFileUrl(img)}
@@ -4124,28 +4060,33 @@ function ProjectFormModal({
                         />
 
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
-                        <button
+                        <Button
+                          variant="destructive"
+                          size="icon-sm"
                           onClick={() => removeImage(idx)}
-                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 flex items-center justify-center shadow-lg"
+                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-lg"
+                          aria-label={t("common.remove")}
                         >
                           <X className="w-3.5 h-3.5" />
-                        </button>
+                        </Button>
                       </div>
                     ))}
-                    <button
+                    <Button
+                      variant="ghost"
                       onClick={() => imageInputRef.current?.click()}
                       disabled={isUploading}
-                      className="aspect-square rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all"
+                      className="aspect-square h-auto rounded-xl border-2 border-dashed border-[var(--hm-border-strong)] flex flex-col items-center justify-center text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/5"
+                      aria-label={t("common.add")}
                     >
                       {isUploading && uploadingType === "images" ? (
                         <LoadingSpinner size="sm" />
                       ) : (
                         <Plus className="w-6 h-6" />
                       )}
-                    </button>
+                    </Button>
                   </div>
                 )}
-                <p className="text-[11px] text-neutral-400 flex items-center gap-1.5">
+                <p className="text-[11px] text-[var(--hm-fg-muted)] flex items-center gap-1.5">
                   <span className="w-1 h-1 rounded-full bg-neutral-300" />
                   JPG, PNG, WebP, GIF
                   <span className="w-1 h-1 rounded-full bg-neutral-300" />
@@ -4166,33 +4107,34 @@ function ProjectFormModal({
             {activeMediaTab === "videos" && (
               <div className="space-y-2 sm:space-y-3">
                 {videos.length === 0 ? (
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => videoInputRef.current?.click()}
                     disabled={isUploading}
-                    className="w-full py-8 sm:py-10 rounded-lg sm:rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800/50 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all group"
+                    className="w-full py-8 sm:py-10 h-auto rounded-lg sm:rounded-xl border-2 border-dashed border-[var(--hm-border-strong)] bg-[var(--hm-bg-elevated)]/50 flex flex-col items-center justify-center text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/5 group"
                   >
                     {isUploading && uploadingType === "videos" ? (
-                      <LoadingSpinner size="lg" color="#C4735B" />
+                      <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
                     ) : (
                       <>
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-[#C4735B]/10 group-hover:scale-110 transition-all">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center mb-2 sm:mb-3 group-hover:bg-[var(--hm-brand-500)]/10 group-hover:scale-110 transition-all">
                           <Video className="w-6 h-6 sm:w-7 sm:h-7" />
                         </div>
                         <span className="text-xs sm:text-sm font-medium">
                           {t("professional.uploadVideo")}
                         </span>
-                        <span className="text-[10px] sm:text-xs mt-1 text-neutral-400">
+                        <span className="text-[10px] sm:text-xs mt-1 text-[var(--hm-fg-muted)]">
                           MP4, MOV, WebM
                         </span>
                       </>
                     )}
-                  </button>
+                  </Button>
                 ) : (
                   <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     {videos.map((vid, idx) => (
                       <div
                         key={idx}
-                        className="relative aspect-video rounded-xl overflow-hidden group ring-1 ring-neutral-200 dark:ring-neutral-700 bg-neutral-900"
+                        className="relative aspect-video rounded-xl overflow-hidden group ring-1 ring-neutral-200 bg-neutral-900"
                       >
                         <video
                           src={storage.getFileUrl(vid)}
@@ -4204,18 +4146,22 @@ function ProjectFormModal({
                             <Video className="w-6 h-6 text-white" />
                           </div>
                         </div>
-                        <button
+                        <Button
+                          variant="destructive"
+                          size="icon-sm"
                           onClick={() => removeVideo(idx)}
-                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 flex items-center justify-center shadow-lg"
+                          className="absolute top-2 right-2 w-7 h-7 rounded-full opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-lg"
+                          aria-label={t("common.remove")}
                         >
                           <X className="w-4 h-4" />
-                        </button>
+                        </Button>
                       </div>
                     ))}
-                    <button
+                    <Button
+                      variant="ghost"
                       onClick={() => videoInputRef.current?.click()}
                       disabled={isUploading}
-                      className="aspect-video rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all"
+                      className="aspect-video h-auto rounded-xl border-2 border-dashed border-[var(--hm-border-strong)] flex flex-col items-center justify-center text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/5"
                     >
                       {isUploading && uploadingType === "videos" ? (
                         <LoadingSpinner size="sm" />
@@ -4227,10 +4173,10 @@ function ProjectFormModal({
                           </span>
                         </>
                       )}
-                    </button>
+                    </Button>
                   </div>
                 )}
-                <p className="text-[11px] text-neutral-400 flex items-center gap-1.5">
+                <p className="text-[11px] text-[var(--hm-fg-muted)] flex items-center gap-1.5">
                   <span className="w-1 h-1 rounded-full bg-neutral-300" />
                   MP4, MOV, WebM
                   <span className="w-1 h-1 rounded-full bg-neutral-300" />
@@ -4253,14 +4199,14 @@ function ProjectFormModal({
                 {beforeAfterPairs.map((pair, idx) => (
                   <div
                     key={idx}
-                    className="relative flex gap-3 p-3 rounded-xl bg-white dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 shadow-sm"
+                    className="relative flex gap-3 p-3 rounded-xl bg-[var(--hm-bg-elevated)]/50 border border-[var(--hm-border)] shadow-sm"
                   >
                     <div className="flex-1 space-y-1.5">
-                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-error-500)] bg-[var(--hm-error-50)]/20 px-2 py-0.5 rounded-full">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
                         {t("common.before")}
                       </span>
-                      <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
+                      <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200">
                         <Image
                           src={storage.getFileUrl(pair.before)}
                           alt=""
@@ -4271,16 +4217,16 @@ function ProjectFormModal({
                       </div>
                     </div>
                     <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full bg-[#C4735B]/10 flex items-center justify-center">
-                        <ChevronRight className="w-4 h-4 text-[#C4735B]" />
+                      <div className="w-8 h-8 rounded-full bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
+                        <ChevronRight className="w-4 h-4 text-[var(--hm-brand-500)]" />
                       </div>
                     </div>
                     <div className="flex-1 space-y-1.5">
-                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-success-500)] bg-[var(--hm-success-50)]/20 px-2 py-0.5 rounded-full">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                         {t("common.after")}
                       </span>
-                      <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
+                      <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200">
                         <Image
                           src={storage.getFileUrl(pair.after)}
                           alt=""
@@ -4290,23 +4236,26 @@ function ProjectFormModal({
                         />
                       </div>
                     </div>
-                    <button
+                    <Button
+                      variant="destructive"
+                      size="icon-sm"
                       onClick={() => removeBeforeAfter(idx)}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full shadow-lg"
+                      aria-label={t("common.remove")}
                     >
                       <X className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 ))}
 
                 {/* Add new pair */}
                 {pendingBeforeImage ? (
-                  <div className="relative flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-300 dark:border-amber-700">
+                  <div className="relative flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300">
                     <div className="flex-1 space-y-1.5">
-                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-amber-600 bg-amber-100 dark:bg-amber-800/30 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-warning-500)] bg-[var(--hm-warning-100)] px-2 py-0.5 rounded-full">
                         ✓ {t("common.before")}
                       </span>
-                      <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-2 ring-amber-300 dark:ring-amber-600">
+                      <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-2 ring-amber-300">
                         <Image
                           src={storage.getFileUrl(pendingBeforeImage)}
                           alt=""
@@ -4317,18 +4266,19 @@ function ProjectFormModal({
                       </div>
                     </div>
                     <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full bg-amber-200 dark:bg-amber-700 flex items-center justify-center animate-pulse">
-                        <ChevronRight className="w-4 h-4 text-amber-600 dark:text-amber-300" />
+                      <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center animate-pulse">
+                        <ChevronRight className="w-4 h-4 text-[var(--hm-warning-500)]" />
                       </div>
                     </div>
                     <div className="flex-1 space-y-1.5">
-                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-amber-600 bg-amber-100 dark:bg-amber-800/30 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-warning-500)] bg-[var(--hm-warning-100)] px-2 py-0.5 rounded-full">
                         {t("common.after")}?
                       </span>
-                      <button
+                      <Button
+                        variant="ghost"
                         onClick={() => afterInputRef.current?.click()}
                         disabled={isUploading}
-                        className="aspect-[4/3] w-full rounded-lg border-2 border-dashed border-amber-400 dark:border-amber-600 flex flex-col items-center justify-center text-amber-500 bg-white/50 dark:bg-neutral-800/50 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                        className="aspect-[4/3] w-full h-auto rounded-lg border-2 border-dashed border-amber-400 flex flex-col items-center justify-center text-[var(--hm-warning-500)] bg-[var(--hm-bg-elevated)]/50 hover:bg-[var(--hm-warning-50)] hover:text-[var(--hm-warning-500)]"
                       >
                         {isUploading && uploadingType === "after" ? (
                           <LoadingSpinner size="sm" color="#D97706" />
@@ -4340,43 +4290,47 @@ function ProjectFormModal({
                             </span>
                           </>
                         )}
-                      </button>
+                      </Button>
                     </div>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
                       onClick={() => setPendingBeforeImage(null)}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-neutral-500 text-white flex items-center justify-center shadow-lg hover:bg-neutral-600 transition-colors"
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[var(--hm-fg-secondary)] text-white shadow-lg hover:bg-[var(--hm-fg-primary)] hover:text-white"
+                      aria-label={t("common.cancel")}
                     >
                       <X className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 ) : (
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => beforeInputRef.current?.click()}
                     disabled={isUploading}
-                    className="w-full py-8 rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800/50 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all group"
+                    className="w-full py-8 h-auto rounded-xl border-2 border-dashed border-[var(--hm-border-strong)] bg-[var(--hm-bg-elevated)]/50 flex flex-col items-center justify-center text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/5 group"
                   >
                     {isUploading && uploadingType === "before" ? (
-                      <LoadingSpinner size="lg" color="#C4735B" />
+                      <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
                     ) : (
                       <>
                         <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                            <ImageIcon className="w-5 h-5 text-red-400" />
+                          <div className="w-10 h-10 rounded-xl bg-[var(--hm-error-50)]/20 flex items-center justify-center">
+                            <ImageIcon className="w-5 h-5 text-[var(--hm-error-500)]" />
                           </div>
-                          <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-[#C4735B] transition-colors" />
-                          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                          <ChevronRight className="w-4 h-4 text-[var(--hm-n-300)] group-hover:text-[var(--hm-brand-500)] transition-colors" />
+                          <div className="w-10 h-10 rounded-xl bg-[var(--hm-success-50)]/20 flex items-center justify-center">
                             <ImageIcon className="w-5 h-5 text-emerald-400" />
                           </div>
                         </div>
                         <span className="text-sm font-medium">
                           {t("professional.addComparison")}
                         </span>
-                        <span className="text-xs mt-1 text-neutral-400">
+                        <span className="text-xs mt-1 text-[var(--hm-fg-muted)]">
                           {t("professional.startWithBeforeImage")}
                         </span>
                       </>
                     )}
-                  </button>
+                  </Button>
                 )}
 
                 <input
@@ -4399,8 +4353,8 @@ function ProjectFormModal({
         </div>
 
         {/* Footer Actions - Fixed at Bottom */}
-        <div className="flex items-center justify-between gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
-          <p className="text-[10px] sm:text-xs text-neutral-400 hidden sm:block">
+        <div className="flex items-center justify-between gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-[var(--hm-border)] bg-[var(--hm-bg-tertiary)]/50">
+          <p className="text-[10px] sm:text-xs text-[var(--hm-fg-muted)] hidden sm:block">
             {totalMedia === 0
               ? t("professional.addAtLeastOneFile")
               : `${totalMedia} ${t("professional.filesReady")}`}

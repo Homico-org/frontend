@@ -184,13 +184,13 @@ export default function HowItWorksPage() {
   const currentBenefits = activeTab === 'client' ? benefits.client : benefits.pro;
 
   return (
-    <div className="min-h-screen bg-cream-50 dark:bg-dark-bg">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       <Header />
       <HeaderSpacer />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#C4735B] via-[#B8654D] to-[#A85A45]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--hm-brand-500)] via-[#D13C14] to-[#A92B08]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.1),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(0,0,0,0.1),transparent_60%)]" />
 
@@ -216,7 +216,7 @@ export default function HowItWorksPage() {
                 onClick={() => setActiveTab('client')}
                 className={`px-6 py-3 rounded-xl text-sm font-medium transition-all ${
                   activeTab === 'client'
-                    ? 'bg-white text-[#C4735B] shadow-lg'
+                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] shadow-lg'
                     : 'text-white/80 hover:text-white hover:bg-white/10'
                 }`}
               >
@@ -226,7 +226,7 @@ export default function HowItWorksPage() {
                 onClick={() => setActiveTab('pro')}
                 className={`px-6 py-3 rounded-xl text-sm font-medium transition-all ${
                   activeTab === 'pro'
-                    ? 'bg-white text-[#C4735B] shadow-lg'
+                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] shadow-lg'
                     : 'text-white/80 hover:text-white hover:bg-white/10'
                 }`}
               >
@@ -251,28 +251,28 @@ export default function HowItWorksPage() {
                 {/* Step Number & Icon */}
                 <div className="flex-shrink-0">
                   <div className="relative">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#C4735B] to-[#A85A45] flex items-center justify-center text-white shadow-lg shadow-[#C4735B]/20">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)] to-[#A92B08] flex items-center justify-center text-white shadow-lg shadow-[var(--hm-brand-500)]/20">
                       {step.icon}
                     </div>
-                    <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-white dark:bg-dark-card shadow-md flex items-center justify-center">
-                      <span className="text-sm font-bold text-[#C4735B]">{step.number}</span>
+                    <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-[var(--hm-bg-elevated)] shadow-md flex items-center justify-center">
+                      <span className="text-sm font-bold text-[var(--hm-brand-500)]">{step.number}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className={`flex-1 ${index % 2 === 1 ? 'sm:text-right' : ''}`}>
-                  <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+                  <h3 className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-2">
                     {locale === 'ka' ? step.titleKa : step.titleEn}
                   </h3>
-                  <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  <p className="text-[var(--hm-fg-secondary)] leading-relaxed">
                     {locale === 'ka' ? step.descriptionKa : step.descriptionEn}
                   </p>
                 </div>
 
                 {/* Connector Line (except last) */}
                 {index < steps.length - 1 && (
-                  <div className="hidden sm:block absolute left-1/2 transform -translate-x-1/2 h-8 w-px bg-gradient-to-b from-[#C4735B]/30 to-transparent" />
+                  <div className="hidden sm:block absolute left-1/2 transform -translate-x-1/2 h-8 w-px bg-gradient-to-b from-[var(--hm-brand-500)]/30 to-transparent" />
                 )}
               </div>
             ))}
@@ -281,9 +281,9 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-16 bg-neutral-50 dark:bg-dark-elevated">
+      <section className="py-16 bg-[var(--hm-bg-page)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-serif font-medium text-center text-neutral-900 dark:text-white mb-12">
+          <h2 className="text-2xl sm:text-3xl font-serif font-medium text-center text-[var(--hm-fg-primary)] mb-12">
             {activeTab === 'client'
               ? (t('howItWorks.whyChooseHomico'))
               : (t('howItWorks.whyJoinHomico'))}
@@ -293,17 +293,17 @@ export default function HowItWorksPage() {
             {currentBenefits.map((benefit, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-dark-card rounded-2xl p-6 border border-neutral-100 dark:border-dark-border"
+                className="bg-[var(--hm-bg-elevated)] rounded-2xl p-6 border border-[var(--hm-border-subtle)]"
               >
-                <div className="w-12 h-12 rounded-xl bg-[#C4735B]/10 flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-[#C4735B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 rounded-xl bg-[var(--hm-brand-500)]/10 flex items-center justify-center mb-4">
+                  <svg className="w-6 h-6 text-[var(--hm-brand-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+                <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)] mb-2">
                   {locale === 'ka' ? benefit.titleKa : benefit.titleEn}
                 </h3>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                <p className="text-sm text-[var(--hm-fg-secondary)]">
                   {locale === 'ka' ? benefit.descriptionKa : benefit.descriptionEn}
                 </p>
               </div>
@@ -315,12 +315,12 @@ export default function HowItWorksPage() {
       {/* CTA Section */}
       <section className="py-16 sm:py-24">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-white mb-4">
+          <h2 className="text-2xl sm:text-3xl font-serif font-medium text-[var(--hm-fg-primary)] mb-4">
             {activeTab === 'client'
               ? (t('howItWorks.readyToGetStarted'))
               : (t('howItWorks.joinUsToday'))}
           </h2>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-8">
+          <p className="text-[var(--hm-fg-secondary)] mb-8">
             {activeTab === 'client'
               ? (t('howItWorks.postYourProjectAndReceive'))
               : (t('howItWorks.createYourProfileAndStart'))}
@@ -328,7 +328,7 @@ export default function HowItWorksPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href={activeTab === 'client' ? '/post-job' : '/register/professional'}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[#C4735B] to-[#A85A45] text-white font-medium shadow-lg shadow-[#C4735B]/20 hover:shadow-xl hover:shadow-[#C4735B]/30 transition-all hover:scale-105"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[var(--hm-brand-500)] to-[#A92B08] text-white font-medium shadow-lg shadow-[var(--hm-brand-500)]/20 hover:shadow-xl hover:shadow-[var(--hm-brand-500)]/30 transition-all hover:scale-105"
             >
               {activeTab === 'client'
                 ? (t('howItWorks.postAProject'))
@@ -339,7 +339,7 @@ export default function HowItWorksPage() {
             </Link>
             <Link
               href="/portfolio"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-neutral-100 dark:bg-dark-card text-neutral-700 dark:text-neutral-300 font-medium hover:bg-neutral-200 dark:hover:bg-dark-elevated transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] font-medium hover:bg-[var(--hm-n-200)] transition-all"
             >
               {t('howItWorks.browseProfessionals')}
             </Link>
@@ -348,11 +348,11 @@ export default function HowItWorksPage() {
       </section>
 
       {/* FAQ Link */}
-      <section className="py-8 border-t border-neutral-100 dark:border-dark-border">
+      <section className="py-8 border-t border-[var(--hm-border-subtle)]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-neutral-600 dark:text-neutral-400">
+          <p className="text-[var(--hm-fg-secondary)]">
             {t('howItWorks.haveQuestions')}{' '}
-            <Link href="/help" className="text-[#C4735B] hover:underline font-medium">
+            <Link href="/help" className="text-[var(--hm-brand-500)] hover:underline font-medium">
               {t('howItWorks.checkOurFaq')}
             </Link>
           </p>

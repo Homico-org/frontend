@@ -20,8 +20,8 @@ const inputVariants = cva(
         lg: 'px-5 py-4 text-lg',
       },
       variant: {
-        default: 'border focus:ring-[#C4735B]/50 focus:border-[#C4735B]',
-        error: 'border border-red-300 focus:ring-red-500/50 focus:border-red-500',
+        default: 'border focus:ring-[var(--hm-brand-500)]/50 focus:border-[var(--hm-brand-500)]',
+        error: 'border border-red-300 focus:ring-red-500/50 focus:border-[var(--hm-error-500)]',
         success: 'border border-green-300 focus:ring-green-500/50 focus:border-green-500',
       },
     },
@@ -126,7 +126,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         {label && (
           <label
             className="block text-sm font-medium mb-2"
-            style={{ color: 'var(--color-text-primary)' }}
+            style={{ color: 'var(--hm-fg-primary)' }}
           >
             {label}
           </label>
@@ -138,18 +138,18 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
             onClick={() => !disabled && setShowDropdown(!showDropdown)}
             disabled={disabled}
             className={cn(
-              'absolute left-0 top-0 bottom-0 flex items-center gap-1 px-3 border-r transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-l-xl disabled:opacity-50 disabled:cursor-not-allowed',
-              showDropdown && 'bg-neutral-50 dark:bg-neutral-800'
+              'absolute left-0 top-0 bottom-0 flex items-center gap-1 px-3 border-r transition-colors hover:bg-[var(--hm-bg-tertiary)] rounded-l-xl disabled:opacity-50 disabled:cursor-not-allowed',
+              showDropdown && 'bg-[var(--hm-bg-tertiary)]'
             )}
-            style={{ borderColor: 'var(--color-border)' }}
+            style={{ borderColor: 'var(--hm-border)' }}
           >
             <span className="text-lg">{countryData.flag}</span>
-            <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
+            <span className="text-xs font-medium text-[var(--hm-fg-secondary)]">
               {countryData.phonePrefix}
             </span>
             <ChevronDown
               className={cn(
-                'w-3 h-3 text-neutral-400 transition-transform duration-200',
+                'w-3 h-3 text-[var(--hm-fg-muted)] transition-transform duration-200',
                 showDropdown && 'rotate-180'
               )}
             />
@@ -171,9 +171,9 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
               className
             )}
             style={{
-              backgroundColor: 'var(--color-bg-elevated)',
-              borderColor: error ? undefined : 'var(--color-border)',
-              color: 'var(--color-text-primary)',
+              backgroundColor: 'var(--hm-bg-elevated)',
+              borderColor: error ? undefined : 'var(--hm-border)',
+              color: 'var(--hm-fg-primary)',
             }}
             {...props}
           />
@@ -186,8 +186,8 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
               style={{
                 top: dropdownPos.top,
                 left: dropdownPos.left,
-                backgroundColor: 'var(--color-bg-elevated)',
-                borderColor: 'var(--color-border)',
+                backgroundColor: 'var(--hm-bg-elevated)',
+                borderColor: 'var(--hm-border)',
               }}
             >
               <div className="p-1">
@@ -202,24 +202,24 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
                       className={cn(
                         'w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-lg transition-colors',
                         isSelected
-                          ? 'bg-[#C4735B]/10'
-                          : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                          ? 'bg-[var(--hm-brand-500)]/10'
+                          : 'hover:bg-[var(--hm-bg-tertiary)]'
                       )}
                     >
                       <span className="text-xl">{data.flag}</span>
                       <div className="flex-1 min-w-0">
                         <p
                           className="text-sm font-medium truncate"
-                          style={{ color: 'var(--color-text-primary)' }}
+                          style={{ color: 'var(--hm-fg-primary)' }}
                         >
                           {data.name}
                         </p>
                       </div>
-                      <span className="text-xs text-neutral-500">
+                      <span className="text-xs text-[var(--hm-fg-muted)]">
                         {data.phonePrefix}
                       </span>
                       {isSelected && (
-                        <Check className="w-4 h-4 text-[#C4735B] flex-shrink-0" />
+                        <Check className="w-4 h-4 text-[var(--hm-brand-500)] flex-shrink-0" />
                       )}
                     </button>
                   );
@@ -230,10 +230,10 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
           )}
         </div>
         {error && (
-          <p className="mt-1.5 text-sm text-red-500">{error}</p>
+          <p className="mt-1.5 text-sm text-[var(--hm-error-500)]">{error}</p>
         )}
         {hint && !error && (
-          <p className="mt-1.5 text-sm text-neutral-500">{hint}</p>
+          <p className="mt-1.5 text-sm text-[var(--hm-fg-muted)]">{hint}</p>
         )}
       </div>
     );

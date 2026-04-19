@@ -70,7 +70,7 @@ const PortfolioCompletionModalWrapper = ({
             setIsOpen(true);
             setImages([]);
           }}
-          className="px-4 py-2 bg-[#C4735B] text-white rounded-lg hover:bg-[#B5624A] transition-colors"
+          className="px-4 py-2 bg-[#EF4E24] text-white rounded-lg hover:bg-[#D13C14] transition-colors"
         >
           Open Portfolio Completion Modal
         </button>

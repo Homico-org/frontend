@@ -113,15 +113,15 @@ export default function PollCard({
   return (
     <div className={cn(
       'rounded-2xl border overflow-hidden transition-all',
-      'bg-white dark:bg-neutral-900',
+      'bg-[var(--hm-bg-elevated)]',
       isApproved
-        ? 'border-emerald-200 dark:border-emerald-800'
+        ? 'border-emerald-200'
         : isClosed
-          ? 'border-neutral-200 dark:border-neutral-800 opacity-75'
-          : 'border-neutral-200 dark:border-neutral-700'
+          ? 'border-[var(--hm-border)] opacity-75'
+          : 'border-[var(--hm-border)]'
     )}>
       {/* Header */}
-      <div className="p-4 border-b border-neutral-100 dark:border-neutral-800">
+      <div className="p-4 border-b border-[var(--hm-border-subtle)]">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
@@ -142,11 +142,11 @@ export default function PollCard({
                 </Badge>
               )}
             </div>
-            <h3 className="font-semibold text-neutral-900 dark:text-white truncate">
+            <h3 className="font-semibold text-[var(--hm-fg-primary)] truncate">
               {poll.title}
             </h3>
             {poll.description && (
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
+              <p className="text-sm text-[var(--hm-fg-muted)] mt-1 line-clamp-2">
                 {poll.description}
               </p>
             )}
@@ -157,9 +157,9 @@ export default function PollCard({
             <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-[var(--hm-bg-tertiary)] transition-colors"
               >
-                <MoreVertical className="w-4 h-4 text-neutral-400" />
+                <MoreVertical className="w-4 h-4 text-[var(--hm-fg-muted)]" />
               </button>
               {showMenu && (
                 <>
@@ -167,11 +167,11 @@ export default function PollCard({
                     className="fixed inset-0 z-10"
                     onClick={() => setShowMenu(false)}
                   />
-                  <div className="absolute right-0 top-full mt-1 z-20 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 min-w-[140px]">
+                  <div className="absolute right-0 top-full mt-1 z-20 bg-[var(--hm-bg-elevated)] rounded-lg shadow-lg border border-[var(--hm-border)] py-1 min-w-[140px]">
                     <button
                       onClick={handleClose}
                       disabled={isClosing}
-                      className="w-full px-3 py-2 text-left text-sm text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2"
+                      className="w-full px-3 py-2 text-left text-sm text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] flex items-center gap-2"
                     >
                       {isClosing ? <LoadingSpinner size="sm" color="currentColor" /> : <X className="w-4 h-4" />}
                       {t('polls.closePoll')}
@@ -179,7 +179,7 @@ export default function PollCard({
                     <button
                       onClick={handleDelete}
                       disabled={isDeleting}
-                      className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+                      className="w-full px-3 py-2 text-left text-sm text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)] flex items-center gap-2"
                     >
                       {isDeleting ? <LoadingSpinner size="sm" color="currentColor" /> : <Trash2 className="w-4 h-4" />}
                       {t('common.delete')}
@@ -224,7 +224,7 @@ export default function PollCard({
           <button
             onClick={handleApprove}
             disabled={isApproving}
-            className="w-full py-2.5 rounded-xl bg-[#C4735B] hover:bg-[#B5624A] text-white text-sm font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-2.5 rounded-xl bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white text-sm font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isApproving ? (
               <>
@@ -243,13 +243,13 @@ export default function PollCard({
 
       {/* Footer with creator info */}
       <div className="px-4 pb-4">
-        <div className="flex items-center gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+        <div className="flex items-center gap-2 pt-3 border-t border-[var(--hm-border-subtle)]">
           <Avatar
             src={poll.createdBy.avatar}
             name={poll.createdBy.name}
             size="xs"
           />
-          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+          <span className="text-xs text-[var(--hm-fg-muted)]">
             {poll.createdBy.name} • {formatTimeAgoCompact(poll.createdAt, locale as 'en' | 'ka' | 'ru')}
           </span>
         </div>

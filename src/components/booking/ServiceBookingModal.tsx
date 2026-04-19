@@ -96,10 +96,10 @@ function StepIndicator({ current, total }: { current: Step; total: number }) {
             className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all"
             style={
               step < current
-                ? { backgroundColor: '#C4735B', color: '#fff' }
+                ? { backgroundColor: 'var(--hm-brand-500)', color: '#fff' }
                 : step === current
-                ? { backgroundColor: '#C4735B', color: '#fff', boxShadow: '0 0 0 3px rgba(196,115,91,0.25)' }
-                : { backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }
+                ? { backgroundColor: 'var(--hm-brand-500)', color: '#fff', boxShadow: '0 0 0 3px rgba(239,78,36,0.25)' }
+                : { backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-secondary)' }
             }
           >
             {step < current ? <Check className="w-3.5 h-3.5" /> : step}
@@ -107,7 +107,7 @@ function StepIndicator({ current, total }: { current: Step; total: number }) {
           {step < total && (
             <div
               className="w-8 h-0.5 rounded-full"
-              style={{ backgroundColor: step < current ? '#C4735B' : 'var(--color-border)' }}
+              style={{ backgroundColor: step < current ? 'var(--hm-brand-500)' : 'var(--hm-border)' }}
             />
           )}
         </div>
@@ -346,7 +346,7 @@ export default function ServiceBookingModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg" showCloseButton>
       <ModalHeader
-        icon={<ShoppingCart size={18} style={{ color: '#C4735B' }} />}
+        icon={<ShoppingCart size={18} style={{ color: 'var(--hm-brand-500)' }} />}
         title={stepTitles[step]}
         variant="accent"
       />
@@ -396,23 +396,23 @@ export default function ServiceBookingModal({
                       key={key}
                       className="flex items-center gap-3 rounded-xl p-3 transition-colors"
                       style={{
-                        border: `1px solid ${qty > 0 ? 'rgba(196,115,91,0.4)' : 'var(--color-border)'}`,
+                        border: `1px solid ${qty > 0 ? 'rgba(239,78,36,0.4)' : 'var(--hm-border)'}`,
                         backgroundColor:
-                          qty > 0 ? 'rgba(196,115,91,0.05)' : 'var(--color-bg-secondary)',
+                          qty > 0 ? 'rgba(239,78,36,0.05)' : 'var(--hm-bg-page)',
                       }}
                     >
                       {/* Name + price */}
                       <div className="flex-1 min-w-0">
                         <p
                           className="text-sm font-medium truncate"
-                          style={{ color: 'var(--color-text-primary)' }}
+                          style={{ color: 'var(--hm-fg-primary)' }}
                         >
                           {name}
                         </p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span
                             className="text-xs"
-                            style={{ color: 'var(--color-text-secondary)' }}
+                            style={{ color: 'var(--hm-fg-secondary)' }}
                           >
                             {effectivePrice.toFixed(0)} ₾
                             {unit ? ` / ${unit}` : ''}
@@ -420,7 +420,7 @@ export default function ServiceBookingModal({
                           {discount > 0 && (
                             <span
                               className="text-xs line-through"
-                              style={{ color: 'var(--color-text-tertiary)' }}
+                              style={{ color: 'var(--hm-fg-muted)' }}
                             >
                               {svc.price.toFixed(0)} ₾
                             </span>
@@ -428,7 +428,7 @@ export default function ServiceBookingModal({
                           {discount > 0 && (
                             <span
                               className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-                              style={{ backgroundColor: '#C4735B', color: '#fff' }}
+                              style={{ backgroundColor: 'var(--hm-brand-500)', color: '#fff' }}
                             >
                               -{discount}%
                             </span>
@@ -443,9 +443,9 @@ export default function ServiceBookingModal({
                           disabled={qty === 0}
                           className="w-7 h-7 rounded-lg flex items-center justify-center transition-all disabled:opacity-30"
                           style={{
-                            border: '1px solid var(--color-border)',
-                            backgroundColor: 'var(--color-bg-primary)',
-                            color: 'var(--color-text-primary)',
+                            border: '1px solid var(--hm-border)',
+                            backgroundColor: 'var(--hm-bg-page)',
+                            color: 'var(--hm-fg-primary)',
                           }}
                           aria-label={`${t('common.remove')} ${name}`}
                         >
@@ -453,7 +453,7 @@ export default function ServiceBookingModal({
                         </button>
                         <span
                           className="w-6 text-center text-sm font-semibold tabular-nums"
-                          style={{ color: qty > 0 ? '#C4735B' : 'var(--color-text-secondary)' }}
+                          style={{ color: qty > 0 ? 'var(--hm-brand-500)' : 'var(--hm-fg-secondary)' }}
                         >
                           {qty}
                         </span>
@@ -461,7 +461,7 @@ export default function ServiceBookingModal({
                           onClick={() => handleQuantityChange(svc, 1)}
                           className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
                           style={{
-                            backgroundColor: '#C4735B',
+                            backgroundColor: 'var(--hm-brand-500)',
                             color: '#fff',
                           }}
                           aria-label={`${t('common.add')} ${name}`}
@@ -480,12 +480,12 @@ export default function ServiceBookingModal({
           {hasSelection && (
             <div
               className="mx-4 sm:mx-6 mb-4 rounded-xl px-4 py-3 flex items-center justify-between"
-              style={{ backgroundColor: 'rgba(196,115,91,0.08)', border: '1px solid rgba(196,115,91,0.2)' }}
+              style={{ backgroundColor: 'rgba(239,78,36,0.08)', border: '1px solid rgba(239,78,36,0.2)' }}
             >
-              <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+              <span className="text-sm font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
                 {t('common.total')}
               </span>
-              <span className="text-base font-bold" style={{ color: '#C4735B' }}>
+              <span className="text-base font-bold" style={{ color: 'var(--hm-brand-500)' }}>
                 {totalAmount.toFixed(2)} ₾
               </span>
             </div>
@@ -517,7 +517,7 @@ export default function ServiceBookingModal({
               <div>
                 <label
                   className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5"
-                  style={{ color: 'var(--color-text-secondary)' }}
+                  style={{ color: 'var(--hm-fg-secondary)' }}
                 >
                   <Calendar className="w-3.5 h-3.5" />
                   {t('booking.selectDate')}
@@ -530,11 +530,11 @@ export default function ServiceBookingModal({
                       className="flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl text-xs shrink-0 transition-all"
                       style={
                         selectedDate === date
-                          ? { backgroundColor: '#C4735B', color: '#fff' }
+                          ? { backgroundColor: 'var(--hm-brand-500)', color: '#fff' }
                           : {
-                              border: '1px solid var(--color-border)',
-                              backgroundColor: 'var(--color-bg-secondary)',
-                              color: 'var(--color-text-primary)',
+                              border: '1px solid var(--hm-border)',
+                              backgroundColor: 'var(--hm-bg-page)',
+                              color: 'var(--hm-fg-primary)',
                             }
                       }
                       aria-pressed={selectedDate === date}
@@ -551,7 +551,7 @@ export default function ServiceBookingModal({
                 <div>
                   <label
                     className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5"
-                    style={{ color: 'var(--color-text-secondary)' }}
+                    style={{ color: 'var(--hm-fg-secondary)' }}
                   >
                     <Clock className="w-3.5 h-3.5" />
                     {t('booking.selectTime')}
@@ -559,7 +559,7 @@ export default function ServiceBookingModal({
 
                   {loadingSlots ? (
                     <div className="flex justify-center py-6">
-                      <LoadingSpinner size="sm" color="#C4735B" />
+                      <LoadingSpinner size="sm" color="var(--hm-brand-500)" />
                     </div>
                   ) : timeSlots.filter((s) => s.available).length === 0 ? (
                     <Alert variant="info" size="sm">
@@ -576,11 +576,11 @@ export default function ServiceBookingModal({
                             className="py-2 rounded-lg text-xs font-medium transition-all"
                             style={
                               selectedHour === slot.hour
-                                ? { backgroundColor: '#C4735B', color: '#fff' }
+                                ? { backgroundColor: 'var(--hm-brand-500)', color: '#fff' }
                                 : {
-                                    backgroundColor: 'var(--color-bg-secondary)',
-                                    border: '1px solid var(--color-border)',
-                                    color: 'var(--color-text-primary)',
+                                    backgroundColor: 'var(--hm-bg-page)',
+                                    border: '1px solid var(--hm-border)',
+                                    color: 'var(--hm-fg-primary)',
                                   }
                             }
                             aria-pressed={selectedHour === slot.hour}
@@ -627,8 +627,8 @@ export default function ServiceBookingModal({
               <div
                 className="flex items-center gap-3 rounded-xl p-3"
                 style={{
-                  border: '1px solid var(--color-border)',
-                  backgroundColor: 'var(--color-bg-secondary)',
+                  border: '1px solid var(--hm-border)',
+                  backgroundColor: 'var(--hm-bg-page)',
                 }}
               >
                 {avatarUrl ? (
@@ -644,7 +644,7 @@ export default function ServiceBookingModal({
                 ) : (
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shrink-0"
-                    style={{ backgroundColor: 'rgba(196,115,91,0.15)', color: '#C4735B' }}
+                    style={{ backgroundColor: 'rgba(239,78,36,0.15)', color: 'var(--hm-brand-500)' }}
                   >
                     {professional.name.charAt(0).toUpperCase()}
                   </div>
@@ -652,11 +652,11 @@ export default function ServiceBookingModal({
                 <div className="min-w-0">
                   <p
                     className="text-sm font-semibold truncate"
-                    style={{ color: 'var(--color-text-primary)' }}
+                    style={{ color: 'var(--hm-fg-primary)' }}
                   >
                     {professional.name}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                  <p className="text-xs" style={{ color: 'var(--hm-fg-secondary)' }}>
                     {selectedDate} · {selectedHour !== null ? `${formatHour(selectedHour)} – ${formatHour(selectedHour + 1)}` : ''}
                   </p>
                 </div>
@@ -684,14 +684,14 @@ export default function ServiceBookingModal({
                       key={svcKey(s)}
                       className="flex items-center justify-between text-sm"
                     >
-                      <span style={{ color: 'var(--color-text-secondary)' }}>
+                      <span style={{ color: 'var(--hm-fg-secondary)' }}>
                         {name}
                         {unitLabel && <span className="ml-1 text-[10px] opacity-50">({unitLabel})</span>}
                         <span className="ml-1 opacity-60">× {s.quantity}</span>
                         {discount > 0 && (
                           <span
                             className="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-                            style={{ backgroundColor: '#C4735B', color: '#fff' }}
+                            style={{ backgroundColor: 'var(--hm-brand-500)', color: '#fff' }}
                           >
                             -{discount}%
                           </span>
@@ -699,7 +699,7 @@ export default function ServiceBookingModal({
                       </span>
                       <span
                         className="font-semibold tabular-nums"
-                        style={{ color: 'var(--color-text-primary)' }}
+                        style={{ color: 'var(--hm-fg-primary)' }}
                       >
                         {lineTotal.toFixed(2)} ₾
                       </span>
@@ -709,10 +709,10 @@ export default function ServiceBookingModal({
 
                 <div
                   className="flex items-center justify-between pt-2 mt-1 font-semibold"
-                  style={{ borderTop: '1px solid var(--color-border)' }}
+                  style={{ borderTop: '1px solid var(--hm-border)' }}
                 >
-                  <span style={{ color: 'var(--color-text-primary)' }}>{t('common.total')}</span>
-                  <span style={{ color: '#C4735B' }}>{totalAmount.toFixed(2)} ₾</span>
+                  <span style={{ color: 'var(--hm-fg-primary)' }}>{t('common.total')}</span>
+                  <span style={{ color: 'var(--hm-brand-500)' }}>{totalAmount.toFixed(2)} ₾</span>
                 </div>
               </div>
 
@@ -720,7 +720,7 @@ export default function ServiceBookingModal({
               <div>
                 <label
                   className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
-                  style={{ color: 'var(--color-text-secondary)' }}
+                  style={{ color: 'var(--hm-fg-secondary)' }}
                   htmlFor="booking-note"
                 >
                   {t('booking.addNote')}
@@ -770,11 +770,11 @@ export default function ServiceBookingModal({
               <div className="flex flex-col items-center py-2">
                 <div
                   className="w-14 h-14 rounded-full flex items-center justify-center mb-3"
-                  style={{ backgroundColor: 'rgba(196,115,91,0.12)' }}
+                  style={{ backgroundColor: 'rgba(239,78,36,0.12)' }}
                 >
-                  <Check className="w-7 h-7" style={{ color: '#C4735B' }} />
+                  <Check className="w-7 h-7" style={{ color: 'var(--hm-brand-500)' }} />
                 </div>
-                <p className="text-sm font-semibold text-center" style={{ color: 'var(--color-text-primary)' }}>
+                <p className="text-sm font-semibold text-center" style={{ color: 'var(--hm-fg-primary)' }}>
                   {t('booking.bookingSuccess')}
                 </p>
               </div>
@@ -783,8 +783,8 @@ export default function ServiceBookingModal({
               <div
                 className="flex items-center gap-3 rounded-xl p-3"
                 style={{
-                  border: '1px solid var(--color-border)',
-                  backgroundColor: 'var(--color-bg-secondary)',
+                  border: '1px solid var(--hm-border)',
+                  backgroundColor: 'var(--hm-bg-page)',
                 }}
               >
                 {avatarUrl ? (
@@ -800,16 +800,16 @@ export default function ServiceBookingModal({
                 ) : (
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shrink-0"
-                    style={{ backgroundColor: 'rgba(196,115,91,0.15)', color: '#C4735B' }}
+                    style={{ backgroundColor: 'rgba(239,78,36,0.15)', color: 'var(--hm-brand-500)' }}
                   >
                     {professional.name.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--hm-fg-primary)' }}>
                     {professional.name}
                   </p>
-                  <p className="text-xs flex items-center gap-1" style={{ color: 'var(--color-text-secondary)' }}>
+                  <p className="text-xs flex items-center gap-1" style={{ color: 'var(--hm-fg-secondary)' }}>
                     <Calendar className="w-3 h-3 shrink-0" />
                     {confirmedDate}
                     {confirmedHour !== null && (
@@ -838,12 +838,12 @@ export default function ServiceBookingModal({
                   const lineTotal = getLineTotal(s);
                   return (
                     <div key={svcKey(s)} className="flex items-center justify-between text-sm">
-                      <span style={{ color: 'var(--color-text-secondary)' }}>
+                      <span style={{ color: 'var(--hm-fg-secondary)' }}>
                         {name}
                         {unitLabel && <span className="ml-1 text-[10px] opacity-50">({unitLabel})</span>}
                         <span className="ml-1 opacity-60">× {s.quantity}</span>
                       </span>
-                      <span className="font-semibold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                      <span className="font-semibold tabular-nums" style={{ color: 'var(--hm-fg-primary)' }}>
                         {lineTotal.toFixed(2)} ₾
                       </span>
                     </div>
@@ -851,10 +851,10 @@ export default function ServiceBookingModal({
                 })}
                 <div
                   className="flex items-center justify-between pt-2 mt-1 font-semibold"
-                  style={{ borderTop: '1px solid var(--color-border)' }}
+                  style={{ borderTop: '1px solid var(--hm-border)' }}
                 >
-                  <span style={{ color: 'var(--color-text-primary)' }}>{t('common.total')}</span>
-                  <span style={{ color: '#C4735B' }}>{confirmedTotal.toFixed(2)} ₾</span>
+                  <span style={{ color: 'var(--hm-fg-primary)' }}>{t('common.total')}</span>
+                  <span style={{ color: 'var(--hm-brand-500)' }}>{confirmedTotal.toFixed(2)} ₾</span>
                 </div>
               </div>
             </div>

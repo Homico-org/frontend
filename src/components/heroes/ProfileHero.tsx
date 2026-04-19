@@ -103,7 +103,7 @@ export default function ProfileHero({
         ) : (
           <>
             {/* Elegant warm gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#E8DDD4] via-[#D4C4B8] to-[#C4A98C] dark:from-[#2A2420] dark:via-[#1E1A17] dark:to-[#151210]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#E8DDD4] via-[#D4C4B8] to-[#C4A98C]" />
 
             {/* Decorative circles */}
             <div className="absolute inset-0 overflow-hidden">
@@ -140,7 +140,7 @@ export default function ProfileHero({
             variant="ghost"
             size="sm"
             onClick={() => backOrNavigate(router, "/portfolio")}
-            className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-neutral-800"
+            className="rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white"
             leftIcon={<ChevronLeft className="w-4 h-4" />}
           >
             {t("common.back")}
@@ -151,7 +151,7 @@ export default function ProfileHero({
               variant="ghost"
               size="sm"
               onClick={onShare}
-              className="rounded-full bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-neutral-800"
+              className="rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white"
               leftIcon={<Share2 className="w-4 h-4" />}
             >
               {t("common.share")}
@@ -160,7 +160,7 @@ export default function ProfileHero({
         </div>
 
         {/* Profile Card */}
-        <div className="relative bg-white dark:bg-neutral-900 rounded-2xl shadow-xl mt-16 md:mt-20 p-6 md:p-8">
+        <div className="relative bg-[var(--hm-bg-elevated)] rounded-2xl shadow-xl mt-16 md:mt-20 p-6 md:p-8">
           {/* Avatar - positioned to overlap the cover */}
           <div className="absolute -top-16 md:-top-20 left-1/2 -translate-x-1/2">
             <div className="relative">
@@ -170,27 +170,27 @@ export default function ProfileHero({
                   alt={name}
                   width={128}
                   height={128}
-                  className="w-28 h-28 md:w-36 md:h-36 rounded-full object-cover ring-4 ring-white dark:ring-neutral-900 shadow-2xl"
+                  className="w-28 h-28 md:w-36 md:h-36 rounded-full object-cover ring-4 ring-white shadow-2xl"
                 />
               ) : (
                 <Avatar
                   name={name}
                   size="2xl"
-                  className="w-28 h-28 md:w-36 md:h-36 ring-4 ring-white dark:ring-neutral-900 shadow-2xl text-4xl md:text-5xl"
+                  className="w-28 h-28 md:w-36 md:h-36 ring-4 ring-white shadow-2xl text-4xl md:text-5xl"
                 />
               )}
 
               {/* Verified badge */}
               {isVerified && (
-                <div className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full bg-emerald-500 border-4 border-white dark:border-neutral-900 flex items-center justify-center shadow-lg">
+                <div className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full bg-[var(--hm-success-500)] border-4 border-white flex items-center justify-center shadow-lg">
                   <BadgeCheck className="w-5 h-5 text-white" />
                 </div>
               )}
 
               {/* Available indicator */}
               {isAvailable && !isVerified && (
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-emerald-500 border-4 border-white dark:border-neutral-900 flex items-center justify-center">
-                  <div className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+                <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[var(--hm-success-500)] border-4 border-white flex items-center justify-center">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[var(--hm-bg-elevated)] animate-pulse" />
                 </div>
               )}
             </div>
@@ -199,7 +199,7 @@ export default function ProfileHero({
           {/* Profile info */}
           <div className="text-center pt-14 md:pt-18">
             {/* Name */}
-            <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white mb-1">
+            <h1 className="text-2xl md:text-3xl font-bold text-[var(--hm-fg-primary)] mb-1">
               {name}
             </h1>
 
@@ -218,22 +218,22 @@ export default function ProfileHero({
               {avgRating > 0 && (
                 <div className="flex items-center gap-1.5">
                   <MultiStarDisplay rating={avgRating} size="sm" />
-                  <span className="font-semibold text-neutral-900 dark:text-white">
+                  <span className="font-semibold text-[var(--hm-fg-primary)]">
                     {avgRating.toFixed(1)}
                   </span>
-                  <span className="text-neutral-500">({totalReviews})</span>
+                  <span className="text-[var(--hm-fg-muted)]">({totalReviews})</span>
                 </div>
               )}
 
               {location && (
-                <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
+                <div className="flex items-center gap-1.5 text-[var(--hm-fg-secondary)]">
                   <MapPin className="w-4 h-4" />
                   <span>{location}</span>
                 </div>
               )}
 
               {yearsExperience > 0 && (
-                <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
+                <div className="flex items-center gap-1.5 text-[var(--hm-fg-secondary)]">
                   <Briefcase className="w-4 h-4" />
                   <span>
                     {yearsExperience}+ {t("heroes.yrs")}
@@ -242,7 +242,7 @@ export default function ProfileHero({
               )}
 
               {memberSince && (
-                <div className="flex items-center gap-1.5 text-neutral-500">
+                <div className="flex items-center gap-1.5 text-[var(--hm-fg-muted)]">
                   <span>•</span>
                   <span>
                     {t("common.member")} {memberSince}
@@ -257,7 +257,7 @@ export default function ProfileHero({
               (basePrice && basePrice > 0) ||
               (maxPrice && maxPrice > 0)) && (
               <div className="flex items-center justify-center gap-2 mb-6">
-                <span className="text-xl font-bold text-neutral-900 dark:text-white">
+                <span className="text-xl font-bold text-[var(--hm-fg-primary)]">
                   {pricingModel === PricingModel.BY_AGREEMENT
                     ? t("common.negotiable")
                     : pricingModel === PricingModel.PER_SQUARE_METER

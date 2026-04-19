@@ -122,16 +122,16 @@ export default function InvitePage() {
   const sub = locale === 'ka' ? invite?.subcategoryKa : invite?.subcategory;
 
   if (state === 'loading') {
-    return <div className="min-h-[100dvh] flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}><LoadingSpinner size="lg" color="#C4735B" /></div>;
+    return <div className="min-h-[100dvh] flex items-center justify-center" style={{ backgroundColor: 'var(--hm-bg-page)' }}><LoadingSpinner size="lg" color="var(--hm-brand-500)" /></div>;
   }
 
   if (state === 'error' || !invite) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center px-6" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+      <div className="min-h-[100dvh] flex items-center justify-center px-6" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
         <div className="text-center">
-          <ShieldX className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-          <h1 className="text-lg font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>{t('invite.invalidLink')}</h1>
-          <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>{t('invite.invalidLinkDesc')}</p>
+          <ShieldX className="w-12 h-12 text-[var(--hm-n-300)] mx-auto mb-4" />
+          <h1 className="text-lg font-semibold mb-1" style={{ color: 'var(--hm-fg-primary)' }}>{t('invite.invalidLink')}</h1>
+          <p className="text-sm" style={{ color: 'var(--hm-fg-muted)' }}>{t('invite.invalidLinkDesc')}</p>
         </div>
       </div>
     );
@@ -145,14 +145,14 @@ export default function InvitePage() {
   ];
 
   return (
-    <div className="min-h-[100dvh]" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+    <div className="min-h-[100dvh]" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
       {/* Header */}
       <div className="px-6 py-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#C4735B] to-[#D4937B] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--hm-brand-500)] to-[#F06B43] flex items-center justify-center">
             <span className="text-white text-sm font-black">H</span>
           </div>
-          <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Homico</span>
+          <span className="font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>Homico</span>
         </div>
       </div>
 
@@ -163,33 +163,33 @@ export default function InvitePage() {
             {/* Hero card */}
             <div
               className="rounded-2xl p-6 mb-6"
-              style={{ backgroundColor: 'rgba(196,115,91,0.06)', border: '1px solid rgba(196,115,91,0.15)' }}
+              style={{ backgroundColor: 'rgba(239,78,36,0.06)', border: '1px solid rgba(239,78,36,0.15)' }}
             >
               {/* Category icon + info */}
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#C4735B] to-[#D4937B] flex items-center justify-center text-white shadow-lg">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)] to-[#F06B43] flex items-center justify-center text-white shadow-lg">
                   <CategoryIcon type={invite.category} className="w-7 h-7" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  <h1 className="text-xl font-bold" style={{ color: 'var(--hm-fg-primary)' }}>
                     {invite.name}
                   </h1>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-sm font-medium text-[#C4735B]">{cat}</span>
-                    <span style={{ color: 'var(--color-text-tertiary)' }}>·</span>
-                    <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{sub}</span>
+                    <span className="text-sm font-medium text-[var(--hm-brand-500)]">{cat}</span>
+                    <span style={{ color: 'var(--hm-fg-muted)' }}>·</span>
+                    <span className="text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>{sub}</span>
                   </div>
                 </div>
               </div>
 
               {invite.city && (
-                <div className="flex items-center gap-1.5 text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
-                  <MapPin className="w-4 h-4 text-[#C4735B]" />
+                <div className="flex items-center gap-1.5 text-sm mb-4" style={{ color: 'var(--hm-fg-secondary)' }}>
+                  <MapPin className="w-4 h-4 text-[var(--hm-brand-500)]" />
                   {invite.city}
                 </div>
               )}
 
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--hm-fg-secondary)' }}>
                 {pick(
                   `You've been invited to join Homico — Georgia's platform for home service professionals. Set up your profile, showcase your work, and start getting clients.`,
                   `მოგიწვიეთ Homico-ზე — პლატფორმაზე, სადაც სახლის სერვისის სპეციალისტები კლიენტებს პოულობენ. შექმენი პროფილი, დაამატე შენი ნამუშევრები და დაიწყე შეკვეთების მიღება.`
@@ -199,7 +199,7 @@ export default function InvitePage() {
 
             {/* Benefits */}
             <div className="space-y-3 mb-8">
-              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--hm-fg-muted)' }}>
                 {pick('What you get', 'რა შესაძლებლობებს მიიღებ')}
               </p>
               {benefits.map((b, i) => (
@@ -208,14 +208,14 @@ export default function InvitePage() {
                   className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
                   style={{
                     transitionDelay: `${200 + i * 100}ms`,
-                    backgroundColor: 'var(--color-bg-elevated)',
-                    border: '1px solid var(--color-border-subtle)',
+                    backgroundColor: 'var(--hm-bg-elevated)',
+                    border: '1px solid var(--hm-border-subtle)',
                   }}
                 >
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(196,115,91,0.1)', color: '#C4735B' }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(239,78,36,0.1)', color: 'var(--hm-brand-500)' }}>
                     {b.icon}
                   </div>
-                  <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                  <span className="text-sm font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
                     {b.text}
                   </span>
                 </div>
@@ -232,19 +232,19 @@ export default function InvitePage() {
                 <div
                   key={i}
                   className="flex-1 text-center py-2 px-1 rounded-lg text-[11px] font-medium"
-                  style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}
+                  style={{ backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-secondary)' }}
                 >
                   {step}
                 </div>
               ))}
             </div>
 
-            {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+            {error && <p className="text-[var(--hm-error-500)] text-sm mb-3">{error}</p>}
 
             <button
               onClick={handleSendOtp}
               disabled={sendingOtp}
-              className="w-full h-13 py-3.5 rounded-2xl bg-[#C4735B] text-white font-semibold text-base flex items-center justify-center gap-2 transition-all hover:bg-[#B5624A] active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-[#C4735B]/20"
+              className="w-full h-13 py-3.5 rounded-2xl bg-[var(--hm-brand-500)] text-white font-semibold text-base flex items-center justify-center gap-2 transition-all hover:bg-[var(--hm-brand-600)] active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-[var(--hm-brand-500)]/20"
             >
               {sendingOtp ? <LoadingSpinner size="sm" /> : (
                 <>
@@ -254,10 +254,10 @@ export default function InvitePage() {
               )}
             </button>
 
-            <p className="text-center text-xs mt-3" style={{ color: 'var(--color-text-tertiary)' }}>
+            <p className="text-center text-xs mt-3" style={{ color: 'var(--hm-fg-muted)' }}>
               {pick('We\'ll send a verification code to', 'დადასტურების კოდი გაიგზავნება ნომერზე')} {maskPhone(invite.phone)}
             </p>
-            <p className="text-center text-[11px] mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+            <p className="text-center text-[11px] mt-1" style={{ color: 'var(--hm-fg-muted)' }}>
               {pick('Free to join. No monthly fees.', 'რეგისტრაცია უფასოა · ყოველთვიური გადასახადი არ არის')}
             </p>
           </div>
@@ -266,19 +266,19 @@ export default function InvitePage() {
         {/* OTP step */}
         {state === 'otp' && (
           <div className="pt-12 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-[#C4735B]/10 flex items-center justify-center mx-auto mb-5">
-              <Lock className="w-7 h-7 text-[#C4735B]" />
+            <div className="w-16 h-16 rounded-2xl bg-[var(--hm-brand-500)]/10 flex items-center justify-center mx-auto mb-5">
+              <Lock className="w-7 h-7 text-[var(--hm-brand-500)]" />
             </div>
-            <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>
+            <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--hm-fg-primary)' }}>
               {t('invite.enterCode')}
             </h2>
-            <p className="text-sm mb-8" style={{ color: 'var(--color-text-secondary)' }}>
-              {t('invite.codeSent')} <span className="font-mono font-medium" style={{ color: 'var(--color-text-primary)' }}>{maskPhone(invite.phone)}</span>
+            <p className="text-sm mb-8" style={{ color: 'var(--hm-fg-secondary)' }}>
+              {t('invite.codeSent')} <span className="font-mono font-medium" style={{ color: 'var(--hm-fg-primary)' }}>{maskPhone(invite.phone)}</span>
             </p>
             <div className="flex justify-center mb-6">
               <OTPInput length={4} value={otpCode} onChange={setOtpCode} onComplete={handleOtpComplete} autoFocus />
             </div>
-            {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+            {error && <p className="text-[var(--hm-error-500)] text-sm mt-4">{error}</p>}
           </div>
         )}
 
@@ -286,14 +286,14 @@ export default function InvitePage() {
         {(state === 'password' || state === 'activating') && (
           <div className="pt-12">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-[#C4735B]/10 flex items-center justify-center">
-                <Lock className="w-6 h-6 text-[#C4735B]" />
+              <div className="w-12 h-12 rounded-2xl bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
+                <Lock className="w-6 h-6 text-[var(--hm-brand-500)]" />
               </div>
               <div>
-                <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                <h2 className="text-lg font-bold" style={{ color: 'var(--hm-fg-primary)' }}>
                   {pick('Set your password', 'შექმენი პაროლი')}
                 </h2>
-                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                <p className="text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
                   {pick('Min 6 characters', 'მინიმუმ 6 სიმბოლო')}
                 </p>
               </div>
@@ -307,12 +307,12 @@ export default function InvitePage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={pick('Password', 'პაროლი')}
                   className="w-full h-12 px-4 pr-12 rounded-xl border text-sm outline-none transition-all"
-                  style={{ borderColor: 'var(--color-border-subtle)', backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}
+                  style={{ borderColor: 'var(--hm-border-subtle)', backgroundColor: 'var(--hm-bg-elevated)', color: 'var(--hm-fg-primary)' }}
                   autoFocus
                   onKeyDown={(e) => { if (e.key === 'Enter') handleActivate(); }}
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1">
-                  {showPassword ? <EyeOff className="w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} /> : <Eye className="w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} />}
+                  {showPassword ? <EyeOff className="w-4 h-4" style={{ color: 'var(--hm-fg-muted)' }} /> : <Eye className="w-4 h-4" style={{ color: 'var(--hm-fg-muted)' }} />}
                 </button>
               </div>
 
@@ -322,17 +322,17 @@ export default function InvitePage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder={pick('Confirm password', 'გაიმეორეთ პაროლი')}
                 className="w-full h-12 px-4 rounded-xl border text-sm outline-none transition-all"
-                style={{ borderColor: 'var(--color-border-subtle)', backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-primary)' }}
+                style={{ borderColor: 'var(--hm-border-subtle)', backgroundColor: 'var(--hm-bg-elevated)', color: 'var(--hm-fg-primary)' }}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleActivate(); }}
               />
             </div>
 
-            {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+            {error && <p className="text-[var(--hm-error-500)] text-sm mb-3">{error}</p>}
 
             <button
               onClick={handleActivate}
               disabled={state === 'activating' || password.length < 6 || !confirmPassword}
-              className="w-full h-12 rounded-xl bg-[#C4735B] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:bg-[#B5624A] active:scale-[0.98] disabled:opacity-50"
+              className="w-full h-12 rounded-xl bg-[var(--hm-brand-500)] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all hover:bg-[var(--hm-brand-600)] active:scale-[0.98] disabled:opacity-50"
             >
               {state === 'activating' ? <LoadingSpinner size="sm" /> : (
                 <>
@@ -347,13 +347,13 @@ export default function InvitePage() {
         {/* Success */}
         {state === 'success' && (
           <div className="pt-20 text-center">
-            <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-5">
-              <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+            <div className="w-20 h-20 rounded-full bg-[var(--hm-success-100)] flex items-center justify-center mx-auto mb-5">
+              <CheckCircle2 className="w-10 h-10 text-[var(--hm-success-500)]" />
             </div>
-            <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+            <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
               {t('invite.success')}
             </h2>
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
               {t('invite.redirecting')}
             </p>
           </div>

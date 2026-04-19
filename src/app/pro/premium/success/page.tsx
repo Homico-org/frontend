@@ -1,4 +1,5 @@
 'use client';
+import { ACCENT_COLOR } from "@/constants/theme";
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Header, { HeaderSpacer } from '@/components/common/Header';
@@ -26,8 +27,8 @@ import { Suspense, useEffect, useState } from 'react';
 const COLORS = {
   gold: "#D4AF37",
   goldDark: "#B8962F",
-  terracotta: "#C4735B",
-  terracottaDark: "#A85D4A",
+  terracotta: ACCENT_COLOR,
+  terracottaDark: "#A92B08",
 };
 
 const TIER_CONFIG: Record<string, { 
@@ -58,7 +59,7 @@ const TIER_CONFIG: Record<string, {
     color: COLORS.terracotta,
     gradientFrom: COLORS.terracotta,
     gradientTo: COLORS.terracottaDark,
-    glowColor: 'rgba(196, 115, 91, 0.4)',
+    glowColor: 'rgba(239, 78, 36, 0.4)',
     benefits: [
       { icon: BadgeCheck, text: { en: 'Pro Badge Active', ka: 'პრო ბეჯი აქტიურია' } },
       { icon: TrendingUp, text: { en: 'Top Search Results', ka: 'ტოპ ძიების შედეგები' } },
@@ -108,7 +109,7 @@ function SuccessContent() {
   }, [trackEvent, tierId]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       {/* Custom Styles */}
       <style jsx global>{`
         @keyframes float {
@@ -252,13 +253,13 @@ function SuccessContent() {
 
           {/* Title */}
           <h1 
-            className="text-4xl sm:text-5xl font-bold text-neutral-900 dark:text-white mb-4"
+            className="text-4xl sm:text-5xl font-bold text-[var(--hm-fg-primary)] mb-4"
             style={{ fontFamily: "var(--font-sans)" }}
           >
             {t('premium.congratulations')}
           </h1>
 
-          <p className="text-xl text-neutral-600 dark:text-neutral-300 mb-3">
+          <p className="text-xl text-[var(--hm-fg-secondary)] mb-3">
             {locale === 'ka'
               ? `თქვენ წარმატებით გააქტიურეთ`
               : `You've successfully activated the`}
@@ -277,11 +278,11 @@ function SuccessContent() {
 
           {/* Benefits Card */}
           <div 
-            className={`bg-white dark:bg-neutral-800 rounded-3xl p-6 sm:p-8 border border-neutral-200/50 dark:border-neutral-700 shadow-xl mb-10 transition-all duration-700 ${
+            className={`bg-[var(--hm-bg-elevated)] rounded-3xl p-6 sm:p-8 border border-[var(--hm-border-subtle)] shadow-xl mb-10 transition-all duration-700 ${
               showBenefits ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
-            <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-400 mb-6">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--hm-fg-muted)] mb-6">
               {t('premium.yourNewBenefits')}
             </h2>
             
@@ -303,10 +304,10 @@ function SuccessContent() {
                   >
                     <benefit.icon className="w-6 h-6" style={{ color: tier.color }} />
                   </div>
-                  <span className="text-left font-medium text-neutral-700 dark:text-neutral-200">
+                  <span className="text-left font-medium text-[var(--hm-fg-secondary)]">
                     {benefit.text[locale === 'ka' ? 'ka' : 'en']}
                   </span>
-                  <CheckCircle2 className="w-5 h-5 ml-auto flex-shrink-0 text-emerald-500" />
+                  <CheckCircle2 className="w-5 h-5 ml-auto flex-shrink-0 text-[var(--hm-success-500)]" />
                 </div>
               ))}
             </div>
@@ -337,14 +338,14 @@ function SuccessContent() {
 
             <Link
               href="/jobs"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl font-semibold text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl font-semibold text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] hover:bg-[var(--hm-n-200)] transition-all"
             >
               {t('premium.browseJobs')}
             </Link>
           </div>
 
           {/* Share */}
-          <div className="flex items-center justify-center gap-2 text-neutral-400 mb-8">
+          <div className="flex items-center justify-center gap-2 text-[var(--hm-fg-muted)] mb-8">
             <Share2 className="w-4 h-4" />
             <span className="text-sm">
               {t('premium.shareWithYourColleagues')}
@@ -352,8 +353,8 @@ function SuccessContent() {
           </div>
 
           {/* Receipt info */}
-          <div className="flex items-center justify-center gap-2 text-sm text-neutral-400">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+          <div className="flex items-center justify-center gap-2 text-sm text-[var(--hm-fg-muted)]">
+            <CheckCircle2 className="w-4 h-4 text-[var(--hm-success-500)]" />
             <span>
               {t('premium.aReceiptHasBeenSent')}
             </span>
@@ -368,7 +369,7 @@ export default function SuccessPage() {
   return (
     <AuthGuard allowedRoles={['pro', 'admin']}>
       <Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-neutral-50 to-white">
+        <div className="min-h-screen flex items-center justify-center bg-[var(--hm-bg-page)]">
           <div className="flex flex-col items-center gap-6">
             <div 
               className="w-20 h-20 rounded-3xl flex items-center justify-center animate-pulse shadow-2xl"

@@ -14,8 +14,8 @@ const toggleVariants = cva(
         lg: 'w-14 h-8',
       },
       variant: {
-        default: 'focus-visible:ring-[#C4735B]',
-        primary: 'focus-visible:ring-[#E07B4F]',
+        default: 'focus-visible:ring-[var(--hm-brand-500)]',
+        primary: 'focus-visible:ring-[var(--hm-brand-500)]',
         success: 'focus-visible:ring-green-500',
         violet: 'focus-visible:ring-violet-500',
         danger: 'focus-visible:ring-red-500',
@@ -41,11 +41,11 @@ const thumbPositions = {
 };
 
 const bgColors = {
-  default: { on: 'bg-[#C4735B]', off: 'bg-neutral-200 dark:bg-neutral-700' },
-  primary: { on: 'bg-[#E07B4F]', off: 'bg-neutral-300 dark:bg-neutral-600' },
-  success: { on: 'bg-green-500', off: 'bg-neutral-300 dark:bg-neutral-600' },
-  violet: { on: 'bg-violet-500', off: 'bg-neutral-300 dark:bg-neutral-600' },
-  danger: { on: 'bg-red-500', off: 'bg-neutral-200 dark:bg-neutral-700' },
+  default: { on: 'bg-[var(--hm-brand-500)]', off: 'bg-[var(--hm-n-200)]' },
+  primary: { on: 'bg-[var(--hm-brand-500)]', off: 'bg-[var(--hm-n-200)]' },
+  success: { on: 'bg-[var(--hm-success-500)]', off: 'bg-[var(--hm-n-200)]' },
+  violet: { on: 'bg-violet-500', off: 'bg-[var(--hm-n-200)]' },
+  danger: { on: 'bg-[var(--hm-error-500)]', off: 'bg-[var(--hm-n-200)]' },
 };
 
 export interface ToggleProps
@@ -99,7 +99,7 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
         >
           <span
             className={cn(
-              'inline-block rounded-full bg-white shadow-sm transition-transform duration-200',
+              'inline-block rounded-full bg-[var(--hm-bg-elevated)] shadow-sm transition-transform duration-200',
               thumbSize,
               checked ? positions.on : positions.off
             )}
@@ -119,13 +119,13 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
           <span
             className={cn(
               'text-sm font-medium',
-              disabled ? 'text-neutral-400' : 'text-neutral-900 dark:text-white'
+              disabled ? 'text-neutral-400' : 'text-[var(--hm-fg-primary)]'
             )}
           >
             {label}
           </span>
           {description && (
-            <p className="text-xs text-neutral-500 mt-0.5">{description}</p>
+            <p className="text-xs text-[var(--hm-fg-muted)] mt-0.5">{description}</p>
           )}
         </div>
       </div>

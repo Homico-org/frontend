@@ -45,22 +45,22 @@ function CounterInput({
   return (
     <div className="flex items-center justify-between py-3">
       <div className="flex items-center gap-3">
-        <Icon className="w-4 h-4 text-neutral-500" strokeWidth={1.5} />
-        <span className="text-sm text-neutral-700 dark:text-neutral-300">{label}</span>
+        <Icon className="w-4 h-4 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
+        <span className="text-sm text-[var(--hm-fg-secondary)]">{label}</span>
       </div>
       <div className="flex items-center gap-2">
         <button
           onClick={() => onChange(Math.max(min, value - 1))}
-          className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors flex items-center justify-center text-sm font-medium"
+          className="w-8 h-8 rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)] transition-colors flex items-center justify-center text-sm font-medium"
         >
           −
         </button>
-        <span className="w-10 text-center font-bold text-neutral-900 dark:text-white tabular-nums">
+        <span className="w-10 text-center font-bold text-[var(--hm-fg-primary)] tabular-nums">
           {value}
         </span>
         <button
           onClick={() => onChange(Math.min(max, value + 1))}
-          className="w-8 h-8 rounded-lg bg-terracotta-500 text-white hover:bg-terracotta-600 transition-colors flex items-center justify-center text-sm font-medium"
+          className="w-8 h-8 rounded-lg bg-[var(--hm-brand-500)] text-white hover:bg-[var(--hm-brand-600)] transition-colors flex items-center justify-center text-sm font-medium"
         >
           +
         </button>
@@ -113,17 +113,17 @@ export function StepWork({ workCategories, totalFloorArea, onWorkCategoriesChang
   return (
     <div className="space-y-4">
       {/* Demolition */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-800">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-5 border border-[var(--hm-border)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-              <Hammer className="w-5 h-5 text-red-600 dark:text-red-400" strokeWidth={1.5} />
+            <div className="w-10 h-10 rounded-xl bg-[var(--hm-error-100)]/30 flex items-center justify-center">
+              <Hammer className="w-5 h-5 text-[var(--hm-error-500)]" strokeWidth={1.5} />
             </div>
             <div>
-              <h3 className="font-semibold text-neutral-900 dark:text-white">
+              <h3 className="font-semibold text-[var(--hm-fg-primary)]">
                 {t('tools.calculator.work.demolition')}
               </h3>
-              <p className="text-sm text-neutral-500">{totalFloorArea.toFixed(0)} m²</p>
+              <p className="text-sm text-[var(--hm-fg-muted)]">{totalFloorArea.toFixed(0)} m²</p>
             </div>
           </div>
           <Toggle
@@ -135,13 +135,13 @@ export function StepWork({ workCategories, totalFloorArea, onWorkCategoriesChang
       </div>
 
       {/* Electrical */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
-        <div className="p-5 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border)] overflow-hidden">
+        <div className="p-5 flex items-center justify-between border-b border-[var(--hm-border-subtle)]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-amber-600 dark:text-amber-400" strokeWidth={1.5} />
+            <div className="w-10 h-10 rounded-xl bg-[var(--hm-warning-100)]/30 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-[var(--hm-warning-500)]" strokeWidth={1.5} />
             </div>
-            <h3 className="font-semibold text-neutral-900 dark:text-white">
+            <h3 className="font-semibold text-[var(--hm-fg-primary)]">
               {t('tools.calculator.work.electrical')}
             </h3>
           </div>
@@ -152,7 +152,7 @@ export function StepWork({ workCategories, totalFloorArea, onWorkCategoriesChang
           />
         </div>
         {workCategories.electrical.enabled && (
-          <div className="px-5 divide-y divide-neutral-100 dark:divide-neutral-800">
+          <div className="px-5 divide-y divide-[var(--hm-border-subtle)]">
             <CounterInput
               value={workCategories.electrical.outlets}
               onChange={(v) => updateElectrical({ outlets: v })}
@@ -186,13 +186,13 @@ export function StepWork({ workCategories, totalFloorArea, onWorkCategoriesChang
       </div>
 
       {/* Plumbing */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
-        <div className="p-5 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border)] overflow-hidden">
+        <div className="p-5 flex items-center justify-between border-b border-[var(--hm-border-subtle)]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <Droplets className="w-5 h-5 text-blue-600 dark:text-blue-400" strokeWidth={1.5} />
+            <div className="w-10 h-10 rounded-xl bg-[var(--hm-info-100)]/30 flex items-center justify-center">
+              <Droplets className="w-5 h-5 text-[var(--hm-info-500)]" strokeWidth={1.5} />
             </div>
-            <h3 className="font-semibold text-neutral-900 dark:text-white">
+            <h3 className="font-semibold text-[var(--hm-fg-primary)]">
               {t('tools.calculator.work.plumbing')}
             </h3>
           </div>
@@ -203,7 +203,7 @@ export function StepWork({ workCategories, totalFloorArea, onWorkCategoriesChang
           />
         </div>
         {workCategories.plumbing.enabled && (
-          <div className="px-5 divide-y divide-neutral-100 dark:divide-neutral-800">
+          <div className="px-5 divide-y divide-[var(--hm-border-subtle)]">
             <CounterInput
               value={workCategories.plumbing.toilets}
               onChange={(v) => updatePlumbing({ toilets: v })}
@@ -237,13 +237,13 @@ export function StepWork({ workCategories, totalFloorArea, onWorkCategoriesChang
       </div>
 
       {/* Heating */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
-        <div className="p-5 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border)] overflow-hidden">
+        <div className="p-5 flex items-center justify-between border-b border-[var(--hm-border-subtle)]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-              <Flame className="w-5 h-5 text-orange-600 dark:text-orange-400" strokeWidth={1.5} />
+            <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+              <Flame className="w-5 h-5 text-orange-600" strokeWidth={1.5} />
             </div>
-            <h3 className="font-semibold text-neutral-900 dark:text-white">
+            <h3 className="font-semibold text-[var(--hm-fg-primary)]">
               {t('tools.calculator.work.heating')}
             </h3>
           </div>
@@ -254,7 +254,7 @@ export function StepWork({ workCategories, totalFloorArea, onWorkCategoriesChang
           />
         </div>
         {workCategories.heating.enabled && (
-          <div className="px-5 divide-y divide-neutral-100 dark:divide-neutral-800">
+          <div className="px-5 divide-y divide-[var(--hm-border-subtle)]">
             <CounterInput
               value={workCategories.heating.radiators}
               onChange={(v) => updateHeating({ radiators: v })}
@@ -271,8 +271,8 @@ export function StepWork({ workCategories, totalFloorArea, onWorkCategoriesChang
             />
             <div className="flex items-center justify-between py-3">
               <div className="flex items-center gap-3">
-                <Flame className="w-4 h-4 text-neutral-500" strokeWidth={1.5} />
-                <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                <Flame className="w-4 h-4 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
+                <span className="text-sm text-[var(--hm-fg-secondary)]">
                   {t('tools.calculator.work.boiler')}
                 </span>
               </div>
@@ -287,13 +287,13 @@ export function StepWork({ workCategories, totalFloorArea, onWorkCategoriesChang
       </div>
 
       {/* Doors & Windows */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
-        <div className="p-5 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border)] overflow-hidden">
+        <div className="p-5 flex items-center justify-between border-b border-[var(--hm-border-subtle)]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-              <DoorOpen className="w-5 h-5 text-violet-600 dark:text-violet-400" strokeWidth={1.5} />
+            <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
+              <DoorOpen className="w-5 h-5 text-violet-600" strokeWidth={1.5} />
             </div>
-            <h3 className="font-semibold text-neutral-900 dark:text-white">
+            <h3 className="font-semibold text-[var(--hm-fg-primary)]">
               {t('tools.calculator.work.doorsWindows')}
             </h3>
           </div>
@@ -304,7 +304,7 @@ export function StepWork({ workCategories, totalFloorArea, onWorkCategoriesChang
           />
         </div>
         {workCategories.doorsWindows.enabled && (
-          <div className="px-5 divide-y divide-neutral-100 dark:divide-neutral-800">
+          <div className="px-5 divide-y divide-[var(--hm-border-subtle)]">
             <CounterInput
               value={workCategories.doorsWindows.interiorDoors}
               onChange={(v) => updateDoorsWindows({ interiorDoors: v })}
@@ -314,8 +314,8 @@ export function StepWork({ workCategories, totalFloorArea, onWorkCategoriesChang
             />
             <div className="flex items-center justify-between py-3">
               <div className="flex items-center gap-3">
-                <DoorOpen className="w-4 h-4 text-neutral-500" strokeWidth={1.5} />
-                <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                <DoorOpen className="w-4 h-4 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
+                <span className="text-sm text-[var(--hm-fg-secondary)]">
                   {t('tools.calculator.work.entranceDoor')}
                 </span>
               </div>

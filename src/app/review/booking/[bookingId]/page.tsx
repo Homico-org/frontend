@@ -216,21 +216,21 @@ export default function BookingReviewPage() {
 
   if (pageState === 'loading' || authLoading) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-base)' }}>
-        <LoadingSpinner size="lg" color="#C4735B" />
+      <div className="min-h-[100dvh] flex items-center justify-center" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
+        <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
       </div>
     );
   }
 
   if (pageState === 'already-reviewed') {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center px-4" style={{ backgroundColor: 'var(--color-bg-base)' }}>
+      <div className="min-h-[100dvh] flex items-center justify-center px-4" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
         <div
           className="w-full max-w-sm rounded-2xl p-8 text-center shadow-sm"
-          style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+          style={{ backgroundColor: 'var(--hm-bg-elevated)', border: '1px solid var(--hm-border-subtle)' }}
         >
-          <CheckCircle className="w-14 h-14 text-emerald-500 mx-auto mb-4" />
-          <h1 className="text-lg font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+          <CheckCircle className="w-14 h-14 text-[var(--hm-success-500)] mx-auto mb-4" />
+          <h1 className="text-lg font-bold mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
             {t('reviews.alreadyReviewed')}
           </h1>
           <Button
@@ -247,16 +247,16 @@ export default function BookingReviewPage() {
 
   if (pageState === 'error') {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center px-4" style={{ backgroundColor: 'var(--color-bg-base)' }}>
+      <div className="min-h-[100dvh] flex items-center justify-center px-4" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
         <div
           className="w-full max-w-sm rounded-2xl p-8 text-center shadow-sm"
-          style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+          style={{ backgroundColor: 'var(--hm-bg-elevated)', border: '1px solid var(--hm-border-subtle)' }}
         >
-          <XCircle className="w-14 h-14 text-red-400 mx-auto mb-4" />
-          <h1 className="text-lg font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+          <XCircle className="w-14 h-14 text-[var(--hm-error-500)] mx-auto mb-4" />
+          <h1 className="text-lg font-bold mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
             {t('common.error')}
           </h1>
-          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-sm mb-4" style={{ color: 'var(--hm-fg-secondary)' }}>
             {errorMessage}
           </p>
           <Button variant="outline" onClick={() => router.push('/')}>
@@ -269,16 +269,16 @@ export default function BookingReviewPage() {
 
   if (pageState === 'success') {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center px-4" style={{ backgroundColor: 'var(--color-bg-base)' }}>
+      <div className="min-h-[100dvh] flex items-center justify-center px-4" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
         <div
           className="w-full max-w-sm rounded-2xl p-8 text-center shadow-sm"
-          style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+          style={{ backgroundColor: 'var(--hm-bg-elevated)', border: '1px solid var(--hm-border-subtle)' }}
         >
-          <CheckCircle className="w-14 h-14 text-emerald-500 mx-auto mb-4" />
-          <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+          <CheckCircle className="w-14 h-14 text-[var(--hm-success-500)] mx-auto mb-4" />
+          <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
             {t('reviews.thankYouForReview')}
           </h1>
-          <p className="text-sm mb-6" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-sm mb-6" style={{ color: 'var(--hm-fg-secondary)' }}>
             {t('reviews.reviewAddedToProfile', { name: booking?.professional.name || '' })}
           </p>
           <div className="flex gap-3 justify-center">
@@ -297,20 +297,20 @@ export default function BookingReviewPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] py-10 px-4" style={{ backgroundColor: 'var(--color-bg-base)' }}>
+    <div className="min-h-[100dvh] py-10 px-4" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
       {/* Logo */}
       <div className="flex items-center gap-2 max-w-lg mx-auto mb-8">
-        <div className="w-7 h-7 rounded-lg bg-[#C4735B] flex items-center justify-center">
+        <div className="w-7 h-7 rounded-lg bg-[var(--hm-brand-500)] flex items-center justify-center">
           <span className="text-white text-xs font-black">H</span>
         </div>
-        <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Homico</span>
+        <span className="font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>Homico</span>
       </div>
 
       <div className="max-w-lg mx-auto space-y-4">
         {/* Pro info card */}
         <div
           className="rounded-2xl p-5 shadow-sm"
-          style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+          style={{ backgroundColor: 'var(--hm-bg-elevated)', border: '1px solid var(--hm-border-subtle)' }}
         >
           <div className="flex items-center gap-4">
             <Avatar
@@ -319,16 +319,16 @@ export default function BookingReviewPage() {
               size="xl"
             />
             <div className="min-w-0">
-              <h2 className="text-lg font-bold truncate" style={{ color: 'var(--color-text-primary)' }}>
+              <h2 className="text-lg font-bold truncate" style={{ color: 'var(--hm-fg-primary)' }}>
                 {booking?.professional.name}
               </h2>
               {booking?.professional.title && (
-                <p className="text-sm truncate" style={{ color: 'var(--color-text-secondary)' }}>
+                <p className="text-sm truncate" style={{ color: 'var(--hm-fg-secondary)' }}>
                   {booking.professional.title}
                 </p>
               )}
               {booking && (
-                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--hm-fg-muted)' }}>
                   {formatDate(booking.date, locale as 'en' | 'ka' | 'ru')}
                   {' · '}
                   {formatHour(booking.startHour)} — {formatHour(booking.endHour)}
@@ -337,7 +337,7 @@ export default function BookingReviewPage() {
             </div>
           </div>
           {booking?.note && (
-            <p className="mt-3 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="mt-3 text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
               {booking.note}
             </p>
           )}
@@ -346,15 +346,15 @@ export default function BookingReviewPage() {
         {/* Review form card */}
         <div
           className="rounded-2xl p-5 shadow-sm"
-          style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+          style={{ backgroundColor: 'var(--hm-bg-elevated)', border: '1px solid var(--hm-border-subtle)' }}
         >
-          <h1 className="text-xl font-bold mb-5" style={{ color: 'var(--color-text-primary)' }}>
+          <h1 className="text-xl font-bold mb-5" style={{ color: 'var(--hm-fg-primary)' }}>
             {t('reviews.howWasExperience')}
           </h1>
 
           {/* Star rating */}
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+            <label className="block text-sm font-medium mb-3" style={{ color: 'var(--hm-fg-secondary)' }}>
               {t('reviews.rateYourExperience')} *
             </label>
             <div className="flex gap-1.5">
@@ -365,21 +365,21 @@ export default function BookingReviewPage() {
                   onClick={() => setRating(star)}
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
-                  className="p-1 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C4735B] rounded"
+                  className="p-1 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)] rounded"
                   aria-label={`${star} star${star !== 1 ? 's' : ''}`}
                 >
                   <Star
                     className={`w-10 h-10 transition-colors ${
                       star <= displayRating
                         ? 'text-amber-400 fill-amber-400'
-                        : 'text-neutral-300 dark:text-neutral-600'
+                        : 'text-neutral-300'
                     }`}
                   />
                 </button>
               ))}
             </div>
             {displayRating > 0 && (
-              <p className="text-sm mt-1.5 font-medium text-[#C4735B]">
+              <p className="text-sm mt-1.5 font-medium text-[var(--hm-brand-500)]">
                 {getRatingLabel(displayRating)}
               </p>
             )}
@@ -387,9 +387,9 @@ export default function BookingReviewPage() {
 
           {/* Review text */}
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--hm-fg-secondary)' }}>
               {t('reviews.yourReview')}
-              <span className="font-normal ml-1" style={{ color: 'var(--color-text-tertiary)' }}>
+              <span className="font-normal ml-1" style={{ color: 'var(--hm-fg-muted)' }}>
                 ({t('common.optional')})
               </span>
             </label>
@@ -418,9 +418,9 @@ export default function BookingReviewPage() {
           </Button>
         </div>
 
-        <p className="text-center text-xs pb-4" style={{ color: 'var(--color-text-tertiary)' }}>
+        <p className="text-center text-xs pb-4" style={{ color: 'var(--hm-fg-muted)' }}>
           {t('reviews.reviewCollectedVia')}{' '}
-          <a href="https://homico.ge" className="text-[#C4735B] hover:underline">
+          <a href="https://homico.ge" className="text-[var(--hm-brand-500)] hover:underline">
             Homico
           </a>
         </p>

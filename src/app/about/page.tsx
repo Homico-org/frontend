@@ -55,13 +55,13 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-cream-50 dark:bg-dark-bg">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       <Header />
       <HeaderSpacer />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#C4735B] via-[#B8654D] to-[#A85A45]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--hm-brand-500)] via-[#D13C14] to-[#A92B08]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.1),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(0,0,0,0.1),transparent_60%)]" />
 
@@ -103,27 +103,27 @@ export default function AboutPage() {
       <section className="py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl font-serif font-medium text-[var(--hm-fg-primary)] mb-4">
               {t('about.ourMission')}
             </h2>
-            <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg text-[var(--hm-fg-secondary)] max-w-2xl mx-auto leading-relaxed">
               {t('about.missionBlurb')}
             </p>
           </div>
 
           {/* Story */}
-          <div className="bg-white dark:bg-dark-card rounded-2xl p-8 border border-neutral-100 dark:border-dark-border">
-            <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-8 border border-[var(--hm-border-subtle)]">
+            <h3 className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-4">
               {t('about.ourStory')}
             </h3>
-            <div className="prose prose-neutral dark:prose-invert max-w-none">
-              <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4">
+            <div className="prose prose-neutral max-w-none">
+              <p className="text-[var(--hm-fg-secondary)] leading-relaxed mb-4">
                 {t('about.homicoWasBornFromA')}
               </p>
-              <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4">
+              <p className="text-[var(--hm-fg-secondary)] leading-relaxed mb-4">
                 {t('about.weDecidedToCreateA')}
               </p>
-              <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+              <p className="text-[var(--hm-fg-secondary)] leading-relaxed">
                 {t('about.todayHomicoConnectsThousandsOf')}
               </p>
             </div>
@@ -132,9 +132,9 @@ export default function AboutPage() {
       </section>
 
       {/* Values Section */}
-      <section className="py-16 bg-neutral-50 dark:bg-dark-elevated">
+      <section className="py-16 bg-[var(--hm-bg-page)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-serif font-medium text-center text-neutral-900 dark:text-white mb-12">
+          <h2 className="text-2xl sm:text-3xl font-serif font-medium text-center text-[var(--hm-fg-primary)] mb-12">
             {t('about.ourValues')}
           </h2>
 
@@ -154,10 +154,10 @@ export default function AboutPage() {
       {/* Contact Section */}
       <section className="py-16 sm:py-24">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-white mb-4">
+          <h2 className="text-2xl sm:text-3xl font-serif font-medium text-[var(--hm-fg-primary)] mb-4">
             {t('about.getInTouch')}
           </h2>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-8">
+          <p className="text-[var(--hm-fg-secondary)] mb-8">
             {t('about.contactBlurb')}
           </p>
 
@@ -184,8 +184,8 @@ export default function AboutPage() {
             </Button>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-neutral-100 dark:border-dark-border">
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          <div className="mt-12 pt-8 border-t border-[var(--hm-border-subtle)]">
+            <p className="text-sm text-[var(--hm-fg-muted)]">
               {t('about.tbilisiGeorgia')}
             </p>
           </div>
@@ -193,16 +193,16 @@ export default function AboutPage() {
       </section>
 
       {/* Footer Links */}
-      <section className="py-8 border-t border-neutral-100 dark:border-dark-border">
+      <section className="py-8 border-t border-[var(--hm-border-subtle)]">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm">
-            <Link href="/terms" className="text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors">
+            <Link href="/terms" className="text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)] transition-colors">
               {t('about.termsOfService')}
             </Link>
-            <Link href="/privacy" className="text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors">
+            <Link href="/privacy" className="text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)] transition-colors">
               {t('about.privacyPolicy')}
             </Link>
-            <Link href="/how-it-works" className="text-neutral-600 dark:text-neutral-400 hover:text-[#C4735B] transition-colors">
+            <Link href="/how-it-works" className="text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)] transition-colors">
               {t('about.howItWorks')}
             </Link>
           </div>

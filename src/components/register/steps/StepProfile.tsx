@@ -66,10 +66,10 @@ export default function StepProfile({
     <div className="w-full max-w-md mx-auto">
       {/* Header */}
       <div className="text-center mb-4 sm:mb-8">
-        <h1 className="text-lg sm:text-2xl font-bold text-neutral-900 mb-1 sm:mb-2">
+        <h1 className="text-lg sm:text-2xl font-bold text-[var(--hm-fg-primary)] mb-1 sm:mb-2">
           {t('register.yourProfile')}
         </h1>
-        <p className="text-xs sm:text-base text-neutral-500">
+        <p className="text-xs sm:text-base text-[var(--hm-fg-muted)]">
           {t('register.uploadARealPhotoOf')}
         </p>
       </div>
@@ -88,7 +88,7 @@ export default function StepProfile({
 
           <div
             className={`relative w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden border-[3px] sm:border-4 border-dashed transition-colors ${
-              avatarUploading ? 'border-neutral-200' : 'border-neutral-200 hover:border-[#C4735B] active:border-[#C4735B]'
+              avatarUploading ? 'border-neutral-200' : 'border-[var(--hm-border)] hover:border-[var(--hm-brand-500)] active:border-[var(--hm-brand-500)]'
             }`}
           >
             {avatarPreview ? (
@@ -99,7 +99,7 @@ export default function StepProfile({
                 className="object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-neutral-100 flex flex-col items-center justify-center text-neutral-400 group-hover:text-[#C4735B] transition-colors cursor-pointer">
+              <div className="w-full h-full bg-[var(--hm-bg-tertiary)] flex flex-col items-center justify-center text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)] transition-colors cursor-pointer">
                 <Camera className="w-6 h-6 sm:w-8 sm:h-8 mb-0.5 sm:mb-1" />
                 <span className="text-[10px] sm:text-xs font-medium">{t('common.upload')}</span>
               </div>
@@ -107,7 +107,7 @@ export default function StepProfile({
 
             {avatarUploading && (
               <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-[#C4735B] border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-[var(--hm-brand-500)] border-t-transparent rounded-full animate-spin" />
               </div>
             )}
           </div>
@@ -120,7 +120,7 @@ export default function StepProfile({
                 e.stopPropagation();
                 onAvatarRemove();
               }}
-              className="absolute -top-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 active:scale-95 transition-all z-30"
+              className="absolute -top-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[var(--hm-error-500)] text-white flex items-center justify-center shadow-lg hover:bg-red-600 active:scale-95 transition-all z-30"
             >
               <X className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
@@ -130,7 +130,7 @@ export default function StepProfile({
 
       {/* Required badge */}
       <div className="flex items-center justify-center gap-2 mb-4 sm:mb-6">
-        <span className="text-[10px] sm:text-xs font-medium text-[#C4735B] bg-[#C4735B]/10 px-2 py-0.5 sm:py-1 rounded-full">
+        <span className="text-[10px] sm:text-xs font-medium text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 px-2 py-0.5 sm:py-1 rounded-full">
           {t('common.required')}
         </span>
       </div>
@@ -140,7 +140,7 @@ export default function StepProfile({
         {/* Full Name */}
         <div>
           <Label className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 text-xs sm:text-sm">
-            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400" />
+            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-fg-muted)]" />
             {t('register.fullName')}
           </Label>
           <Input
@@ -149,14 +149,14 @@ export default function StepProfile({
             placeholder={t('register.enterYourName')}
             autoComplete="off"
             data-form-type="other"
-            className="bg-white dark:bg-neutral-900 h-10 sm:h-11 text-sm"
+            className="bg-[var(--hm-bg-elevated)] h-10 sm:h-11 text-sm"
           />
         </div>
 
         {/* City */}
         <div>
           <Label className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 text-xs sm:text-sm">
-            <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400" />
+            <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-fg-muted)]" />
             {t('register.city')}
           </Label>
           <Select
@@ -172,7 +172,7 @@ export default function StepProfile({
         {/* Password */}
         <div>
           <Label className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 text-xs sm:text-sm">
-            <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400" />
+            <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-fg-muted)]" />
             {t('common.password')}
           </Label>
           <PasswordInput
@@ -186,7 +186,7 @@ export default function StepProfile({
         {/* Confirm Password */}
         <div>
           <Label className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 text-xs sm:text-sm">
-            <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400" />
+            <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-fg-muted)]" />
             {t('register.repeatPassword')}
           </Label>
           <PasswordInput

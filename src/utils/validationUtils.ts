@@ -66,9 +66,9 @@ export function getPasswordStrength(
 
   const colors = [
     { color: '#9CA3AF', colorClass: 'text-neutral-400' }, // 0: empty
-    { color: '#EF4444', colorClass: 'text-red-500' },     // 1: weak
-    { color: '#F59E0B', colorClass: 'text-amber-500' },   // 2: weak
-    { color: '#F59E0B', colorClass: 'text-amber-500' },   // 3: medium
+    { color: '#EF4444', colorClass: 'text-[var(--hm-error-500)]' },     // 1: weak
+    { color: '#F59E0B', colorClass: 'text-[var(--hm-warning-500)]' },   // 2: weak
+    { color: '#F59E0B', colorClass: 'text-[var(--hm-warning-500)]' },   // 3: medium
     { color: '#22C55E', colorClass: 'text-green-500' },   // 4: good
     { color: '#22C55E', colorClass: 'text-green-500' },   // 5: strong
   ];

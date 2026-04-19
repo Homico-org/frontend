@@ -66,13 +66,13 @@ function NotificationItem({
   size?: 'sm' | 'md';
 }) {
   return (
-    <div className="px-4 py-3 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+    <div className="px-4 py-3 flex items-center justify-between hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors">
       <div className="flex items-center gap-3">
-        <Icon className="w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} />
+        <Icon className="w-4 h-4" style={{ color: 'var(--hm-fg-muted)' }} />
         <div>
-          <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{label}</span>
+          <span className="text-sm font-medium" style={{ color: 'var(--hm-fg-primary)' }}>{label}</span>
           {description && (
-            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>{description}</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--hm-fg-muted)' }}>{description}</p>
           )}
         </div>
       </div>
@@ -109,13 +109,13 @@ function NotificationSectionHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="p-4 flex items-center justify-between" style={{ backgroundColor: 'var(--color-bg-elevated)' }}>
+    <div className="p-4 flex items-center justify-between" style={{ backgroundColor: 'var(--hm-bg-elevated)' }}>
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: iconBgColor }}>
           <Icon className={`w-5 h-5 ${iconColor}`} />
         </div>
         <div>
-          <h3 className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+          <h3 className="font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
             {title}
           </h3>
           {subtitle && (
@@ -176,7 +176,7 @@ export default function NotificationSettings({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+      <p className="text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
         {texts.subtitle}
       </p>
 
@@ -190,24 +190,24 @@ export default function NotificationSettings({
       {/* Loading State */}
       {isLoading ? (
         <div className="py-12 flex flex-col items-center gap-3">
-          <LoadingSpinner size="lg" color="#C4735B" />
-          <span className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+          <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
+          <span className="text-sm" style={{ color: 'var(--hm-fg-muted)' }}>
             {texts.loading}
           </span>
         </div>
       ) : notificationData ? (
         <div className="space-y-6">
           {/* Email Notifications Section */}
-          <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--hm-border)' }}>
             <NotificationSectionHeader
               icon={Mail}
               title={texts.email}
               iconBgColor="rgba(210, 105, 30, 0.1)"
-              iconColor="text-[#E07B4F]"
+              iconColor="text-[var(--hm-brand-500)]"
               subtitle={
                 notificationData.email ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{notificationData.email}</span>
+                    <span className="text-xs" style={{ color: 'var(--hm-fg-secondary)' }}>{notificationData.email}</span>
                     {notificationData.isEmailVerified ? (
                       <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3 h-3" />}>
                         {texts.verified}
@@ -219,7 +219,7 @@ export default function NotificationSettings({
                     )}
                   </div>
                 ) : (
-                  <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                  <span className="text-xs" style={{ color: 'var(--hm-fg-muted)' }}>
                     {texts.noEmail}
                   </span>
                 )
@@ -230,7 +230,7 @@ export default function NotificationSettings({
               action={!notificationData.email ? (
                 <button
                   onClick={onAddEmail}
-                  className="px-3 py-1.5 text-sm font-medium text-[#E07B4F] bg-[#E07B4F]/10 hover:bg-[#E07B4F]/20 rounded-lg transition-colors flex items-center gap-1.5"
+                  className="px-3 py-1.5 text-sm font-medium text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 rounded-lg transition-colors flex items-center gap-1.5"
                 >
                   <Mail className="w-4 h-4" />
                   {texts.addEmail}
@@ -239,7 +239,7 @@ export default function NotificationSettings({
             />
 
             {notificationData.email && notificationData.preferences.email.enabled && (
-              <div className="divide-y" style={{ borderTop: '1px solid var(--color-border)', borderColor: 'var(--color-border)' }}>
+              <div className="divide-y" style={{ borderTop: '1px solid var(--hm-border)', borderColor: 'var(--hm-border)' }}>
                 <NotificationItem
                   icon={BriefcaseBusiness}
                   label={texts.newJobs}
@@ -277,11 +277,11 @@ export default function NotificationSettings({
           </div>
 
           {/* Push Notifications Section */}
-          <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--hm-border)' }}>
             <NotificationSectionHeader
               icon={Bell}
               title={texts.push}
-              subtitle={<span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{texts.pushDesc}</span>}
+              subtitle={<span className="text-xs" style={{ color: 'var(--hm-fg-secondary)' }}>{texts.pushDesc}</span>}
               iconBgColor="rgba(139, 92, 246, 0.1)"
               iconColor="text-violet-500"
               enabled={notificationData.preferences.push.enabled}
@@ -290,7 +290,7 @@ export default function NotificationSettings({
             />
 
             {notificationData.preferences.push.enabled && (
-              <div className="divide-y" style={{ borderTop: '1px solid var(--color-border)', borderColor: 'var(--color-border)' }}>
+              <div className="divide-y" style={{ borderTop: '1px solid var(--hm-border)', borderColor: 'var(--hm-border)' }}>
                 <NotificationItem
                   icon={BriefcaseBusiness}
                   label={texts.newJobs}
@@ -317,7 +317,7 @@ export default function NotificationSettings({
           </div>
 
           {/* SMS Notifications Section */}
-          <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--hm-border)' }}>
             <NotificationSectionHeader
               icon={Smartphone}
               title={texts.sms}
@@ -326,7 +326,7 @@ export default function NotificationSettings({
               subtitle={
                 notificationData.phone ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{notificationData.phone}</span>
+                    <span className="text-xs" style={{ color: 'var(--hm-fg-secondary)' }}>{notificationData.phone}</span>
                     {notificationData.isPhoneVerified && (
                       <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3 h-3" />}>
                         {texts.verified}
@@ -334,7 +334,7 @@ export default function NotificationSettings({
                     )}
                   </div>
                 ) : (
-                  <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                  <span className="text-xs" style={{ color: 'var(--hm-fg-muted)' }}>
                     {texts.noPhone}
                   </span>
                 )
@@ -343,14 +343,14 @@ export default function NotificationSettings({
               onToggle={notificationData.phone ? (v) => onUpdatePreference('sms', 'enabled', v) : undefined}
               variant="success"
               action={!notificationData.phone ? (
-                <span className="text-xs px-2 py-1 rounded-lg" style={{ backgroundColor: 'var(--color-bg-muted)', color: 'var(--color-text-tertiary)' }}>
+                <span className="text-xs px-2 py-1 rounded-lg" style={{ backgroundColor: 'var(--hm-n-200)', color: 'var(--hm-fg-muted)' }}>
                   {texts.unavailable}
                 </span>
               ) : undefined}
             />
 
             {notificationData.phone && notificationData.preferences.sms.enabled && (
-              <div className="divide-y" style={{ borderTop: '1px solid var(--color-border)', borderColor: 'var(--color-border)' }}>
+              <div className="divide-y" style={{ borderTop: '1px solid var(--hm-border)', borderColor: 'var(--hm-border)' }}>
                 <NotificationItem
                   icon={FileText}
                   label={texts.proposals}
@@ -371,12 +371,12 @@ export default function NotificationSettings({
 
           {/* Info box */}
           <div className="p-4 rounded-xl flex items-start gap-3" style={{ backgroundColor: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-            <Shield className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <Shield className="w-5 h-5 text-[var(--hm-info-500)] flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
+              <p className="text-sm font-medium text-blue-700">
                 {texts.dataProtected}
               </p>
-              <p className="text-xs mt-1 text-blue-600/70 dark:text-blue-400/70">
+              <p className="text-xs mt-1 text-[var(--hm-info-500)]/70">
                 {texts.dataProtectedDesc}
               </p>
             </div>
@@ -384,13 +384,13 @@ export default function NotificationSettings({
         </div>
       ) : (
         <div className="py-12 text-center">
-          <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--color-text-tertiary)' }} />
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+          <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--hm-fg-muted)' }} />
+          <p className="text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
             {texts.loadFailed}
           </p>
           <button
             onClick={onRetry}
-            className="mt-3 text-sm font-medium text-[#E07B4F] hover:text-[#D26B3F]"
+            className="mt-3 text-sm font-medium text-[var(--hm-brand-500)] hover:text-[#D13C14]"
           >
             {texts.tryAgain}
           </button>

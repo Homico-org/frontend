@@ -105,7 +105,7 @@ export default function SidePanel({ isOpen, onClose, title, children }: SidePane
       {/* Panel */}
       <div
         ref={panelRef}
-        className="fixed z-[61] top-0 right-0 bottom-0 flex flex-col bg-white dark:bg-neutral-900 shadow-2xl border-l border-neutral-200 dark:border-neutral-800"
+        className="fixed z-[61] top-0 right-0 bottom-0 flex flex-col bg-[var(--hm-bg-elevated)] shadow-2xl border-l border-[var(--hm-border)]"
         style={{
           width: window.innerWidth < 640 ? "100%" : width,
           animation: "sidePanelSlideIn 0.2s ease-out",
@@ -115,26 +115,26 @@ export default function SidePanel({ isOpen, onClose, title, children }: SidePane
         <div
           onMouseDown={handleResizeStart}
           className={`hidden sm:flex absolute left-0 top-0 bottom-0 w-4 cursor-col-resize z-10 items-center justify-center group ${
-            isResizing ? "bg-[#C4735B]/10" : "hover:bg-[#C4735B]/5"
+            isResizing ? "bg-[var(--hm-brand-500)]/10" : "hover:bg-[var(--hm-brand-500)]/5"
           }`}
         >
           <div className="flex flex-col gap-[3px]">
-            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[#C4735B]" : "bg-neutral-300 dark:bg-neutral-600 group-hover:bg-[#C4735B]"}`} />
-            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[#C4735B]" : "bg-neutral-300 dark:bg-neutral-600 group-hover:bg-[#C4735B]"}`} />
-            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[#C4735B]" : "bg-neutral-300 dark:bg-neutral-600 group-hover:bg-[#C4735B]"}`} />
-            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[#C4735B]" : "bg-neutral-300 dark:bg-neutral-600 group-hover:bg-[#C4735B]"}`} />
-            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[#C4735B]" : "bg-neutral-300 dark:bg-neutral-600 group-hover:bg-[#C4735B]"}`} />
+            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-neutral-300 group-hover:bg-[var(--hm-brand-500)]"}`} />
+            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-neutral-300 group-hover:bg-[var(--hm-brand-500)]"}`} />
+            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-neutral-300 group-hover:bg-[var(--hm-brand-500)]"}`} />
+            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-neutral-300 group-hover:bg-[var(--hm-brand-500)]"}`} />
+            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-neutral-300 group-hover:bg-[var(--hm-brand-500)]"}`} />
           </div>
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0">
-          <h2 className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--hm-border)] flex-shrink-0">
+          <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)] truncate">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-400 hover:text-neutral-600 flex-shrink-0"
+            className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] flex-shrink-0"
           >
             <X className="w-4 h-4" />
           </button>

@@ -23,13 +23,13 @@ export default function SearchBar({ onSearch, placeholder }: SearchBarProps) {
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
-      <div className={`relative flex items-center bg-white dark:bg-dark-card rounded-xl border transition-all duration-200 ease-out ${
-        isFocused ? 'border-blue-500 shadow-md dark:shadow-none' : 'border-neutral-200 dark:border-dark-border hover:border-neutral-300 dark:hover:border-dark-border-subtle'
+      <div className={`relative flex items-center bg-[var(--hm-bg-elevated)] rounded-xl border transition-all duration-200 ease-out ${
+        isFocused ? 'border-blue-500 shadow-md' : 'border-[var(--hm-border)] hover:border-neutral-300'
       }`}>
         {/* Search Icon */}
         <div className="absolute left-4 pointer-events-none">
           <svg
-            className="w-5 h-5 text-neutral-400 dark:text-neutral-500"
+            className="w-5 h-5 text-[var(--hm-fg-muted)]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -50,12 +50,12 @@ export default function SearchBar({ onSearch, placeholder }: SearchBarProps) {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={searchPlaceholder}
-          className="flex-1 pl-12 pr-4 py-3.5 bg-transparent border-none rounded-l-xl focus:outline-none placeholder:text-neutral-400 dark:placeholder:text-neutral-500 text-neutral-900 dark:text-neutral-50"
+          className="flex-1 pl-12 pr-4 py-3.5 bg-transparent border-none rounded-l-xl focus:outline-none placeholder:text-[var(--hm-fg-muted)] text-[var(--hm-fg-primary)]"
         />
 
         <button
           type="submit"
-          className="px-5 py-2.5 m-1.5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-all duration-200 ease-out flex items-center gap-2"
+          className="px-5 py-2.5 m-1.5 bg-[var(--hm-info-500)] hover:bg-blue-600 text-white font-medium rounded-lg transition-all duration-200 ease-out flex items-center gap-2"
         >
           <span>{t('common.search')}</span>
           <svg

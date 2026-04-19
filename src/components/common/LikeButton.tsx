@@ -225,7 +225,7 @@ export default function LikeButton({
           transition-all duration-200
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           py-1 px-1 -mx-1 rounded-lg
-          hover:bg-rose-50 dark:hover:bg-rose-500/10
+          hover:bg-rose-50
         `}
         aria-label={isLiked ? 'Unlike' : 'Like'}
       >
@@ -237,7 +237,7 @@ export default function LikeButton({
               transition-all duration-300 ease-out
               ${isLiked
                 ? 'text-rose-500'
-                : 'text-[var(--color-text-tertiary)] group-hover:text-rose-400'
+                : 'text-[var(--hm-fg-muted)] group-hover:text-rose-400'
               }
               ${isAnimating ? (isLiked ? 'scale-125 animate-heartbeat' : 'scale-90') : 'group-hover:scale-110'}
             `}
@@ -264,7 +264,7 @@ export default function LikeButton({
             className={`
               ${config.text} font-medium tabular-nums
               transition-all duration-300
-              ${isLiked ? 'text-rose-500' : 'text-[var(--color-text-tertiary)]'}
+              ${isLiked ? 'text-rose-500' : 'text-[var(--hm-fg-muted)]'}
               ${isAnimating ? 'scale-110' : ''}
             `}
           >
@@ -284,8 +284,8 @@ export default function LikeButton({
         group relative inline-flex items-center ${config.gap} px-4 py-2 rounded-full
         transition-all duration-300 ease-out
         ${isLiked
-          ? 'bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-500/15 dark:to-pink-500/15 border border-rose-200 dark:border-rose-500/30 shadow-sm shadow-rose-100 dark:shadow-rose-500/10'
-          : 'bg-[var(--color-bg-secondary)] border border-[var(--color-border-subtle)] hover:border-[var(--color-border)] hover:shadow-md'
+          ? 'bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 shadow-sm shadow-rose-100'
+          : 'bg-[var(--hm-bg-page)] border border-[var(--hm-border-subtle)] hover:border-[var(--hm-border)] hover:shadow-md'
         }
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         ${isAnimating && isLiked ? 'scale-105' : 'hover:scale-[1.02]'}
@@ -305,7 +305,7 @@ export default function LikeButton({
           className={`
             ${config.icon}
             transition-all duration-300 ease-out
-            ${isLiked ? 'text-rose-500' : 'text-[var(--color-text-tertiary)] group-hover:text-rose-400'}
+            ${isLiked ? 'text-rose-500' : 'text-[var(--hm-fg-muted)] group-hover:text-rose-400'}
             ${isAnimating ? (isLiked ? 'scale-125 animate-heartbeat' : 'scale-90') : ''}
           `}
         />
@@ -328,7 +328,7 @@ export default function LikeButton({
           className={`
             ${config.text} font-semibold tabular-nums relative
             transition-all duration-300
-            ${isLiked ? 'text-rose-600 dark:text-rose-400' : 'text-[var(--color-text-secondary)]'}
+            ${isLiked ? 'text-rose-600' : 'text-[var(--hm-fg-secondary)]'}
           `}
         >
           <span className={isAnimating ? 'animate-count-bump' : ''}>{likeCount}</span>

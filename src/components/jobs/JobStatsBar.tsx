@@ -37,7 +37,7 @@ export default function JobStatsBar({
 }: JobStatsBarProps) {
   return (
     <div
-      className={`relative bg-white dark:bg-neutral-900 rounded-2xl shadow-xl shadow-black/5 dark:shadow-black/20 p-4 md:p-6 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-400 ${
+      className={`relative bg-[var(--hm-bg-elevated)] rounded-2xl shadow-xl shadow-black/5 p-4 md:p-6 border border-[var(--hm-border-subtle)] transition-all duration-700 delay-400 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       } ${className}`}
     >
@@ -57,10 +57,10 @@ export default function JobStatsBar({
               </span>
             </div>
             <div>
-              <p className="text-xs font-body font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+              <p className="text-xs font-body font-medium text-[var(--hm-fg-muted)] uppercase tracking-wider">
                 {budgetLabel}
               </p>
-              <p className="text-xl md:text-2xl font-body font-bold text-neutral-900 dark:text-white tabular-nums">
+              <p className="text-xl md:text-2xl font-body font-bold text-[var(--hm-fg-primary)] tabular-nums">
                 {budget}
               </p>
             </div>
@@ -69,24 +69,24 @@ export default function JobStatsBar({
 
         {/* Divider */}
         {budget && (
-          <div className="hidden md:block w-px h-12 bg-neutral-200 dark:bg-neutral-700" />
+          <div className="hidden md:block w-px h-12 bg-[var(--hm-n-200)]" />
         )}
 
         {/* Stats */}
         <div className="flex items-center gap-6">
           <div className="text-center">
-            <p className="text-2xl font-body font-bold text-neutral-900 dark:text-white tabular-nums">
+            <p className="text-2xl font-body font-bold text-[var(--hm-fg-primary)] tabular-nums">
               {viewCount}
             </p>
-            <p className="text-xs font-body text-neutral-500 dark:text-neutral-400">
+            <p className="text-xs font-body text-[var(--hm-fg-muted)]">
               {viewsLabel}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-body font-bold text-neutral-900 dark:text-white tabular-nums">
+            <p className="text-2xl font-body font-bold text-[var(--hm-fg-primary)] tabular-nums">
               {proposalCount}
             </p>
-            <p className="text-xs font-body text-neutral-500 dark:text-neutral-400">
+            <p className="text-xs font-body text-[var(--hm-fg-muted)]">
               {proposalsLabel}
             </p>
           </div>
@@ -95,7 +95,7 @@ export default function JobStatsBar({
         {/* Actions */}
         {actions && (
           <>
-            <div className="hidden md:block w-px h-12 bg-neutral-200 dark:bg-neutral-700" />
+            <div className="hidden md:block w-px h-12 bg-[var(--hm-n-200)]" />
             {actions}
           </>
         )}

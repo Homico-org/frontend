@@ -365,9 +365,9 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
   return (
     <div>
       {/* Header */}
-      <div className="p-4 border-b border-neutral-100 dark:border-neutral-800">
+      <div className="p-4 border-b border-[var(--hm-border-subtle)]">
         <div className="flex items-center justify-between">
-          <h3 className="font-display text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+          <h3 className="font-display text-lg font-semibold text-[var(--hm-fg-primary)] flex items-center gap-2">
             <MessageSquare className="w-5 h-5" style={{ color: ACCENT }} />
             {t('projects.projectChat')}
             <CountBadge count={unreadCount} />
@@ -389,7 +389,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
         {isSearchOpen && (
           <div className="mb-3 flex items-center gap-2">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--hm-fg-muted)]" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -406,11 +406,11 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                   }
                 }}
                 placeholder={t('projects.searchMessages')}
-                className="w-full pl-9 pr-3 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]/50"
+                className="w-full pl-9 pr-3 py-2 text-sm bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] rounded-xl text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)]/50"
               />
             </div>
             {searchQuery && (
-              <span className="text-xs text-neutral-500 whitespace-nowrap">
+              <span className="text-xs text-[var(--hm-fg-muted)] whitespace-nowrap">
                 {searchResultCount > 0 ? `${currentSearchIndex + 1}/${searchResultCount}` : t('projects.0Results')}
               </span>
             )}
@@ -443,7 +443,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
         )}
 
         {/* Messages Container */}
-        <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl overflow-hidden">
+        <div className="bg-[var(--hm-bg-tertiary)]/50 rounded-xl overflow-hidden">
           {/* Messages Area */}
           <div className="h-72 sm:h-80 overflow-y-auto p-4 space-y-3">
             {isLoadingMessages ? (
@@ -451,13 +451,13 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                 <LoadingSpinner size="lg" color={ACCENT} />
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-neutral-400">
+              <div className="flex flex-col items-center justify-center h-full text-[var(--hm-fg-muted)]">
                 <MessageSquare className="w-10 h-10 mb-2 opacity-50" />
                 <p className="text-sm">{t('projects.noMessagesYet')}</p>
                 <p className="text-xs mt-1">{t('projects.startTheConversation')}</p>
               </div>
             ) : searchQuery && filteredMessages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-neutral-400">
+              <div className="flex flex-col items-center justify-center h-full text-[var(--hm-fg-muted)]">
                 <Search className="w-10 h-10 mb-2 opacity-50" />
                 <p className="text-sm">{t('projects.noResultsFound')}</p>
                 <p className="text-xs mt-1">{t('projects.tryADifferentSearchTerm')}</p>
@@ -484,7 +484,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                     const parts = content.split(regex);
                     return parts.map((part, i) =>
                       regex.test(part) ? (
-                        <mark key={i} className="bg-yellow-300 dark:bg-yellow-500/50 text-inherit rounded px-0.5">
+                        <mark key={i} className="bg-yellow-300 text-inherit rounded px-0.5">
                           {part}
                         </mark>
                       ) : (
@@ -498,11 +498,11 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                       {/* Date Separator */}
                       {showDateSeparator && (
                         <div className="flex items-center gap-3 my-4">
-                          <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+                          <div className="flex-1 h-px bg-[var(--hm-n-200)]" />
                           <Badge variant="secondary" size="xs">
                             {formatChatDateSeparator(msg.createdAt, t, locale as Locale)}
                           </Badge>
-                          <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+                          <div className="flex-1 h-px bg-[var(--hm-n-200)]" />
                         </div>
                       )}
                       <div
@@ -532,7 +532,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                                       <img
                                         src={storage.getFileUrl(attachment)}
                                         alt=""
-                                        className="max-w-[200px] rounded-xl border border-neutral-200 dark:border-neutral-700"
+                                        className="max-w-[200px] rounded-xl border border-[var(--hm-border)]"
                                       />
                                     </a>
                                   ) : (
@@ -540,9 +540,9 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                                       href={storage.getFileUrl(attachment)}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                                      className="flex items-center gap-2 px-3 py-2 bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] hover:bg-[var(--hm-bg-page)] transition-colors"
                                     >
-                                      <FileText className="w-4 h-4 text-neutral-400" />
+                                      <FileText className="w-4 h-4 text-[var(--hm-fg-muted)]" />
                                       <span className="text-xs truncate max-w-[120px]">{attachment.split("/").pop()}</span>
                                     </a>
                                   )}
@@ -555,8 +555,8 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                                 className={`px-3.5 py-2 rounded-2xl transition-all ${
                                   isMine
                                     ? 'rounded-br-md text-white'
-                                    : 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-bl-md border border-neutral-200 dark:border-neutral-700'
-                                } ${isHighlighted ? 'ring-2 ring-yellow-400 dark:ring-yellow-500' : ''}`}
+                                    : 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] rounded-bl-md border border-[var(--hm-border)]'
+                                } ${isHighlighted ? 'ring-2 ring-yellow-400' : ''}`}
                                 style={isMine ? { backgroundColor: ACCENT } : {}}
                               >
                                 <p className="text-sm leading-relaxed">{highlightContent(msg.content)}</p>
@@ -565,7 +565,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                                 </p>
                               </div>
                             ) : msg.attachments?.length ? (
-                              <p className="text-[10px] text-neutral-400 mt-1">
+                              <p className="text-[10px] text-[var(--hm-fg-muted)] mt-1">
                                 {formatMessageTime(msg.createdAt)}
                               </p>
                             ) : null}
@@ -578,7 +578,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                 {/* Typing indicator */}
                 {otherUserTyping && (
                   <div className="flex items-center gap-2">
-                    <div className="flex gap-1 px-3 py-2 bg-white dark:bg-neutral-800 rounded-2xl rounded-bl-md border border-neutral-200 dark:border-neutral-700">
+                    <div className="flex gap-1 px-3 py-2 bg-[var(--hm-bg-elevated)] rounded-2xl rounded-bl-md border border-[var(--hm-border)]">
                       <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: ACCENT, animationDelay: '0ms' }} />
                       <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: ACCENT, animationDelay: '150ms' }} />
                       <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: ACCENT, animationDelay: '300ms' }} />
@@ -591,13 +591,13 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
           </div>
 
           {/* Input Area */}
-          <div className="p-3 border-t border-neutral-100 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+          <div className="p-3 border-t border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]">
             <div className="flex items-center gap-2">
               {/* File Upload Button */}
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] transition-colors disabled:opacity-50"
               >
                 {isUploading ? (
                   <LoadingSpinner size="sm" color="currentColor" />
@@ -629,7 +629,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                   }
                 }}
                 placeholder={t('projects.typeAMessage')}
-                className="flex-1 px-4 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B]/50 focus:ring-2 focus:ring-[#C4735B]/10 transition-all"
+                className="flex-1 px-4 py-2 text-sm bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] rounded-full text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)]/50 focus:ring-2 focus:ring-[var(--hm-brand-500)]/10 transition-all"
               />
 
               {/* Send Button */}

@@ -147,22 +147,22 @@ export default function PhoneChangeModal({
       {/* Modal - Sheet on mobile */}
       <div
         className="relative w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up sm:animate-fade-in max-h-[90vh] overflow-y-auto"
-        style={{ backgroundColor: 'var(--color-bg-primary)' }}
+        style={{ backgroundColor: 'var(--hm-bg-page)' }}
       >
         {/* Drag handle - mobile only */}
         <div className="sm:hidden flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+          <div className="w-10 h-1 rounded-full bg-neutral-300" />
         </div>
 
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
+        <div className="p-4 sm:p-5 border-b" style={{ borderColor: 'var(--hm-border)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5 sm:gap-3">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-[#E07B4F]/10">
-                <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-[#E07B4F]" />
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-[var(--hm-brand-500)]/10">
+                <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)]" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>
+                <h3 className="font-semibold text-sm sm:text-base" style={{ color: 'var(--hm-fg-primary)' }}>
                   {step === 'success'
                     ? (t('settings.successfullyUpdated'))
                     : step === 'otp'
@@ -170,7 +170,7 @@ export default function PhoneChangeModal({
                       : (t('settings.changePhone'))}
                 </h3>
                 {step === 'otp' && (
-                  <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                  <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: 'var(--hm-fg-secondary)' }}>
                     {locale === 'ka' ? `კოდი გაიგზავნა ${fullPhone}-ზე` : `Code sent to ${fullPhone}`}
                   </p>
                 )}
@@ -188,10 +188,10 @@ export default function PhoneChangeModal({
         <div className="p-4 sm:p-5">
           {step === 'success' ? (
             <div className="text-center py-4 sm:py-6 pb-6 sm:pb-0">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3 sm:mb-4">
                 <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
               </div>
-              <p className="text-xs sm:text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              <p className="text-xs sm:text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
                 {t('settings.yourPhoneNumberHasBeen')}
               </p>
             </div>
@@ -204,7 +204,7 @@ export default function PhoneChangeModal({
               )}
 
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--hm-fg-secondary)' }}>
                   {t('settings.4digitCode')}
                 </label>
                 <OTPInput
@@ -215,7 +215,7 @@ export default function PhoneChangeModal({
                 />
               </div>
 
-              <p className="text-[11px] sm:text-xs text-neutral-400 text-center leading-relaxed">
+              <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] text-center leading-relaxed">
                 {t('common.otpMayBeDelayed')}
               </p>
 
@@ -226,7 +226,7 @@ export default function PhoneChangeModal({
                   onClick={handleResendOtp}
                   disabled={isSendingOtp}
                   className="text-xs sm:text-sm"
-                  leftIcon={isSendingOtp ? <LoadingSpinner size="sm" color="#E07B4F" /> : <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                  leftIcon={isSendingOtp ? <LoadingSpinner size="sm" color="var(--hm-brand-500)" /> : <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                 >
                   {t('settings.resendCode')}
                 </Button>
@@ -255,18 +255,18 @@ export default function PhoneChangeModal({
             </div>
           ) : (
             <div className="space-y-3 sm:space-y-4 pb-4 sm:pb-0">
-              <p className="text-xs sm:text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              <p className="text-xs sm:text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
                 {t('settings.enterYourNewPhoneNumber')}
               </p>
 
               {currentPhone && (
-                <div className="p-2.5 sm:p-3 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
-                  <Phone className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--color-text-tertiary)' }} />
+                <div className="p-2.5 sm:p-3 rounded-xl flex items-center gap-2" style={{ backgroundColor: 'var(--hm-bg-elevated)', border: '1px solid var(--hm-border)' }}>
+                  <Phone className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--hm-fg-muted)' }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] sm:text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                    <p className="text-[10px] sm:text-xs" style={{ color: 'var(--hm-fg-muted)' }}>
                       {t('settings.currentNumber')}
                     </p>
-                    <p className="text-xs sm:text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
+                    <p className="text-xs sm:text-sm truncate" style={{ color: 'var(--hm-fg-primary)' }}>
                       {currentPhone}
                     </p>
                   </div>

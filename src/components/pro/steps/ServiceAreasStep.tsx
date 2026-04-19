@@ -53,8 +53,8 @@ export default function ServiceAreasStep({
             w-full p-6 rounded-2xl border-2 text-left transition-all duration-200
             ${
               formData.nationwide
-                ? "border-[#E07B4F] bg-gradient-to-r from-[#E07B4F]/5 to-[#E8956A]/5"
-                : "border-[var(--color-border-subtle)] hover:border-[var(--color-border)] bg-[var(--color-bg-elevated)]"
+                ? "border-[var(--hm-brand-500)] bg-gradient-to-r from-[var(--hm-brand-500)]/5 to-[#F28764]/5"
+                : "border-[var(--hm-border-subtle)] hover:border-[var(--hm-border)] bg-[var(--hm-bg-elevated)]"
             }
           `}
         >
@@ -62,23 +62,23 @@ export default function ServiceAreasStep({
             <div
               className={`
               w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl
-              ${formData.nationwide ? "bg-[#E07B4F]/10" : "bg-[var(--color-bg-tertiary)]"}
+              ${formData.nationwide ? "bg-[var(--hm-brand-500)]/10" : "bg-[var(--hm-bg-tertiary)]"}
             `}
             >
               <Globe
-                className={`w-6 h-6 ${formData.nationwide ? "text-[#E07B4F]" : "text-[var(--color-text-tertiary)]"}`}
+                className={`w-6 h-6 ${formData.nationwide ? "text-[var(--hm-brand-500)]" : "text-[var(--hm-fg-muted)]"}`}
               />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <h3
-                  className={`font-semibold ${formData.nationwide ? "text-[#E07B4F]" : "text-[var(--color-text-primary)]"}`}
+                  className={`font-semibold ${formData.nationwide ? "text-[var(--hm-brand-500)]" : "text-[var(--hm-fg-primary)]"}`}
                 >
                   მთელი ქვეყნის მასშტაბით
                 </h3>
                 <span className="text-lg">{locationData.emoji}</span>
               </div>
-              <p className="text-sm text-[var(--color-text-secondary)]">
+              <p className="text-sm text-[var(--hm-fg-secondary)]">
                 {t('common.serveClientsAcrossTheEntire')}
               </p>
             </div>
@@ -87,8 +87,8 @@ export default function ServiceAreasStep({
               w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0
               ${
                 formData.nationwide
-                  ? "border-[#E07B4F] bg-[#E07B4F]"
-                  : "border-[var(--color-border)]"
+                  ? "border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]"
+                  : "border-[var(--hm-border)]"
               }
             `}
             >
@@ -103,11 +103,11 @@ export default function ServiceAreasStep({
       {/* Divider */}
       {locationData && !formData.nationwide && (
         <div className="flex items-center gap-4">
-          <div className="flex-1 h-px bg-[var(--color-border-subtle)]" />
-          <span className="text-sm text-[var(--color-text-muted)] px-2">
+          <div className="flex-1 h-px bg-[var(--hm-border-subtle)]" />
+          <span className="text-sm text-[var(--hm-fg-muted)] px-2">
             {t('common.orSelectCities')}
           </span>
-          <div className="flex-1 h-px bg-[var(--color-border-subtle)]" />
+          <div className="flex-1 h-px bg-[var(--hm-border-subtle)]" />
         </div>
       )}
 
@@ -117,10 +117,10 @@ export default function ServiceAreasStep({
           {Object.entries(locationData.regions).map(([regionName, cities]) => (
             <div
               key={regionName}
-              className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-5 shadow-sm"
+              className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)] p-5 shadow-sm"
             >
-              <h4 className="font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#E07B4F]" />
+              <h4 className="font-semibold text-[var(--hm-fg-primary)] mb-4 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-[var(--hm-brand-500)]" />
                 {regionName}
               </h4>
               <div className="flex flex-wrap gap-2">
@@ -136,8 +136,8 @@ export default function ServiceAreasStep({
                         transition-all duration-200
                         ${
                           isSelected
-                            ? "bg-[#E07B4F] text-white shadow-md shadow-[#E07B4F]/20"
-                            : "bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)]"
+                            ? "bg-[var(--hm-brand-500)] text-white shadow-md shadow-[var(--hm-brand-500)]/20"
+                            : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)]"
                         }
                       `}
                     >

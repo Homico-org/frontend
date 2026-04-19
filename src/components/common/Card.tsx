@@ -31,30 +31,30 @@ const baseStyles = `
 const variantStyles = {
   default: `
     bg-gradient-to-br from-[#FFFDF9] via-[#FFF9F0]/95 to-[#FDF5E6]/90
-    dark:from-[#1c1917] dark:via-[#1a1614]/95 dark:to-[#15120f]/90
-    border border-[#E8D5C4]/60 dark:border-[#3d2f24]/60
+
+    border border-[#E8D5C4]/60
     shadow-[0_2px_8px_-2px_rgba(210,105,30,0.08),0_4px_16px_-4px_rgba(139,69,19,0.06)]
-    dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3),0_4px_16px_-4px_rgba(0,0,0,0.2)]
+,0,0,0.3),0_4px_16px_-4px_rgba(0,0,0,0.2)]
   `,
   elevated: `
     bg-gradient-to-br from-[#FFFDF9]/95 via-[#FFF9F0]/90 to-[#FDF5E6]/85
-    dark:from-[#1f1b18]/95 dark:via-[#1c1815]/90 dark:to-[#171311]/85
-    border-2 border-[#E07B4F]/25 dark:border-[#E8956A]/25
+
+    border-2 border-[var(--hm-brand-500)]/25
     shadow-[0_4px_12px_-2px_rgba(210,105,30,0.12),0_8px_24px_-6px_rgba(139,69,19,0.1)]
-    dark:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4),0_8px_24px_-6px_rgba(0,0,0,0.3)]
+,0,0,0.4),0_8px_24px_-6px_rgba(0,0,0,0.3)]
     backdrop-blur-sm
   `,
   subtle: `
-    bg-gradient-to-br from-[#FDFBF7]/80 via-[#FAF6F0]/70 to-[#F5EFE6]/60
-    dark:from-[#1a1715]/80 dark:via-[#171412]/70 dark:to-[#14110e]/60
-    border border-[#E8D5C4]/30 dark:border-[#3d2f24]/30
+    bg-gradient-to-br from-[var(--hm-bg-elevated)]/80 via-[var(--hm-bg-page)]/70 to-[var(--hm-bg-tertiary)]/60
+
+    border border-[#E8D5C4]/30
     shadow-[0_1px_4px_-1px_rgba(210,105,30,0.05)]
-    dark:shadow-[0_1px_4px_-1px_rgba(0,0,0,0.2)]
+,0,0,0.2)]
   `,
   outlined: `
     bg-transparent
-    border-2 border-[#E07B4F]/15 dark:border-[#E8956A]/20
-    hover:border-[#E07B4F]/30 dark:hover:border-[#E8956A]/35
+    border-2 border-[var(--hm-brand-500)]/15
+    hover:border-[var(--hm-brand-500)]/30
   `,
 };
 
@@ -63,22 +63,22 @@ const hoverStyles = {
   none: '',
   lift: `
     hover:-translate-y-1 hover:shadow-[0_8px_20px_-4px_rgba(210,105,30,0.2),0_12px_32px_-8px_rgba(139,69,19,0.15)]
-    dark:hover:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.5),0_12px_32px_-8px_rgba(0,0,0,0.4)]
-    hover:border-[#E07B4F]/50 dark:hover:border-[#E8956A]/50
+,0,0,0.5),0_12px_32px_-8px_rgba(0,0,0,0.4)]
+    hover:border-[var(--hm-brand-500)]/50
   `,
   glow: `
     hover:shadow-[0_0_0_1px_rgba(210,105,30,0.1),0_4px_16px_-2px_rgba(210,105,30,0.2),0_8px_24px_-4px_rgba(139,69,19,0.15)]
-    dark:hover:shadow-[0_0_0_1px_rgba(205,133,63,0.15),0_4px_16px_-2px_rgba(205,133,63,0.2),0_8px_24px_-4px_rgba(139,69,19,0.25)]
-    hover:border-[#E07B4F]/30 dark:hover:border-[#E8956A]/40
+,133,63,0.15),0_4px_16px_-2px_rgba(205,133,63,0.2),0_8px_24px_-4px_rgba(139,69,19,0.25)]
+    hover:border-[var(--hm-brand-500)]/30
   `,
   scale: `
     hover:scale-[1.02] hover:shadow-[0_6px_16px_-3px_rgba(210,105,30,0.12),0_10px_28px_-6px_rgba(139,69,19,0.1)]
-    dark:hover:shadow-[0_6px_16px_-3px_rgba(0,0,0,0.4),0_10px_28px_-6px_rgba(0,0,0,0.3)]
+,0,0,0.4),0_10px_28px_-6px_rgba(0,0,0,0.3)]
   `,
   true: `
     hover:-translate-y-0.5 hover:shadow-[0_6px_16px_-3px_rgba(210,105,30,0.12),0_10px_28px_-6px_rgba(139,69,19,0.1)]
-    dark:hover:shadow-[0_6px_16px_-3px_rgba(0,0,0,0.4),0_10px_28px_-6px_rgba(0,0,0,0.3)]
-    hover:border-[#E07B4F]/20 dark:hover:border-[#E8956A]/30
+,0,0,0.4),0_10px_28px_-6px_rgba(0,0,0,0.3)]
+    hover:border-[var(--hm-brand-500)]/20
   `,
 };
 
@@ -228,7 +228,7 @@ export function CardFooter({
   return (
     <div className={`
       px-4 py-3
-      ${border ? 'border-t border-[#E8D5C4]/40 dark:border-[#3d2f24]/40' : ''}
+      ${border ? 'border-t border-[#E8D5C4]/40' : ''}
       ${className}
     `}>
       {children}
@@ -261,25 +261,25 @@ export function CardBadge({
 
   const variantColorStyles = {
     solid: {
-      primary: 'bg-[#E07B4F] text-white',
-      success: 'bg-emerald-500 text-white',
-      warning: 'bg-amber-500 text-white',
-      danger: 'bg-red-500 text-white',
-      neutral: 'bg-neutral-700 dark:bg-neutral-600 text-white',
+      primary: 'bg-[var(--hm-brand-500)] text-white',
+      success: 'bg-[var(--hm-success-500)] text-white',
+      warning: 'bg-[var(--hm-warning-500)] text-white',
+      danger: 'bg-[var(--hm-error-500)] text-white',
+      neutral: 'bg-neutral-700 text-white',
     },
     glass: {
-      primary: 'bg-white/90 dark:bg-gray-900/90 text-[#E07B4F] border border-[#E07B4F]/10',
-      success: 'bg-white/90 dark:bg-gray-900/90 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10',
-      warning: 'bg-white/90 dark:bg-gray-900/90 text-amber-600 dark:text-amber-400 border border-amber-500/10',
-      danger: 'bg-white/90 dark:bg-gray-900/90 text-red-600 dark:text-red-400 border border-red-500/10',
-      neutral: 'bg-white/90 dark:bg-gray-900/90 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700',
+      primary: 'bg-white/90 text-[var(--hm-brand-500)] border border-[var(--hm-brand-500)]/10',
+      success: 'bg-white/90 text-[var(--hm-success-500)] border border-[var(--hm-success-500)]/10',
+      warning: 'bg-white/90 text-[var(--hm-warning-500)] border border-[var(--hm-warning-500)]/10',
+      danger: 'bg-white/90 text-[var(--hm-error-500)] border border-[var(--hm-error-500)]/10',
+      neutral: 'bg-white/90 text-[var(--hm-fg-secondary)] border border-[var(--hm-border)]',
     },
     outline: {
-      primary: 'bg-transparent border-2 border-[#E07B4F] text-[#E07B4F]',
-      success: 'bg-transparent border-2 border-emerald-500 text-emerald-600 dark:text-emerald-400',
-      warning: 'bg-transparent border-2 border-amber-500 text-amber-600 dark:text-amber-400',
-      danger: 'bg-transparent border-2 border-red-500 text-red-600 dark:text-red-400',
-      neutral: 'bg-transparent border-2 border-neutral-400 text-neutral-600 dark:text-neutral-400',
+      primary: 'bg-transparent border-2 border-[var(--hm-brand-500)] text-[var(--hm-brand-500)]',
+      success: 'bg-transparent border-2 border-[var(--hm-success-500)] text-[var(--hm-success-500)]',
+      warning: 'bg-transparent border-2 border-[var(--hm-warning-500)] text-[var(--hm-warning-500)]',
+      danger: 'bg-transparent border-2 border-[var(--hm-error-500)] text-[var(--hm-error-500)]',
+      neutral: 'bg-transparent border-2 border-neutral-400 text-[var(--hm-fg-secondary)]',
     },
   };
 
@@ -309,7 +309,7 @@ export function CardMeta({
   return (
     <div className={`
       flex items-center gap-3 flex-wrap
-      text-xs text-[var(--color-text-tertiary)]
+      text-xs text-[var(--hm-fg-muted)]
       ${className}
     `}>
       {children}
@@ -332,7 +332,7 @@ export function CardMetaItem({
   return (
     <span className={`
       inline-flex items-center gap-1.5
-      ${highlight ? 'text-[#E07B4F] font-medium' : ''}
+      ${highlight ? 'text-[var(--hm-brand-500)] font-medium' : ''}
     `}>
       {icon && <span className="opacity-60">{icon}</span>}
       {children}
@@ -395,8 +395,8 @@ export function CardTitle({
   return (
     <h3 className={`
       leading-snug
-      text-[var(--color-text-primary)]
-      group-hover:text-[#E07B4F] transition-colors
+      text-[var(--hm-fg-primary)]
+      group-hover:text-[var(--hm-brand-500)] transition-colors
       ${sizeStyles[size]}
       ${truncateClass}
       ${className}
@@ -421,7 +421,7 @@ export function CardDescription({
   return (
     <p className={`
       text-sm leading-relaxed
-      text-[var(--color-text-tertiary)]
+      text-[var(--hm-fg-muted)]
       line-clamp-${lines}
       ${className}
     `}>
@@ -450,13 +450,13 @@ export function CardTags({
       {visibleTags.map((tag, i) => (
         <span
           key={i}
-          className="px-2.5 py-1 text-xs font-medium rounded-lg bg-[#E07B4F]/10 text-[#E07B4F]"
+          className="px-2.5 py-1 text-xs font-medium rounded-lg bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]"
         >
           {tag}
         </span>
       ))}
       {remaining > 0 && (
-        <span className="px-2 py-1 text-xs text-[var(--color-text-tertiary)]">
+        <span className="px-2 py-1 text-xs text-[var(--hm-fg-muted)]">
           +{remaining}
         </span>
       )}

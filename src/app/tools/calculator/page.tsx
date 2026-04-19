@@ -9,7 +9,7 @@ export default function CalculatorPage() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-cream-50 dark:bg-[#0a0a0a] pb-8">
+    <div className="min-h-screen bg-[var(--hm-bg-page)] pb-8">
       {/* Page Header */}
       <PageHeader
         icon={Calculator}

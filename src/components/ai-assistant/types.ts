@@ -1,13 +1,35 @@
-// Rich Content Types
+// ─── Shared Types ────────────────────────────────────────────────────────────
+
+export type PricingModel = "fixed" | "range" | "byAgreement" | "per_sqm";
+export type ReviewSource = "homico" | "external";
+export type ChatRole = "user" | "assistant";
+export type ActionType = "link" | "action";
+export type SessionStatus = "active" | "closed";
+
+export interface ProPriceRange {
+  min?: number;
+  max?: number;
+  model: PricingModel;
+  currency: string;
+}
+
+export interface PriceRangeValues {
+  min: number;
+  max: number;
+  currency: string;
+}
+
+// ─── Rich Content Types ─────────────────────────────────────────────────────
+
 export enum RichContentType {
-  PROFESSIONAL_CARD = 'PROFESSIONAL_CARD',
-  PROFESSIONAL_LIST = 'PROFESSIONAL_LIST',
-  CATEGORY_LIST = 'CATEGORY_LIST',
-  REVIEW_LIST = 'REVIEW_LIST',
-  PRICE_INFO = 'PRICE_INFO',
-  FEATURE_EXPLANATION = 'FEATURE_EXPLANATION',
-  FEATURE_LIST = 'FEATURE_LIST',
-  FAQ_LIST = 'FAQ_LIST',
+  PROFESSIONAL_CARD = "PROFESSIONAL_CARD",
+  PROFESSIONAL_LIST = "PROFESSIONAL_LIST",
+  CATEGORY_LIST = "CATEGORY_LIST",
+  REVIEW_LIST = "REVIEW_LIST",
+  PRICE_INFO = "PRICE_INFO",
+  FEATURE_EXPLANATION = "FEATURE_EXPLANATION",
+  FEATURE_LIST = "FEATURE_LIST",
+  FAQ_LIST = "FAQ_LIST",
 }
 
 export interface ProfessionalCardData {
@@ -22,12 +44,7 @@ export interface ProfessionalCardData {
   totalReviews: number;
   primaryCategory: string;
   primaryCategoryKa?: string;
-  priceRange?: {
-    min?: number;
-    max?: number;
-    model: 'fixed' | 'range' | 'byAgreement' | 'per_sqm';
-    currency: string;
-  };
+  priceRange?: ProPriceRange;
   portfolioCount: number;
   completedJobs: number;
   profileUrl: string;
@@ -49,7 +66,7 @@ export interface ReviewItem {
   clientName: string;
   isAnonymous: boolean;
   isVerified: boolean;
-  source: 'homico' | 'external';
+  source: ReviewSource;
   projectTitle?: string;
   createdAt: string;
 }
@@ -65,11 +82,7 @@ export interface PriceRange {
 export interface PriceInfo {
   category: string;
   categoryKa?: string;
-  averagePrice?: {
-    min: number;
-    max: number;
-    currency: string;
-  };
+  averagePrice?: PriceRangeValues;
   priceRanges: PriceRange[];
   professionalCount: number;
   note?: string;
@@ -127,7 +140,7 @@ export interface RichContent {
 
 // Chat Types
 export interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: ChatRole;
   content: string;
   createdAt?: string;
   suggestedActions?: SuggestedAction[];
@@ -135,7 +148,7 @@ export interface ChatMessage {
 }
 
 export interface SuggestedAction {
-  type: 'link' | 'action';
+  type: ActionType;
   label: string;
   labelKa?: string;
   labelRu?: string;
@@ -147,7 +160,7 @@ export interface SuggestedAction {
 
 export interface ChatSession {
   sessionId: string;
-  status: 'active' | 'closed';
+  status: SessionStatus;
   messageCount: number;
   messages: ChatMessage[];
   createdAt: string;

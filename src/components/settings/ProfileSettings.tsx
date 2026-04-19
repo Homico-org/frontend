@@ -199,7 +199,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                 src={formData.avatar}
                 name={formData.name}
                 size="2xl"
-                className="ring-4 ring-neutral-200 dark:ring-neutral-700"
+                className="ring-4 ring-neutral-200"
               />
               {isUploadingAvatar && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">
@@ -225,10 +225,10 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
               />
             </div>
             <div className="text-center sm:text-left">
-              <h3 className="font-medium text-neutral-900 dark:text-white">
+              <h3 className="font-medium text-[var(--hm-fg-primary)]">
                 {t("common.profilePhoto")}
               </h3>
-              <p className="text-sm mt-1 text-neutral-500">
+              <p className="text-sm mt-1 text-[var(--hm-fg-muted)]">
                 {t("register.uploadARealPhotoOf")}
               </p>
               <Button
@@ -245,7 +245,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
           </div>
         )}
 
-        <div className="border-t border-neutral-200 dark:border-neutral-800 pt-5 sm:pt-6">
+        <div className="border-t border-[var(--hm-border)] pt-5 sm:pt-6">
           <div className="grid gap-3 sm:gap-4">
             <FormGroup>
               <Label>{t('common.fullName')}</Label>
@@ -269,7 +269,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                     {t('common.verified')}
                   </Badge>
                 ) : (
-                  <span className="text-xs text-neutral-400">{t('settings.changingYourEmailRequiresVerification')}</span>
+                  <span className="text-xs text-[var(--hm-fg-muted)]">{t('settings.changingYourEmailRequiresVerification')}</span>
                 )}
                 <Button variant="outline" size="sm" onClick={onOpenEmailModal}>
                   {formData.email ? t('settings.change') : t('common.add')}
@@ -291,7 +291,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                     {t('common.verified')}
                   </Badge>
                 ) : (
-                  <span className="text-xs text-neutral-400">{t('settings.changingYourNumberRequiresVerification')}</span>
+                  <span className="text-xs text-[var(--hm-fg-muted)]">{t('settings.changingYourNumberRequiresVerification')}</span>
                 )}
                 <Button variant="outline" size="sm" onClick={onOpenPhoneModal}>
                   {formData.phone ? t('settings.change') : t('common.add')}

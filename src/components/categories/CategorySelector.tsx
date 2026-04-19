@@ -157,7 +157,7 @@ export default function CategorySelector({
     return (
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {[1, 2, 3, 4].map(i => (
-          <div key={i} className="h-20 rounded-xl bg-neutral-100 animate-pulse" />
+          <div key={i} className="h-20 rounded-xl bg-[var(--hm-bg-tertiary)] animate-pulse" />
         ))}
       </div>
     );
@@ -184,26 +184,26 @@ export default function CategorySelector({
               disabled={isDisabled}
               className={`relative p-3 rounded-xl border-2 text-center transition-all duration-200 ${
                 isSelected
-                  ? 'border-[#C4735B] bg-[#C4735B]/5 shadow-sm'
+                  ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 shadow-sm'
                   : isDisabled
-                    ? 'border-neutral-100 bg-neutral-50 opacity-50 cursor-not-allowed'
-                    : 'border-neutral-200 bg-white hover:border-neutral-300'
+                    ? 'border-[var(--hm-border-subtle)] bg-[var(--hm-bg-page)] opacity-50 cursor-not-allowed'
+                    : 'border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] hover:border-neutral-300'
               }`}
             >
               <div className={`w-10 h-10 mx-auto rounded-lg flex items-center justify-center mb-2 transition-colors ${
-                isSelected ? 'bg-[#C4735B] text-white' : 'bg-neutral-100 text-neutral-500'
+                isSelected ? 'bg-[var(--hm-brand-500)] text-white' : 'bg-[var(--hm-bg-tertiary)] text-neutral-500'
               }`}>
                 <CategoryIcon type={category.icon || category.key} className="w-5 h-5" />
               </div>
               <h3 className={`text-xs font-medium transition-colors ${
-                isSelected ? 'text-[#C4735B]' : 'text-neutral-700'
+                isSelected ? 'text-[var(--hm-brand-500)]' : 'text-neutral-700'
               }`}>
                 {locale === 'ka' ? category.nameKa : category.name}
               </h3>
               
               {/* Selection indicator for multi mode */}
               {mode === 'multi' && isSelected && (
-                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#C4735B] flex items-center justify-center">
+                <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center">
                   <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
@@ -216,14 +216,14 @@ export default function CategorySelector({
 
       {/* Subcategories Panel - Single Mode */}
       {mode === 'single' && selectedCategory && selectedCategoryData && (
-        <div className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                <CategoryIcon type={selectedCategoryData.icon || selectedCategoryData.key} className="w-3.5 h-3.5 text-[#C4735B]" />
+              <div className="w-6 h-6 rounded-md bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
+                <CategoryIcon type={selectedCategoryData.icon || selectedCategoryData.key} className="w-3.5 h-3.5 text-[var(--hm-brand-500)]" />
               </div>
-              <span className="font-medium text-sm text-neutral-900">
-                {t('common.service')} <span className="text-[#C4735B]">*</span>
+              <span className="font-medium text-sm text-[var(--hm-fg-primary)]">
+                {t('common.service')} <span className="text-[var(--hm-brand-500)]">*</span>
               </span>
             </div>
             {showSubcategorySearch && (
@@ -248,8 +248,8 @@ export default function CategorySelector({
                   onClick={() => handleSubcategoryClick(sub.key, selectedCategoryData.key)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                     isSubSelected
-                      ? 'bg-[#C4735B] text-white'
-                      : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                      ? 'bg-[var(--hm-brand-500)] text-white'
+                      : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-neutral-200'
                   }`}
                 >
                   {locale === 'ka' ? sub.nameKa : sub.name}
@@ -268,19 +268,19 @@ export default function CategorySelector({
             if (!categoryData) return null;
             
             return (
-              <div key={categoryKey} className="bg-white rounded-xl border border-neutral-200 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <div key={categoryKey} className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-md bg-[#C4735B]/10 flex items-center justify-center">
-                      <CategoryIcon type={categoryData.icon || categoryData.key} className="w-3.5 h-3.5 text-[#C4735B]" />
+                    <div className="w-6 h-6 rounded-md bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
+                      <CategoryIcon type={categoryData.icon || categoryData.key} className="w-3.5 h-3.5 text-[var(--hm-brand-500)]" />
                     </div>
-                    <span className="font-medium text-sm text-neutral-900">
+                    <span className="font-medium text-sm text-[var(--hm-fg-primary)]">
                       {locale === 'ka' ? categoryData.nameKa : categoryData.name}
                     </span>
                   </div>
                   <button
                     onClick={() => handleCategoryClick(categoryKey)}
-                    className="p-1 rounded-md hover:bg-neutral-100 text-neutral-400 hover:text-neutral-600"
+                    className="p-1 rounded-md hover:bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -295,8 +295,8 @@ export default function CategorySelector({
                         onClick={() => handleSubcategoryClick(sub.key, categoryKey)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                           isSubSelected
-                            ? 'bg-[#C4735B] text-white'
-                            : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                            ? 'bg-[var(--hm-brand-500)] text-white'
+                            : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-neutral-200'
                         }`}
                       >
                         {locale === 'ka' ? sub.nameKa : sub.name}
@@ -312,7 +312,7 @@ export default function CategorySelector({
 
       {/* Selected count for multi mode */}
       {mode === 'multi' && (
-        <div className="flex items-center justify-between text-xs text-neutral-500">
+        <div className="flex items-center justify-between text-xs text-[var(--hm-fg-muted)]">
           <span>
             {locale === 'ka' 
               ? `არჩეული კატეგორიები: ${selected.length}/${maxCategories}`

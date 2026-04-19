@@ -1,4 +1,5 @@
 'use client';
+import { ACCENT_COLOR } from "@/constants/theme";
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Header, { HeaderSpacer } from '@/components/common/Header';
@@ -42,9 +43,9 @@ const COLORS = {
   gold: "#D4AF37",
   goldLight: "#E8C547",
   goldDark: "#B8962F",
-  terracotta: "#C4735B",
-  terracottaLight: "#D4897A",
-  terracottaDark: "#A85D4A",
+  terracotta: ACCENT_COLOR,
+  terracottaLight: "#F06B43",
+  terracottaDark: "#A92B08",
 };
 
 // Premium tier configuration
@@ -89,7 +90,7 @@ const PREMIUM_TIERS: Record<string, {
     accentColor: COLORS.terracotta,
     gradientFrom: COLORS.terracotta,
     gradientTo: COLORS.terracottaDark,
-    glowColor: 'rgba(196, 115, 91, 0.35)',
+    glowColor: 'rgba(239, 78, 36, 0.35)',
     features: [
       { en: 'Pro Badge & Verification', ka: 'პრო ბეჯი და ვერიფიკაცია' },
       { en: '5x Profile Views', ka: '5x ნახვა' },
@@ -120,7 +121,7 @@ const PREMIUM_TIERS: Record<string, {
 };
 
 function CheckoutContent() {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { isAuthenticated } = useAuth();
   const { trackEvent } = useAnalytics();
   const router = useRouter();
@@ -280,7 +281,7 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       {/* Custom Styles */}
       <style jsx global>{`
         @keyframes float {
@@ -343,7 +344,7 @@ function CheckoutContent() {
           {/* Back Link */}
           <Link
             href="/pro/premium"
-            className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors mb-8 group"
+            className="inline-flex items-center gap-2 text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors mb-8 group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             {t('premium.backToPlans')}
@@ -364,7 +365,7 @@ function CheckoutContent() {
                         ? 'text-white' 
                         : step.active 
                           ? 'text-white shadow-lg' 
-                          : 'bg-neutral-100 text-neutral-400'
+                          : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                     }`}
                     style={{ 
                       background: step.done || step.active 
@@ -376,7 +377,7 @@ function CheckoutContent() {
                     {step.done ? <Check className="w-4 h-4" /> : step.num}
                   </div>
                   <span className={`text-sm font-medium hidden sm:block ${
-                    step.done || step.active ? 'text-neutral-900' : 'text-neutral-400'
+                    step.done || step.active ? 'text-[var(--hm-fg-primary)]' : 'text-[var(--hm-fg-muted)]'
                   }`}>
                     {step.label}
                   </span>
@@ -394,13 +395,13 @@ function CheckoutContent() {
           {/* Page Title */}
           <div className="text-center mb-10">
             <h1 
-              className="text-3xl sm:text-4xl font-bold text-neutral-900 mb-3"
+              className="text-3xl sm:text-4xl font-bold text-[var(--hm-fg-primary)] mb-3"
               style={{ fontFamily: "var(--font-sans)" }}
             >
               {t('premium.completeYourOrder')}
             </h1>
-            <p className="text-neutral-500">
-              {locale === 'ka' ? 'მზად ხარ ბიზნესის გასაზრდელად' : "You're one step away from growing your business"}
+            <p className="text-[var(--hm-fg-muted)]">
+              {t('premium.readyToGrow')}
             </p>
           </div>
 
@@ -414,10 +415,10 @@ function CheckoutContent() {
                   style={{ background: `linear-gradient(135deg, ${tier.gradientFrom}40, ${tier.gradientTo}40)` }}
                 />
                 
-                <div className="relative bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200/50 dark:border-neutral-800 shadow-2xl overflow-hidden">
+                <div className="relative bg-[var(--hm-bg-elevated)] rounded-3xl border border-[var(--hm-border-subtle)] shadow-2xl overflow-hidden">
                   {/* Form Header */}
                   <div 
-                    className="p-6 sm:p-8 border-b border-neutral-100 dark:border-neutral-800"
+                    className="p-6 sm:p-8 border-b border-[var(--hm-border-subtle)]"
                     style={{ background: `linear-gradient(135deg, ${tier.accentColor}08, transparent)` }}
                   >
                     <div className="flex items-center gap-4">
@@ -431,16 +432,16 @@ function CheckoutContent() {
                         <CreditCard className="w-7 h-7 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+                        <h2 className="text-xl font-bold text-[var(--hm-fg-primary)]">
                           {t('premium.paymentDetails')}
                         </h2>
-                        <p className="text-sm text-neutral-500">
+                        <p className="text-sm text-[var(--hm-fg-muted)]">
                           {t('premium.securePaymentWithSslEncryption')}
                         </p>
                       </div>
                       <div className="ml-auto flex items-center gap-2">
-                        <Lock className="w-4 h-4 text-emerald-500" />
-                        <span className="text-xs font-medium text-emerald-600">SSL</span>
+                        <Lock className="w-4 h-4 text-[var(--hm-success-500)]" />
+                        <span className="text-xs font-medium text-[var(--hm-success-500)]">SSL</span>
                       </div>
                     </div>
                   </div>
@@ -454,7 +455,7 @@ function CheckoutContent() {
                         </div>
                       ) : isAuthenticated && savedCards.length > 0 && !useNewCard ? (
                         <div className="space-y-5">
-                          <label className="block text-sm font-semibold text-neutral-900 dark:text-white">
+                          <label className="block text-sm font-semibold text-[var(--hm-fg-primary)]">
                             {t('premium.savedCards')}
                           </label>
 
@@ -463,7 +464,7 @@ function CheckoutContent() {
                             <button
                               type="button"
                               onClick={() => setShowCardDropdown(!showCardDropdown)}
-                              className="w-full p-5 rounded-2xl border-2 bg-white dark:bg-neutral-800 flex items-center justify-between transition-all duration-300"
+                              className="w-full p-5 rounded-2xl border-2 bg-[var(--hm-bg-elevated)] flex items-center justify-between transition-all duration-300"
                               style={{ 
                                 borderColor: showCardDropdown ? tier.accentColor : 'rgb(229 231 235)',
                                 boxShadow: showCardDropdown ? `0 0 0 4px ${tier.accentColor}15` : undefined,
@@ -485,25 +486,25 @@ function CheckoutContent() {
                                       savedCards.find(c => c.id === selectedSavedCard)?.cardBrand === 'Mastercard' ? 'MC' : 'CARD'}
                                   </div>
                                   <div>
-                                    <span className="font-semibold text-neutral-900 dark:text-white font-mono tracking-wider">
+                                    <span className="font-semibold text-[var(--hm-fg-primary)] font-mono tracking-wider">
                                       •••• •••• •••• {savedCards.find(c => c.id === selectedSavedCard)?.cardLast4}
                                     </span>
-                                    <p className="text-sm text-neutral-500 mt-0.5">
+                                    <p className="text-sm text-[var(--hm-fg-muted)] mt-0.5">
                                       {t('premium.expires')}: {savedCards.find(c => c.id === selectedSavedCard)?.cardExpiry}
                                     </p>
                                   </div>
                                 </div>
                               ) : (
-                                <span className="text-neutral-400">
+                                <span className="text-[var(--hm-fg-muted)]">
                                   {t('premium.selectACard')}
                                 </span>
                               )}
-                              <ChevronDown className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${showCardDropdown ? 'rotate-180' : ''}`} />
+                              <ChevronDown className={`w-5 h-5 text-[var(--hm-fg-muted)] transition-transform duration-300 ${showCardDropdown ? 'rotate-180' : ''}`} />
                             </button>
 
                             {/* Dropdown Menu */}
                             {showCardDropdown && (
-                              <div className="absolute top-full left-0 right-0 mt-2 z-20 rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-2xl overflow-hidden">
+                              <div className="absolute top-full left-0 right-0 mt-2 z-20 rounded-2xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] shadow-2xl overflow-hidden">
                                 {savedCards.map((card) => (
                                   <button
                                     key={card.id}
@@ -513,9 +514,9 @@ function CheckoutContent() {
                                       setShowCardDropdown(false);
                                     }}
                                     className={`w-full p-4 flex items-center gap-4 transition-colors ${
-                                      selectedSavedCard === card.id 
-                                        ? 'bg-neutral-50 dark:bg-neutral-700' 
-                                        : 'hover:bg-neutral-50 dark:hover:bg-neutral-700'
+                                      selectedSavedCard === card.id
+                                        ? 'bg-[var(--hm-bg-page)]'
+                                        : 'hover:bg-[var(--hm-bg-page)]'
                                     }`}
                                   >
                                     <div
@@ -531,10 +532,10 @@ function CheckoutContent() {
                                       {card.cardBrand === 'Visa' ? 'VISA' : card.cardBrand === 'Mastercard' ? 'MC' : 'CARD'}
                                     </div>
                                     <div className="flex-1 text-left">
-                                      <span className="font-medium text-neutral-900 dark:text-white font-mono">
+                                      <span className="font-medium text-[var(--hm-fg-primary)] font-mono">
                                         •••• {card.cardLast4}
                                       </span>
-                                      <span className="text-xs text-neutral-500 ml-2">
+                                      <span className="text-xs text-[var(--hm-fg-muted)] ml-2">
                                         {card.cardholderName}
                                       </span>
                                     </div>
@@ -562,7 +563,7 @@ function CheckoutContent() {
 
                           {/* CVC for saved card */}
                           <div>
-                            <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
+                            <label className="block text-sm font-semibold text-[var(--hm-fg-primary)] mb-3">
                               {t('premium.securityCode')} (CVC)
                             </label>
                             <div className="relative max-w-[160px]">
@@ -572,7 +573,7 @@ function CheckoutContent() {
                                 onChange={(e) => handleInputChange('cardCvc', e.target.value)}
                                 placeholder="•••"
                                 maxLength={4}
-                                className="w-full px-5 py-4 rounded-xl border-2 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-lg font-mono tracking-widest focus:outline-none transition-all duration-300 text-center"
+                                className="w-full px-5 py-4 rounded-xl border-2 bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] text-lg font-mono tracking-widest focus:outline-none transition-all duration-300 text-center"
                                 style={{
                                   borderColor: focusedField === 'cardCvc' ? tier.accentColor : 'rgb(229 231 235)',
                                   boxShadow: focusedField === 'cardCvc' ? `0 0 0 4px ${tier.accentColor}15` : undefined,
@@ -581,7 +582,7 @@ function CheckoutContent() {
                                 onBlur={() => setFocusedField(null)}
                                 required
                               />
-                              <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                              <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--hm-fg-muted)]" />
                             </div>
                           </div>
 
@@ -614,7 +615,7 @@ function CheckoutContent() {
 
                           {/* Card Number */}
                           <div>
-                            <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
+                            <label className="block text-sm font-semibold text-[var(--hm-fg-primary)] mb-3">
                               {t('premium.cardNumber')}
                             </label>
                             <div className="relative">
@@ -636,7 +637,7 @@ function CheckoutContent() {
                                 onChange={(e) => handleInputChange('cardNumber', e.target.value)}
                                 placeholder="0000 0000 0000 0000"
                                 maxLength={19}
-                                className="w-full pl-20 pr-5 py-4 rounded-xl border-2 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-lg font-mono tracking-wider focus:outline-none transition-all duration-300"
+                                className="w-full pl-20 pr-5 py-4 rounded-xl border-2 bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] text-lg font-mono tracking-wider focus:outline-none transition-all duration-300"
                                 style={{
                                   borderColor: focusedField === 'cardNumber' ? tier.accentColor : 'rgb(229 231 235)',
                                   boxShadow: focusedField === 'cardNumber' ? `0 0 0 4px ${tier.accentColor}15` : undefined,
@@ -651,7 +652,7 @@ function CheckoutContent() {
                           {/* Expiry and CVC */}
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
+                              <label className="block text-sm font-semibold text-[var(--hm-fg-primary)] mb-3">
                                 {t('premium.expiryDate')}
                               </label>
                               <input
@@ -660,7 +661,7 @@ function CheckoutContent() {
                                 onChange={(e) => handleInputChange('cardExpiry', e.target.value)}
                                 placeholder="MM / YY"
                                 maxLength={5}
-                                className="w-full px-5 py-4 rounded-xl border-2 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-lg font-mono text-center focus:outline-none transition-all duration-300"
+                                className="w-full px-5 py-4 rounded-xl border-2 bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] text-lg font-mono text-center focus:outline-none transition-all duration-300"
                                 style={{
                                   borderColor: focusedField === 'cardExpiry' ? tier.accentColor : 'rgb(229 231 235)',
                                   boxShadow: focusedField === 'cardExpiry' ? `0 0 0 4px ${tier.accentColor}15` : undefined,
@@ -671,7 +672,7 @@ function CheckoutContent() {
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
+                              <label className="block text-sm font-semibold text-[var(--hm-fg-primary)] mb-3">
                                 CVC
                               </label>
                               <div className="relative">
@@ -681,7 +682,7 @@ function CheckoutContent() {
                                   onChange={(e) => handleInputChange('cardCvc', e.target.value)}
                                   placeholder="•••"
                                   maxLength={4}
-                                  className="w-full px-5 py-4 rounded-xl border-2 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-lg font-mono text-center focus:outline-none transition-all duration-300"
+                                  className="w-full px-5 py-4 rounded-xl border-2 bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] text-lg font-mono text-center focus:outline-none transition-all duration-300"
                                   style={{
                                     borderColor: focusedField === 'cardCvc' ? tier.accentColor : 'rgb(229 231 235)',
                                     boxShadow: focusedField === 'cardCvc' ? `0 0 0 4px ${tier.accentColor}15` : undefined,
@@ -690,14 +691,14 @@ function CheckoutContent() {
                                   onBlur={() => setFocusedField(null)}
                                   required
                                 />
-                                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--hm-fg-muted)]" />
                               </div>
                             </div>
                           </div>
 
                           {/* Card Name */}
                           <div>
-                            <label className="block text-sm font-semibold text-neutral-900 dark:text-white mb-3">
+                            <label className="block text-sm font-semibold text-[var(--hm-fg-primary)] mb-3">
                               {t('premium.cardholderName')}
                             </label>
                             <input
@@ -705,7 +706,7 @@ function CheckoutContent() {
                               value={formData.cardName}
                               onChange={(e) => setFormData(prev => ({ ...prev, cardName: e.target.value }))}
                               placeholder={t('premium.johnDoe')}
-                              className="w-full px-5 py-4 rounded-xl border-2 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none transition-all duration-300"
+                              className="w-full px-5 py-4 rounded-xl border-2 bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] focus:outline-none transition-all duration-300"
                               style={{
                                 borderColor: focusedField === 'cardName' ? tier.accentColor : 'rgb(229 231 235)',
                                 boxShadow: focusedField === 'cardName' ? `0 0 0 4px ${tier.accentColor}15` : undefined,
@@ -734,7 +735,7 @@ function CheckoutContent() {
                                 />
                                 <div
                                   className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
-                                    saveNewCard ? '' : 'border-2 border-neutral-300'
+                                    saveNewCard ? '' : 'border-2 border-[var(--hm-border)]'
                                   }`}
                                   style={saveNewCard ? { background: `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})` } : {}}
                                 >
@@ -743,7 +744,7 @@ function CheckoutContent() {
                               </div>
                               <div className="flex items-center gap-2">
                                 <Shield className="w-4 h-4" style={{ color: tier.accentColor }} />
-                                <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                                <span className="text-sm text-[var(--hm-fg-secondary)]">
                                   {t('premium.saveCardForFuturePurchases')}
                                 </span>
                               </div>
@@ -780,7 +781,7 @@ function CheckoutContent() {
                             <>
                               <Lock className="w-5 h-5" />
                               <span>
-                                {locale === 'ka' ? `გადაიხადე ${tier.currency}${price}` : `Pay ${tier.currency}${price}`}
+                                {t('premium.payAmount', { currency: tier.currency, amount: price })}
                               </span>
                               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                             </>
@@ -789,7 +790,7 @@ function CheckoutContent() {
                       </button>
 
                       {/* Terms */}
-                      <p className="text-xs text-center text-neutral-400 leading-relaxed">
+                      <p className="text-xs text-center text-[var(--hm-fg-muted)] leading-relaxed">
                         {t('premium.byCompletingPaymentYouAgree')}
                       </p>
                     </form>
@@ -809,7 +810,7 @@ function CheckoutContent() {
                     style={{ background: `linear-gradient(135deg, ${tier.gradientFrom}60, ${tier.gradientTo}60)` }}
                   />
                   
-                  <div className="relative bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200/50 dark:border-neutral-800 shadow-2xl overflow-hidden">
+                  <div className="relative bg-[var(--hm-bg-elevated)] rounded-3xl border border-[var(--hm-border-subtle)] shadow-2xl overflow-hidden">
                     {/* Plan Header with Gradient */}
                     <div
                       className="p-6 text-white relative overflow-hidden"
@@ -846,9 +847,9 @@ function CheckoutContent() {
                               className="text-2xl font-bold"
                               style={{ fontFamily: "var(--font-sans)" }}
                             >
-                              {tier.name[locale === 'ka' ? 'ka' : 'en']}
+                              {pick({ en: tier.name.en, ka: tier.name.ka })}
                             </h3>
-                            <p className="text-sm text-white/80">{tier.tagline[locale === 'ka' ? 'ka' : 'en']}</p>
+                            <p className="text-sm text-white/80">{pick({ en: tier.tagline.en, ka: tier.tagline.ka })}</p>
                           </div>
                         </div>
 
@@ -868,7 +869,7 @@ function CheckoutContent() {
                         {period === 'yearly' && (
                           <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-sm font-semibold">
                             <CheckCircle2 className="w-4 h-4" />
-                            {locale === 'ka' ? `დაზოგე ${tier.currency}${tier.price.monthly * 12 - price}` : `Save ${tier.currency}${tier.price.monthly * 12 - price}/year`}
+                            {t('premium.saveAmount', { currency: tier.currency, amount: tier.price.monthly * 12 - price })}
                           </div>
                         )}
                       </div>
@@ -876,7 +877,7 @@ function CheckoutContent() {
 
                     {/* Features List */}
                     <div className="p-6">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--hm-fg-muted)] mb-4">
                         {t('premium.includes')}
                       </h4>
                       <ul className="space-y-3">
@@ -888,8 +889,8 @@ function CheckoutContent() {
                             >
                               <Check className="w-3.5 h-3.5" style={{ color: tier.accentColor }} />
                             </div>
-                            <span className="text-sm text-neutral-600 dark:text-neutral-300">
-                              {feature[locale === 'ka' ? 'ka' : 'en']}
+                            <span className="text-sm text-[var(--hm-fg-secondary)]">
+                              {pick({ en: feature.en, ka: feature.ka })}
                             </span>
                           </li>
                         ))}
@@ -908,7 +909,7 @@ function CheckoutContent() {
                   ].map((badge, i) => (
                     <div
                       key={i}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all group"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border-subtle)] shadow-sm hover:shadow-md transition-all group"
                     >
                       <div
                         className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110"
@@ -916,20 +917,20 @@ function CheckoutContent() {
                       >
                         <badge.icon className="w-4 h-4" style={{ color: badge.color }} />
                       </div>
-                      <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
-                        {badge.text[locale === 'ka' ? 'ka' : 'en']}
+                      <span className="text-xs font-medium text-[var(--hm-fg-secondary)]">
+                        {pick({ en: badge.text.en, ka: badge.text.ka })}
                       </span>
                     </div>
                   ))}
                 </div>
 
                 {/* Social Proof */}
-                <div className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700 shadow-sm">
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border-subtle)] shadow-sm">
                   <div className="flex -space-x-2">
                     {['NM', 'GT', 'DK', 'LS'].map((initials, i) => (
                       <div
                         key={i}
-                        className="w-9 h-9 rounded-full border-2 border-white dark:border-neutral-800 flex items-center justify-center text-white text-xs font-bold shadow-md"
+                        className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shadow-md"
                         style={{ 
                           background: `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})`,
                           opacity: 1 - i * 0.1,
@@ -941,14 +942,14 @@ function CheckoutContent() {
                     ))}
                   </div>
                   <div className="text-sm">
-                    <span className="font-bold text-neutral-900 dark:text-white">500+</span>
-                    <span className="text-neutral-500"> {t('premium.professionals')}</span>
+                    <span className="font-bold text-[var(--hm-fg-primary)]">500+</span>
+                    <span className="text-[var(--hm-fg-muted)]"> {t('premium.professionals')}</span>
                   </div>
                 </div>
 
                 {/* Support */}
                 <div className="text-center">
-                  <p className="text-xs text-neutral-400">
+                  <p className="text-xs text-[var(--hm-fg-muted)]">
                     {t('premium.needHelp')}{' '}
                     <a href="mailto:info@homico.ge" className="font-medium hover:underline" style={{ color: tier.accentColor }}>
                       info@homico.ge
@@ -970,7 +971,7 @@ export default function CheckoutPage() {
   return (
     <AuthGuard allowedRoles={['pro', 'admin']}>
       <Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-neutral-50 to-white">
+        <div className="min-h-screen flex items-center justify-center bg-[var(--hm-bg-page)]">
           <div className="flex flex-col items-center gap-6">
             <div 
               className="w-20 h-20 rounded-2xl flex items-center justify-center animate-pulse shadow-2xl"
@@ -982,7 +983,7 @@ export default function CheckoutPage() {
               <Lock className="w-10 h-10 text-white" />
             </div>
             <LoadingSpinner size="lg" color={tier.accentColor} />
-            <p className="text-sm text-neutral-500">Loading secure checkout...</p>
+            <p className="text-sm text-[var(--hm-fg-muted)]">Loading secure checkout...</p>
           </div>
         </div>
       }>

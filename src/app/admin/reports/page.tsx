@@ -281,7 +281,7 @@ function AdminReportsPageContent() {
               <div>
                 <h1
                   className="text-xl font-semibold tracking-tight"
-                  style={{ color: THEME.text, fontFamily: "'Inter', sans-serif" }}
+                  style={{ color: THEME.text, fontFamily: 'var(--hm-font-body)' }}
                 >
                   {t('admin.reportManagement')}
                 </h1>

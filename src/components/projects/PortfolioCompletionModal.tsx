@@ -53,8 +53,8 @@ export default function PortfolioCompletionModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg" showCloseButton preventClose={isLoading}>
       {/* Modal Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-        <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--hm-border-subtle)]">
+        <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
           {texts.title}
         </h3>
       </div>
@@ -93,7 +93,7 @@ export default function PortfolioCompletionModal({
                   />
                   <button
                     onClick={() => removeImage(index)}
-                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[var(--hm-error-500)] text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -106,7 +106,7 @@ export default function PortfolioCompletionModal({
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-8 rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 text-neutral-500 dark:text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-8 rounded-xl border-2 border-dashed border-[var(--hm-border-strong)] hover:border-neutral-400 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors"
           >
             {isUploading ? (
               <LoadingSpinner size="md" color="currentColor" />
@@ -121,7 +121,7 @@ export default function PortfolioCompletionModal({
       </div>
 
       {/* Modal Footer */}
-      <div className="flex items-center gap-3 px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
+      <div className="flex items-center gap-3 px-5 py-4 border-t border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)]/50">
         <Button
           variant="secondary"
           onClick={onClose}

@@ -69,7 +69,7 @@ export default function ReviewItem({
 
   return (
     <div
-      className={`bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800 ${className}`}
+      className={`bg-[var(--hm-bg-elevated)] rounded-2xl p-5 shadow-sm border border-[var(--hm-border-subtle)] ${className}`}
     >
       <div className="flex items-start gap-4">
         <Avatar
@@ -80,17 +80,17 @@ export default function ReviewItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2 min-w-0">
-              <p className="font-semibold text-neutral-900 dark:text-white text-sm truncate">
+              <p className="font-semibold text-[var(--hm-fg-primary)] text-sm truncate">
                 {displayName}
               </p>
               {/* Source badge */}
               {isExternal ? (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 shrink-0">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[var(--hm-info-100)] text-blue-700/30 shrink-0">
                   <Globe className="w-2.5 h-2.5" />
                   {review.externalVerifiedAt ? t('reviews.verified') : t('reviews.external')}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 shrink-0">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[var(--hm-success-100)] text-[var(--hm-success-500)]/30 shrink-0">
                   <ShieldCheck className="w-2.5 h-2.5" />
                   Homico
                 </span>
@@ -98,16 +98,16 @@ export default function ReviewItem({
             </div>
             <MultiStarDisplay rating={review.rating} size="sm" />
           </div>
-          <p className="text-xs text-neutral-400 mb-2">
+          <p className="text-xs text-[var(--hm-fg-muted)] mb-2">
             {formatTimeAgo(review.createdAt, t)}
             {review.projectTitle && (
-              <span className="ml-2 text-neutral-500">
+              <span className="ml-2 text-[var(--hm-fg-muted)]">
                 • {review.projectTitle}
               </span>
             )}
           </p>
           {review.text && (
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm text-[var(--hm-fg-secondary)]">
               {review.text}
             </p>
           )}
@@ -117,7 +117,7 @@ export default function ReviewItem({
                 <button
                   key={pIdx}
                   onClick={() => onPhotoClick?.(photo)}
-                  className="w-16 h-16 rounded-lg overflow-hidden hover:ring-2 hover:ring-[#C4735B] transition-all"
+                  className="w-16 h-16 rounded-lg overflow-hidden hover:ring-2 hover:ring-[var(--hm-brand-500)] transition-all"
                 >
                   <img
                     src={storage.getFileUrl(photo)}
@@ -129,9 +129,9 @@ export default function ReviewItem({
               {review.photos.length > 3 && (
                 <button
                   onClick={() => onPhotoClick?.(review.photos![3])}
-                  className="w-16 h-16 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+                  className="w-16 h-16 rounded-lg overflow-hidden bg-[var(--hm-bg-tertiary)] flex items-center justify-center"
                 >
-                  <span className="text-sm font-semibold text-neutral-500">
+                  <span className="text-sm font-semibold text-[var(--hm-fg-muted)]">
                     +{review.photos.length - 3}
                   </span>
                 </button>
@@ -164,15 +164,15 @@ export function RatingSummary({
   const { t } = useLanguage();
   return (
     <div
-      className={`bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-800 text-center ${className}`}
+      className={`bg-[var(--hm-bg-elevated)] rounded-2xl p-6 shadow-sm border border-[var(--hm-border-subtle)] text-center ${className}`}
     >
-      <div className="text-5xl font-bold text-neutral-900 dark:text-white mb-2">
+      <div className="text-5xl font-bold text-[var(--hm-fg-primary)] mb-2">
         {avgRating.toFixed(1)}
       </div>
       <div className="flex justify-center mb-2">
         <MultiStarDisplay rating={avgRating} size="lg" />
       </div>
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-[var(--hm-fg-muted)]">
         {totalReviews} {t('professional.reviews')}
       </p>
     </div>

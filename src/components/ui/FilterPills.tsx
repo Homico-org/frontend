@@ -75,9 +75,9 @@ export interface FilterPillsProps
 
 const activeColors = {
   terracotta: {
-    bg: 'bg-[#E07B4F]',
+    bg: 'bg-[var(--hm-brand-500)]',
     text: 'text-white',
-    border: 'border-[#E07B4F]',
+    border: 'border-[var(--hm-brand-500)]',
   },
   forest: {
     bg: 'bg-[#4A7C59]',
@@ -85,14 +85,14 @@ const activeColors = {
     border: 'border-[#4A7C59]',
   },
   neutral: {
-    bg: 'bg-neutral-900 dark:bg-white',
-    text: 'text-white dark:text-neutral-900',
-    border: 'border-neutral-900 dark:border-white',
+    bg: 'bg-neutral-900',
+    text: 'text-white',
+    border: 'border-neutral-900',
   },
 };
 
 const inactiveStyles =
-  'bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 hover:border-neutral-300 dark:hover:border-neutral-600';
+  'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] border-[var(--hm-border)] hover:bg-neutral-50/50 hover:border-neutral-300';
 
 /**
  * Horizontal scrollable filter pills for category/filter selection.

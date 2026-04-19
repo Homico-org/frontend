@@ -117,19 +117,19 @@ function MyReviewsPageContent() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
         <div className="flex flex-col items-center gap-4">
           <LoadingSpinner size="xl" variant="border" color={ACCENT_COLOR} />
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">{language === 'ka' ? 'შეფასებები იტვირთება...' : 'Loading reviews...'}</p>
+          <p className="text-sm text-[var(--hm-fg-muted)]">{language === 'ka' ? 'შეფასებები იტვირთება...' : 'Loading reviews...'}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+    <div className="min-h-screen pb-20" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
       {/* Header Section */}
-      <div className="border-b" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
+      <div className="border-b" style={{ backgroundColor: 'var(--hm-bg-page)', borderColor: 'var(--hm-border)' }}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Back Button */}
           <Button
@@ -144,10 +144,10 @@ function MyReviewsPageContent() {
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-neutral-50">
+              <h1 className="text-2xl sm:text-3xl font-serif font-medium text-[var(--hm-fg-primary)]">
                 {language === 'ka' ? 'ჩემი შეფასებები' : 'My Reviews'}
               </h1>
-              <p className="mt-1 text-neutral-500 dark:text-neutral-400">
+              <p className="mt-1 text-[var(--hm-fg-muted)]">
                 {language === 'ka' ? 'შეფასებები, რომლებიც დაწერეთ პროფესიონალებისთვის' : "Reviews you've written for professionals"}
               </p>
             </div>
@@ -155,50 +155,50 @@ function MyReviewsPageContent() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6">
-            <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--color-bg-primary)', border: '1px solid var(--color-border)' }}>
+            <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--hm-bg-page)', border: '1px solid var(--hm-border)' }}>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                  <Star className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <div className="p-2 rounded-lg bg-[var(--hm-warning-100)]/30">
+                  <Star className="h-5 w-5 text-[var(--hm-warning-500)]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">{stats.total}</p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{language === 'ka' ? 'დაწერილი' : 'Reviews Given'}</p>
+                  <p className="text-2xl font-semibold text-[var(--hm-fg-primary)]">{stats.total}</p>
+                  <p className="text-xs text-[var(--hm-fg-muted)]">{language === 'ka' ? 'დაწერილი' : 'Reviews Given'}</p>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--color-bg-primary)', border: '1px solid var(--color-border)' }}>
+            <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--hm-bg-page)', border: '1px solid var(--hm-border)' }}>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-forest-100 dark:bg-forest-900/30">
-                  <ThumbsUp className="h-5 w-5 text-forest-600 dark:text-forest-400" />
+                <div className="p-2 rounded-lg bg-[var(--hm-bg-tertiary)]">
+                  <ThumbsUp className="h-5 w-5 text-[var(--hm-fg-secondary)]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">{stats.avgRating}</p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{language === 'ka' ? 'საშ. შეფასება' : 'Avg. Rating'}</p>
+                  <p className="text-2xl font-semibold text-[var(--hm-fg-primary)]">{stats.avgRating}</p>
+                  <p className="text-xs text-[var(--hm-fg-muted)]">{language === 'ka' ? 'საშ. შეფასება' : 'Avg. Rating'}</p>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--color-bg-primary)', border: '1px solid var(--color-border)' }}>
+            <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--hm-bg-page)', border: '1px solid var(--hm-border)' }}>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-violet-100 dark:bg-violet-900/30">
-                  <Clock className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                <div className="p-2 rounded-lg bg-violet-100">
+                  <Clock className="h-5 w-5 text-violet-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">{stats.pending}</p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{language === 'ka' ? 'მოლოდინში' : 'Pending'}</p>
+                  <p className="text-2xl font-semibold text-[var(--hm-fg-primary)]">{stats.pending}</p>
+                  <p className="text-xs text-[var(--hm-fg-muted)]">{language === 'ka' ? 'მოლოდინში' : 'Pending'}</p>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--color-bg-primary)', border: '1px solid var(--color-border)' }}>
+            <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--hm-bg-page)', border: '1px solid var(--hm-border)' }}>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-sky-100 dark:bg-sky-900/30">
-                  <ImageIcon className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+                <div className="p-2 rounded-lg bg-sky-100">
+                  <ImageIcon className="h-5 w-5 text-sky-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">{stats.withPhotos}</p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{language === 'ka' ? 'ფოტოებით' : 'With Photos'}</p>
+                  <p className="text-2xl font-semibold text-[var(--hm-fg-primary)]">{stats.withPhotos}</p>
+                  <p className="text-xs text-[var(--hm-fg-muted)]">{language === 'ka' ? 'ფოტოებით' : 'With Photos'}</p>
                 </div>
               </div>
             </div>
@@ -213,10 +213,10 @@ function MyReviewsPageContent() {
             onClick={() => setActiveTab('given')}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               activeTab === 'given'
-                ? 'bg-forest-600 dark:bg-primary-500 text-white shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                ? 'bg-[var(--hm-n-700)] text-white shadow-sm'
+                : 'text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]'
             }`}
-            style={activeTab !== 'given' ? { backgroundColor: 'var(--color-bg-secondary)' } : {}}
+            style={activeTab !== 'given' ? { backgroundColor: 'var(--hm-bg-page)' } : {}}
           >
             {language === 'ka' ? 'დაწერილი' : 'Reviews Given'} ({stats.total})
           </button>
@@ -224,10 +224,10 @@ function MyReviewsPageContent() {
             onClick={() => setActiveTab('pending')}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               activeTab === 'pending'
-                ? 'bg-forest-600 dark:bg-primary-500 text-white shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                ? 'bg-[var(--hm-n-700)] text-white shadow-sm'
+                : 'text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]'
             }`}
-            style={activeTab !== 'pending' ? { backgroundColor: 'var(--color-bg-secondary)' } : {}}
+            style={activeTab !== 'pending' ? { backgroundColor: 'var(--hm-bg-page)' } : {}}
           >
             {language === 'ka' ? 'მოლოდინში' : 'Pending'} ({stats.pending})
           </button>
@@ -237,19 +237,19 @@ function MyReviewsPageContent() {
         {activeTab === 'given' && (
           <>
             {reviews.length === 0 ? (
-              <div className="rounded-2xl p-12 text-center" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
-                <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-4">
+              <div className="rounded-2xl p-12 text-center" style={{ backgroundColor: 'var(--hm-bg-page)', border: '1px solid var(--hm-border)' }}>
+                <div className="w-16 h-16 rounded-2xl bg-[var(--hm-warning-50)]/20 flex items-center justify-center mx-auto mb-4">
                   <Star className="h-8 w-8 text-amber-400" />
                 </div>
-                <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-50 mb-2">
+                <h3 className="text-lg font-medium text-[var(--hm-fg-primary)] mb-2">
                   {language === 'ka' ? 'შეფასებები ჯერ არ არის' : 'No reviews yet'}
                 </h3>
-                <p className="text-neutral-500 dark:text-neutral-400 mb-6 max-w-md mx-auto">
+                <p className="text-[var(--hm-fg-muted)] mb-6 max-w-md mx-auto">
                   {language === 'ka' ? 'პროფესიონალებთან პროექტების დასრულების შემდეგ შეგიძლიათ შეფასებების დაწერა' : 'Once you complete projects with professionals, you can leave reviews to help others'}
                 </p>
                 <Link
                   href="/portfolio"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-forest-600 dark:bg-primary-500 text-white rounded-xl hover:bg-forest-700 dark:hover:bg-primary-600 transition-colors font-medium"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--hm-n-700)] text-white rounded-xl hover:bg-[var(--hm-n-700)] transition-colors font-medium"
                 >
                   <Sparkles className="h-5 w-5" />
                   {language === 'ka' ? 'სპეციალისტების ნახვა' : 'Find Professionals'}
@@ -261,7 +261,7 @@ function MyReviewsPageContent() {
                   <div
                     key={review.id}
                     className="rounded-2xl overflow-hidden transition-shadow hover:shadow-md"
-                    style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}
+                    style={{ backgroundColor: 'var(--hm-bg-page)', border: '1px solid var(--hm-border)' }}
                   >
                     <div className="p-5 sm:p-6">
                       <div className="flex items-start gap-4">
@@ -280,16 +280,16 @@ function MyReviewsPageContent() {
                             <div>
                               <Link
                                 href={`/professionals/${review.proId.id}`}
-                                className="font-medium text-neutral-900 dark:text-neutral-50 hover:text-forest-600 dark:hover:text-primary-400 transition-colors"
+                                className="font-medium text-[var(--hm-fg-primary)] hover:text-[var(--hm-fg-secondary)] transition-colors"
                               >
                                 {review.proId.name}
                               </Link>
-                              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                              <p className="text-sm text-[var(--hm-fg-muted)]">
                                 {review.proId.title}
                               </p>
                               <div className="flex items-center gap-3 mt-2">
                                 <MultiStarDisplay rating={review.rating} size="sm" />
-                                <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                                <span className="text-sm text-[var(--hm-fg-muted)]">
                                   {formatDateUK(review.createdAt)}
                                 </span>
                               </div>
@@ -299,9 +299,9 @@ function MyReviewsPageContent() {
                             <div className="relative">
                               <button
                                 onClick={() => setActionMenuId(actionMenuId === review.id ? null : review.id)}
-                                className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                                className="p-2 rounded-lg hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                               >
-                                <MoreVertical className="h-5 w-5 text-neutral-400" />
+                                <MoreVertical className="h-5 w-5 text-[var(--hm-fg-muted)]" />
                               </button>
                               {actionMenuId === review.id && (
                                 <>
@@ -311,16 +311,16 @@ function MyReviewsPageContent() {
                                   />
                                   <div
                                     className="absolute right-0 top-full mt-1 w-40 rounded-xl shadow-lg overflow-hidden z-20"
-                                    style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}
+                                    style={{ backgroundColor: 'var(--hm-bg-page)', border: '1px solid var(--hm-border)' }}
                                   >
                                     <button
-                                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
                                     >
                                       <Edit3 className="h-4 w-4" />
                                       {language === 'ka' ? 'რედაქტირება' : 'Edit Review'}
                                     </button>
                                     <button
-                                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50"
                                     >
                                       <Trash2 className="h-4 w-4" />
                                       {language === 'ka' ? 'წაშლა' : 'Delete'}
@@ -333,7 +333,7 @@ function MyReviewsPageContent() {
 
                           {/* Review Text */}
                           {review.text && (
-                            <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                            <p className="mt-3 text-sm text-[var(--hm-fg-secondary)] leading-relaxed">
                               {review.text}
                             </p>
                           )}
@@ -351,9 +351,9 @@ function MyReviewsPageContent() {
 
                           {/* Project Reference */}
                           {review.projectId && (
-                            <div className="mt-4 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
-                              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                                {language === 'ka' ? 'პროექტი' : 'Project'}: <span className="font-medium text-neutral-700 dark:text-neutral-300">{review.projectId.title}</span>
+                            <div className="mt-4 pt-3 border-t" style={{ borderColor: 'var(--hm-border)' }}>
+                              <p className="text-xs text-[var(--hm-fg-muted)]">
+                                {language === 'ka' ? 'პროექტი' : 'Project'}: <span className="font-medium text-[var(--hm-fg-secondary)]">{review.projectId.title}</span>
                               </p>
                             </div>
                           )}
@@ -371,14 +371,14 @@ function MyReviewsPageContent() {
         {activeTab === 'pending' && (
           <>
             {pendingReviews.length === 0 ? (
-              <div className="rounded-2xl p-12 text-center" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
-                <div className="w-16 h-16 rounded-2xl bg-[#E07B4F]/5 dark:bg-[#E07B4F]/10 flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="h-8 w-8 text-[#E07B4F]" />
+              <div className="rounded-2xl p-12 text-center" style={{ backgroundColor: 'var(--hm-bg-page)', border: '1px solid var(--hm-border)' }}>
+                <div className="w-16 h-16 rounded-2xl bg-[var(--hm-brand-500)]/5 flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="h-8 w-8 text-[var(--hm-brand-500)]" />
                 </div>
-                <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-50 mb-2">
+                <h3 className="text-lg font-medium text-[var(--hm-fg-primary)] mb-2">
                   {language === 'ka' ? 'ყველაფერი შესრულებულია!' : 'All caught up!'}
                 </h3>
-                <p className="text-neutral-500 dark:text-neutral-400 max-w-md mx-auto">
+                <p className="text-[var(--hm-fg-muted)] max-w-md mx-auto">
                   {language === 'ka' ? 'მოლოდინში მყოფი შეფასებები არ გაქვთ. პროფესიონალებთან პროექტების დასრულების შემდეგ შეგიძლიათ შეფასებების დაწერა.' : 'You have no pending reviews. Complete more projects to leave feedback for professionals.'}
                 </p>
               </div>
@@ -388,7 +388,7 @@ function MyReviewsPageContent() {
                   <div
                     key={pending.id}
                     className="rounded-2xl overflow-hidden"
-                    style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}
+                    style={{ backgroundColor: 'var(--hm-bg-page)', border: '1px solid var(--hm-border)' }}
                   >
                     <div className="p-5 sm:p-6">
                       <div className="flex items-start gap-4">
@@ -400,13 +400,13 @@ function MyReviewsPageContent() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-4">
                             <div>
-                              <p className="font-medium text-neutral-900 dark:text-neutral-50">
+                              <p className="font-medium text-[var(--hm-fg-primary)]">
                                 {pending.proId.name}
                               </p>
-                              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                              <p className="text-sm text-[var(--hm-fg-muted)]">
                                 {pending.proId.title}
                               </p>
-                              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                              <p className="text-xs text-[var(--hm-fg-muted)] mt-1">
                                 {language === 'ka' ? 'დასრულდა' : 'Completed on'} {formatDateUK(pending.completedAt)}
                               </p>
                             </div>
@@ -417,8 +417,8 @@ function MyReviewsPageContent() {
                               {language === 'ka' ? 'შეფასების დაწერა' : 'Write Review'}
                             </Button>
                           </div>
-                          <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
-                            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                          <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
+                            <p className="text-sm text-[var(--hm-fg-secondary)]">
                               {language === 'ka' ? 'პროექტი' : 'Project'}: <span className="font-medium">{pending.jobId.title}</span>
                             </p>
                           </div>

@@ -5,17 +5,21 @@ import { AlertCircle, CheckCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
+/**
+ * Homico Design System — Alert / Nudge
+ * No border-radius. Left border accent (3px). Semantic backgrounds.
+ */
 const alertVariants = cva(
-  'flex items-center gap-3 p-4 rounded-xl border transition-all',
+  'flex items-center gap-3 border-l-[3px] transition-all',
   {
     variants: {
       variant: {
-        default: 'bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800',
-        success: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
-        error: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
-        warning: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800',
-        info: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
-        accent: 'bg-[#C4735B]/10 border-[#C4735B]/30',
+        default: 'bg-[var(--hm-bg-tertiary)] border-l-[var(--hm-n-400)]',
+        success: 'bg-[var(--hm-success-50)] border-l-[var(--hm-success-500)]',
+        error: 'bg-[var(--hm-error-50)] border-l-[var(--hm-error-500)]',
+        warning: 'bg-[var(--hm-warning-50)] border-l-[var(--hm-warning-500)]',
+        info: 'bg-[var(--hm-info-50)] border-l-[var(--hm-info-500)]',
+        accent: 'bg-[var(--hm-brand-50)] border-l-[var(--hm-brand-500)]',
       },
       size: {
         sm: 'p-3 text-xs',
@@ -31,21 +35,21 @@ const alertVariants = cva(
 );
 
 const iconColors = {
-  default: 'text-neutral-500',
-  success: 'text-green-500',
-  error: 'text-red-500',
-  warning: 'text-yellow-500',
-  info: 'text-blue-500',
-  accent: 'text-[#C4735B]',
+  default: 'text-[var(--hm-n-500)]',
+  success: 'text-[var(--hm-success-500)]',
+  error: 'text-[var(--hm-error-500)]',
+  warning: 'text-[var(--hm-warning-500)]',
+  info: 'text-[var(--hm-info-500)]',
+  accent: 'text-[var(--hm-brand-500)]',
 };
 
 const textColors = {
-  default: 'text-neutral-800 dark:text-neutral-200',
-  success: 'text-green-800 dark:text-green-200',
-  error: 'text-red-800 dark:text-red-200',
-  warning: 'text-yellow-800 dark:text-yellow-200',
-  info: 'text-blue-800 dark:text-blue-200',
-  accent: 'text-[#C4735B] dark:text-[#C4735B]',
+  default: 'text-[var(--hm-fg-primary)]',
+  success: 'text-green-800',
+  error: 'text-[var(--hm-error-500)]',
+  warning: 'text-yellow-800',
+  info: 'text-blue-800',
+  accent: 'text-[var(--hm-brand-500)]',
 };
 
 const defaultIcons = {
@@ -108,7 +112,7 @@ export function Alert({
         <button
           onClick={onDismiss}
           className={cn(
-            'flex-shrink-0 p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors',
+            'flex-shrink-0 p-1 rounded-lg hover:bg-black/5 transition-colors',
             iconColors[variant || 'default']
           )}
         >

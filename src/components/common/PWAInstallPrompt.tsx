@@ -3,6 +3,7 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Download, Share, Plus, MoreVertical, X, Smartphone, CheckCircle2, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
+import HomicoLogo from '@/components/common/HomicoLogo';
 import { useCallback, useEffect, useState } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -200,9 +201,9 @@ export default function PWAInstallPrompt() {
   return (
     <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Overlay content */}
-      <div className="w-full sm:max-w-md bg-white dark:bg-neutral-900 rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up max-h-[95vh] flex flex-col">
+      <div className="w-full sm:max-w-md bg-[var(--hm-bg-elevated)] rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up max-h-[95vh] flex flex-col">
         {/* Header with app icon - Compact for iOS */}
-        <div className={`relative bg-gradient-to-br from-[#C4735B] to-[#A85D47] px-6 text-center flex-shrink-0 ${isIOS ? 'pt-5 pb-8' : 'pt-8 pb-12'}`}>
+        <div className={`relative bg-gradient-to-br from-[var(--hm-brand-500)] to-[var(--hm-brand-700)] px-6 text-center flex-shrink-0 ${isIOS ? 'pt-5 pb-8' : 'pt-8 pb-12'}`}>
           {/* Close button - only after delay */}
           {canShowContinue && (
             <button
@@ -214,12 +215,9 @@ export default function PWAInstallPrompt() {
           )}
 
           {/* App Icon */}
-          <div className={`mx-auto mb-3 rounded-2xl bg-white shadow-lg flex items-center justify-center overflow-hidden ${isIOS ? 'w-14 h-14' : 'w-20 h-20'}`}>
-            <Image
-              src="/favicon.png"
-              alt="Homico"
-              width={64}
-              height={64}
+          <div className={`mx-auto mb-3 rounded-2xl bg-[var(--hm-bg-elevated)] shadow-lg flex items-center justify-center overflow-hidden ${isIOS ? 'w-14 h-14' : 'w-20 h-20'}`}>
+            <HomicoLogo
+              size={64}
               className={isIOS ? 'w-10 h-10' : 'w-16 h-16'}
             />
           </div>
@@ -238,34 +236,34 @@ export default function PWAInstallPrompt() {
           {isIOS ? (
             <div className="px-4 -mt-4 pb-2">
               <div className="flex flex-wrap gap-1.5 justify-center">
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full text-[10px] text-emerald-700 dark:text-emerald-400">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-[var(--hm-success-100)]/30 rounded-full text-[10px] text-[var(--hm-success-500)]">
                   <CheckCircle2 className="w-3 h-3" /> {t.benefit1}
                 </span>
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full text-[10px] text-emerald-700 dark:text-emerald-400">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-[var(--hm-success-100)]/30 rounded-full text-[10px] text-[var(--hm-success-500)]">
                   <CheckCircle2 className="w-3 h-3" /> {t.benefit3}
                 </span>
               </div>
             </div>
           ) : (
             <div className="px-6 -mt-6">
-              <div className="bg-neutral-50 dark:bg-neutral-800 rounded-xl p-4 space-y-3">
+              <div className="bg-[var(--hm-bg-tertiary)] rounded-xl p-4 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <div className="w-8 h-8 rounded-full bg-[var(--hm-success-100)]/30 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-[var(--hm-success-500)]" />
                   </div>
-                  <span className="text-sm text-neutral-700 dark:text-neutral-300">{t.benefit1}</span>
+                  <span className="text-sm text-[var(--hm-fg-secondary)]">{t.benefit1}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <div className="w-8 h-8 rounded-full bg-[var(--hm-success-100)]/30 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-[var(--hm-success-500)]" />
                   </div>
-                  <span className="text-sm text-neutral-700 dark:text-neutral-300">{t.benefit2}</span>
+                  <span className="text-sm text-[var(--hm-fg-secondary)]">{t.benefit2}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <div className="w-8 h-8 rounded-full bg-[var(--hm-success-100)]/30 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-[var(--hm-success-500)]" />
                   </div>
-                  <span className="text-sm text-neutral-700 dark:text-neutral-300">{t.benefit3}</span>
+                  <span className="text-sm text-[var(--hm-fg-secondary)]">{t.benefit3}</span>
                 </div>
               </div>
             </div>
@@ -278,7 +276,7 @@ export default function PWAInstallPrompt() {
             <button
               onClick={handleInstall}
               disabled={isInstalling}
-              className="w-full py-3.5 rounded-xl font-semibold text-white bg-[#C4735B] hover:bg-[#A85D47] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+              className="w-full py-3.5 rounded-xl font-semibold text-white bg-[var(--hm-brand-500)] hover:bg-[#A85D47] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
             >
               {isInstalling ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -296,86 +294,86 @@ export default function PWAInstallPrompt() {
             <div className="space-y-4">
               {/* Step 1: Animated arrow pointing to Safari share button */}
               <div className="relative">
-                <div className="bg-gradient-to-b from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-2xl p-4 border-2 border-blue-200 dark:border-blue-700">
+                <div className="bg-gradient-to-b from-blue-50 to-blue-100 rounded-2xl p-4 border-2 border-blue-200">
                   <div className="text-center mb-3">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white text-xs font-bold mb-2">1</span>
-                    <p className="text-sm font-semibold text-neutral-900 dark:text-white">{t.iosStep1}</p>
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--hm-info-500)] text-white text-xs font-bold mb-2">1</span>
+                    <p className="text-sm font-semibold text-[var(--hm-fg-primary)]">{t.iosStep1}</p>
                   </div>
 
                   {/* Visual representation of Safari bottom bar */}
-                  <div className="relative bg-neutral-200 dark:bg-neutral-700 rounded-xl p-2 mx-auto max-w-[280px]">
+                  <div className="relative bg-[var(--hm-n-200)] rounded-xl p-2 mx-auto max-w-[280px]">
                     {/* Mock Safari toolbar */}
                     <div className="flex items-center justify-around py-2">
-                      <div className="w-6 h-6 rounded bg-neutral-300 dark:bg-neutral-600" />
-                      <div className="w-6 h-6 rounded bg-neutral-300 dark:bg-neutral-600" />
+                      <div className="w-6 h-6 rounded bg-neutral-300" />
+                      <div className="w-6 h-6 rounded bg-neutral-300" />
 
                       {/* Highlighted Share button */}
                       <div className="relative">
-                        <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center animate-pulse-scale shadow-lg shadow-blue-500/50">
+                        <div className="w-10 h-10 rounded-lg bg-[var(--hm-info-500)] flex items-center justify-center animate-pulse-scale shadow-lg shadow-blue-500/50">
                           <IOSShareIcon className="w-6 h-6 text-white" />
                         </div>
                         {/* Pulsing ring */}
                         <div className="absolute inset-0 rounded-lg border-2 border-blue-400 animate-ping-slow" />
                       </div>
 
-                      <div className="w-6 h-6 rounded bg-neutral-300 dark:bg-neutral-600" />
-                      <div className="w-6 h-6 rounded bg-neutral-300 dark:bg-neutral-600" />
+                      <div className="w-6 h-6 rounded bg-neutral-300" />
+                      <div className="w-6 h-6 rounded bg-neutral-300" />
                     </div>
 
                     {/* Arrow pointing down to actual share button */}
                     <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce-arrow">
-                      <ChevronDown className="w-6 h-6 text-blue-500" />
-                      <span className="text-[10px] font-bold text-blue-500 whitespace-nowrap">{t.iosTapHere}</span>
+                      <ChevronDown className="w-6 h-6 text-[var(--hm-info-500)]" />
+                      <span className="text-[10px] font-bold text-[var(--hm-info-500)] whitespace-nowrap">{t.iosTapHere}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Step 2: Add to Home Screen option */}
-              <div className="bg-neutral-100 dark:bg-neutral-800 rounded-2xl p-4 border border-neutral-200 dark:border-neutral-700">
+              <div className="bg-[var(--hm-bg-tertiary)] rounded-2xl p-4 border border-[var(--hm-border)]">
                 <div className="text-center mb-3">
                   <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-neutral-500 text-white text-xs font-bold mb-2">2</span>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">{t.iosStep2}</p>
+                  <p className="text-sm font-semibold text-[var(--hm-fg-primary)]">{t.iosStep2}</p>
                 </div>
 
                 {/* Mock iOS share sheet option */}
-                <div className="bg-white dark:bg-neutral-900 rounded-xl overflow-hidden max-w-[240px] mx-auto shadow-sm">
+                <div className="bg-[var(--hm-bg-elevated)] rounded-xl overflow-hidden max-w-[240px] mx-auto shadow-sm">
                   {/* Fake other options */}
-                  <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-3 opacity-50">
-                    <div className="w-8 h-8 rounded bg-neutral-200 dark:bg-neutral-700" />
-                    <span className="text-sm text-neutral-400">Copy</span>
+                  <div className="px-4 py-3 border-b border-[var(--hm-border-subtle)] flex items-center gap-3 opacity-50">
+                    <div className="w-8 h-8 rounded bg-[var(--hm-n-200)]" />
+                    <span className="text-sm text-[var(--hm-fg-muted)]">Copy</span>
                   </div>
 
                   {/* Highlighted Add to Home Screen */}
-                  <div className="px-4 py-3 flex items-center gap-3 bg-blue-50 dark:bg-blue-900/30 relative">
-                    <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center">
-                      <IOSAddIcon className="w-5 h-5 text-neutral-600 dark:text-neutral-300" />
+                  <div className="px-4 py-3 flex items-center gap-3 bg-[var(--hm-info-50)]/30 relative">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                      <IOSAddIcon className="w-5 h-5 text-[var(--hm-fg-secondary)]" />
                     </div>
-                    <span className="text-sm font-medium text-neutral-900 dark:text-white">Add to Home Screen</span>
+                    <span className="text-sm font-medium text-[var(--hm-fg-primary)]">Add to Home Screen</span>
                     {/* Highlight indicator */}
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                      <div className="w-2 h-2 rounded-full bg-[var(--hm-info-500)] animate-pulse" />
                     </div>
                   </div>
 
                   {/* Fake other option */}
-                  <div className="px-4 py-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-3 opacity-50">
-                    <div className="w-8 h-8 rounded bg-neutral-200 dark:bg-neutral-700" />
-                    <span className="text-sm text-neutral-400">Add Bookmark</span>
+                  <div className="px-4 py-3 border-t border-[var(--hm-border-subtle)] flex items-center gap-3 opacity-50">
+                    <div className="w-8 h-8 rounded bg-[var(--hm-n-200)]" />
+                    <span className="text-sm text-[var(--hm-fg-muted)]">Add Bookmark</span>
                   </div>
                 </div>
 
-                <p className="text-[11px] text-neutral-500 text-center mt-3">{t.iosLookForThis}: <IOSAddIcon className="w-4 h-4 inline-block align-middle" /></p>
+                <p className="text-[11px] text-[var(--hm-fg-muted)] text-center mt-3">{t.iosLookForThis}: <IOSAddIcon className="w-4 h-4 inline-block align-middle" /></p>
               </div>
 
               {/* Step 3: Confirm */}
-              <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl p-4 border border-emerald-200 dark:border-emerald-700">
+              <div className="bg-[var(--hm-success-50)]/20 rounded-2xl p-4 border border-emerald-200">
                 <div className="text-center">
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-bold mb-2">3</span>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">{t.iosStep3}</p>
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--hm-success-500)] text-white text-xs font-bold mb-2">3</span>
+                  <p className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-3">{t.iosStep3}</p>
 
                   {/* Mock Add button */}
-                  <div className="inline-flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-lg font-semibold text-sm animate-pulse-subtle">
+                  <div className="inline-flex items-center gap-2 px-6 py-2 bg-[var(--hm-info-500)] text-white rounded-lg font-semibold text-sm animate-pulse-subtle">
                     Add
                   </div>
                 </div>
@@ -386,32 +384,32 @@ export default function PWAInstallPrompt() {
           {/* Android Instructions (fallback if no beforeinstallprompt) */}
           {isAndroid && !deferredPrompt && (
             <div className="space-y-4">
-              <h3 className="font-semibold text-neutral-900 dark:text-white text-center">
+              <h3 className="font-semibold text-[var(--hm-fg-primary)] text-center">
                 {t.androidTitle}
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
+                <div className="flex items-center gap-3 p-3 bg-[var(--hm-bg-tertiary)] rounded-xl">
                   <div className="w-10 h-10 rounded-full bg-neutral-600 flex items-center justify-center flex-shrink-0">
                     <MoreVertical className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-900 dark:text-white">1. {t.androidStep1}</p>
+                    <p className="text-sm font-medium text-[var(--hm-fg-primary)]">1. {t.androidStep1}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
+                <div className="flex items-center gap-3 p-3 bg-[var(--hm-bg-tertiary)] rounded-xl">
                   <div className="w-10 h-10 rounded-full bg-neutral-600 flex items-center justify-center flex-shrink-0">
                     <Smartphone className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-900 dark:text-white">2. {t.androidStep2}</p>
+                    <p className="text-sm font-medium text-[var(--hm-fg-primary)]">2. {t.androidStep2}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
-                  <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-3 p-3 bg-[var(--hm-bg-tertiary)] rounded-xl">
+                  <div className="w-10 h-10 rounded-full bg-[var(--hm-success-500)] flex items-center justify-center flex-shrink-0">
                     <CheckCircle2 className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-900 dark:text-white">3. {t.androidStep3}</p>
+                    <p className="text-sm font-medium text-[var(--hm-fg-primary)]">3. {t.androidStep3}</p>
                   </div>
                 </div>
               </div>
@@ -422,18 +420,18 @@ export default function PWAInstallPrompt() {
         </div>
 
         {/* Continue anyway button - Fixed at bottom */}
-        <div className="px-6 pb-6 pt-2 flex-shrink-0 border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div className="px-6 pb-6 pt-2 flex-shrink-0 border-t border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]">
           {canShowContinue ? (
             <button
               onClick={handleDismiss}
-              className="w-full py-3 text-sm text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors active:scale-95"
+              className="w-full py-3 text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors active:scale-95"
             >
               {t.continueAnyway}
             </button>
           ) : (
             <div className="h-12 flex items-center justify-center">
-              <div className="flex items-center gap-2 text-neutral-400 text-sm">
-                <div className="w-4 h-4 border-2 border-neutral-300 border-t-[#C4735B] rounded-full animate-spin" />
+              <div className="flex items-center gap-2 text-[var(--hm-fg-muted)] text-sm">
+                <div className="w-4 h-4 border-2 border-[var(--hm-border-strong)] border-t-[var(--hm-brand-500)] rounded-full animate-spin" />
                 <span>Loading...</span>
               </div>
             </div>

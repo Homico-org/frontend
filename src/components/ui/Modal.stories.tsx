@@ -22,7 +22,7 @@ function ModalDemo({ children }: { children: (props: { isOpen: boolean; setIsOpe
     <div>
       <button
         onClick={() => setIsOpen(true)}
-        className="px-4 py-2 bg-[#C4735B] text-white rounded-lg hover:bg-[#B5624A] transition-colors"
+        className="px-4 py-2 bg-[#EF4E24] text-white rounded-lg hover:bg-[#D13C14] transition-colors"
       >
         Open Modal
       </button>
@@ -171,7 +171,7 @@ export const AccentVariant: Story = {
       {({ isOpen, setIsOpen }) => (
         <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
           <ModalHeader
-            icon={<AlertCircle className="w-8 h-8 text-[#C4735B]" />}
+            icon={<AlertCircle className="w-8 h-8 text-[#EF4E24]" />}
             title="Confirm Action"
             description="Are you sure you want to proceed with this action?"
             variant="accent"
@@ -313,7 +313,7 @@ export const ConfirmModalComponent: Story = {
           onConfirm={() => setIsOpen(false)}
           title="Confirm Action"
           description="Are you sure you want to proceed?"
-          icon={<AlertCircle className="w-8 h-8 text-[#C4735B]" />}
+          icon={<AlertCircle className="w-8 h-8 text-[#EF4E24]" />}
           cancelLabel="Cancel"
           confirmLabel="Confirm"
         />

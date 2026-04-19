@@ -41,29 +41,29 @@ export default function RatingBar({
 
   // Color based on rating
   const getBarColor = () => {
-    if (rating >= 4.5) return 'bg-[#E07B4F]';
-    if (rating >= 4.0) return 'bg-[#E8956A]';
+    if (rating >= 4.5) return 'bg-[var(--hm-brand-500)]';
+    if (rating >= 4.0) return 'bg-[var(--hm-brand-300)]';
     if (rating >= 3.5) return 'bg-lime-500';
     if (rating >= 3.0) return 'bg-yellow-500';
     if (rating >= 2.0) return 'bg-orange-500';
-    return 'bg-red-500';
+    return 'bg-[var(--hm-error-500)]';
   };
 
   return (
     <div className={`flex items-center ${gap} ${className}`}>
       {showValue && (
-        <span className={`font-semibold text-neutral-800 dark:text-neutral-50 ${text}`}>
+        <span className={`font-semibold text-[var(--hm-fg-primary)] ${text}`}>
           {rating.toFixed(1)}
         </span>
       )}
-      <div className={`${bar} rounded-full overflow-hidden bg-neutral-200 dark:bg-dark-bg`}>
+      <div className={`${bar} rounded-full overflow-hidden bg-neutral-200`}>
         <div
           className={`h-full rounded-full transition-all duration-200 ${getBarColor()}`}
           style={{ width: `${percentage}%` }}
         />
       </div>
       {reviewCount !== undefined && (
-        <span className={`text-neutral-400 dark:text-neutral-500 ${text}`}>
+        <span className={`text-[var(--hm-fg-muted)] ${text}`}>
           ({reviewCount})
         </span>
       )}

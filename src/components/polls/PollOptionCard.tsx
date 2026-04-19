@@ -48,19 +48,19 @@ export default function PollOptionCard({
         disabled={disabled}
         className={cn(
           'relative group rounded-2xl overflow-hidden transition-all duration-300',
-          'border-2 bg-white dark:bg-neutral-900',
+          'border-2 bg-[var(--hm-bg-elevated)]',
           'flex flex-col',
           isSelected || isApproved
-            ? 'border-[#C4735B] shadow-lg shadow-[#C4735B]/10'
-            : 'border-neutral-200 dark:border-neutral-700 hover:border-[#C4735B]/50 hover:shadow-md',
+            ? 'border-[var(--hm-brand-500)] shadow-lg shadow-[var(--hm-brand-500)]/10'
+            : 'border-[var(--hm-border)] hover:border-[var(--hm-brand-500)]/50 hover:shadow-md',
           disabled && !isApproved ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
-          isApproved && 'border-emerald-500 shadow-lg shadow-emerald-500/10'
+          isApproved && 'border-[var(--hm-success-500)] shadow-lg shadow-emerald-500/10'
         )}
       >
         {/* Image section */}
         {hasImage && (
           <div
-            className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800"
+            className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--hm-bg-tertiary)]"
             onClick={(e) => {
               if (disabled) {
                 e.stopPropagation();
@@ -97,7 +97,7 @@ export default function PollOptionCard({
             {(isSelected || isApproved) && (
               <div className={cn(
                 'absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-lg',
-                isApproved ? 'bg-emerald-500' : 'bg-[#C4735B]'
+                isApproved ? 'bg-[var(--hm-success-500)]' : 'bg-[var(--hm-brand-500)]'
               )}>
                 <Check className="w-4 h-4 text-white" />
               </div>
@@ -120,7 +120,7 @@ export default function PollOptionCard({
         {/* Text section - always visible, never truncated */}
         <div className={cn(
           'relative flex-1 p-4',
-          hasImage && 'border-t border-neutral-100 dark:border-neutral-800',
+          hasImage && 'border-t border-[var(--hm-border-subtle)]',
           !hasImage && 'min-h-[80px] flex items-center justify-center'
         )}>
           {option.text && (
@@ -128,8 +128,8 @@ export default function PollOptionCard({
               'text-sm font-medium leading-relaxed',
               hasImage ? 'text-left' : 'text-center',
               isSelected || isApproved
-                ? isApproved ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#C4735B]'
-                : 'text-neutral-700 dark:text-neutral-300'
+                ? isApproved ? 'text-[var(--hm-success-500)]' : 'text-[var(--hm-brand-500)]'
+                : 'text-[var(--hm-fg-secondary)]'
             )}>
               {option.text}
             </p>
@@ -139,7 +139,7 @@ export default function PollOptionCard({
           {!hasImage && (isSelected || isApproved) && (
             <div className={cn(
               'absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center',
-              isApproved ? 'bg-emerald-500' : 'bg-[#C4735B]'
+              isApproved ? 'bg-[var(--hm-success-500)]' : 'bg-[var(--hm-brand-500)]'
             )}>
               <Check className="w-3.5 h-3.5 text-white" />
             </div>
@@ -147,7 +147,7 @@ export default function PollOptionCard({
 
           {/* Approved badge for text-only */}
           {!hasImage && isApproved && (
-            <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-semibold">
+            <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-[var(--hm-success-500)] text-white text-[10px] font-semibold">
               {t('polls.text')}
             </div>
           )}
@@ -155,7 +155,7 @@ export default function PollOptionCard({
 
         {/* Hover overlay */}
         {!disabled && !isApproved && (
-          <div className="absolute inset-0 bg-[#C4735B]/0 group-hover:bg-[#C4735B]/5 transition-colors duration-300 pointer-events-none" />
+          <div className="absolute inset-0 bg-[var(--hm-brand-500)]/0 group-hover:bg-[var(--hm-brand-500)]/5 transition-colors duration-300 pointer-events-none" />
         )}
       </button>
 

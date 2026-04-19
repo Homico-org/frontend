@@ -59,22 +59,22 @@ export default function ContactModal({
     >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
-        className="relative w-full sm:max-w-md bg-white dark:bg-neutral-900 rounded-t-2xl sm:rounded-2xl p-4 sm:p-5 shadow-2xl animate-slide-up sm:animate-fade-in max-h-[90vh] overflow-y-auto"
+        className="relative w-full sm:max-w-md bg-[var(--hm-bg-elevated)] rounded-t-2xl sm:rounded-2xl p-4 sm:p-5 shadow-2xl animate-slide-up sm:animate-fade-in max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile drag handle */}
         <div className="sm:hidden flex justify-center pt-1 pb-3">
-          <div className="w-10 h-1 bg-neutral-300 dark:bg-neutral-600 rounded-full" />
+          <div className="w-10 h-1 bg-neutral-300 rounded-full" />
         </div>
 
         {/* Profile header */}
         <div className="flex items-center gap-2.5 sm:gap-3 mb-3 sm:mb-4">
           <Avatar src={avatar} name={name} size="md" className="sm:w-12 sm:h-12" />
           <div className="min-w-0">
-            <p className="font-semibold text-sm sm:text-base text-neutral-900 dark:text-white truncate">
+            <p className="font-semibold text-sm sm:text-base text-[var(--hm-fg-primary)] truncate">
               {name}
             </p>
-            <p className="text-xs sm:text-sm text-neutral-500 truncate">{title}</p>
+            <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)] truncate">{title}</p>
           </div>
         </div>
 

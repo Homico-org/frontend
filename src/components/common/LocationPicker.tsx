@@ -220,13 +220,13 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
       {/* Input trigger */}
       <div
         onClick={() => setIsOpen(true)}
-        className="w-full px-4 py-3 border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:border-neutral-400 dark:focus:border-primary-400 text-sm cursor-pointer flex items-center gap-3 hover:border-neutral-300 dark:hover:border-dark-border-subtle transition-all duration-200 ease-out bg-white dark:bg-dark-card"
+        className="w-full px-4 py-3 border border-[var(--hm-border)] rounded-xl focus:outline-none focus:border-neutral-400 text-sm cursor-pointer flex items-center gap-3 hover:border-[var(--hm-border-strong)] transition-all duration-200 ease-out bg-[var(--hm-bg-elevated)]"
       >
-        <svg className="w-5 h-5 text-neutral-400 dark:text-neutral-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 text-[var(--hm-fg-muted)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        <span className={value ? 'text-neutral-900 dark:text-neutral-50' : 'text-neutral-400 dark:text-neutral-500'}>
+        <span className={value ? 'text-[var(--hm-fg-primary)]' : 'text-[var(--hm-fg-muted)]'}>
           {value || placeholder}
         </span>
       </div>
@@ -235,26 +235,26 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setIsOpen(false)}>
           <div
-            className="bg-white dark:bg-dark-card w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-hidden"
+            className="bg-[var(--hm-bg-elevated)] w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-neutral-100 dark:border-dark-border">
-              <h3 className="font-semibold text-neutral-900 dark:text-neutral-50">Select Location</h3>
+            <div className="flex items-center justify-between p-4 border-b border-[var(--hm-border-subtle)]">
+              <h3 className="font-semibold text-[var(--hm-fg-primary)]">Select Location</h3>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-neutral-100 dark:hover:bg-dark-bg rounded-lg transition-all duration-200 ease-out"
+                className="p-2 hover:bg-[var(--hm-bg-tertiary)] rounded-lg transition-all duration-200 ease-out"
               >
-                <svg className="w-5 h-5 text-neutral-500 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-[var(--hm-fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             {/* Search */}
-            <div className="p-4 border-b border-neutral-100 dark:border-dark-border">
+            <div className="p-4 border-b border-[var(--hm-border-subtle)]">
               <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--hm-fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
@@ -263,7 +263,7 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
                   value={inputValue}
                   onChange={handleInputChange}
                   placeholder="Search address..."
-                  className="w-full pl-10 pr-4 py-3 bg-neutral-50 dark:bg-dark-bg border border-neutral-200 dark:border-dark-border rounded-xl focus:outline-none focus:border-neutral-400 dark:focus:border-primary-400 text-sm text-neutral-900 dark:text-neutral-50 placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
+                  className="w-full pl-10 pr-4 py-3 bg-[var(--hm-bg-page)] border border-[var(--hm-border)] rounded-xl focus:outline-none focus:border-neutral-400 text-sm text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)]"
                   autoFocus
                 />
                 {isLoading && (
@@ -275,20 +275,20 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
 
               {/* Predictions */}
               {predictions.length > 0 && (
-                <div className="mt-2 border border-neutral-200 dark:border-dark-border rounded-xl overflow-hidden">
+                <div className="mt-2 border border-[var(--hm-border)] rounded-xl overflow-hidden">
                   {predictions.map((prediction) => (
                     <button
                       key={prediction.place_id}
                       onClick={() => handleSelectPrediction(prediction)}
-                      className="w-full px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-dark-bg border-b border-neutral-100 dark:border-dark-border last:border-b-0 transition-all duration-200 ease-out"
+                      className="w-full px-4 py-3 text-left hover:bg-[var(--hm-bg-page)] border-b border-[var(--hm-border-subtle)] last:border-b-0 transition-all duration-200 ease-out"
                     >
                       <div className="flex items-start gap-3">
-                        <svg className="w-5 h-5 text-neutral-400 dark:text-neutral-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-[var(--hm-fg-muted)] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         </svg>
                         <div className="min-w-0">
-                          <div className="text-sm text-neutral-900 dark:text-neutral-50 truncate">{prediction.structured_formatting.main_text}</div>
-                          <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{prediction.structured_formatting.secondary_text}</div>
+                          <div className="text-sm text-[var(--hm-fg-primary)] truncate">{prediction.structured_formatting.main_text}</div>
+                          <div className="text-xs text-[var(--hm-fg-muted)] truncate">{prediction.structured_formatting.secondary_text}</div>
                         </div>
                       </div>
                     </button>
@@ -299,22 +299,22 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
 
             {/* Map */}
             {mapLoaded ? (
-              <div ref={mapRef} className="h-64 sm:h-80 bg-neutral-100 dark:bg-dark-bg" />
+              <div ref={mapRef} className="h-64 sm:h-80 bg-[var(--hm-bg-tertiary)]" />
             ) : (
-              <div className="h-64 sm:h-80 bg-neutral-100 dark:bg-dark-bg flex items-center justify-center">
+              <div className="h-64 sm:h-80 bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
                 <div className="text-center">
                   <LoadingSpinner size="lg" color="#525252" className="mx-auto mb-2" />
-                  <p className="text-sm text-neutral-500">Loading map...</p>
+                  <p className="text-sm text-[var(--hm-fg-muted)]">Loading map...</p>
                 </div>
               </div>
             )}
 
             {/* Footer */}
-            <div className="p-4 border-t border-neutral-100 dark:border-dark-border">
+            <div className="p-4 border-t border-[var(--hm-border-subtle)]">
               <button
                 onClick={handleConfirm}
                 disabled={!inputValue}
-                className="w-full py-3 bg-neutral-900 dark:bg-primary-400 hover:bg-neutral-800 dark:hover:bg-primary-500 disabled:bg-neutral-200 dark:disabled:bg-dark-bg disabled:text-neutral-400 dark:disabled:text-neutral-600 text-white dark:text-neutral-50 font-medium rounded-xl transition-all duration-200 ease-out"
+                className="w-full py-3 bg-neutral-900 hover:bg-neutral-800 disabled:bg-[var(--hm-n-200)] disabled:text-[var(--hm-fg-muted)] text-white font-medium rounded-xl transition-all duration-200 ease-out"
               >
                 Confirm Location
               </button>

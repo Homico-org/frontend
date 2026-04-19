@@ -50,31 +50,31 @@ export default function NotificationToggle({
   return (
     <div
       className={`flex items-center justify-between py-3 ${className}`}
-      style={{ borderBottom: '1px solid var(--color-border-light, rgba(0,0,0,0.05))' }}
+      style={{ borderBottom: '1px solid var(--hm-border-subtle)' }}
     >
       <div className="flex items-center gap-3">
         {IconComponent && (
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: 'var(--color-bg-tertiary, rgba(0,0,0,0.05))' }}
+            style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}
           >
             <IconComponent
               className="w-4 h-4"
-              style={{ color: 'var(--color-text-secondary)' }}
+              style={{ color: 'var(--hm-fg-secondary)' }}
             />
           </div>
         )}
         <div>
           <p
             className="text-sm font-medium"
-            style={{ color: 'var(--color-text-primary)' }}
+            style={{ color: 'var(--hm-fg-primary)' }}
           >
             {label}
           </p>
           {description && (
             <p
               className="text-xs mt-0.5"
-              style={{ color: 'var(--color-text-tertiary)' }}
+              style={{ color: 'var(--hm-fg-muted)' }}
             >
               {description}
             </p>
@@ -126,7 +126,7 @@ export function NotificationGroup({
   const IconComponent = icon ? iconMap[icon] : Bell;
 
   const iconColors = {
-    primary: 'text-[#E07B4F]',
+    primary: 'text-[var(--hm-brand-500)]',
     violet: 'text-violet-500',
     success: 'text-green-500',
   };
@@ -141,8 +141,8 @@ export function NotificationGroup({
     <div
       className={`rounded-2xl overflow-hidden ${className}`}
       style={{
-        backgroundColor: 'var(--color-bg-elevated)',
-        border: '1px solid var(--color-border)',
+        backgroundColor: 'var(--hm-bg-elevated)',
+        border: '1px solid var(--hm-border)',
       }}
     >
       {/* Group Header */}
@@ -157,14 +157,14 @@ export function NotificationGroup({
           <div>
             <p
               className="text-sm font-semibold"
-              style={{ color: 'var(--color-text-primary)' }}
+              style={{ color: 'var(--hm-fg-primary)' }}
             >
               {title}
             </p>
             {description && (
               <p
                 className="text-xs mt-0.5"
-                style={{ color: 'var(--color-text-secondary)' }}
+                style={{ color: 'var(--hm-fg-secondary)' }}
               >
                 {description}
               </p>
@@ -183,7 +183,7 @@ export function NotificationGroup({
       {enabled && (
         <div
           className="px-4 pb-3"
-          style={{ borderTop: '1px solid var(--color-border-light, rgba(0,0,0,0.05))' }}
+          style={{ borderTop: '1px solid var(--hm-border-subtle)' }}
         >
           {children}
         </div>

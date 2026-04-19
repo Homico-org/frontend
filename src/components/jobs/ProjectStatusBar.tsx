@@ -75,16 +75,16 @@ export default function ProjectStatusBar({
   // Compact completed state for hero
   if (isFullyCompleted) {
     return (
-      <div className={`flex items-center gap-3 ${compact ? 'p-3' : 'p-4'} rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800`}>
-        <div className={`${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center flex-shrink-0`}>
-          <CheckCircle2 className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} text-green-600 dark:text-green-400`} />
+      <div className={`flex items-center gap-3 ${compact ? 'p-3' : 'p-4'} rounded-xl bg-green-50 border border-green-200`}>
+        <div className={`${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-full bg-green-100 flex items-center justify-center flex-shrink-0`}>
+          <CheckCircle2 className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} text-green-600`} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`${compact ? 'text-xs' : 'text-sm'} font-semibold text-green-800 dark:text-green-200`}>
+          <p className={`${compact ? 'text-xs' : 'text-sm'} font-semibold text-green-800`}>
             {t('job.projectCompleted')}
           </p>
           {!compact && (
-            <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
+            <p className="text-xs text-green-600 mt-0.5">
               {t('job.thankYouForYourCollaboration')}
             </p>
           )}
@@ -103,7 +103,7 @@ export default function ProjectStatusBar({
           </Button>
         )}
         {isClient && hasSubmittedReview && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-green-600 bg-green-100 dark:bg-green-800/30 dark:text-green-400 flex-shrink-0">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-green-600 bg-green-100 flex-shrink-0">
             <Check className="w-3.5 h-3.5" />
             {t('job.reviewed')}
           </div>
@@ -123,14 +123,14 @@ export default function ProjectStatusBar({
       <div className="flex items-center gap-4">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
-            <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-neutral-700 dark:text-neutral-200`}>
+            <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-[var(--hm-fg-secondary)]`}>
               {locale === "ka" ? STAGES[currentIndex]?.labelKa : STAGES[currentIndex]?.label}
             </span>
             <span className={`${compact ? 'text-xs' : 'text-sm'} font-bold`} style={{ color: ACCENT }}>
               {progress}%
             </span>
           </div>
-          <div className={`${compact ? 'h-1.5' : 'h-2'} bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden`}>
+          <div className={`${compact ? 'h-1.5' : 'h-2'} bg-[var(--hm-bg-tertiary)] rounded-full overflow-hidden`}>
             <div
               className="h-full rounded-full transition-all duration-500 ease-out"
               style={{
@@ -157,8 +157,8 @@ export default function ProjectStatusBar({
 
       {/* Client Confirmation Prompt */}
       {isClient && isProjectCompleted && !isClientConfirmed && (
-        <div className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-2 ${compact ? 'p-2' : 'p-3'} rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800`}>
-          <p className={`${compact ? 'text-xs' : 'text-sm'} text-amber-700 dark:text-amber-300 flex-1`}>
+        <div className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-2 ${compact ? 'p-2' : 'p-3'} rounded-xl bg-[var(--hm-warning-50)]/20 border border-amber-200`}>
+          <p className={`${compact ? 'text-xs' : 'text-sm'} text-[var(--hm-warning-500)] flex-1`}>
             {t('job.pleaseReviewAndConfirm')}
           </p>
           <div className="flex gap-2">
@@ -205,12 +205,12 @@ export default function ProjectStatusBar({
                   flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
                   whitespace-nowrap transition-all duration-200 flex-shrink-0
                   ${isStageCompleted
-                    ? "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400"
+                    ? "bg-green-50 text-green-600"
                     : isCurrent
                       ? "text-white shadow-sm"
                       : canAdvance
-                        ? "bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-2 border-dashed hover:border-solid cursor-pointer"
-                        : "bg-neutral-50 dark:bg-neutral-800/50 text-neutral-400 dark:text-neutral-500"
+                        ? "bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] border-2 border-dashed hover:border-solid cursor-pointer"
+                        : "bg-[var(--hm-bg-tertiary)]/50 text-[var(--hm-fg-muted)]"
                   }
                 `}
                 style={{

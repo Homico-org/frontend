@@ -50,13 +50,13 @@ function CollapsibleCard({
   }, [children]);
 
   return (
-    <div className="bg-white rounded-lg border border-neutral-100 shadow-sm overflow-hidden">
+    <div className="bg-[var(--hm-bg-elevated)] rounded-lg border border-[var(--hm-border-subtle)] shadow-sm overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-neutral-50 transition-colors group"
+        className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-[var(--hm-bg-page)] transition-colors group"
       >
         <div className="flex items-center gap-1.5">
-          <h3 className="text-xs font-semibold text-neutral-900 group-hover:text-neutral-700 transition-colors">
+          <h3 className="text-xs font-semibold text-[var(--hm-fg-primary)] group-hover:text-[var(--hm-fg-secondary)] transition-colors">
             {title}
           </h3>
           {activeCount > 0 && (
@@ -66,7 +66,7 @@ function CollapsibleCard({
           )}
         </div>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-neutral-400 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+          className={`w-3.5 h-3.5 text-[var(--hm-fg-muted)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
             isOpen ? 'rotate-180 text-neutral-600' : 'rotate-0'
           }`}
         />
@@ -151,7 +151,7 @@ export default function BrowseFiltersSidebar({
   };
 
   return (
-    <aside className="w-full h-full min-h-0 bg-[#FAF9F8] flex flex-col">
+    <aside className="w-full h-full min-h-0 bg-[var(--hm-bg-page)] flex flex-col">
       {/* Content (scrolls) */}
       <div
         className="p-3 space-y-2.5 flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
@@ -181,7 +181,7 @@ export default function BrowseFiltersSidebar({
             <div className="flex items-center gap-2">
               {/* Min Input */}
               <div className="flex-1">
-                <label className="block text-[10px] text-neutral-500 mb-1">Min</label>
+                <label className="block text-[10px] text-[var(--hm-fg-muted)] mb-1">Min</label>
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -193,11 +193,11 @@ export default function BrowseFiltersSidebar({
               </div>
 
               {/* Separator */}
-              <span className="text-neutral-300 mt-4 text-xs">—</span>
+              <span className="text-[var(--hm-n-300)] mt-4 text-xs">—</span>
 
               {/* Max Input */}
               <div className="flex-1">
-                <label className="block text-[10px] text-neutral-500 mb-1">Max</label>
+                <label className="block text-[10px] text-[var(--hm-fg-muted)] mb-1">Max</label>
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -231,7 +231,7 @@ export default function BrowseFiltersSidebar({
                       className={`w-4 h-4 transition-colors ${
                         minRating > 0 && star <= minRating
                           ? 'text-amber-400'
-                          : 'text-neutral-300 hover:text-amber-300'
+                          : 'text-[var(--hm-n-300)] hover:text-amber-300'
                       }`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -242,7 +242,7 @@ export default function BrowseFiltersSidebar({
                 ))}
               </div>
               {/* Helper text */}
-              <p className="text-[10px] text-neutral-500">
+              <p className="text-[10px] text-[var(--hm-fg-muted)]">
                 {minRating > 0
                   ? `${minRating}+ ${locale === 'ka' ? 'ვარსკვლავი' : 'stars'}`
                   : t('browse.selectMinimum')}

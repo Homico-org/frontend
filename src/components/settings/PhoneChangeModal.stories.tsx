@@ -48,7 +48,7 @@ const PhoneChangeModalWrapper = ({
     <div className="min-h-[600px] min-w-[500px] flex items-center justify-center bg-neutral-100 dark:bg-neutral-900 p-8">
       <button 
         onClick={() => setIsOpen(true)}
-        className="px-4 py-2 bg-[#E07B4F] text-white rounded-lg font-medium"
+        className="px-4 py-2 bg-[#F06B43] text-white rounded-lg font-medium"
       >
         Open Phone Modal
       </button>

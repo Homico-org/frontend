@@ -128,81 +128,81 @@ function ProReviewsPageContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--hm-bg-page)] flex items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-cream-50 dark:bg-dark-bg py-6 sm:py-8">
+    <div className="min-h-screen bg-[var(--hm-bg-page)] py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-serif font-medium text-neutral-900 dark:text-neutral-50">
+          <h1 className="text-2xl sm:text-3xl font-serif font-medium text-[var(--hm-fg-primary)]">
             {t('common.reviews')}
           </h1>
-          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-[var(--hm-fg-muted)]">
             {t('reviews.seeWhatClientsAreSaying')}
           </p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-4 sm:p-5">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card p-4 sm:p-5">
             <div className="flex items-center gap-3">
-              <div className="bg-amber-500 p-2.5 rounded-xl">
+              <div className="bg-[var(--hm-warning-500)] p-2.5 rounded-xl">
                 <Star className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                <p className="text-xs text-[var(--hm-fg-muted)]">
                   {t('reviews.average')}
                 </p>
-                <p className="text-xl font-semibold text-neutral-900 dark:text-neutral-50">
+                <p className="text-xl font-semibold text-[var(--hm-fg-primary)]">
                   {stats?.averageRating ? stats.averageRating.toFixed(1) : '-'}
                 </p>
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-4 sm:p-5">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card p-4 sm:p-5">
             <div className="flex items-center gap-3">
-              <div className="bg-forest-800 p-2.5 rounded-xl">
+              <div className="bg-[var(--hm-n-800)] p-2.5 rounded-xl">
                 <MessageSquare className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                <p className="text-xs text-[var(--hm-fg-muted)]">
                   {t('reviews.total')}
                 </p>
-                <p className="text-xl font-semibold text-neutral-900 dark:text-neutral-50">
+                <p className="text-xl font-semibold text-[var(--hm-fg-primary)]">
                   {stats?.totalReviews || 0}
                 </p>
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-4 sm:p-5">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card p-4 sm:p-5">
             <div className="flex items-center gap-3">
-              <div className="bg-[#C4735B] p-2.5 rounded-xl">
+              <div className="bg-[var(--hm-brand-500)] p-2.5 rounded-xl">
                 <ShieldCheck className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                <p className="text-xs text-[var(--hm-fg-muted)]">
                   {t('reviews.homicoReviews')}
                 </p>
-                <p className="text-xl font-semibold text-neutral-900 dark:text-neutral-50">
+                <p className="text-xl font-semibold text-[var(--hm-fg-primary)]">
                   {stats?.homicoReviews || 0}
                 </p>
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-4 sm:p-5">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card p-4 sm:p-5">
             <div className="flex items-center gap-3">
-              <div className="bg-blue-500 p-2.5 rounded-xl">
+              <div className="bg-[var(--hm-info-500)] p-2.5 rounded-xl">
                 <Globe className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                <p className="text-xs text-[var(--hm-fg-muted)]">
                   {t('reviews.externalReviews')}
                 </p>
-                <p className="text-xl font-semibold text-neutral-900 dark:text-neutral-50">
+                <p className="text-xl font-semibold text-[var(--hm-fg-primary)]">
                   {stats?.externalReviews || 0}
                 </p>
               </div>
@@ -211,24 +211,24 @@ function ProReviewsPageContent() {
         </div>
 
         {/* Request Reviews Section */}
-        <div className="bg-gradient-to-br from-[#C4735B]/10 to-[#C4735B]/5 dark:from-[#C4735B]/20 dark:to-[#C4735B]/10 rounded-2xl border border-[#C4735B]/20 p-6 mb-6">
+        <div className="bg-gradient-to-br from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 rounded-2xl border border-[var(--hm-brand-500)]/20 p-6 mb-6">
           <div className="flex items-start gap-4 mb-5">
-            <div className="bg-[#C4735B] p-3 rounded-xl">
+            <div className="bg-[var(--hm-brand-500)] p-3 rounded-xl">
               <Users className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
                 {t('reviews.requestReviews')}
               </h2>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+              <p className="text-sm text-[var(--hm-fg-secondary)] mt-1">
                 {t('reviews.shareWithClients')}
               </p>
             </div>
           </div>
 
           {/* Review Link */}
-          <div className="bg-white dark:bg-neutral-900 rounded-xl p-4 mb-4">
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-xl p-4 mb-4">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
               {t('reviews.yourReviewLink')}
             </label>
             <div className="flex gap-2">
@@ -256,8 +256,8 @@ function ProReviewsPageContent() {
           </div>
 
           {/* Send Invitation */}
-          <div className="bg-white dark:bg-neutral-900 rounded-xl p-4">
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-xl p-4">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
               {t('reviews.sendInvitationSms')}
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -275,7 +275,7 @@ function ProReviewsPageContent() {
               <Button
                 onClick={sendInvitation}
                 disabled={isSendingInvite || !invitePhone.trim()}
-                className="bg-[#C4735B] hover:bg-[#B5654D]"
+                className="bg-[var(--hm-brand-500)] hover:bg-[#B5654D]"
               >
                 {isSendingInvite ? (
                   <LoadingSpinner size="sm" color="white" />
@@ -287,7 +287,7 @@ function ProReviewsPageContent() {
                 )}
               </Button>
             </div>
-            <p className="text-xs text-neutral-500 mt-2">
+            <p className="text-xs text-[var(--hm-fg-muted)] mt-2">
               {t('reviews.invitationsRemaining', { count: 10 - (stats?.pendingInvitations || 0) })}
             </p>
           </div>
@@ -295,17 +295,17 @@ function ProReviewsPageContent() {
 
         {/* Reviews List or Empty State */}
         {stats && stats.totalReviews > 0 ? (
-          <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none p-6">
-            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card p-6">
+            <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)] mb-4">
               {t('reviews.yourReviews')}
             </h3>
             {/* Reviews would be fetched and displayed here */}
-            <p className="text-neutral-500 text-sm">
+            <p className="text-[var(--hm-fg-muted)] text-sm">
               {t('common.loading')}
             </p>
           </div>
         ) : (
-          <div className="bg-white dark:bg-dark-card rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-dark-border shadow-card dark:shadow-none">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card">
             <EmptyState
               icon={Star}
               title="No reviews yet"

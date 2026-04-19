@@ -180,11 +180,11 @@ export default function StartProjectPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50">
+      <div className="min-h-screen bg-[var(--hm-bg-page)]">
         <Header />
       <HeaderSpacer />
         <div className="flex items-center justify-center py-20">
-          <LoadingSpinner size="lg" color="#C4735B" />
+          <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
         </div>
       </div>
     );
@@ -192,20 +192,20 @@ export default function StartProjectPage() {
 
   if (projectCreated) {
     return (
-      <div className="min-h-screen bg-neutral-50">
+      <div className="min-h-screen bg-[var(--hm-bg-page)]">
         <Header />
         <HeaderSpacer />
         <div className="container-custom py-16">
           <div className="max-w-md mx-auto text-center">
             <IconBadge icon={Check} variant="accent" size="xl" className="mx-auto mb-6" />
-            <h1 className="text-2xl font-bold text-neutral-900 mb-3">Project Created</h1>
-            <p className="text-neutral-600 mb-6">
+            <h1 className="text-2xl font-bold text-[var(--hm-fg-primary)] mb-3">Project Created</h1>
+            <p className="text-[var(--hm-fg-secondary)] mb-6">
               &ldquo;{projectName}&rdquo; is ready. Start building your team by hiring professionals.
             </p>
 
             {team.length > 0 && (
               <Card variant="elevated" className="p-4 mb-6 text-left">
-                <p className="text-sm text-neutral-500 mb-3">Your team ({team.length} roles)</p>
+                <p className="text-sm text-[var(--hm-fg-muted)] mb-3">Your team ({team.length} roles)</p>
                 <div className="flex flex-wrap gap-2">
                   {team.map((role) => (
                     <Button
@@ -239,7 +239,7 @@ export default function StartProjectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       <Header />
       <HeaderSpacer />
 
@@ -248,8 +248,8 @@ export default function StartProjectPage() {
           {/* Header */}
           <div className="mb-6">
             <BackButton href="/projects" label="Back" className="mb-4" />
-            <h1 className="text-2xl font-bold text-neutral-900">Start Project</h1>
-            <p className="text-neutral-500 mt-1">Plan your renovation and build the perfect team</p>
+            <h1 className="text-2xl font-bold text-[var(--hm-fg-primary)]">Start Project</h1>
+            <p className="text-[var(--hm-fg-muted)] mt-1">Plan your renovation and build the perfect team</p>
           </div>
 
           {/* Stepper */}
@@ -265,8 +265,8 @@ export default function StartProjectPage() {
             {/* Step 1: Project Type */}
             {step === 1 && (
               <div>
-                <h2 className="text-lg font-semibold text-neutral-900 mb-1">What are you working on?</h2>
-                <p className="text-sm text-neutral-500 mb-4">Select your project type</p>
+                <h2 className="text-lg font-semibold text-[var(--hm-fg-primary)] mb-1">What are you working on?</h2>
+                <p className="text-sm text-[var(--hm-fg-muted)] mb-4">Select your project type</p>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {projectTypes.map((type) => (
@@ -287,8 +287,8 @@ export default function StartProjectPage() {
             {step === 2 && (
               <div className="space-y-5">
                 <div>
-                  <h2 className="text-lg font-semibold text-neutral-900 mb-1">Project details</h2>
-                  <p className="text-sm text-neutral-500 mb-4">Tell us about your project</p>
+                  <h2 className="text-lg font-semibold text-[var(--hm-fg-primary)] mb-1">Project details</h2>
+                  <p className="text-sm text-[var(--hm-fg-muted)] mb-4">Tell us about your project</p>
                 </div>
 
                 {/* Project Name */}
@@ -304,7 +304,7 @@ export default function StartProjectPage() {
 
                 {/* Description */}
                 <FormGroup>
-                  <Label>Description <span className="text-neutral-400 font-normal">(optional)</span></Label>
+                  <Label>Description <span className="text-[var(--hm-fg-muted)] font-normal">(optional)</span></Label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -328,7 +328,7 @@ export default function StartProjectPage() {
 
                 {/* Budget */}
                 <FormGroup>
-                  <Label>Estimated budget <span className="text-neutral-400 font-normal">(optional)</span></Label>
+                  <Label>Estimated budget <span className="text-[var(--hm-fg-muted)] font-normal">(optional)</span></Label>
                   <Input
                     type="number"
                     min={0}
@@ -340,13 +340,13 @@ export default function StartProjectPage() {
                       }
                     }}
                     placeholder="0"
-                    leftIcon={<span className="text-neutral-400">$</span>}
+                    leftIcon={<span className="text-[var(--hm-fg-muted)]">$</span>}
                   />
                 </FormGroup>
 
                 {/* Media Upload */}
                 <FormGroup>
-                  <Label>Reference photos or videos <span className="text-neutral-400 font-normal">(optional)</span></Label>
+                  <Label>Reference photos or videos <span className="text-[var(--hm-fg-muted)] font-normal">(optional)</span></Label>
                   <MediaUpload
                     value={media}
                     onChange={setMedia}
@@ -360,14 +360,14 @@ export default function StartProjectPage() {
             {/* Step 3: Team */}
             {step === 3 && (
               <div>
-                <h2 className="text-lg font-semibold text-neutral-900 mb-1">Build your team</h2>
-                <p className="text-sm text-neutral-500 mb-4">
+                <h2 className="text-lg font-semibold text-[var(--hm-fg-primary)] mb-1">Build your team</h2>
+                <p className="text-sm text-[var(--hm-fg-muted)] mb-4">
                   Select the professionals you&apos;ll need. You can hire them after creating the project.
                 </p>
 
                 {/* Selected Team */}
                 {team.length > 0 && (
-                  <div className="mb-4 p-3 bg-neutral-50 rounded-xl">
+                  <div className="mb-4 p-3 bg-[var(--hm-bg-page)] rounded-xl">
                     <div className="flex flex-wrap gap-2">
                       {team.map((role) => (
                         <Badge
@@ -375,7 +375,7 @@ export default function StartProjectPage() {
                           variant="secondary"
                           size="default"
                           onClick={() => removeRole(role.name)}
-                          className="cursor-pointer hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+                          className="cursor-pointer hover:bg-[var(--hm-error-50)] hover:text-[var(--hm-error-500)] hover:border-red-200 transition-colors"
                         >
                           {role.name}
                           <X className="w-3 h-3 ml-1" />
@@ -404,7 +404,7 @@ export default function StartProjectPage() {
                       variant="secondary"
                       size="default"
                       onClick={() => addRole(role)}
-                      className="cursor-pointer hover:bg-neutral-100 transition-colors"
+                      className="cursor-pointer hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                     >
                       {role}
                       <Plus className="w-3 h-3 ml-1" />

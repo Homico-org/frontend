@@ -263,3 +263,13 @@ export interface ProEarnings {
   responseRate: number;
   responseTime: number;
 }
+
+// ============== AUTH / DEV ==============
+
+export interface DemoAccount {
+  name: string;
+  phone: string;
+  role: UserRole;
+  avatar: string;
+  title: string;
+}

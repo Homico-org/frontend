@@ -172,7 +172,7 @@ const JobCard = React.memo(function JobCard({
     <Link href={`/jobs/${job.id}`} className="group block h-full">
       <motion.div
         ref={cardRef}
-        className="relative h-full flex flex-col bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-200"
+        className="relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl overflow-hidden border border-[var(--hm-border-subtle)] hover:border-[var(--hm-border-strong)] transition-all duration-200"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -182,10 +182,10 @@ const JobCard = React.memo(function JobCard({
 
           {/* Image section - only if has images */}
           {hasImages && (
-            <div className="relative aspect-[16/9] bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+            <div className="relative aspect-[16/9] bg-[var(--hm-bg-tertiary)] overflow-hidden">
               {/* Shimmer loading */}
               <div
-                className={`absolute inset-0 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 dark:from-neutral-800 dark:via-neutral-700 dark:to-neutral-800 animate-shimmer bg-[length:200%_100%] transition-opacity duration-500 ${
+                className={`absolute inset-0 bg-gradient-to-r from-[var(--hm-border)] via-[var(--hm-bg-tertiary)] to-[var(--hm-border)] animate-shimmer bg-[length:200%_100%] transition-opacity duration-500 ${
                   imageLoaded ? "opacity-0 pointer-events-none" : "opacity-100"
                 }`}
               />
@@ -209,15 +209,15 @@ const JobCard = React.memo(function JobCard({
                 <>
                   <button
                     onClick={prevImage}
-                    className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 dark:bg-black/60 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                    className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
                   >
-                    <ChevronLeft className="w-4 h-4 text-neutral-700 dark:text-white" />
+                    <ChevronLeft className="w-4 h-4 text-[var(--hm-fg-secondary)]" />
                   </button>
                   <button
                     onClick={nextImage}
-                    className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 dark:bg-black/60 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                    className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
                   >
-                    <ChevronRight className="w-4 h-4 text-neutral-700 dark:text-white" />
+                    <ChevronRight className="w-4 h-4 text-[var(--hm-fg-secondary)]" />
                   </button>
                   <div className="absolute bottom-1.5 sm:bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
                     {allImages.slice(0, 5).map((_, idx) => (
@@ -245,7 +245,7 @@ const JobCard = React.memo(function JobCard({
           <div className="p-2.5 sm:p-3 flex flex-col gap-1.5 sm:gap-2 flex-1">
             {/* Top row: Category + badges + time */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-[#C4735B]/10 text-[#C4735B]">
+              <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]">
                 {getLabel(job.category)}
               </span>
               {isNew && !hasApplied && (
@@ -259,20 +259,20 @@ const JobCard = React.memo(function JobCard({
               {hasApplied && (
                 <StatusPill variant="applied" size="xs" locale={locale} />
               )}
-              <span className="ml-auto text-[10px] sm:text-[11px] text-neutral-400 flex items-center gap-0.5 sm:gap-1">
+              <span className="ml-auto text-[10px] sm:text-[11px] text-[var(--hm-fg-muted)] flex items-center gap-0.5 sm:gap-1">
                 <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 {timeAgo}
               </span>
             </div>
 
             {/* Title */}
-            <h3 className="font-semibold text-[13px] sm:text-sm text-neutral-900 dark:text-white leading-snug line-clamp-2 group-hover:text-[#C4735B] transition-colors">
+            <h3 className="font-semibold text-[13px] sm:text-sm text-[var(--hm-fg-primary)] leading-snug line-clamp-2 group-hover:text-[var(--hm-brand-500)] transition-colors">
               {job.title}
             </h3>
 
             {/* Description - hidden on mobile */}
             {job.description && (
-              <p className="hidden sm:block text-[13px] text-neutral-500 dark:text-neutral-400 line-clamp-2 leading-relaxed">
+              <p className="hidden sm:block text-[13px] text-[var(--hm-fg-muted)] line-clamp-2 leading-relaxed">
                 {job.description}
               </p>
             )}
@@ -287,11 +287,11 @@ const JobCard = React.memo(function JobCard({
                     <span
                       key={`${svc.key}-${i}`}
                       className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}
+                      style={{ backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-secondary)' }}
                     >
                       {svcName}
                       {qty > 1 && <span className="opacity-60">×{qty}</span>}
-                      {svc.unitPrice > 0 && <span className="text-[#C4735B] font-bold">{svc.unitPrice * qty}₾</span>}
+                      {svc.unitPrice > 0 && <span className="text-[var(--hm-brand-500)] font-bold">{svc.unitPrice * qty}₾</span>}
                     </span>
                   );
                 })}
@@ -300,14 +300,14 @@ const JobCard = React.memo(function JobCard({
 
             {/* Meta info row - hidden on mobile */}
             {job.location && (
-              <div className="hidden sm:flex items-center gap-1 text-[12px] text-neutral-500 dark:text-neutral-400">
-                <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-neutral-400" />
+              <div className="hidden sm:flex items-center gap-1 text-[12px] text-[var(--hm-fg-muted)]">
+                <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-[var(--hm-fg-muted)]" />
                 <span className="truncate">{truncateLocation(job.location)}</span>
               </div>
             )}
 
             {/* Divider - hidden on mobile */}
-            <div className="hidden sm:block h-px bg-neutral-100 dark:bg-neutral-800" />
+            <div className="hidden sm:block h-px bg-[var(--hm-bg-tertiary)]" />
 
             {/* Bottom row: Client + Budget + Stats */}
             <div className="flex items-center justify-between mt-auto">
@@ -319,7 +319,7 @@ const JobCard = React.memo(function JobCard({
                   size="xs"
                   className="w-5 h-5 sm:w-6 sm:h-6"
                 />
-                <span className="hidden sm:inline text-[12px] text-neutral-600 dark:text-neutral-300 truncate">
+                <span className="hidden sm:inline text-[12px] text-[var(--hm-fg-secondary)] truncate">
                   {job.clientId?.name?.split(" ")[0] || t("card.client")}
                 </span>
               </div>
@@ -327,7 +327,7 @@ const JobCard = React.memo(function JobCard({
               {/* Budget - prominent */}
               <div className="flex items-center gap-2 sm:gap-3">
                 {/* Stats - hidden on mobile */}
-                <div className="hidden sm:flex items-center gap-2 text-neutral-400">
+                <div className="hidden sm:flex items-center gap-2 text-[var(--hm-fg-muted)]">
                   {job.proposalCount > 0 && (
                     <span className="flex items-center gap-0.5 text-[11px]">
                       <Send className="w-3 h-3" />
@@ -343,7 +343,7 @@ const JobCard = React.memo(function JobCard({
                 </div>
 
                 {/* Budget badge */}
-                <span className="px-2 py-0.5 text-[11px] sm:text-xs font-bold rounded-md text-[#C4735B]">
+                <span className="px-2 py-0.5 text-[11px] sm:text-xs font-bold rounded-md text-[var(--hm-brand-500)]">
                   {formattedBudget}
                 </span>
               </div>
@@ -361,15 +361,15 @@ const JobCard = React.memo(function JobCard({
           }}
           className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all ${
             hasImages
-              ? "bg-white/90 dark:bg-black/60"
-              : "bg-neutral-100 dark:bg-neutral-800"
+              ? "bg-white/90"
+              : "bg-[var(--hm-bg-tertiary)]"
           }`}
         >
           <Bookmark
             className={`w-3.5 h-3.5 transition-colors ${
               isSaved
-                ? "fill-amber-500 text-amber-500"
-                : "text-neutral-400"
+                ? "fill-amber-500 text-[var(--hm-warning-500)]"
+                : "text-[var(--hm-fg-muted)]"
             }`}
           />
         </button>

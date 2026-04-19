@@ -275,7 +275,9 @@
     "tools": "Инструменты",
     "jobs": "Работы",
     "bookings": "Бронирования",
-    "forBusiness": "Для бизнеса"
+    "forBusiness": "Для бизнеса",
+    "sectionWork": "Работа",
+    "sectionAccount": "Аккаунт"
   },
   "validation": {
     "required": "Это поле обязательно",
@@ -346,6 +348,7 @@
     "signInWithGoogle": "Войти через Google",
     "orContinueWith": "Или продолжить с",
     "phoneNumber": "Номер телефона",
+    "enterPhoneNumber": "Введите номер телефона для входа",
     "sendCode": "Отправить код",
     "verification": "Верификация",
     "enterCode": "Введите код",
@@ -420,7 +423,9 @@
     "postAJob": "Разместить работу",
     "signInOrCreateAn": "Войдите или создайте",
     "signOut": "Выйти",
-    "signUp": "Регистрация"
+    "signUp": "Регистрация",
+    "darkMode": "Тёмная тема",
+    "lightMode": "Светлая тема"
   },
   "browse": {
     "title": "Обзор",
@@ -919,6 +924,32 @@
     "portfolio": "Портфолио",
     "reviews": "Отзывы",
     "contact": "Контакты",
+    "viewsLabel": "Просмотры",
+    "reviewsLabel": "Отзывы",
+    "jobsLabel": "Завершено",
+    "yearsExpShort": "Лет опыта",
+    "unitsShort": "ед",
+    "saveShort": "скидка",
+    "years12": "1-2 года",
+    "years35": "3-5 лет",
+    "years510": "5-10 лет",
+    "years10plus": "10+ лет",
+    "pendingBooking": "Ожидает подтверждения",
+    "confirmedBooking": "Подтверждённое бронирование",
+    "memberSince": "Участник с",
+    "fileReadError": "Не удалось прочитать файл. Выберите заново (если iCloud — сначала скачайте).",
+    "monthJanuary": "Январь",
+    "monthFebruary": "Февраль",
+    "monthMarch": "Март",
+    "monthApril": "Апрель",
+    "monthMay": "Май",
+    "monthJune": "Июнь",
+    "monthJuly": "Июль",
+    "monthAugust": "Август",
+    "monthSeptember": "Сентябрь",
+    "monthOctober": "Октябрь",
+    "monthNovember": "Ноябрь",
+    "monthDecember": "Декабрь",
     "services": "Услуги",
     "experience": "Опыт",
     "yearsExperience": "лет опыта",
@@ -1162,7 +1193,10 @@
     "useADifferentCard": "Используйте другую карту",
     "whatOurMembersSay": "Что говорят наши участники",
     "yourNewBenefits": "Ваши новые преимущества",
-    "yr": "г"
+    "yr": "г",
+    "readyToGrow": "Вы в одном шаге от роста вашего бизнеса",
+    "payAmount": "Оплатить {currency}{amount}",
+    "saveAmount": "Экономия {currency}{amount}/год"
   },
   "notifications": {
     "title": "Уведомления",
@@ -3392,5 +3426,22 @@
     "confirmPasswordPlaceholder": "Повторите пароль",
     "passwordMismatch": "Пароли не совпадают",
     "activateAccount": "Активировать аккаунт"
+  },
+  "ai": {
+    "smartAssistant": "Умный ассистент",
+    "clearChat": "Очистить чат",
+    "minimize": "Свернуть",
+    "hide": "Скрыть",
+    "greeting": "Привет! Я Homico AI",
+    "loginPrompt": "Войдите в аккаунт, чтобы начать общение",
+    "tryAsking": "Попробуйте спросить:",
+    "askQuestion": "Задайте вопрос...",
+    "loginToChat": "Войдите в аккаунт...",
+    "disclaimer": "Homico AI может ошибаться. Проверяйте важную информацию.",
+    "dragToMove": "перетащи",
+    "pricing": "Цены",
+    "averagePrice": "Средняя цена",
+    "basedOnProfessionals": "На основе {count} специалистов",
+    "faqs": "Частые вопросы"
   }
 }

@@ -66,7 +66,7 @@ export function PageShell({
   return (
     <div
       className={cn(
-        !isEmbedded && "min-h-screen bg-white dark:bg-neutral-950",
+        !isEmbedded && "min-h-screen bg-[var(--hm-bg-elevated)]",
         className,
       )}
     >

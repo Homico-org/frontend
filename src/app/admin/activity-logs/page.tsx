@@ -389,7 +389,7 @@ function AdminActivityLogsPageContent() {
                   className="text-xl font-semibold tracking-tight"
                   style={{
                     color: THEME.text,
-                    fontFamily: "'Inter', sans-serif",
+                    fontFamily: 'var(--hm-font-body)',
                   }}
                 >
                   {t("admin.activityLogs")}

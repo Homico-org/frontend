@@ -131,7 +131,7 @@ export default function PortfolioCard({
   return (
     <motion.div
       ref={cardRef}
-      className={`group relative bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden cursor-pointer ${className}`}
+      className={`group relative bg-[var(--hm-bg-elevated)] rounded-2xl overflow-hidden cursor-pointer ${className}`}
     >
       {/* 3D Glare/shine overlay */}
       <motion.div
@@ -143,7 +143,7 @@ export default function PortfolioCard({
       />
 
       {/* Card inner container */}
-      <div className="relative bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-100/80 dark:border-neutral-800 group-hover:border-[#C4735B]/30 transition-all duration-300">
+      <div className="relative bg-[var(--hm-bg-elevated)] rounded-2xl overflow-hidden border border-neutral-100/80 group-hover:border-[var(--hm-brand-500)]/30 transition-all duration-300">
 
         {/* Main Image */}
         {currentIsBa && currentBaPair ? (
@@ -158,7 +158,7 @@ export default function PortfolioCard({
             {/* Top badges — pointer-events-none so they don't block drag */}
             <div className="absolute top-2 sm:top-3 left-2 sm:left-3 right-2 sm:right-3 flex items-start justify-between z-20 pointer-events-none">
               {project.isVerified && (
-                <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-emerald-500/90 backdrop-blur-sm text-white text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide shadow-lg">
+                <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-[var(--hm-success-500)]/90 backdrop-blur-sm text-white text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide shadow-lg">
                   <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
                   <span>{t('common.verified')}</span>
                 </div>
@@ -178,7 +178,7 @@ export default function PortfolioCard({
           >
             {/* Loading skeleton */}
             {!imageLoaded && (
-              <div className="absolute inset-0 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700 animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[var(--hm-bg-tertiary)] to-[var(--hm-border)] animate-pulse" />
             )}
 
             <Image
@@ -198,7 +198,7 @@ export default function PortfolioCard({
             {/* Top badges row */}
             <div className="absolute top-2 sm:top-3 left-2 sm:left-3 right-2 sm:right-3 flex items-start justify-between z-20">
               {project.isVerified && (
-                <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-emerald-500/90 backdrop-blur-sm text-white text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide shadow-lg">
+                <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-[var(--hm-success-500)]/90 backdrop-blur-sm text-white text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide shadow-lg">
                   <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
                   <span>{t('common.verified')}</span>
                 </div>
@@ -213,7 +213,7 @@ export default function PortfolioCard({
 
             {/* View button on hover */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
-              <div className="px-6 py-3 rounded-full bg-white/95 backdrop-blur-sm shadow-2xl transform scale-75 group-hover:scale-100 transition-all duration-400 ease-out flex items-center gap-2.5 hover:bg-[#C4735B] hover:text-white group/btn">
+              <div className="px-6 py-3 rounded-full bg-white/95 backdrop-blur-sm shadow-2xl transform scale-75 group-hover:scale-100 transition-all duration-400 ease-out flex items-center gap-2.5 hover:bg-[var(--hm-brand-500)] hover:text-white group/btn">
                 <Eye className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
                 <span className="text-sm font-semibold">
                   {t('common.view')}
@@ -240,7 +240,7 @@ export default function PortfolioCard({
 
         {/* Thumbnail Strip */}
         {allImages.length > 1 && (
-          <div className="flex gap-1.5 p-2.5 bg-gradient-to-b from-neutral-50/80 to-white dark:from-neutral-800/50 dark:to-neutral-900 border-t border-neutral-100/50 dark:border-neutral-800/50">
+          <div className="flex gap-1.5 p-2.5 bg-gradient-to-b from-neutral-50/80 to-white border-t border-neutral-100/50">
             {allImages.slice(0, 4).map((img, imgIdx) => {
               const isBaPair = imgIdx >= baStartIndex;
               const baIdx = imgIdx - baStartIndex;
@@ -256,8 +256,8 @@ export default function PortfolioCard({
                   onMouseEnter={() => setActiveThumb(imgIdx)}
                   className={`relative flex-1 aspect-square rounded-lg overflow-hidden transition-all duration-300 ${
                     activeThumb === imgIdx
-                      ? 'ring-2 ring-[#C4735B] scale-[1.04] shadow-md'
-                      : 'ring-1 ring-neutral-200/50 dark:ring-neutral-700/50 hover:ring-[#C4735B]/50 hover:scale-[1.02]'
+                      ? 'ring-2 ring-[var(--hm-brand-500)] scale-[1.04] shadow-md'
+                      : 'ring-1 ring-neutral-200/50 hover:ring-[var(--hm-brand-500)]/50 hover:scale-[1.02]'
                   }`}
                 >
                   {baPair ? (
@@ -266,7 +266,7 @@ export default function PortfolioCard({
                       <div className="w-1/2 h-full relative">
                         <Image src={storage.getOptimizedImageUrl(baPair.before, "portfolioThumb")} alt="" fill sizes="150px" quality={80} loading="lazy" className="object-cover" />
                       </div>
-                      <div className="absolute inset-y-0 left-1/2 w-px bg-white z-10" />
+                      <div className="absolute inset-y-0 left-1/2 w-px bg-[var(--hm-bg-elevated)] z-10" />
                       <div className="w-1/2 h-full relative">
                         <Image src={storage.getOptimizedImageUrl(baPair.after, "portfolioThumb")} alt="" fill sizes="150px" quality={80} loading="lazy" className="object-cover" />
                       </div>
@@ -289,12 +289,12 @@ export default function PortfolioCard({
                   {activeThumb === imgIdx && (
                     <motion.div
                       layoutId={`thumb-indicator-${project.id}`}
-                      className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#C4735B]"
+                      className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[var(--hm-brand-500)]"
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
                   )}
                   {imgIdx === 3 && allImages.length > 4 && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#C4735B]/85 to-[#A85B44]/95 flex items-center justify-center backdrop-blur-[1px]">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[var(--hm-brand-500)]/85 to-[#A85B44]/95 flex items-center justify-center backdrop-blur-[1px]">
                       <span className="text-white text-sm font-bold">
                         +{allImages.length - 4}
                       </span>
@@ -308,45 +308,45 @@ export default function PortfolioCard({
 
         {/* Project Info Section */}
         <div className="p-4 pt-3">
-          <h3 className="font-semibold text-neutral-900 dark:text-white text-base line-clamp-1 group-hover:text-[#C4735B] transition-colors duration-300">
+          <h3 className="font-semibold text-[var(--hm-fg-primary)] text-base line-clamp-1 group-hover:text-[var(--hm-brand-500)] transition-colors duration-300">
             {svcLabel || project.title}
           </h3>
 
           {/* Description */}
           {project.description && (
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 mt-2 leading-relaxed">
+            <p className="text-sm text-[var(--hm-fg-muted)] line-clamp-2 mt-2 leading-relaxed">
               {project.description}
             </p>
           )}
 
           {/* Review quote */}
           {project.review && (
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 italic mt-2 line-clamp-2 leading-relaxed">
+            <p className="text-xs text-[var(--hm-fg-muted)] italic mt-2 line-clamp-2 leading-relaxed">
               &ldquo;{project.review}&rdquo;
             </p>
           )}
 
           {/* Bottom row - Client + Rating + Source */}
-          <div className="flex items-center justify-between mt-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center justify-between mt-3 pt-2 border-t border-[var(--hm-border-subtle)]">
             {/* Client info */}
             {project.clientName ? (
               <Link
                 href={project.clientId ? `/professionals/${project.clientId}` : '#'}
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-2 min-w-0 hover:text-[#C4735B] transition-colors"
+                className="flex items-center gap-2 min-w-0 hover:text-[var(--hm-brand-500)] transition-colors"
               >
                 {project.clientAvatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={storage.getOptimizedImageUrl(project.clientAvatar, 'avatar')} alt="" className="w-5 h-5 rounded-full object-cover" />
                 ) : (
-                  <div className="w-5 h-5 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[8px] font-bold text-neutral-500">
+                  <div className="w-5 h-5 rounded-full bg-[var(--hm-n-200)] flex items-center justify-center text-[8px] font-bold text-[var(--hm-fg-muted)]">
                     {project.clientName.charAt(0)}
                   </div>
                 )}
-                <span className="text-[11px] text-neutral-500 truncate hover:underline">{project.clientName}</span>
+                <span className="text-[11px] text-[var(--hm-fg-muted)] truncate hover:underline">{project.clientName}</span>
               </Link>
             ) : project.location ? (
-              <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+              <div className="flex items-center gap-1.5 text-xs text-[var(--hm-fg-muted)]">
                 <MapPin className="w-3 h-3" />
                 <span>{project.location}</span>
               </div>
@@ -354,14 +354,14 @@ export default function PortfolioCard({
 
             <div className="flex items-center gap-2 shrink-0">
               {project.source === 'homico' && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-medium">
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--hm-success-50)]/20 text-[var(--hm-success-500)] font-medium">
                   ✓ Homico
                 </span>
               )}
               {project.rating && project.rating > 0 && (
                 <div className="flex items-center gap-0.5 text-xs">
                   <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                  <span className="font-semibold text-neutral-700 dark:text-neutral-300">{project.rating.toFixed(1)}</span>
+                  <span className="font-semibold text-[var(--hm-fg-secondary)]">{project.rating.toFixed(1)}</span>
                 </div>
               )}
             </div>
@@ -389,22 +389,22 @@ export function EmptyPortfolio({ locale = 'en', className = '' }: EmptyPortfolio
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="relative inline-block"
       >
-        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center mx-auto mb-5 shadow-inner">
-          <Camera className="w-8 h-8 text-neutral-400 dark:text-neutral-500" />
+        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--hm-bg-tertiary)] to-[var(--hm-border)] flex items-center justify-center mx-auto mb-5 shadow-inner">
+          <Camera className="w-8 h-8 text-[var(--hm-fg-muted)]" />
         </div>
         <motion.div
           animate={{ rotate: [0, 10, -10, 0] }}
           transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-          className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[#C4735B]/10 flex items-center justify-center"
+          className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[var(--hm-brand-500)]/10 flex items-center justify-center"
         >
-          <Sparkles className="w-3 h-3 text-[#C4735B]" />
+          <Sparkles className="w-3 h-3 text-[var(--hm-brand-500)]" />
         </motion.div>
       </motion.div>
       <motion.p
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="text-neutral-500 dark:text-neutral-400 font-medium"
+        className="text-[var(--hm-fg-muted)] font-medium"
       >
         {t('professional.noPortfolioItemsYet')}
       </motion.p>
@@ -412,7 +412,7 @@ export function EmptyPortfolio({ locale = 'en', className = '' }: EmptyPortfolio
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35 }}
-        className="text-neutral-400 dark:text-neutral-500 text-sm mt-1"
+        className="text-[var(--hm-fg-muted)] text-sm mt-1"
       >
         {t('professional.projectsWillAppearHere')}
       </motion.p>

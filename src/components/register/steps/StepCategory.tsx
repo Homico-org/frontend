@@ -56,18 +56,18 @@ export default function StepCategory({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+        <h1 className="text-xl lg:text-2xl font-bold text-[var(--hm-fg-primary)] mb-1">
           {t('register.whatServicesDoYouProvide')}
         </h1>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-[var(--hm-fg-muted)]">
           {t('register.selectYourProfessionAndSkills')}
         </p>
       </div>
 
       {/* Category & Subcategory Selection */}
       <div>
-        <h2 className="text-sm font-semibold text-neutral-900 mb-2">
-          1. {t('register.categorySkills')} <span className="text-[#C4735B]">*</span>
+        <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-2">
+          1. {t('register.categorySkills')} <span className="text-[var(--hm-brand-500)]">*</span>
         </h2>
         <CategorySelector
           mode="multi"
@@ -96,10 +96,10 @@ export default function StepCategory({
       {formData.selectedCategories.length > 0 && (
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)] flex items-center gap-2">
               <IconBadge icon={Briefcase} variant="accent" size="sm" />
               3. {t('common.services')}
-              <span className="text-neutral-400 font-normal text-[10px]">({t('common.optional')})</span>
+              <span className="text-[var(--hm-fg-muted)] font-normal text-[10px]">({t('common.optional')})</span>
             </h2>
             {customServices.length > 0 && (
               <Badge variant="premium" size="sm">
@@ -108,7 +108,7 @@ export default function StepCategory({
             )}
           </div>
 
-          <p className="text-xs text-neutral-500 mb-3">
+          <p className="text-xs text-[var(--hm-fg-muted)] mb-3">
             {t('register.writeWhatServicesYouOffer')}
           </p>
 
@@ -116,15 +116,15 @@ export default function StepCategory({
           {customServices.length > 0 && (
             <div className="space-y-2 mb-3">
               {customServices.map((service, index) => (
-                <div key={index} className="flex items-center gap-2 p-2 rounded-lg bg-[#C4735B]/5 border border-[#C4735B]/20">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#C4735B] flex-shrink-0" />
-                  <span className="flex-1 text-sm text-neutral-900">{service}</span>
+                <div key={index} className="flex items-center gap-2 p-2 rounded-lg bg-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--hm-brand-500)] flex-shrink-0" />
+                  <span className="flex-1 text-sm text-[var(--hm-fg-primary)]">{service}</span>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     onClick={() => setCustomServices(prev => prev.filter((_, i) => i !== index))}
-                    className="w-6 h-6 text-neutral-400 hover:text-red-500"
+                    className="w-6 h-6 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)]"
                   >
                     <X className="w-4 h-4" />
                   </Button>

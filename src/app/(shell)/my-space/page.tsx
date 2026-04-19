@@ -62,8 +62,8 @@ const STAGE_CONFIG: Record<
   { en: string; ka: string; color: string; step: number }
 > = {
   hired: { en: "Hired", ka: "დაქირავებული", color: "#3b82f6", step: 1 },
-  started: { en: "Started", ka: "დაწყებული", color: "#C4735B", step: 2 },
-  in_progress: { en: "In Progress", ka: "მიმდინარე", color: "#C4735B", step: 3 },
+  started: { en: "Started", ka: "დაწყებული", color: 'var(--hm-brand-500)', step: 2 },
+  in_progress: { en: "In Progress", ka: "მიმდინარე", color: 'var(--hm-brand-500)', step: 3 },
   review: { en: "Under Review", ka: "შემოწმება", color: "#f59e0b", step: 4 },
   completed: { en: "Completed", ka: "დასრულებული", color: "#22c55e", step: 5 },
 };
@@ -107,7 +107,7 @@ function SectionHeader({
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-2">
-        <h2 className="text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>{title}</h2>
+        <h2 className="text-sm font-bold" style={{ color: "var(--hm-fg-primary)" }}>{title}</h2>
         {count !== undefined && count > 0 && (
           <span
             className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-bold text-white rounded-full"
@@ -135,10 +135,10 @@ function EmptyBlock({ icon: Icon, text, subtext }: { icon: typeof Calendar; text
   return (
     <motion.div
       variants={cardVariants}
-      className="rounded-xl py-8 text-center bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+      className="rounded-xl py-8 text-center bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)]"
     >
-      <Icon className="w-6 h-6 mx-auto mb-2 text-neutral-300 dark:text-neutral-600" />
-      <p className="text-xs font-medium" style={{ color: "var(--color-text-tertiary)" }}>{text}</p>
+      <Icon className="w-6 h-6 mx-auto mb-2 text-[var(--hm-n-300)]" />
+      <p className="text-xs font-medium" style={{ color: "var(--hm-fg-muted)" }}>{text}</p>
       {subtext && <p className="text-[11px] mt-0.5 text-neutral-400/70">{subtext}</p>}
     </motion.div>
   );
@@ -178,17 +178,17 @@ function ProfileCompletionCard({
         {/* Header row */}
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-sm font-bold" style={{ color: "var(--color-text-primary)" }}>
+            <h2 className="text-sm font-bold" style={{ color: "var(--hm-fg-primary)" }}>
               {t("mySpace.profileCompletion")}
             </h2>
-            <p className="text-[11px]" style={{ color: "var(--color-text-tertiary)" }}>
+            <p className="text-[11px]" style={{ color: "var(--hm-fg-muted)" }}>
               {t("mySpace.profileCompletionSubtitle")}
             </p>
           </div>
           {/* Circular progress */}
           <div className="relative w-12 h-12 flex-shrink-0">
             <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
-              <circle cx="24" cy="24" r="20" fill="none" strokeWidth="4" stroke="var(--color-border-subtle, #e5e7eb)" />
+              <circle cx="24" cy="24" r="20" fill="none" strokeWidth="4" stroke="var(--hm-border-subtle)" />
               <circle
                 cx="24"
                 cy="24"
@@ -217,8 +217,8 @@ function ProfileCompletionCard({
             <li key={item.key}>
               {item.done ? (
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-emerald-500" />
-                  <span className="text-[12px] line-through" style={{ color: "var(--color-text-tertiary)" }}>
+                  <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-[var(--hm-success-500)]" />
+                  <span className="text-[12px] line-through" style={{ color: "var(--hm-fg-muted)" }}>
                     {item.label}
                   </span>
                 </div>
@@ -403,7 +403,7 @@ function MySpaceContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="w-6 h-6 border-2 border-neutral-200 rounded-full animate-spin" style={{ borderTopColor: ACCENT_COLOR }} />
+        <div className="w-6 h-6 border-2 border-[var(--hm-border)] rounded-full animate-spin" style={{ borderTopColor: ACCENT_COLOR }} />
       </div>
     );
   }
@@ -510,11 +510,11 @@ function MySpaceContent() {
       >
         <Link
           href={`/jobs/${job.id}`}
-          className="group flex rounded-xl overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 transition-shadow hover:shadow-md"
+          className="group flex rounded-xl overflow-hidden bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] transition-shadow hover:shadow-md"
         >
           <div className="w-1 flex-shrink-0" style={{ backgroundColor: stageConfig?.color || ACCENT_COLOR }} />
           {firstImage && (
-            <div className="hidden sm:block w-20 lg:w-28 flex-shrink-0 bg-neutral-100 dark:bg-neutral-800">
+            <div className="hidden sm:block w-20 lg:w-28 flex-shrink-0 bg-[var(--hm-bg-tertiary)]">
               <img src={storage.getFileUrl(firstImage)} alt="" className="w-full h-full object-cover" />
             </div>
           )}
@@ -522,15 +522,15 @@ function MySpaceContent() {
             <div className="flex items-start justify-between gap-2 mb-0.5">
               <div className="flex items-center gap-1.5 min-w-0">
                 <Avatar src={job.clientId?.avatar} name={job.clientId?.name || t("common.client")} size="xs" className="w-5 h-5 flex-shrink-0" />
-                <span className="text-[11px] truncate" style={{ color: "var(--color-text-tertiary)" }}>{job.clientId?.name}</span>
+                <span className="text-[11px] truncate" style={{ color: "var(--hm-fg-muted)" }}>{job.clientId?.name}</span>
                 {stageConfig && <Badge variant="info" size="sm">{locale === "ka" ? stageConfig.ka : stageConfig.en}</Badge>}
               </div>
-              <span className="text-xs font-bold whitespace-nowrap" style={{ color: "var(--color-text-primary)" }}>
+              <span className="text-xs font-bold whitespace-nowrap" style={{ color: "var(--hm-fg-primary)" }}>
                 {agreedPrice ? `${agreedPrice.toLocaleString()}₾` : formatBudget(job, t)}
               </span>
             </div>
-            <h3 className="text-[13px] font-semibold line-clamp-1 mb-1" style={{ color: "var(--color-text-primary)" }}>{job.title}</h3>
-            <div className="flex items-center gap-1.5 text-[10px] mb-1.5" style={{ color: "var(--color-text-tertiary)" }}>
+            <h3 className="text-[13px] font-semibold line-clamp-1 mb-1" style={{ color: "var(--hm-fg-primary)" }}>{job.title}</h3>
+            <div className="flex items-center gap-1.5 text-[10px] mb-1.5" style={{ color: "var(--hm-fg-muted)" }}>
               {job.location && <span className="flex items-center gap-0.5 truncate"><MapPin className="w-2.5 h-2.5" />{job.location}</span>}
               {job.category && (
                 <span className="px-1.5 py-px rounded-full font-semibold uppercase tracking-wider" style={{ backgroundColor: `${ACCENT_COLOR}10`, color: ACCENT_COLOR, fontSize: "9px" }}>
@@ -540,7 +540,7 @@ function MySpaceContent() {
             </div>
             {stage && (
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-1 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                <div className="flex-1 h-1 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)]">
                   <motion.div
                     className="h-full rounded-full"
                     initial={{ width: 0 }}
@@ -549,7 +549,7 @@ function MySpaceContent() {
                     style={{ backgroundColor: stageConfig?.color || ACCENT_COLOR }}
                   />
                 </div>
-                <span className="text-[10px] font-bold tabular-nums" style={{ color: "var(--color-text-tertiary)" }}>{progress}%</span>
+                <span className="text-[10px] font-bold tabular-nums" style={{ color: "var(--hm-fg-muted)" }}>{progress}%</span>
               </div>
             )}
           </div>
@@ -572,10 +572,10 @@ function MySpaceContent() {
             <Avatar src={user.avatar} name={user.name} size="lg" rounded="xl" className="w-10 h-10 flex-shrink-0" />
           )}
           <div className="min-w-0 flex-1">
-            <h1 className="text-base sm:text-lg font-bold" style={{ color: "var(--color-text-primary)" }}>
+            <h1 className="text-base sm:text-lg font-bold" style={{ color: "var(--hm-fg-primary)" }}>
               {t("mySpace.welcomeBack")}{firstName ? `, ${firstName}` : ""} 👋
             </h1>
-            <p className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>{t("mySpace.subtitle")}</p>
+            <p className="text-xs" style={{ color: "var(--hm-fg-muted)" }}>{t("mySpace.subtitle")}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -599,7 +599,7 @@ function MySpaceContent() {
             <Link
               href={`/professionals/${user.id}`}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity"
-              style={{ border: "1px solid var(--color-border)", color: "var(--color-text-secondary)" }}
+              style={{ border: "1px solid var(--hm-border)", color: "var(--hm-fg-secondary)" }}
             >
               <ArrowUpRight className="w-3.5 h-3.5" />
               {t("mySpace.viewProfile")}
@@ -628,7 +628,7 @@ function MySpaceContent() {
             }}
           >
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>
+              <p className="text-xs font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
                 {t('common.addEmailPrompt')}
               </p>
             </div>
@@ -641,9 +641,9 @@ function MySpaceContent() {
             </Link>
             <button
               onClick={dismissEmailPrompt}
-              className="shrink-0 w-6 h-6 flex items-center justify-center rounded-md transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+              className="shrink-0 w-6 h-6 flex items-center justify-center rounded-md transition-colors hover:bg-black/5"
               aria-label={t('common.close')}
-              style={{ color: 'var(--color-text-tertiary)' }}
+              style={{ color: 'var(--hm-fg-muted)' }}
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -664,7 +664,7 @@ function MySpaceContent() {
             >
               <button
                 onClick={s.onClick}
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 w-full text-left transition-all duration-200 cursor-pointer hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] group"
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] w-full text-left transition-all duration-200 cursor-pointer hover:border-[var(--hm-border-strong)] hover:shadow-md hover:scale-[1.02] active:scale-[0.98] group"
               >
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
@@ -673,10 +673,10 @@ function MySpaceContent() {
                   <Icon className="w-4 h-4" style={{ color: s.accent }} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] text-neutral-400 truncate">{s.label}</p>
-                  <p className="text-sm font-bold leading-tight" style={{ color: "var(--color-text-primary)" }}>{s.value}</p>
+                  <p className="text-[10px] text-[var(--hm-fg-muted)] truncate">{s.label}</p>
+                  <p className="text-sm font-bold leading-tight" style={{ color: "var(--hm-fg-primary)" }}>{s.value}</p>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-500 dark:group-hover:text-neutral-400 transition-colors flex-shrink-0" />
+                <ArrowRight className="w-3.5 h-3.5 text-[var(--hm-n-300)] group-hover:text-[var(--hm-fg-muted)] transition-colors flex-shrink-0" />
               </button>
             </motion.div>
           );
@@ -732,10 +732,10 @@ function MySpaceContent() {
                   >
                     <Link
                       href={`/jobs/${job.id}`}
-                      className="group flex rounded-xl overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 transition-shadow hover:shadow-md"
+                      className="group flex rounded-xl overflow-hidden bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] transition-shadow hover:shadow-md"
                     >
                       {firstImage && (
-                        <div className="w-20 sm:w-28 flex-shrink-0 bg-neutral-100 dark:bg-neutral-800">
+                        <div className="w-20 sm:w-28 flex-shrink-0 bg-[var(--hm-bg-tertiary)]">
                           <img src={storage.getFileUrl(firstImage)} alt="" className="w-full h-full object-cover" />
                         </div>
                       )}
@@ -746,16 +746,16 @@ function MySpaceContent() {
                               {getCategoryLabel(job.category)}
                             </span>
                           )}
-                          <span className="text-[10px]" style={{ color: "var(--color-text-tertiary)" }}>
+                          <span className="text-[10px]" style={{ color: "var(--hm-fg-muted)" }}>
                             {job.proposalCount ?? 0} {t("job.proposals")}
                           </span>
                         </div>
-                        <h3 className="text-[13px] font-semibold line-clamp-1 mb-0.5" style={{ color: "var(--color-text-primary)" }}>{job.title}</h3>
-                        <div className="flex items-center gap-3 text-[10px]" style={{ color: "var(--color-text-tertiary)" }}>
+                        <h3 className="text-[13px] font-semibold line-clamp-1 mb-0.5" style={{ color: "var(--hm-fg-primary)" }}>{job.title}</h3>
+                        <div className="flex items-center gap-3 text-[10px]" style={{ color: "var(--hm-fg-muted)" }}>
                           {job.location && (
                             <span className="flex items-center gap-0.5 truncate"><MapPin className="w-2.5 h-2.5" />{job.location}</span>
                           )}
-                          <span className="text-xs font-bold" style={{ color: "var(--color-text-primary)" }}>
+                          <span className="text-xs font-bold" style={{ color: "var(--hm-fg-primary)" }}>
                             {formatBudget(job, t)}
                           </span>
                         </div>
@@ -805,8 +805,8 @@ function MySpaceContent() {
                   <Users className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold" style={{ color: "var(--color-text-primary)" }}>{t("reviews.requestReviews")}</h3>
-                  <p className="text-[11px]" style={{ color: "var(--color-text-tertiary)" }}>{t("reviews.shareWithClients")}</p>
+                  <h3 className="text-xs font-bold" style={{ color: "var(--hm-fg-primary)" }}>{t("reviews.requestReviews")}</h3>
+                  <p className="text-[11px]" style={{ color: "var(--hm-fg-muted)" }}>{t("reviews.shareWithClients")}</p>
                 </div>
               </div>
 
@@ -866,7 +866,7 @@ function MySpaceContent() {
                 </Button>
               </div>
               {reviewStats && (
-                <p className="text-[10px] mt-2" style={{ color: "var(--color-text-tertiary)" }}>
+                <p className="text-[10px] mt-2" style={{ color: "var(--hm-fg-muted)" }}>
                   {t("reviews.invitationsRemaining", { count: 10 - (reviewStats.pendingInvitations || 0) })}
                 </p>
               )}
@@ -877,15 +877,15 @@ function MySpaceContent() {
           {reviews.length > 0 ? (
             <div className="space-y-3">
               {reviews.map((review) => (
-                <div key={review.id} className="rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-3">
+                <div key={review.id} className="rounded-xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] p-3">
                   <ReviewItem review={review} locale={locale as "en" | "ka" | "ru"} />
                 </div>
               ))}
             </div>
           ) : (
             <div className="py-8 text-center">
-              <Star className="w-6 h-6 mx-auto mb-2 text-neutral-300 dark:text-neutral-600" />
-              <p className="text-xs font-medium" style={{ color: "var(--color-text-tertiary)" }}>{t("mySpace.noReviewsYet")}</p>
+              <Star className="w-6 h-6 mx-auto mb-2 text-[var(--hm-n-300)]" />
+              <p className="text-xs font-medium" style={{ color: "var(--hm-fg-muted)" }}>{t("mySpace.noReviewsYet")}</p>
             </div>
           )}
         </div>

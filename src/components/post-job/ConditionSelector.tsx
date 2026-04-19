@@ -93,15 +93,15 @@ export default function ConditionSelector({
           onClick={() => onChange(condition.value)}
           className={`w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 transition-all text-left ${
             value === condition.value
-              ? 'border-[#C4735B] bg-[#C4735B]/5 shadow-sm'
-              : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50'
+              ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 shadow-sm'
+              : 'border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] hover:bg-neutral-50'
           }`}
         >
           <div
             className={`flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${
               value === condition.value
-                ? 'bg-[#C4735B]/10 text-[#C4735B]'
-                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
+                ? 'bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]'
+                : 'bg-[var(--hm-bg-tertiary)] text-neutral-500'
             }`}
           >
             {condition.icon}
@@ -110,21 +110,21 @@ export default function ConditionSelector({
             <p
               className={`text-sm sm:text-base font-semibold ${
                 value === condition.value
-                  ? 'text-[#C4735B]'
-                  : 'text-neutral-900 dark:text-neutral-100'
+                  ? 'text-[var(--hm-brand-500)]'
+                  : 'text-[var(--hm-fg-primary)]'
               }`}
             >
               {locale === 'ka' ? condition.labelKa : condition.labelEn}
             </p>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+            <p className="text-sm text-[var(--hm-fg-muted)] mt-0.5">
               {locale === 'ka' ? condition.descKa : condition.descEn}
             </p>
           </div>
           <div
             className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
               value === condition.value
-                ? 'border-[#C4735B] bg-[#C4735B]'
-                : 'border-neutral-300 dark:border-neutral-600'
+                ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]'
+                : 'border-[var(--hm-border-strong)]'
             }`}
           >
             {value === condition.value && (

@@ -1,4 +1,5 @@
 "use client";
+import { ACCENT_COLOR } from "@/constants/theme";
 
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
@@ -67,7 +68,7 @@ const WEEKDAYS = {
   ru: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
 };
 
-const ACCENT = "#C4735B";
+const ACCENT = ACCENT_COLOR;
 
 export default function DatePicker({
   value,
@@ -189,17 +190,17 @@ export default function DatePicker({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 w-full rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 transition-all text-left ${
+        className={`flex items-center gap-2 w-full rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] transition-all text-left ${
           isOpen
-            ? "border-[#C4735B]/40 ring-2 ring-[#C4735B]/10"
-            : "hover:border-neutral-300 dark:hover:border-neutral-600"
+            ? "border-[var(--hm-brand-500)]/40 ring-2 ring-[var(--hm-brand-500)]/10"
+            : "hover:border-[var(--hm-border-strong)]"
         } ${isSm ? "px-2.5 py-1.5 text-xs" : "px-3 py-2 text-sm"}`}
       >
         <Calendar
-          className={`flex-shrink-0 text-neutral-400 ${isSm ? "w-3.5 h-3.5" : "w-4 h-4"}`}
+          className={`flex-shrink-0 text-[var(--hm-fg-muted)] ${isSm ? "w-3.5 h-3.5" : "w-4 h-4"}`}
         />
         <span
-          className={`flex-1 truncate ${value ? "text-neutral-900 dark:text-white" : "text-neutral-400"}`}
+          className={`flex-1 truncate ${value ? "text-[var(--hm-fg-primary)]" : "text-[var(--hm-fg-muted)]"}`}
         >
           {value ? formatDisplay(value) : placeholder || t("common.ddmmyyyy")}
         </span>
@@ -209,7 +210,7 @@ export default function DatePicker({
               e.stopPropagation();
               onChange("");
             }}
-            className="p-0.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 hover:text-neutral-600"
+            className="p-0.5 rounded hover:bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
           >
             <X className="w-3 h-3" />
           </span>
@@ -223,11 +224,11 @@ export default function DatePicker({
         createPortal(
           <div
             ref={calendarRef}
-            className="fixed z-[200] w-[272px] rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden"
+            className="fixed z-[200] w-[272px] rounded-xl shadow-2xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] overflow-hidden"
             style={{ top: dropdownPos.top, left: dropdownPos.left }}
           >
             {/* Month nav */}
-            <div className="flex items-center justify-between px-3 py-2.5 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between px-3 py-2.5 border-b border-[var(--hm-border-subtle)]">
               <button
                 type="button"
                 onClick={() =>
@@ -239,11 +240,11 @@ export default function DatePicker({
                     ),
                   )
                 }
-                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
+                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-xs font-semibold text-neutral-900 dark:text-white">
+              <span className="text-xs font-semibold text-[var(--hm-fg-primary)]">
                 {months[currentMonth.getMonth()]} {currentMonth.getFullYear()}
               </span>
               <button
@@ -257,7 +258,7 @@ export default function DatePicker({
                     ),
                   )
                 }
-                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
+                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -268,7 +269,7 @@ export default function DatePicker({
               {weekdays.map((wd) => (
                 <div
                   key={wd}
-                  className="h-7 flex items-center justify-center text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase"
+                  className="h-7 flex items-center justify-center text-[10px] font-semibold text-[var(--hm-fg-muted)] uppercase"
                 >
                   {wd}
                 </div>
@@ -295,14 +296,14 @@ export default function DatePicker({
                           ? "opacity-25 cursor-not-allowed"
                           : isSelected(day)
                             ? ""
-                            : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                            : "hover:bg-[var(--hm-bg-tertiary)]"
                       }`}
                       style={
                         isSelected(day)
                           ? { backgroundColor: ACCENT }
                           : isToday(day)
                             ? { color: ACCENT }
-                            : { color: "var(--color-text-primary)" }
+                            : { color: "var(--hm-fg-primary)" }
                       }
                     >
                       {day.getDate()}
@@ -315,14 +316,14 @@ export default function DatePicker({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-3 py-2 border-t border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between px-3 py-2 border-t border-[var(--hm-border-subtle)]">
               <button
                 type="button"
                 onClick={() => {
                   onChange("");
                   setIsOpen(false);
                 }}
-                className="text-[11px] font-medium text-neutral-400 hover:text-neutral-600 transition-colors"
+                className="text-[11px] font-medium text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors"
               >
                 {t("browse.clearAll")}
               </button>

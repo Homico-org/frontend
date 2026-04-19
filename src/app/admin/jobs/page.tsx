@@ -349,7 +349,7 @@ function AdminJobsPageContent() {
               <div className="min-w-0">
                 <h1
                   className="text-base sm:text-xl font-semibold tracking-tight truncate"
-                  style={{ color: THEME.text, fontFamily: "'Inter', sans-serif" }}
+                  style={{ color: THEME.text, fontFamily: 'var(--hm-font-body)' }}
                 >
                   {t("admin.jobManagement")}
                 </h1>

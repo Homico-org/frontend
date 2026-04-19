@@ -124,14 +124,14 @@ export default function VerifyResetCodePage() {
         </div>
 
         {/* Title */}
-        <h2 className="text-[26px] font-bold text-center text-neutral-900 dark:text-white mb-2">
+        <h2 className="text-[26px] font-bold text-center text-[var(--hm-fg-primary)] mb-2">
           {t('forgotPassword.verifyCode')}
         </h2>
 
         {/* Subtitle */}
-        <p className="text-center text-neutral-500 dark:text-neutral-400 text-[15px] mb-8">
+        <p className="text-center text-[var(--hm-fg-muted)] text-[15px] mb-8">
           {t('forgotPassword.codeSentTo')}{' '}
-          <span className="font-medium text-neutral-700 dark:text-neutral-300">{maskedPhone}</span>
+          <span className="font-medium text-[var(--hm-fg-secondary)]">{maskedPhone}</span>
         </p>
 
         {/* Error Message */}
@@ -154,7 +154,7 @@ export default function VerifyResetCodePage() {
           />
 
           {/* Delay hint */}
-          <p className="text-xs text-neutral-400 text-center leading-relaxed">
+          <p className="text-xs text-[var(--hm-fg-muted)] text-center leading-relaxed">
             {t('common.otpMayBeDelayed')}
           </p>
 
@@ -173,7 +173,7 @@ export default function VerifyResetCodePage() {
                   : (t('forgotPassword.resendCode'))}
               </Button>
             ) : (
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              <p className="text-sm text-[var(--hm-fg-muted)]">
                 {t('forgotPassword.resendIn')}{' '}
                 <span className="font-medium text-[#C47B65]">{countdown}s</span>
               </p>
@@ -194,13 +194,13 @@ export default function VerifyResetCodePage() {
 
         {/* OR Divider */}
         <div className="flex items-center my-6">
-          <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
-          <span className="px-4 text-sm text-neutral-400">OR</span>
-          <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+          <div className="flex-1 h-px bg-[var(--hm-n-200)]" />
+          <span className="px-4 text-sm text-[var(--hm-fg-muted)]">OR</span>
+          <div className="flex-1 h-px bg-[var(--hm-n-200)]" />
         </div>
 
         {/* Change Phone Link */}
-        <p className="text-center text-[15px] text-neutral-600 dark:text-neutral-400">
+        <p className="text-center text-[15px] text-[var(--hm-fg-secondary)]">
           {t('forgotPassword.wrongNumber')}{' '}
           <Button
             variant="link"

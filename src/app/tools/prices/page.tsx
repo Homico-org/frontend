@@ -104,7 +104,7 @@ export default function PricesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream-50 dark:bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       {/* Page Header */}
       <PageHeader
         icon={Database}
@@ -129,7 +129,7 @@ export default function PricesPage() {
       </PageHeader>
 
       {/* Category Filter Pills */}
-      <div className="sticky top-0 z-20 bg-cream-50/95 dark:bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-800">
+      <div className="sticky top-0 z-20 bg-[var(--hm-bg-page)]/95 backdrop-blur-sm border-b border-[var(--hm-border)]">
         <div className="px-4 py-3 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl">
             <FilterPills
@@ -152,13 +152,13 @@ export default function PricesPage() {
         <div className="mx-auto max-w-4xl">
           {/* Results Count */}
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm text-neutral-500">
+            <span className="text-sm text-[var(--hm-fg-muted)]">
               {filteredItems.length} {t('tools.prices.items')}
             </span>
             {(selectedCategory !== 'all' || searchQuery) && (
               <button
                 onClick={handleClearFilters}
-                className="text-sm text-[#4A7C59] dark:text-[#6B9B7A] hover:underline"
+                className="text-sm text-[#4A7C59] hover:underline"
               >
                 {t('tools.prices.clearFilter')}
               </button>
@@ -179,16 +179,16 @@ export default function PricesPage() {
                     {/* Category Header - Only show when viewing all categories */}
                     {selectedCategory === 'all' && (
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-8 h-8 rounded-lg bg-[#E07B4F]/10 dark:bg-[#E07B4F]/20 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
                           <CategoryIcon
-                            className="w-4 h-4 text-[#E07B4F] dark:text-[#E8956A]"
+                            className="w-4 h-4 text-[var(--hm-brand-500)]"
                             strokeWidth={1.5}
                           />
                         </div>
-                        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                        <h2 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
                           {categoryName}
                         </h2>
-                        <span className="text-sm text-neutral-400">
+                        <span className="text-sm text-[var(--hm-fg-muted)]">
                           ({items.length})
                         </span>
                       </div>
@@ -222,16 +222,16 @@ export default function PricesPage() {
           )}
 
           {/* Footer Note */}
-          <div className="mt-8 p-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
+          <div className="mt-8 p-4 bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)]">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0">
-                <Info className="w-4 h-4 text-neutral-500" strokeWidth={1.5} />
+              <div className="w-9 h-9 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0">
+                <Info className="w-4 h-4 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
               </div>
               <div>
-                <p className="text-sm font-medium text-neutral-900 dark:text-white mb-0.5">
+                <p className="text-sm font-medium text-[var(--hm-fg-primary)] mb-0.5">
                   {t('tools.prices.pricesNote')}
                 </p>
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-[var(--hm-fg-muted)]">
                   {t('tools.prices.noteDetail')}
                 </p>
               </div>

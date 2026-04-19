@@ -114,7 +114,7 @@ export const CustomButton: Story = {
           onClick={onClick}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             isOpen
-              ? 'bg-[#C4735B] text-white'
+              ? 'bg-[#EF4E24] text-white'
               : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700'
           }`}
         >

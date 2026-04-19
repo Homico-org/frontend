@@ -11,10 +11,10 @@ export default function ProfileSetupAreasPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl lg:text-2xl font-bold mb-1" style={{ color: 'var(--color-text-primary)' }}>
+        <h1 className="text-xl lg:text-2xl font-bold mb-1" style={{ color: 'var(--hm-fg-primary)' }}>
           {t('common.serviceAreas')}
         </h1>
-        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+        <p className="text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
           {t('common.whereYouWork') || t('becomePro.setYourRatesAndWork')}
         </p>
       </div>

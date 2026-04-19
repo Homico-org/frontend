@@ -115,12 +115,12 @@ export default function ResetPasswordPage() {
           </div>
 
           {/* Title */}
-          <h2 className="text-[26px] font-bold text-center text-neutral-900 dark:text-white mb-2">
+          <h2 className="text-[26px] font-bold text-center text-[var(--hm-fg-primary)] mb-2">
             {t('forgotPassword.passwordReset')}
           </h2>
 
           {/* Subtitle */}
-          <p className="text-center text-neutral-500 dark:text-neutral-400 text-[15px] mb-8">
+          <p className="text-center text-[var(--hm-fg-muted)] text-[15px] mb-8">
             {t('forgotPassword.yourPasswordHasBeenSuccessfully')}
           </p>
 
@@ -156,12 +156,12 @@ export default function ResetPasswordPage() {
         </div>
 
         {/* Title */}
-        <h2 className="text-[26px] font-bold text-center text-neutral-900 dark:text-white mb-2">
+        <h2 className="text-[26px] font-bold text-center text-[var(--hm-fg-primary)] mb-2">
           {t('forgotPassword.newPassword')}
         </h2>
 
         {/* Subtitle */}
-        <p className="text-center text-neutral-500 dark:text-neutral-400 text-[15px] mb-8">
+        <p className="text-center text-[var(--hm-fg-muted)] text-[15px] mb-8">
           {t('forgotPassword.enterANewPasswordFor')}
         </p>
 
@@ -217,7 +217,7 @@ export default function ResetPasswordPage() {
               variant={confirmPassword && password !== confirmPassword ? 'error' : 'default'}
             />
             {confirmPassword && password !== confirmPassword && (
-              <p className="mt-2 text-xs text-red-500">{t('forgotPassword.passwordsDoNotMatch')}</p>
+              <p className="mt-2 text-xs text-[var(--hm-error-500)]">{t('forgotPassword.passwordsDoNotMatch')}</p>
             )}
             {confirmPassword && password === confirmPassword && password.length > 0 && (
               <p className="mt-2 text-xs text-green-500 flex items-center gap-1">

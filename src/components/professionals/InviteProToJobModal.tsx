@@ -107,16 +107,16 @@ export default function InviteProToJobModal({
       <div className="p-4 sm:p-5">
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <div className="min-w-0">
-            <h2 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-white">
+            <h2 className="text-base sm:text-lg font-semibold text-[var(--hm-fg-primary)]">
               {t("professional.inviteToJob")}
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 truncate">
+            <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)] truncate">
               {proName ? `${proName}` : ""}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg hover:bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] transition-colors"
             aria-label={t("common.close") || "Close"}
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -129,7 +129,7 @@ export default function InviteProToJobModal({
           </div>
         ) : !hasJobs ? (
           <div className="py-4 sm:py-6 space-y-2.5 sm:space-y-3">
-            <div className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300">
+            <div className="flex items-center gap-2 text-[var(--hm-fg-secondary)]">
               <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="text-xs sm:text-sm font-medium">
                 {initialJobs !== undefined
@@ -137,7 +137,7 @@ export default function InviteProToJobModal({
                   : t("professional.noOpenJobsToInvite")}
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">
               {initialJobs !== undefined
                 ? t("professional.adjustJobSkillsToInvite")
                 : t("professional.postJobToInvite")}
@@ -163,25 +163,25 @@ export default function InviteProToJobModal({
                     onClick={() => setSelectedJobId(job.id)}
                     className={`w-full text-left p-2.5 sm:p-3 rounded-lg sm:rounded-xl border transition-all ${
                       isSelected
-                        ? "border-[#C4735B] bg-[#C4735B]/5"
-                        : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600"
+                        ? "border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5"
+                        : "border-[var(--hm-border)] hover:border-[var(--hm-border-strong)]"
                     }`}
                   >
                     <div className="flex items-start gap-2.5 sm:gap-3">
                       <div
                         className={`mt-0.5 w-4 h-4 sm:w-5 sm:h-5 rounded-md border-2 flex items-center justify-center ${
                           isSelected
-                            ? "bg-[#C4735B] border-[#C4735B]"
-                            : "border-neutral-300 dark:border-neutral-600"
+                            ? "bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)]"
+                            : "border-[var(--hm-border-strong)]"
                         }`}
                       >
                         {isSelected && <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium text-xs sm:text-sm text-neutral-900 dark:text-white truncate">
+                        <div className="font-medium text-xs sm:text-sm text-[var(--hm-fg-primary)] truncate">
                           {job.title}
                         </div>
-                        <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 sm:mt-1">
+                        <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-[var(--hm-fg-muted)] mt-0.5 sm:mt-1">
                           {job.location && (
                             <span className="inline-flex items-center gap-1 truncate">
                               <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -197,7 +197,7 @@ export default function InviteProToJobModal({
             </div>
 
             <div className="flex items-center justify-between gap-2 sm:gap-3 pt-3 sm:pt-4 pb-2 sm:pb-0">
-              <div className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 truncate hidden sm:block">
+              <div className="text-[10px] sm:text-xs text-[var(--hm-fg-muted)] truncate hidden sm:block">
                 {selectedJob ? selectedJob.title : ""}
               </div>
               <div className="flex gap-2 w-full sm:w-auto">

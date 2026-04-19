@@ -113,8 +113,8 @@ export function StepSummary({
   return (
     <div className="space-y-5">
       {/* Quality Level */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-800">
-        <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-4">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-5 border border-[var(--hm-border)]">
+        <h3 className="text-sm font-semibold text-[var(--hm-fg-secondary)] mb-4">
           {t('tools.calculator.qualityLevel')}
         </h3>
         <div className="grid grid-cols-3 gap-3">
@@ -122,19 +122,19 @@ export function StepSummary({
             const isSelected = qualityLevel === level;
             const colorMap = {
               neutral: {
-                bg: 'bg-neutral-100 dark:bg-neutral-800',
+                bg: 'bg-[var(--hm-bg-tertiary)]',
                 ring: 'ring-neutral-400',
-                icon: 'text-neutral-600 dark:text-neutral-400',
+                icon: 'text-[var(--hm-fg-secondary)]',
               },
               forest: {
-                bg: 'bg-forest-50 dark:bg-forest-900/20',
+                bg: 'bg-[var(--hm-bg-tertiary)]',
                 ring: 'ring-forest-500',
-                icon: 'text-forest-600 dark:text-forest-400',
+                icon: 'text-[var(--hm-fg-secondary)]',
               },
               terracotta: {
-                bg: 'bg-terracotta-50 dark:bg-terracotta-900/20',
-                ring: 'ring-terracotta-500',
-                icon: 'text-terracotta-600 dark:text-terracotta-400',
+                bg: 'bg-[var(--hm-brand-50)]',
+                ring: 'ring-[var(--hm-brand-500)]',
+                icon: 'text-[var(--hm-brand-600)]',
               },
             };
             const colorClasses = colorMap[color];
@@ -146,16 +146,16 @@ export function StepSummary({
                 className={`p-4 rounded-xl text-center transition-all ${
                   isSelected
                     ? `${colorClasses.bg} ring-2 ${colorClasses.ring}`
-                    : 'bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                    : 'bg-[var(--hm-bg-tertiary)]/50 hover:bg-[var(--hm-bg-tertiary)]'
                 }`}
               >
                 <div className={`w-10 h-10 mx-auto mb-2 rounded-lg ${colorClasses.bg} flex items-center justify-center`}>
                   <Icon className={`w-5 h-5 ${colorClasses.icon}`} strokeWidth={1.5} />
                 </div>
-                <div className={`font-semibold text-sm ${isSelected ? 'text-neutral-900 dark:text-white' : 'text-neutral-600 dark:text-neutral-400'}`}>
+                <div className={`font-semibold text-sm ${isSelected ? 'text-[var(--hm-fg-primary)]' : 'text-[var(--hm-fg-secondary)]'}`}>
                   {t(`tools.calculator.${level}`)}
                 </div>
-                <div className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                <div className="text-[10px] text-[var(--hm-fg-muted)] mt-0.5">
                   ×{QUALITY_MULTIPLIERS[level]}
                 </div>
               </button>
@@ -165,17 +165,17 @@ export function StepSummary({
       </div>
 
       {/* Include Materials Toggle */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-800">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-5 border border-[var(--hm-border)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-forest-100 dark:bg-forest-900/30 flex items-center justify-center">
-              <Package className="w-5 h-5 text-forest-600 dark:text-forest-400" strokeWidth={1.5} />
+            <div className="w-10 h-10 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+              <Package className="w-5 h-5 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
             </div>
             <div>
-              <h3 className="font-semibold text-neutral-900 dark:text-white">
+              <h3 className="font-semibold text-[var(--hm-fg-primary)]">
                 {t('tools.calculator.includeMaterials')}
               </h3>
-              <p className="text-sm text-neutral-500">
+              <p className="text-sm text-[var(--hm-fg-muted)]">
                 {t('tools.calculator.includeMaterialsDesc')}
               </p>
             </div>
@@ -190,32 +190,32 @@ export function StepSummary({
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-800">
-          <div className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
+        <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-5 border border-[var(--hm-border)]">
+          <div className="text-sm text-[var(--hm-fg-muted)] mb-1">
             {t('tools.calculator.totalArea')}
           </div>
-          <div className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums">
+          <div className="text-2xl font-bold text-[var(--hm-fg-primary)] tabular-nums">
             {totalArea.toFixed(1)} <span className="text-lg font-normal">m²</span>
           </div>
         </div>
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-800">
-          <div className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
+        <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-5 border border-[var(--hm-border)]">
+          <div className="text-sm text-[var(--hm-fg-muted)] mb-1">
             {t('tools.calculator.roomsLabel')}
           </div>
-          <div className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums">
+          <div className="text-2xl font-bold text-[var(--hm-fg-primary)] tabular-nums">
             {rooms.length}
           </div>
         </div>
       </div>
 
       {/* Breakdown View Toggle */}
-      <div className="flex gap-2 p-1 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
+      <div className="flex gap-2 p-1 bg-[var(--hm-bg-tertiary)] rounded-xl">
         <button
           onClick={() => setBreakdownView('category')}
           className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
             breakdownView === 'category'
-              ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
-              : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+              ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-sm'
+              : 'text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]'
           }`}
         >
           <Layers className="w-4 h-4" strokeWidth={1.5} />
@@ -225,8 +225,8 @@ export function StepSummary({
           onClick={() => setBreakdownView('room')}
           className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
             breakdownView === 'room'
-              ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
-              : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+              ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-sm'
+              : 'text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]'
           }`}
         >
           <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
@@ -235,31 +235,31 @@ export function StepSummary({
       </div>
 
       {/* Breakdown */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
-        <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-terracotta-100 dark:bg-terracotta-900/30 flex items-center justify-center">
-            <Calculator className="w-4 h-4 text-terracotta-600 dark:text-terracotta-400" strokeWidth={1.5} />
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border)] overflow-hidden">
+        <div className="p-4 border-b border-[var(--hm-border-subtle)] flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[var(--hm-brand-100)] flex items-center justify-center">
+            <Calculator className="w-4 h-4 text-[var(--hm-brand-600)]" strokeWidth={1.5} />
           </div>
-          <h3 className="font-semibold text-neutral-900 dark:text-white">
+          <h3 className="font-semibold text-[var(--hm-fg-primary)]">
             {t('tools.calculator.costBreakdown')}
           </h3>
         </div>
 
-        <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+        <div className="divide-y divide-[var(--hm-border-subtle)]">
           {breakdownView === 'category'
             ? calculation.byCategory.map((cat) => {
                 const CategoryIcon = categoryIconMap[cat.category as PriceCategory];
                 return (
                   <div key={cat.category} className="px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                        <CategoryIcon className="w-4 h-4 text-neutral-500" strokeWidth={1.5} />
+                      <div className="w-8 h-8 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                        <CategoryIcon className="w-4 h-4 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
                       </div>
-                      <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      <span className="text-sm font-medium text-[var(--hm-fg-secondary)]">
                         {t(`tools.categories.${cat.category}`)}
                       </span>
                     </div>
-                    <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                    <span className="font-semibold text-[var(--hm-fg-primary)] tabular-nums">
                       {formatCurrency(Math.round(cat.subtotal))}
                     </span>
                   </div>
@@ -267,10 +267,10 @@ export function StepSummary({
               })
             : calculation.byRoom.map((room) => (
                 <div key={room.roomId} className="px-4 py-3 flex items-center justify-between">
-                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <span className="text-sm font-medium text-[var(--hm-fg-secondary)]">
                     {t(`tools.calculator.roomTypes.${room.roomName}`) || room.roomName}
                   </span>
-                  <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                  <span className="font-semibold text-[var(--hm-fg-primary)] tabular-nums">
                     {formatCurrency(Math.round(room.subtotal))}
                   </span>
                 </div>
@@ -278,30 +278,30 @@ export function StepSummary({
         </div>
 
         {/* Total */}
-        <div className="p-4 bg-terracotta-50 dark:bg-terracotta-900/20 border-t border-terracotta-200 dark:border-terracotta-800/30">
+        <div className="p-4 bg-[var(--hm-brand-50)] border-t border-[var(--hm-brand-200)]">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-terracotta-600 dark:text-terracotta-400">
+            <span className="text-sm text-[var(--hm-brand-600)]">
               {t('tools.calculator.laborCost')}
             </span>
-            <span className="font-semibold text-terracotta-700 dark:text-terracotta-300 tabular-nums">
+            <span className="font-semibold text-[var(--hm-brand-700)] tabular-nums">
               {formatCurrency(calculation.totalLabor)}
             </span>
           </div>
           {includeMaterials && (
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-terracotta-600 dark:text-terracotta-400">
+              <span className="text-sm text-[var(--hm-brand-600)]">
                 {t('tools.calculator.materialsCost')}
               </span>
-              <span className="font-semibold text-terracotta-700 dark:text-terracotta-300 tabular-nums">
+              <span className="font-semibold text-[var(--hm-brand-700)] tabular-nums">
                 {formatCurrency(calculation.totalMaterials)}
               </span>
             </div>
           )}
-          <div className="flex items-center justify-between pt-2 border-t border-terracotta-200 dark:border-terracotta-800/30">
-            <span className="font-bold text-terracotta-800 dark:text-terracotta-200">
+          <div className="flex items-center justify-between pt-2 border-t border-[var(--hm-brand-200)]">
+            <span className="font-bold text-[var(--hm-brand-800)]">
               {t('tools.calculator.total')}
             </span>
-            <span className="text-2xl font-bold text-terracotta-700 dark:text-terracotta-300 tabular-nums">
+            <span className="text-2xl font-bold text-[var(--hm-brand-700)] tabular-nums">
               {formatCurrency(calculation.grandTotal)}
             </span>
           </div>
@@ -309,50 +309,50 @@ export function StepSummary({
       </div>
 
       {/* Price Range */}
-      <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-4 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+      <div className="bg-[var(--hm-bg-tertiary)]/50 rounded-xl p-4 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm text-[var(--hm-fg-muted)]">
           <Info className="w-4 h-4" strokeWidth={1.5} />
           {t('tools.calculator.estimateRange')}
         </div>
-        <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300 tabular-nums">
+        <div className="text-sm font-medium text-[var(--hm-fg-secondary)] tabular-nums">
           {formatCurrency(calculation.lowEstimate)} — {formatCurrency(calculation.highEstimate)}
         </div>
       </div>
 
       {/* AI Tips Section */}
-      <div className="bg-gradient-to-br from-forest-50 to-forest-100 dark:from-forest-900/20 dark:to-forest-800/10 rounded-2xl border border-forest-200 dark:border-forest-800/30 overflow-hidden">
-        <div className="p-4 border-b border-forest-200 dark:border-forest-800/30 flex items-center justify-between">
+      <div className="bg-gradient-to-br from-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] rounded-2xl border border-[var(--hm-border)] overflow-hidden">
+        <div className="p-4 border-b border-[var(--hm-border)] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-forest-200 dark:bg-forest-900/40 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-forest-600 dark:text-forest-400" strokeWidth={1.5} />
+            <div className="w-8 h-8 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
             </div>
-            <h3 className="font-semibold text-forest-800 dark:text-forest-200">
+            <h3 className="font-semibold text-[var(--hm-n-800)]">
               {t('tools.calculator.aiTips')}
             </h3>
           </div>
           <button
             onClick={fetchAITips}
             disabled={isLoadingAI}
-            className="p-2 rounded-lg bg-forest-200/50 dark:bg-forest-900/30 hover:bg-forest-200 dark:hover:bg-forest-900/50 transition-colors disabled:opacity-50"
+            className="p-2 rounded-lg bg-forest-200/30 hover:bg-forest-200 transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={`w-4 h-4 text-forest-600 dark:text-forest-400 ${isLoadingAI ? 'animate-spin' : ''}`} strokeWidth={1.5} />
+            <RefreshCw className={`w-4 h-4 text-[var(--hm-fg-secondary)] ${isLoadingAI ? 'animate-spin' : ''}`} strokeWidth={1.5} />
           </button>
         </div>
 
         <div className="p-4">
           {isLoadingAI ? (
             <div className="flex items-center justify-center py-8">
-              <div className="flex items-center gap-3 text-forest-600 dark:text-forest-400">
+              <div className="flex items-center gap-3 text-[var(--hm-fg-secondary)]">
                 <RefreshCw className="w-5 h-5 animate-spin" strokeWidth={1.5} />
                 <span className="text-sm">{t('tools.calculator.loadingAI')}</span>
               </div>
             </div>
           ) : aiError ? (
             <div className="text-center py-6">
-              <p className="text-sm text-forest-600 dark:text-forest-400">{aiError}</p>
+              <p className="text-sm text-[var(--hm-fg-secondary)]">{aiError}</p>
               <button
                 onClick={fetchAITips}
-                className="mt-3 text-sm font-medium text-forest-700 dark:text-forest-300 hover:underline"
+                className="mt-3 text-sm font-medium text-[var(--hm-n-700)] hover:underline"
               >
                 {t('tools.calculator.tryAgain')}
               </button>
@@ -361,13 +361,13 @@ export function StepSummary({
             <div className="space-y-4">
               {/* Timeline */}
               {aiTips.timeline && (
-                <div className="flex items-start gap-3 p-3 bg-white/60 dark:bg-neutral-900/40 rounded-xl">
-                  <Clock className="w-5 h-5 text-forest-500 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                <div className="flex items-start gap-3 p-3 bg-white/40 rounded-xl">
+                  <Clock className="w-5 h-5 text-[var(--hm-fg-secondary)] flex-shrink-0 mt-0.5" strokeWidth={1.5} />
                   <div>
-                    <p className="text-sm font-medium text-forest-800 dark:text-forest-200">
+                    <p className="text-sm font-medium text-[var(--hm-n-800)]">
                       {t('tools.calculator.estimatedTimeline')}
                     </p>
-                    <p className="text-sm text-forest-600 dark:text-forest-400 mt-0.5">
+                    <p className="text-sm text-[var(--hm-fg-secondary)] mt-0.5">
                       {aiTips.timeline}
                     </p>
                   </div>
@@ -377,7 +377,7 @@ export function StepSummary({
               {/* Tips */}
               {aiTips.tips && aiTips.tips.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-forest-800 dark:text-forest-200 flex items-center gap-2">
+                  <p className="text-sm font-medium text-[var(--hm-n-800)] flex items-center gap-2">
                     <Lightbulb className="w-4 h-4" strokeWidth={1.5} />
                     {t('tools.calculator.smartTips')}
                   </p>
@@ -385,9 +385,9 @@ export function StepSummary({
                     {aiTips.tips.slice(0, 4).map((tip, index) => (
                       <li
                         key={index}
-                        className="flex items-start gap-2 text-sm text-forest-700 dark:text-forest-300 p-2 bg-white/40 dark:bg-neutral-900/30 rounded-lg"
+                        className="flex items-start gap-2 text-sm text-[var(--hm-n-700)] p-2 bg-white/30 rounded-lg"
                       >
-                        <span className="text-forest-500 mt-0.5">•</span>
+                        <span className="text-[var(--hm-fg-secondary)] mt-0.5">•</span>
                         {tip}
                       </li>
                     ))}
@@ -397,11 +397,11 @@ export function StepSummary({
 
               {/* AI Estimate Comparison */}
               {aiTips.totalEstimate > 0 && (
-                <div className="p-3 bg-white/60 dark:bg-neutral-900/40 rounded-xl">
-                  <p className="text-xs text-forest-600 dark:text-forest-400 mb-1">
+                <div className="p-3 bg-white/40 rounded-xl">
+                  <p className="text-xs text-[var(--hm-fg-secondary)] mb-1">
                     {t('tools.calculator.aiEstimate')}
                   </p>
-                  <p className="text-lg font-bold text-forest-700 dark:text-forest-300 tabular-nums">
+                  <p className="text-lg font-bold text-[var(--hm-n-700)] tabular-nums">
                     {formatCurrency(aiTips.totalEstimate)}
                   </p>
                 </div>
@@ -414,7 +414,7 @@ export function StepSummary({
       {/* CTA */}
       <Link
         href="/post-job"
-        className="block w-full py-4 px-6 bg-terracotta-500 hover:bg-terracotta-600 text-white text-center font-semibold rounded-xl shadow-lg shadow-terracotta-500/25 hover:shadow-terracotta-500/40 transition-all"
+        className="block w-full py-4 px-6 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white text-center font-semibold rounded-xl shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-[var(--hm-brand-500)]/40 transition-all"
       >
         <span className="flex items-center justify-center gap-2">
           {t('tools.calculator.getQuotes')}
@@ -422,7 +422,7 @@ export function StepSummary({
         </span>
       </Link>
 
-      <p className="text-center text-xs text-neutral-400">
+      <p className="text-center text-xs text-[var(--hm-fg-muted)]">
         {t('tools.calculator.disclaimer')}
       </p>
     </div>

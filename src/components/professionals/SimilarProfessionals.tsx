@@ -105,19 +105,19 @@ export default function SimilarProfessionals({
   const useMarquee = professionals.length > MARQUEE_THRESHOLD;
 
   return (
-    <section className="py-8 sm:py-10 border-t border-neutral-200/50 dark:border-neutral-800/50">
+    <section className="py-8 sm:py-10 border-t border-[var(--hm-border-subtle)]">
       {/* Header */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-5 sm:mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#C4735B] to-[#A85D48] flex items-center justify-center shadow-md shadow-[#C4735B]/20">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[var(--hm-brand-500)] to-[#A85D48] flex items-center justify-center shadow-md shadow-[var(--hm-brand-500)]/20">
               <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-base sm:text-lg font-bold text-[var(--hm-fg-primary)]">
                 {t('professional.similarProfessionals')}
               </h2>
-              <p className="text-xs sm:text-sm text-neutral-500 hidden sm:block">
+              <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)] hidden sm:block">
                 {t('professional.fromTheSameCategory')}
               </p>
             </div>
@@ -125,7 +125,7 @@ export default function SimilarProfessionals({
 
           <Link
             href={browseUrl}
-            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[var(--hm-bg-tertiary)] text-xs sm:text-sm font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)] transition-colors"
           >
             {t('common.viewAll')}
             <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

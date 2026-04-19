@@ -382,6 +382,129 @@ export default function CategoryIcon({ type, className = '' }: CategoryIconProps
         </svg>
       );
 
+    case 'plasterer_drywaller':
+      // Trowel/plastering icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <path d="M8 24L20 12L24 16L12 28H8V24Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M20 12L22 6L28 8L24 16" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M14 22L18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.4"/>
+        </svg>
+      );
+
+    case 'mason_concrete_worker':
+      // Brick wall icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <rect x="4" y="6" width="11" height="6" rx="1" stroke="currentColor" strokeWidth="2"/>
+          <rect x="17" y="6" width="11" height="6" rx="1" stroke="currentColor" strokeWidth="2"/>
+          <rect x="4" y="14" width="7" height="6" rx="1" stroke="currentColor" strokeWidth="2"/>
+          <rect x="13" y="14" width="7" height="6" rx="1" stroke="currentColor" strokeWidth="2"/>
+          <rect x="22" y="14" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="2"/>
+          <rect x="4" y="22" width="11" height="6" rx="1" stroke="currentColor" strokeWidth="2"/>
+          <rect x="17" y="22" width="11" height="6" rx="1" stroke="currentColor" strokeWidth="2"/>
+        </svg>
+      );
+
+    case 'window_door_installer':
+      // Window icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <rect x="6" y="4" width="20" height="24" rx="2" stroke="currentColor" strokeWidth="2"/>
+          <path d="M16 4V28" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M6 16H26" stroke="currentColor" strokeWidth="1.5"/>
+          <circle cx="14" cy="16" r="1" fill="currentColor"/>
+          <circle cx="18" cy="16" r="1" fill="currentColor"/>
+        </svg>
+      );
+
+    case 'facade_specialist':
+      // Building facade icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <path d="M4 28H28" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <rect x="6" y="6" width="20" height="22" rx="1" stroke="currentColor" strokeWidth="2"/>
+          <rect x="10" y="10" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.5"/>
+          <rect x="18" y="10" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.5"/>
+          <rect x="10" y="18" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.5"/>
+          <rect x="18" y="18" width="4" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.5"/>
+        </svg>
+      );
+
+    case 'demolition_worker':
+      // Sledgehammer icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <path d="M10 22L22 10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+          <rect x="19" y="4" width="10" height="7" rx="1.5" transform="rotate(45 19 4)" stroke="currentColor" strokeWidth="2"/>
+          <path d="M8 24L6 28" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M16 12L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.4"/>
+        </svg>
+      );
+
+    case 'garden':
+    case 'landscaper_gardener':
+      // Plant/leaf icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <path d="M16 28V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M16 20C12 20 8 16 8 12C12 12 16 16 16 20Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M16 14C20 14 24 10 24 6C20 6 16 10 16 14Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M12 28H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      );
+
+    case 'paving_driveway_specialist':
+      // Paving stones icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <path d="M4 14L16 6L28 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <rect x="5" y="16" width="8" height="5" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+          <rect x="15" y="16" width="6" height="5" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+          <rect x="23" y="16" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+          <rect x="5" y="23" width="6" height="5" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+          <rect x="13" y="23" width="8" height="5" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+          <rect x="23" y="23" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+        </svg>
+      );
+
+    case 'pool_specialist':
+      // Pool/water icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <path d="M4 18C6 16 8 16 10 18C12 20 14 20 16 18C18 16 20 16 22 18C24 20 26 20 28 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M4 24C6 22 8 22 10 24C12 26 14 26 16 24C18 22 20 22 22 24C24 26 26 26 28 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <rect x="8" y="8" width="16" height="8" rx="2" stroke="currentColor" strokeWidth="2"/>
+          <path d="M12 8V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M20 8V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      );
+
+    case 'project_manager':
+    case 'project_manager_site_supervisor':
+      // Clipboard/checklist icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <rect x="6" y="6" width="20" height="22" rx="2" stroke="currentColor" strokeWidth="2"/>
+          <path d="M12 4H20V8H12Z" stroke="currentColor" strokeWidth="1.5" fill="var(--hm-bg-page)"/>
+          <path d="M11 14L13 16L17 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M20 14H22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M11 20H22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M11 24H18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      );
+
+    case 'flooring_specialist':
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <rect x="4" y="8" width="24" height="16" rx="1" stroke="currentColor" strokeWidth="2"/>
+          <path d="M4 16H28" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M10 8V24" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M16 8V24" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M22 8V24" stroke="currentColor" strokeWidth="1.5"/>
+        </svg>
+      );
+
     default:
       // Grid/Services icon
       return (

@@ -52,9 +52,9 @@ interface NotificationSettingsData {
 
 function SectionHeader({ icon: Icon, label }: { icon: typeof User; label: string }) {
   return (
-    <div className="flex items-center gap-2 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
-      <Icon className="w-4 h-4 text-[#C4735B]" />
-      <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">{label}</h2>
+    <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--hm-border-subtle)] bg-neutral-50/30">
+      <Icon className="w-4 h-4 text-[var(--hm-brand-500)]" />
+      <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)]">{label}</h2>
     </div>
   );
 }
@@ -786,7 +786,7 @@ function SettingsPageContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="xl" color="#C4735B" />
+        <LoadingSpinner size="xl" color="var(--hm-brand-500)" />
       </div>
     );
   }
@@ -814,7 +814,7 @@ function SettingsPageContent() {
 
       <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
         {/* Profile */}
-        <section className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+        <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
           <SectionHeader icon={User} label={t('common.profile')} />
           <div className="p-4">
             <ProfileSettings
@@ -825,7 +825,7 @@ function SettingsPageContent() {
         </section>
 
         {/* Notifications */}
-        <section className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+        <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
           <SectionHeader icon={Bell} label={t('common.notifications')} />
           <div className="p-4">
             <NotificationSettings
@@ -841,7 +841,7 @@ function SettingsPageContent() {
         </section>
 
         {/* Security */}
-        <section className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+        <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
           <SectionHeader icon={Lock} label={t('common.password')} />
           <div className="p-4">
             <PasswordChangeForm
@@ -870,7 +870,7 @@ function SettingsPageContent() {
 
         {/* Payments — dev only */}
         {process.env.NODE_ENV === 'development' && (
-          <section className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+          <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
             <SectionHeader icon={CreditCard} label={t('settings.payments')} />
             <div className="p-4">
               <PaymentSettings onOpenAddCardModal={() => setShowAddCardModal(true)} />
@@ -879,7 +879,7 @@ function SettingsPageContent() {
         )}
 
         {/* Account */}
-        <section className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+        <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
           <SectionHeader icon={Shield} label={t('settings.account')} />
           <div className="p-4">
             <AccountSettings
@@ -908,11 +908,11 @@ function SettingsPageContent() {
           {/* Modal - Sheet on mobile */}
           <div
             className="relative w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up sm:animate-fade-in max-h-[90vh] overflow-y-auto"
-            style={{ backgroundColor: 'var(--color-bg-primary)' }}
+            style={{ backgroundColor: 'var(--hm-bg-page)' }}
           >
             {/* Drag handle - mobile only */}
             <div className="sm:hidden flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+              <div className="w-10 h-1 rounded-full bg-neutral-300" />
             </div>
 
             {/* Header with gradient */}
@@ -923,13 +923,13 @@ function SettingsPageContent() {
                 borderBottom: '1px solid rgba(239, 68, 68, 0.15)',
               }}
             >
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[var(--hm-error-100)]/30 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-[var(--hm-error-500)]" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-red-600 dark:text-red-400">
+              <h3 className="text-lg sm:text-xl font-bold text-[var(--hm-error-500)]">
                 {t('settings.deleteAccount')}
               </h3>
-              <p className="text-xs sm:text-sm mt-1.5 sm:mt-2" style={{ color: 'var(--color-text-secondary)' }}>
+              <p className="text-xs sm:text-sm mt-1.5 sm:mt-2" style={{ color: 'var(--hm-fg-secondary)' }}>
                 {t('settings.thisActionIsIrreversibleAnd')}
               </p>
             </div>
@@ -938,10 +938,10 @@ function SettingsPageContent() {
             <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               {/* Warning list */}
               <div className="space-y-2">
-                <p className="text-xs sm:text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                <p className="text-xs sm:text-sm font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
                   {t('settings.thisWillPermanentlyDelete')}
                 </p>
-                <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
                   <li className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
                     {t('settings.yourProfileAndPersonalInformation')}
@@ -963,7 +963,7 @@ function SettingsPageContent() {
 
               {/* Confirmation input */}
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
                   {t('settings.typeDeleteToConfirm')}
                 </label>
                 <input
@@ -974,9 +974,9 @@ function SettingsPageContent() {
                   disabled={isDeletingAccount}
                   className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-red-500/50 font-mono text-center tracking-widest text-sm sm:text-base"
                   style={{
-                    backgroundColor: 'var(--color-bg-elevated)',
+                    backgroundColor: 'var(--hm-bg-elevated)',
                     border: '1px solid rgba(239, 68, 68, 0.3)',
-                    color: 'var(--color-text-primary)',
+                    color: 'var(--hm-fg-primary)',
                   }}
                 />
               </div>
@@ -1039,11 +1039,11 @@ function SettingsPageContent() {
           {/* Modal - Sheet on mobile */}
           <div
             className="relative w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up sm:animate-fade-in max-h-[90vh] overflow-y-auto"
-            style={{ backgroundColor: 'var(--color-bg-primary)' }}
+            style={{ backgroundColor: 'var(--hm-bg-page)' }}
           >
             {/* Drag handle - mobile only */}
             <div className="sm:hidden flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+              <div className="w-10 h-1 rounded-full bg-neutral-300" />
             </div>
 
             {/* Header */}
@@ -1054,13 +1054,13 @@ function SettingsPageContent() {
                 borderBottom: '1px solid rgba(234, 179, 8, 0.15)',
               }}
             >
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-3 sm:mb-4">
                 <BriefcaseBusiness className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-yellow-600 dark:text-yellow-500">
+              <h3 className="text-lg sm:text-xl font-bold text-yellow-600">
                 {t('settings.pauseProfile')}
               </h3>
-              <p className="text-xs sm:text-sm mt-1.5 sm:mt-2" style={{ color: 'var(--color-text-secondary)' }}>
+              <p className="text-xs sm:text-sm mt-1.5 sm:mt-2" style={{ color: 'var(--hm-fg-secondary)' }}>
                 {t('settings.yourProfileWillBeTemporarily')}
               </p>
             </div>
@@ -1069,7 +1069,7 @@ function SettingsPageContent() {
             <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               {/* Until date (optional) */}
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
                   {t('settings.returnDateOptional')}
                 </label>
                 <DatePicker
@@ -1078,14 +1078,14 @@ function SettingsPageContent() {
                   min={new Date().toISOString().split("T")[0]}
                   placeholder={t('settings.selectDate')}
                 />
-                <p className="text-[10px] sm:text-xs mt-1 sm:mt-1.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                <p className="text-[10px] sm:text-xs mt-1 sm:mt-1.5" style={{ color: 'var(--hm-fg-muted)' }}>
                   {t('settings.ifNotSetYouCan')}
                 </p>
               </div>
 
               {/* Reason (optional) */}
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
                   {t('settings.reasonOptional')}
                 </label>
                 <Select
@@ -1102,32 +1102,32 @@ function SettingsPageContent() {
               </div>
 
               {/* Info */}
-              <div className="p-3 sm:p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50">
-                <p className="font-medium text-yellow-700 dark:text-yellow-500 text-xs sm:text-sm mb-2 sm:mb-3">
+              <div className="p-3 sm:p-4 rounded-xl bg-yellow-50 border border-yellow-200">
+                <p className="font-medium text-yellow-700 text-xs sm:text-sm mb-2 sm:mb-3">
                   {t('settings.whatHappens')}
                 </p>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 dark:bg-yellow-800/40 flex items-center justify-center flex-shrink-0">
-                      <EyeOff className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600 dark:text-yellow-500" />
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                      <EyeOff className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600" />
                     </div>
-                    <span className="text-xs sm:text-sm text-yellow-700/90 dark:text-yellow-500/90">
+                    <span className="text-xs sm:text-sm text-yellow-700/90">
                       {t('settings.clientsWontSeeYourProfile')}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 dark:bg-yellow-800/40 flex items-center justify-center flex-shrink-0">
-                      <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600 dark:text-yellow-500" />
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                      <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600" />
                     </div>
-                    <span className="text-xs sm:text-sm text-yellow-700/90 dark:text-yellow-500/90">
+                    <span className="text-xs sm:text-sm text-yellow-700/90">
                       {t('settings.existingMessagesWillBePreserved')}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 dark:bg-yellow-800/40 flex items-center justify-center flex-shrink-0">
-                      <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600 dark:text-yellow-500" />
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                      <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600" />
                     </div>
-                    <span className="text-xs sm:text-sm text-yellow-700/90 dark:text-yellow-500/90">
+                    <span className="text-xs sm:text-sm text-yellow-700/90">
                       {t('settings.youCanReactivateAnytime')}
                     </span>
                   </div>
@@ -1206,25 +1206,25 @@ function SettingsPageContent() {
           {/* Modal - Sheet on mobile */}
           <div
             className="relative w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up sm:animate-fade-in max-h-[90vh] overflow-y-auto"
-            style={{ backgroundColor: 'var(--color-bg-primary)' }}
+            style={{ backgroundColor: 'var(--hm-bg-page)' }}
           >
             {/* Drag handle - mobile only */}
             <div className="sm:hidden flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+              <div className="w-10 h-1 rounded-full bg-neutral-300" />
             </div>
 
             {/* Header */}
-            <div className="p-4 sm:p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
+            <div className="p-4 sm:p-5 border-b" style={{ borderColor: 'var(--hm-border)' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 sm:gap-3">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-[#C4735B]/10">
-                    <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B]" />
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-[var(--hm-brand-500)]/10">
+                    <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)]" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm sm:text-base" style={{ color: 'var(--color-text-primary)' }}>
+                    <h3 className="font-semibold text-sm sm:text-base" style={{ color: 'var(--hm-fg-primary)' }}>
                       {t('settings.addCard')}
                     </h3>
-                    <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                    <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: 'var(--hm-fg-secondary)' }}>
                       {t('settings.enterYourCardDetails')}
                     </p>
                   </div>
@@ -1246,7 +1246,7 @@ function SettingsPageContent() {
             <div className="p-4 sm:p-5 space-y-3 sm:space-y-4">
               {/* Card Number */}
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--hm-fg-secondary)' }}>
                   {t('settings.cardNumber')}
                 </label>
                 <input
@@ -1259,11 +1259,11 @@ function SettingsPageContent() {
                   }))}
                   placeholder="0000 0000 0000 0000"
                   maxLength={19}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#C4735B] text-sm sm:text-base"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] text-sm sm:text-base"
                   style={{
-                    backgroundColor: 'var(--color-bg-elevated)',
-                    border: '1px solid var(--color-border)',
-                    color: 'var(--color-text-primary)',
+                    backgroundColor: 'var(--hm-bg-elevated)',
+                    border: '1px solid var(--hm-border)',
+                    color: 'var(--hm-fg-primary)',
                   }}
                 />
               </div>
@@ -1271,7 +1271,7 @@ function SettingsPageContent() {
               {/* Expiry and Cardholder in row */}
               <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                  <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--hm-fg-secondary)' }}>
                     {t('settings.expiry')}
                   </label>
                   <input
@@ -1284,16 +1284,16 @@ function SettingsPageContent() {
                     }))}
                     placeholder="MM/YY"
                     maxLength={5}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#C4735B] text-sm sm:text-base"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] text-sm sm:text-base"
                     style={{
-                      backgroundColor: 'var(--color-bg-elevated)',
-                      border: '1px solid var(--color-border)',
-                      color: 'var(--color-text-primary)',
+                      backgroundColor: 'var(--hm-bg-elevated)',
+                      border: '1px solid var(--hm-border)',
+                      color: 'var(--hm-fg-primary)',
                     }}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                  <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--hm-fg-secondary)' }}>
                     {t('settings.cvv')}
                   </label>
                   <input
@@ -1301,11 +1301,11 @@ function SettingsPageContent() {
                     inputMode="numeric"
                     placeholder="***"
                     maxLength={4}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#C4735B] text-sm sm:text-base"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] text-sm sm:text-base"
                     style={{
-                      backgroundColor: 'var(--color-bg-elevated)',
-                      border: '1px solid var(--color-border)',
-                      color: 'var(--color-text-primary)',
+                      backgroundColor: 'var(--hm-bg-elevated)',
+                      border: '1px solid var(--hm-border)',
+                      color: 'var(--hm-fg-primary)',
                     }}
                   />
                 </div>
@@ -1313,7 +1313,7 @@ function SettingsPageContent() {
 
               {/* Cardholder Name */}
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--hm-fg-secondary)' }}>
                   {t('settings.cardholderName')}
                 </label>
                 <input
@@ -1324,17 +1324,17 @@ function SettingsPageContent() {
                     cardholderName: e.target.value.toUpperCase()
                   }))}
                   placeholder="JOHN DOE"
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#C4735B] uppercase text-sm sm:text-base"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] uppercase text-sm sm:text-base"
                   style={{
-                    backgroundColor: 'var(--color-bg-elevated)',
-                    border: '1px solid var(--color-border)',
-                    color: 'var(--color-text-primary)',
+                    backgroundColor: 'var(--hm-bg-elevated)',
+                    border: '1px solid var(--hm-border)',
+                    color: 'var(--hm-fg-primary)',
                   }}
                 />
               </div>
 
               {/* Set as default checkbox */}
-              <div className="p-2.5 sm:p-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+              <div className="p-2.5 sm:p-3 rounded-xl hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors">
                 <Checkbox
                   checked={cardFormData.setAsDefault}
                   onChange={(v) => setCardFormData(prev => ({ ...prev, setAsDefault: v }))}
@@ -1357,8 +1357,8 @@ function SettingsPageContent() {
 
               {/* Security Note */}
               <div className="flex items-center gap-2 justify-center pt-1 sm:pt-2 pb-2 sm:pb-0">
-                <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
-                <span className="text-[10px] sm:text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5" style={{ color: 'var(--hm-fg-muted)' }} />
+                <span className="text-[10px] sm:text-xs" style={{ color: 'var(--hm-fg-muted)' }}>
                   {t('settings.yourDataIsSecure')}
                 </span>
               </div>

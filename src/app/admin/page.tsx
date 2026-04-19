@@ -476,7 +476,7 @@ function AdminDashboardPageContent() {
               <div>
                 <h1
                   className="text-base sm:text-xl font-semibold tracking-tight"
-                  style={{ color: THEME.text, fontFamily: "'Inter', sans-serif" }}
+                  style={{ color: THEME.text, fontFamily: 'var(--hm-font-body)' }}
                 >
                   {t('admin.controlCenter')}
                 </h1>
@@ -547,7 +547,7 @@ function AdminDashboardPageContent() {
             { label: t('admin.activityLogs'), icon: ActivityIcon, href: '/admin/activity-logs', color: THEME.success },
             { label: t('admin.businessQuotes'), icon: Building2, href: '/admin/business-quotes', color: '#8B5CF6' },
             { label: t('admin.serviceCatalog'), icon: LayoutList, href: '/admin/service-catalog', color: '#06B6D4' },
-            { label: t('admin.invites'), icon: Send, href: '/admin/invites', color: '#C4735B', count: undefined },
+            { label: t('admin.invites'), icon: Send, href: '/admin/invites', color: 'var(--hm-brand-500)', count: undefined },
           ].map((action, index) => (
             <Link
               key={action.href}

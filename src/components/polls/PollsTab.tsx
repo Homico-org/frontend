@@ -126,7 +126,7 @@ export default function PollsTab({
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-8 text-[var(--color-text-tertiary)]">
+          <div className="flex flex-col items-center justify-center py-8 text-[var(--hm-fg-muted)]">
             <BarChart3 className="w-10 h-10 mb-2 opacity-40" />
             <p className="text-sm font-medium">
               {t('polls.noPollsYet')}
@@ -169,11 +169,11 @@ export default function PollsTab({
 
   // Accordion mode (default)
   return (
-    <div className="border-t border-[var(--color-border)]">
+    <div className="border-t border-[var(--hm-border)]">
       {/* Header Toggle */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-[var(--color-bg-tertiary)]/50 transition-colors"
+        className="w-full flex items-center justify-between p-4 hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
       >
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: `${ACCENT}15` }}>
@@ -188,20 +188,20 @@ export default function PollsTab({
             )}
           </div>
           {activePollsCount > 0 && (
-            <span className="text-xs text-[var(--color-text-tertiary)] hidden sm:inline">
+            <span className="text-xs text-[var(--hm-fg-muted)] hidden sm:inline">
               {activePollsCount} {t('polls.active')}
             </span>
           )}
         </div>
         <ChevronRight
-          className={`w-5 h-5 text-[var(--color-text-tertiary)] transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}
+          className={`w-5 h-5 text-[var(--hm-fg-muted)] transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}
         />
       </button>
 
       {/* Expanded Content */}
       {isExpanded && (
         <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
-          <div className="bg-[var(--color-bg-tertiary)]/30 rounded-2xl border border-[var(--color-border)] overflow-hidden">
+          <div className="bg-[var(--hm-bg-tertiary)]/30 rounded-2xl border border-[var(--hm-border)] overflow-hidden">
             {renderContent()}
           </div>
         </div>

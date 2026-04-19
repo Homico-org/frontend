@@ -8,6 +8,7 @@ import { Alert } from '@/components/ui/Alert';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowLeft, HelpCircle } from 'lucide-react';
 import Image from 'next/image';
+import HomicoLogo from '@/components/common/HomicoLogo';
 import Link from 'next/link';
 
 const STEP_CONFIG = {
@@ -50,7 +51,7 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
   // Complete screen - full screen success
   if (reg.currentStep === 'complete') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FBF9F7] via-[#FAF8F5] to-[#F5F0EC] flex items-center justify-center p-3 sm:p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[var(--hm-bg-elevated)] via-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] flex items-center justify-center p-3 sm:p-4">
         <StepComplete
           fullName={reg.fullName}
           avatarPreview={reg.avatarPreview}
@@ -64,28 +65,28 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] flex flex-col">
+    <div className="min-h-screen bg-[var(--hm-bg-page)] flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-neutral-100">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[var(--hm-border-subtle)]">
         <div className="max-w-lg mx-auto px-3 sm:px-4">
           <div className="h-12 flex items-center justify-between">
             {reg.currentStep !== 'phone' ? (
               <button
                 onClick={reg.handleBack}
-                className="flex items-center gap-1.5 text-neutral-500 hover:text-neutral-900 transition-colors -ml-1 p-1"
+                className="flex items-center gap-1.5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors -ml-1 p-1"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-xs font-medium">{t('common.back')}</span>
               </button>
             ) : (
               <Link href="/" className="flex items-center gap-2">
-                <Image src="/favicon.png" alt="Homico" width={22} height={22} className="rounded-[6px]" />
-                <span className="text-sm font-semibold text-neutral-900">Homico</span>
+                <HomicoLogo size={22} />
+                <span className="text-sm font-semibold text-[var(--hm-fg-primary)]">Homico</span>
               </Link>
             )}
             <div className="flex items-center gap-2">
               <LanguageSelector variant="compact" />
-              <Link href="/help" className="text-xs text-neutral-400 hover:text-neutral-700 transition-colors">
+              <Link href="/help" className="text-xs text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors">
                 {t('common.help')}
               </Link>
             </div>
@@ -99,9 +100,9 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
                   key={key}
                   className={`flex-1 h-1 rounded-full transition-colors duration-300 ${
                     config.index < currentStepConfig.index
-                      ? 'bg-[#C4735B]'
+                      ? 'bg-[var(--hm-brand-500)]'
                       : config.index === currentStepConfig.index
-                        ? 'bg-[#C4735B]/40'
+                        ? 'bg-[var(--hm-brand-500)]/40'
                         : 'bg-neutral-100'
                   }`}
                 />
@@ -181,7 +182,7 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
               <button
                 onClick={reg.handleNext}
                 disabled={reg.selectedServices.length === 0 || reg.isLoading}
-                className="w-full py-2.5 sm:py-3 rounded-xl font-medium text-sm sm:text-base text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[#C4735B] hover:bg-[#A85D47] active:scale-[0.98]"
+                className="w-full py-2.5 sm:py-3 rounded-xl font-medium text-sm sm:text-base text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--hm-brand-500)] hover:bg-[#A85D47] active:scale-[0.98]"
               >
                 {reg.isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -201,13 +202,13 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
 
         {/* Footer - Switch to Client */}
         {reg.currentStep === 'phone' && !reg.showOtp && (
-          <div className="py-3 sm:py-4 text-center border-t border-neutral-100 px-3 sm:px-4">
+          <div className="py-3 sm:py-4 text-center border-t border-[var(--hm-border-subtle)] px-3 sm:px-4">
             <button
               onClick={onSwitchToClient}
-              className="text-xs sm:text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+              className="text-xs sm:text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors"
             >
               {t('register.lookingForPro')}{' '}
-              <span className="font-medium text-[#C4735B]">{t('register.registerAsClient')}</span>
+              <span className="font-medium text-[var(--hm-brand-500)]">{t('register.registerAsClient')}</span>
             </button>
           </div>
         )}

@@ -175,7 +175,7 @@ export default function TicketDetailPage() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg">
+      <div className="min-h-screen bg-[var(--hm-bg-page)]">
         <Header />
       <HeaderSpacer />
         <div className="flex items-center justify-center py-32">
@@ -187,22 +187,22 @@ export default function TicketDetailPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-cream-50 dark:bg-dark-bg">
+      <div className="min-h-screen bg-[var(--hm-bg-page)]">
         <Header />
       <HeaderSpacer />
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-terracotta-50 dark:bg-terracotta-500/10 flex items-center justify-center">
-              <svg className="w-8 h-8 text-terracotta-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[var(--hm-brand-50)] flex items-center justify-center">
+              <svg className="w-8 h-8 text-[var(--hm-brand-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <h2 className="text-xl font-serif font-medium text-neutral-900 dark:text-neutral-50 mb-2">
+            <h2 className="text-xl font-serif font-medium text-[var(--hm-fg-primary)] mb-2">
               {error}
             </h2>
             <Link
               href="/help"
-              className="inline-flex items-center gap-2 mt-4 text-forest-800 dark:text-primary-400 font-medium hover:underline"
+              className="inline-flex items-center gap-2 mt-4 text-[var(--hm-n-800)] font-medium hover:underline"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -220,7 +220,7 @@ export default function TicketDetailPage() {
   const messageGroups = groupMessagesByDate(ticket.messages);
 
   return (
-    <div className="min-h-screen bg-cream-50 dark:bg-dark-bg flex flex-col">
+    <div className="min-h-screen bg-[var(--hm-bg-page)] flex flex-col">
       <Header />
       <HeaderSpacer />
 
@@ -229,7 +229,7 @@ export default function TicketDetailPage() {
         <div className="mb-6">
           <Link
             href="/help"
-            className="inline-flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 hover:text-forest-800 dark:hover:text-primary-400 transition-colors mb-4"
+            className="inline-flex items-center gap-2 text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-n-800)] transition-colors mb-4"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -239,12 +239,12 @@ export default function TicketDetailPage() {
 
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <h1 className="text-xl font-serif font-medium text-neutral-900 dark:text-neutral-50 mb-2 truncate">
+              <h1 className="text-xl font-serif font-medium text-[var(--hm-fg-primary)] mb-2 truncate">
                 {ticket.subject}
               </h1>
-              <div className="flex flex-wrap items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--hm-fg-muted)]">
                 <span>{getCategoryLabel(ticket.category)}</span>
-                <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+                <span className="w-1 h-1 rounded-full bg-neutral-300" />
                 <span>{formatDateLong(ticket.createdAt, locale)}</span>
               </div>
             </div>
@@ -255,18 +255,18 @@ export default function TicketDetailPage() {
         </div>
 
         {/* Messages Container */}
-        <div className="flex-1 bg-white dark:bg-dark-card rounded-2xl border border-neutral-100 dark:border-dark-border overflow-hidden flex flex-col">
+        <div className="flex-1 bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)] overflow-hidden flex flex-col">
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
             {messageGroups.map((group, groupIndex) => (
               <div key={groupIndex}>
                 {/* Date Separator */}
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="flex-1 h-px bg-neutral-100 dark:bg-dark-border" />
-                  <span className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">
+                  <div className="flex-1 h-px bg-[var(--hm-bg-tertiary)]" />
+                  <span className="text-xs text-[var(--hm-fg-muted)] font-medium">
                     {formatDateLong(group.date, locale)}
                   </span>
-                  <div className="flex-1 h-px bg-neutral-100 dark:bg-dark-border" />
+                  <div className="flex-1 h-px bg-[var(--hm-bg-tertiary)]" />
                 </div>
 
                 {/* Messages for this date */}
@@ -279,8 +279,8 @@ export default function TicketDetailPage() {
                       <div className={`flex items-end gap-2 max-w-[85%] ${!msg.isAdmin ? 'flex-row-reverse' : ''}`}>
                         {/* Avatar */}
                         {msg.isAdmin && (
-                          <div className="w-8 h-8 rounded-full bg-forest-800 dark:bg-primary-400 flex items-center justify-center flex-shrink-0 mb-1">
-                            <svg className="w-4 h-4 text-white dark:text-forest-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-8 h-8 rounded-full bg-[var(--hm-n-800)] flex items-center justify-center flex-shrink-0 mb-1">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
                             </svg>
                           </div>
@@ -290,17 +290,17 @@ export default function TicketDetailPage() {
                         <div
                           className={`px-4 py-3 ${
                             !msg.isAdmin
-                              ? 'bg-forest-800 dark:bg-primary-400 text-white dark:text-forest-900 rounded-2xl rounded-br-md'
-                              : 'bg-cream-100 dark:bg-dark-elevated text-neutral-900 dark:text-neutral-50 rounded-2xl rounded-bl-md'
+                              ? 'bg-[var(--hm-n-800)] text-white rounded-2xl rounded-br-md'
+                              : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-primary)] rounded-2xl rounded-bl-md'
                           }`}
                         >
                           {msg.isAdmin && (
-                            <p className="text-xs font-medium text-forest-800 dark:text-primary-400 mb-1">
+                            <p className="text-xs font-medium text-[var(--hm-n-800)] mb-1">
                               {t('help.ticketDetail.supportTeam')}
                             </p>
                           )}
                           <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                          <p className={`text-[10px] mt-1.5 ${!msg.isAdmin ? 'text-white/60 dark:text-forest-900/60' : 'text-neutral-400 dark:text-neutral-500'}`}>
+                          <p className={`text-[10px] mt-1.5 ${!msg.isAdmin ? 'text-white/60' : 'text-[var(--hm-fg-muted)]'}`}>
                             {formatMessageTime(msg.createdAt)}
                           </p>
                         </div>
@@ -315,7 +315,7 @@ export default function TicketDetailPage() {
 
           {/* Input Area */}
           {ticket.status !== 'closed' ? (
-            <div className="flex-shrink-0 p-4 border-t border-neutral-100 dark:border-dark-border bg-cream-50 dark:bg-dark-elevated">
+            <div className="flex-shrink-0 p-4 border-t border-[var(--hm-border-subtle)] bg-[var(--hm-bg-page)]">
               <div className="flex gap-3">
                 <textarea
                   ref={inputRef}
@@ -329,30 +329,30 @@ export default function TicketDetailPage() {
                   }}
                   placeholder={t('help.ticketDetail.placeholder')}
                   rows={1}
-                  className="flex-1 px-4 py-3 bg-white dark:bg-dark-card border border-neutral-200 dark:border-dark-border rounded-xl text-sm text-neutral-900 dark:text-neutral-50 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-forest-800/20 dark:focus:ring-primary-400/20 focus:border-forest-800 dark:focus:border-primary-400 resize-none transition-all duration-200"
+                  className="flex-1 px-4 py-3 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] rounded-xl text-sm text-[var(--hm-fg-primary)] placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[var(--hm-n-800)]/20 focus:border-[var(--hm-n-800)] resize-none transition-all duration-200"
                   style={{ minHeight: '48px', maxHeight: '120px' }}
                 />
                 <button
                   onClick={sendMessage}
                   disabled={!inputValue.trim() || isSending}
-                  className="w-12 h-12 rounded-xl bg-forest-800 hover:bg-forest-700 dark:bg-primary-400 dark:hover:bg-primary-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 flex-shrink-0"
+                  className="w-12 h-12 rounded-xl bg-[var(--hm-n-800)] hover:bg-[var(--hm-n-700)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 flex-shrink-0"
                 >
                   {isSending ? (
                     <LoadingSpinner size="md" color="white" />
                   ) : (
-                    <svg className="w-5 h-5 text-white dark:text-forest-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                     </svg>
                   )}
                 </button>
               </div>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-2">
+              <p className="text-xs text-[var(--hm-fg-muted)] mt-2">
                 {t('help.ticketDetail.enterHint')}
               </p>
             </div>
           ) : (
-            <div className="flex-shrink-0 p-4 border-t border-neutral-100 dark:border-dark-border bg-neutral-50 dark:bg-dark-elevated text-center">
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            <div className="flex-shrink-0 p-4 border-t border-[var(--hm-border-subtle)] bg-[var(--hm-bg-page)] text-center">
+              <p className="text-sm text-[var(--hm-fg-muted)]">
                 {t('help.ticketDetail.ticketClosed')}
               </p>
             </div>

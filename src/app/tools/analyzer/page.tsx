@@ -376,37 +376,37 @@ Heating:
     switch (status) {
       case 'low':
         return {
-          bg: 'bg-blue-50 dark:bg-blue-900/20',
-          text: 'text-blue-600 dark:text-blue-400',
-          border: 'border-blue-200 dark:border-blue-800/30',
+          bg: 'bg-[var(--hm-info-50)]/20',
+          text: 'text-[var(--hm-info-500)]',
+          border: 'border-blue-200',
           icon: TrendingDown,
         };
       case 'normal':
         return {
-          bg: 'bg-forest-50 dark:bg-forest-900/20',
-          text: 'text-forest-600 dark:text-forest-400',
-          border: 'border-forest-200 dark:border-forest-800/30',
+          bg: 'bg-[var(--hm-bg-tertiary)]',
+          text: 'text-[var(--hm-fg-secondary)]',
+          border: 'border-[var(--hm-border)]',
           icon: Check,
         };
       case 'high':
         return {
-          bg: 'bg-amber-50 dark:bg-amber-900/20',
-          text: 'text-amber-600 dark:text-amber-400',
-          border: 'border-amber-200 dark:border-amber-800/30',
+          bg: 'bg-[var(--hm-warning-50)]/20',
+          text: 'text-[var(--hm-warning-500)]',
+          border: 'border-amber-200',
           icon: TrendingUp,
         };
       case 'very_high':
         return {
-          bg: 'bg-red-50 dark:bg-red-900/20',
-          text: 'text-red-600 dark:text-red-400',
-          border: 'border-red-200 dark:border-red-800/30',
+          bg: 'bg-[var(--hm-error-50)]/20',
+          text: 'text-[var(--hm-error-500)]',
+          border: 'border-red-200',
           icon: TrendingUp,
         };
       case 'missing':
         return {
-          bg: 'bg-neutral-100 dark:bg-neutral-800',
-          text: 'text-neutral-500 dark:text-neutral-400',
-          border: 'border-neutral-200 dark:border-neutral-700',
+          bg: 'bg-[var(--hm-bg-tertiary)]',
+          text: 'text-[var(--hm-fg-muted)]',
+          border: 'border-[var(--hm-border)]',
           icon: HelpCircle,
         };
       default:
@@ -442,7 +442,7 @@ Heating:
   ];
 
   return (
-    <div className="min-h-screen bg-cream-50 dark:bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       {/* Page Header */}
       <PageHeader
         icon={FileSearch}
@@ -457,10 +457,10 @@ Heating:
         <div className="mx-auto max-w-3xl">
           {/* Error Display */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl">
+            <div className="mb-6 p-4 bg-[var(--hm-error-50)]/20 border border-red-200 rounded-xl">
               <div className="flex items-center gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                <AlertTriangle className="w-5 h-5 text-[var(--hm-error-500)] flex-shrink-0" />
+                <p className="text-sm text-[var(--hm-error-500)]">{error}</p>
               </div>
             </div>
           )}
@@ -473,8 +473,8 @@ Heating:
                   onClick={() => setInputMode('text')}
                   className={`flex-1 px-4 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
                     inputMode === 'text'
-                      ? 'bg-terracotta-500 text-white shadow-lg shadow-terracotta-500/25'
-                      : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800 hover:border-terracotta-300'
+                      ? 'bg-[var(--hm-brand-500)] text-white shadow-lg shadow-[var(--hm-brand-500)]/25'
+                      : 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-300)]'
                   }`}
                 >
                   <FileText className="w-4 h-4" strokeWidth={1.5} />
@@ -484,8 +484,8 @@ Heating:
                   onClick={() => setInputMode('upload')}
                   className={`flex-1 px-4 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
                     inputMode === 'upload'
-                      ? 'bg-terracotta-500 text-white shadow-lg shadow-terracotta-500/25'
-                      : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-800 hover:border-terracotta-300'
+                      ? 'bg-[var(--hm-brand-500)] text-white shadow-lg shadow-[var(--hm-brand-500)]/25'
+                      : 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-300)]'
                   }`}
                 >
                   <Upload className="w-4 h-4" strokeWidth={1.5} />
@@ -495,9 +495,9 @@ Heating:
 
               {inputMode === 'text' ? (
                 /* Text Input Mode */
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5">
+                <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border)] p-5">
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                    <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                       {t('tools.analyzer.pasteEstimate')}
                     </label>
                     <textarea
@@ -505,13 +505,13 @@ Heating:
                       onChange={(e) => setEstimateText(e.target.value)}
                       placeholder={t('tools.analyzer.textPlaceholder')}
                       rows={10}
-                      className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-terracotta-500/50 focus:border-terracotta-500 transition-all resize-none"
+                      className="w-full px-4 py-3 bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] rounded-xl text-sm text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)]/50 focus:border-[var(--hm-brand-500)] transition-all resize-none"
                     />
                   </div>
                   <button
                     onClick={handleTextAnalyze}
                     disabled={!estimateText.trim()}
-                    className="w-full px-6 py-3.5 bg-terracotta-500 hover:bg-terracotta-600 disabled:bg-neutral-300 dark:disabled:bg-neutral-700 text-white disabled:text-neutral-500 font-semibold rounded-xl shadow-lg shadow-terracotta-500/25 hover:shadow-terracotta-500/40 disabled:shadow-none transition-all flex items-center justify-center gap-2"
+                    className="w-full px-6 py-3.5 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] disabled:bg-neutral-300 text-white disabled:text-[var(--hm-fg-muted)] font-semibold rounded-xl shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-[var(--hm-brand-500)]/40 disabled:shadow-none transition-all flex items-center justify-center gap-2"
                   >
                     <Sparkles className="w-4 h-4" strokeWidth={1.5} />
                     {t('tools.analyzer.analyzeButton')}
@@ -526,11 +526,11 @@ Heating:
                   onClick={() => fileInputRef.current?.click()}
                   className={`
                     relative cursor-pointer rounded-2xl border-2 border-dashed p-8 sm:p-12 text-center
-                    transition-all duration-200 bg-white dark:bg-neutral-900
+                    transition-all duration-200 bg-[var(--hm-bg-elevated)]
                     ${
                       isDragOver
-                        ? 'border-terracotta-500 bg-terracotta-50 dark:bg-terracotta-900/20 scale-[1.01]'
-                        : 'border-neutral-200 dark:border-neutral-700 hover:border-terracotta-400 hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                        ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-50)] scale-[1.01]'
+                        : 'border-[var(--hm-border)] hover:border-terracotta-400 hover:bg-[var(--hm-bg-tertiary)]'
                     }
                   `}
                 >
@@ -546,30 +546,30 @@ Heating:
                     <div
                       className={`
                       mx-auto w-16 h-16 rounded-2xl flex items-center justify-center
-                      bg-gradient-to-br from-terracotta-100 to-terracotta-200 dark:from-terracotta-900/40 dark:to-terracotta-800/30
+                      bg-gradient-to-br from-terracotta-100 to-terracotta-200
                       transition-transform duration-200
                       ${isDragOver ? 'scale-110' : ''}
                     `}
                     >
-                      <Upload className="w-7 h-7 text-terracotta-600 dark:text-terracotta-400" strokeWidth={1.5} />
+                      <Upload className="w-7 h-7 text-[var(--hm-brand-600)]" strokeWidth={1.5} />
                     </div>
                   </div>
 
-                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1">
+                  <h2 className="text-lg font-semibold text-[var(--hm-fg-primary)] mb-1">
                     {t('tools.analyzer.uploadTitle')}
                   </h2>
-                  <p className="text-neutral-500 dark:text-neutral-400 mb-1">{t('tools.analyzer.uploadSubtitle')}</p>
-                  <p className="text-sm text-neutral-400 dark:text-neutral-500 mb-5">
+                  <p className="text-[var(--hm-fg-muted)] mb-1">{t('tools.analyzer.uploadSubtitle')}</p>
+                  <p className="text-sm text-[var(--hm-fg-muted)] mb-5">
                     {t('tools.analyzer.supportedFormats')}
                   </p>
 
                   <div className="flex items-center justify-center gap-3">
-                    <span className="text-sm text-neutral-400">{t('tools.analyzer.orTakePhoto')}</span>
+                    <span className="text-sm text-[var(--hm-fg-muted)]">{t('tools.analyzer.orTakePhoto')}</span>
                     <button
                       onClick={(e) => e.stopPropagation()}
-                      className="p-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                      className="p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-n-200)] transition-colors"
                     >
-                      <Camera className="w-5 h-5 text-neutral-600 dark:text-neutral-400" strokeWidth={1.5} />
+                      <Camera className="w-5 h-5 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
                     </button>
                   </div>
                 </div>
@@ -580,12 +580,12 @@ Heating:
                 {featureItems.map(({ icon: Icon, label }, idx) => (
                   <div
                     key={idx}
-                    className="flex flex-col items-center gap-2.5 p-4 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-terracotta-300 dark:hover:border-terracotta-700/50 transition-colors"
+                    className="flex flex-col items-center gap-2.5 p-4 bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] hover:border-[var(--hm-brand-300)] transition-colors"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-terracotta-50 dark:bg-terracotta-900/30 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-terracotta-500" strokeWidth={1.5} />
+                    <div className="w-10 h-10 rounded-xl bg-[var(--hm-brand-50)] flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-[var(--hm-brand-500)]" strokeWidth={1.5} />
                     </div>
-                    <span className="text-xs text-center text-neutral-600 dark:text-neutral-400 font-medium">
+                    <span className="text-xs text-center text-[var(--hm-fg-secondary)] font-medium">
                       {label}
                     </span>
                   </div>
@@ -596,7 +596,7 @@ Heating:
               <div className="mt-8 text-center">
                 <button
                   onClick={handleDemo}
-                  className="group inline-flex items-center gap-2 px-8 py-4 bg-terracotta-500 hover:bg-terracotta-600 text-white font-semibold rounded-xl shadow-lg shadow-terracotta-500/25 hover:shadow-terracotta-500/40 transition-all"
+                  className="group inline-flex items-center gap-2 px-8 py-4 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white font-semibold rounded-xl shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-[var(--hm-brand-500)]/40 transition-all"
                 >
                   {t('tools.analyzer.tryDemo')}
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
@@ -607,31 +607,31 @@ Heating:
             /* Loading State */
             <div className="flex flex-col items-center justify-center py-20">
               <div className="relative w-24 h-24 mb-8">
-                <div className="absolute inset-0 rounded-full border-4 border-terracotta-200 dark:border-terracotta-900/50" />
+                <div className="absolute inset-0 rounded-full border-4 border-[var(--hm-brand-200)]" />
                 <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-terracotta-500 animate-spin" />
-                <div className="absolute inset-3 rounded-full bg-terracotta-50 dark:bg-terracotta-900/20 flex items-center justify-center">
-                  <FileSearch className="w-8 h-8 text-terracotta-500 animate-pulse" strokeWidth={1.5} />
+                <div className="absolute inset-3 rounded-full bg-[var(--hm-brand-50)] flex items-center justify-center">
+                  <FileSearch className="w-8 h-8 text-[var(--hm-brand-500)] animate-pulse" strokeWidth={1.5} />
                 </div>
               </div>
-              <p className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+              <p className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-2">
                 {t('tools.analyzer.analyzing')}
               </p>
               <div className="flex gap-1">
                 {[0, 1, 2].map((i) => (
                   <div
                     key={i}
-                    className="w-2 h-2 rounded-full bg-terracotta-500 animate-bounce"
+                    className="w-2 h-2 rounded-full bg-[var(--hm-brand-500)] animate-bounce"
                     style={{ animationDelay: `${i * 0.15}s` }}
                   />
                 ))}
               </div>
               {uploadedFile && (
-                <div className="mt-6 flex items-center gap-3 px-4 py-3 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
+                <div className="mt-6 flex items-center gap-3 px-4 py-3 bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)]">
                   {(() => {
                     const FileIcon = getFileIcon(uploadedFile.name);
-                    return <FileIcon className="w-5 h-5 text-terracotta-500" strokeWidth={1.5} />;
+                    return <FileIcon className="w-5 h-5 text-[var(--hm-brand-500)]" strokeWidth={1.5} />;
                   })()}
-                  <span className="text-sm text-neutral-600 dark:text-neutral-400">{uploadedFile.name}</span>
+                  <span className="text-sm text-[var(--hm-fg-secondary)]">{uploadedFile.name}</span>
                 </div>
               )}
             </div>
@@ -642,48 +642,48 @@ Heating:
               <div className={`
                 p-4 rounded-2xl border flex items-center gap-4
                 ${aiAnalysis.overallAssessment === 'fair'
-                  ? 'bg-forest-50 dark:bg-forest-900/20 border-forest-200 dark:border-forest-800/30'
+                  ? 'bg-[var(--hm-bg-tertiary)] border-[var(--hm-border)]'
                   : aiAnalysis.overallAssessment === 'cheap'
-                  ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/30'
+                  ? 'bg-[var(--hm-info-50)]/20 border-blue-200'
                   : aiAnalysis.overallAssessment === 'expensive'
-                  ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/30'
-                  : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/30'
+                  ? 'bg-[var(--hm-error-50)]/20 border-red-200'
+                  : 'bg-[var(--hm-warning-50)]/20 border-amber-200'
                 }
               `}>
                 <div className={`
                   w-12 h-12 rounded-xl flex items-center justify-center
                   ${aiAnalysis.overallAssessment === 'fair'
-                    ? 'bg-forest-100 dark:bg-forest-900/40'
+                    ? 'bg-forest-100/40'
                     : aiAnalysis.overallAssessment === 'cheap'
-                    ? 'bg-blue-100 dark:bg-blue-900/40'
+                    ? 'bg-[var(--hm-info-100)]/40'
                     : aiAnalysis.overallAssessment === 'expensive'
-                    ? 'bg-red-100 dark:bg-red-900/40'
-                    : 'bg-amber-100 dark:bg-amber-900/40'
+                    ? 'bg-[var(--hm-error-100)]/40'
+                    : 'bg-[var(--hm-warning-100)]/40'
                   }
                 `}>
                   {aiAnalysis.overallAssessment === 'fair' ? (
-                    <Check className="w-6 h-6 text-forest-600 dark:text-forest-400" />
+                    <Check className="w-6 h-6 text-[var(--hm-fg-secondary)]" />
                   ) : aiAnalysis.overallAssessment === 'cheap' ? (
-                    <TrendingDown className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    <TrendingDown className="w-6 h-6 text-[var(--hm-info-500)]" />
                   ) : aiAnalysis.overallAssessment === 'expensive' ? (
-                    <TrendingUp className="w-6 h-6 text-red-600 dark:text-red-400" />
+                    <TrendingUp className="w-6 h-6 text-[var(--hm-error-500)]" />
                   ) : (
-                    <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                    <AlertTriangle className="w-6 h-6 text-[var(--hm-warning-500)]" />
                   )}
                 </div>
                 <div className="flex-1">
                   <p className={`font-semibold ${
                     aiAnalysis.overallAssessment === 'fair'
-                      ? 'text-forest-700 dark:text-forest-300'
+                      ? 'text-[var(--hm-n-700)]'
                       : aiAnalysis.overallAssessment === 'cheap'
-                      ? 'text-blue-700 dark:text-blue-300'
+                      ? 'text-blue-700'
                       : aiAnalysis.overallAssessment === 'expensive'
-                      ? 'text-red-700 dark:text-red-300'
-                      : 'text-amber-700 dark:text-amber-300'
+                      ? 'text-[var(--hm-error-500)]'
+                      : 'text-[var(--hm-warning-500)]'
                   }`}>
                     {t(`tools.analyzer.assessment.${aiAnalysis.overallAssessment}`)}
                   </p>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                  <p className="text-sm text-[var(--hm-fg-secondary)] mt-1">
                     {aiAnalysis.summary}
                   </p>
                 </div>
@@ -691,24 +691,24 @@ Heating:
 
               {/* Summary Cards */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-800">
-                  <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mb-2">
+                <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-5 border border-[var(--hm-border)]">
+                  <div className="flex items-center gap-2 text-sm text-[var(--hm-fg-muted)] mb-2">
                     <BarChart3 className="w-4 h-4" strokeWidth={1.5} />
                     {t('tools.analyzer.results.totalAmount')}
                   </div>
-                  <div className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tabular-nums">
+                  <div className="text-2xl sm:text-3xl font-bold text-[var(--hm-fg-primary)] tabular-nums">
                     {formatCurrency(aiAnalysis.totalEstimated)}
                   </div>
-                  <div className="text-xs text-neutral-400 mt-1">
+                  <div className="text-xs text-[var(--hm-fg-muted)] mt-1">
                     {t('tools.analyzer.marketAvg')}: {formatCurrency(aiAnalysis.totalMarketAverage)}
                   </div>
                 </div>
-                <div className="bg-gradient-to-br from-forest-50 to-forest-100 dark:from-forest-900/30 dark:to-forest-800/20 rounded-2xl p-5 border border-forest-200 dark:border-forest-800/30">
-                  <div className="flex items-center gap-2 text-sm text-forest-600 dark:text-forest-400 mb-2">
+                <div className="bg-gradient-to-br from-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] rounded-2xl p-5 border border-[var(--hm-border)]">
+                  <div className="flex items-center gap-2 text-sm text-[var(--hm-fg-secondary)] mb-2">
                     <TrendingDown className="w-4 h-4" strokeWidth={1.5} />
                     {t('tools.analyzer.results.potentialSavings')}
                   </div>
-                  <div className="text-2xl sm:text-3xl font-bold text-forest-700 dark:text-forest-300 tabular-nums">
+                  <div className="text-2xl sm:text-3xl font-bold text-[var(--hm-n-700)] tabular-nums">
                     ~{formatCurrency(Math.abs(aiAnalysis.savings))}
                   </div>
                 </div>
@@ -716,8 +716,8 @@ Heating:
 
               {/* Red Flags */}
               {aiAnalysis.redFlags.length > 0 && (
-                <div className="bg-red-50 dark:bg-red-900/20 rounded-2xl p-5 border border-red-200 dark:border-red-800/30">
-                  <h3 className="font-semibold text-red-800 dark:text-red-300 mb-4 flex items-center gap-2">
+                <div className="bg-[var(--hm-error-50)]/20 rounded-2xl p-5 border border-red-200">
+                  <h3 className="font-semibold text-[var(--hm-error-500)] mb-4 flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5" strokeWidth={1.5} />
                     {t('tools.analyzer.results.redFlags')} ({aiAnalysis.redFlags.length})
                   </h3>
@@ -725,10 +725,10 @@ Heating:
                     {aiAnalysis.redFlags.map((flag, index) => (
                       <div
                         key={index}
-                        className="flex items-start gap-3 p-3 bg-white/60 dark:bg-neutral-900/40 rounded-xl"
+                        className="flex items-start gap-3 p-3 bg-white/40 rounded-xl"
                       >
-                        <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-neutral-700 dark:text-neutral-300">{flag}</p>
+                        <X className="w-4 h-4 text-[var(--hm-error-500)] flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-[var(--hm-fg-secondary)]">{flag}</p>
                       </div>
                     ))}
                   </div>
@@ -736,16 +736,16 @@ Heating:
               )}
 
               {/* Line Items */}
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
-                <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-terracotta-100 dark:bg-terracotta-900/30 flex items-center justify-center">
-                    <BarChart3 className="w-4 h-4 text-terracotta-600 dark:text-terracotta-400" strokeWidth={1.5} />
+              <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border)] overflow-hidden">
+                <div className="p-4 border-b border-[var(--hm-border)] flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--hm-brand-100)] flex items-center justify-center">
+                    <BarChart3 className="w-4 h-4 text-[var(--hm-brand-600)]" strokeWidth={1.5} />
                   </div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-white">
+                  <h3 className="font-semibold text-[var(--hm-fg-primary)]">
                     {t('tools.analyzer.results.lineItems')}
                   </h3>
                 </div>
-                <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                <div className="divide-y divide-[var(--hm-border-subtle)]">
                   {aiAnalysis.lineItems.map((item, index) => {
                     const priceDiff = item.marketPrice > 0
                       ? Math.round(((item.estimatedPrice - item.marketPrice) / item.marketPrice) * 100)
@@ -754,37 +754,37 @@ Heating:
                     return (
                       <div key={index} className="px-4 py-4 flex items-center justify-between gap-4">
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-neutral-900 dark:text-white">
+                          <div className="text-sm font-medium text-[var(--hm-fg-primary)]">
                             {item.item}
                           </div>
-                          <div className="flex items-center gap-3 mt-1 text-xs text-neutral-500">
+                          <div className="flex items-center gap-3 mt-1 text-xs text-[var(--hm-fg-muted)]">
                             {item.marketPrice > 0 && (
                               <span className="flex items-center gap-1">
-                                <span className="text-neutral-400">{t('tools.analyzer.marketAvg')}:</span>
+                                <span className="text-[var(--hm-fg-muted)]">{t('tools.analyzer.marketAvg')}:</span>
                                 <span>{formatCurrency(item.marketPrice)}</span>
                               </span>
                             )}
                             {item.note && (
-                              <span className="text-neutral-400 italic">{item.note}</span>
+                              <span className="text-[var(--hm-fg-muted)] italic">{item.note}</span>
                             )}
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           {priceDiff !== null && priceDiff !== 0 && (
-                            <span className={`text-xs font-medium ${priceDiff > 0 ? 'text-red-500' : 'text-forest-500'}`}>
+                            <span className={`text-xs font-medium ${priceDiff > 0 ? 'text-[var(--hm-error-500)]' : 'text-[var(--hm-fg-secondary)]'}`}>
                               {priceDiff > 0 ? '+' : ''}{priceDiff}%
                             </span>
                           )}
-                          <span className="font-semibold text-neutral-900 dark:text-white tabular-nums text-sm min-w-[70px] text-right">
+                          <span className="font-semibold text-[var(--hm-fg-primary)] tabular-nums text-sm min-w-[70px] text-right">
                             {formatCurrency(item.estimatedPrice)}
                           </span>
                           <span
                             className={`px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5
                               ${item.assessment === 'fair'
-                                ? 'bg-forest-50 dark:bg-forest-900/20 text-forest-600 dark:text-forest-400'
+                                ? 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)]'
                                 : item.assessment === 'low'
-                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                                : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                                ? 'bg-[var(--hm-info-50)]/20 text-[var(--hm-info-500)]'
+                                : 'bg-[var(--hm-error-50)]/20 text-[var(--hm-error-500)]'
                               }
                             `}
                           >
@@ -806,15 +806,15 @@ Heating:
 
               {/* Recommendations */}
               {aiAnalysis.recommendations.length > 0 && (
-                <div className="bg-forest-50 dark:bg-forest-900/20 rounded-2xl p-5 border border-forest-200 dark:border-forest-800/30">
-                  <h3 className="font-semibold text-forest-800 dark:text-forest-300 mb-4 flex items-center gap-2">
+                <div className="bg-[var(--hm-bg-tertiary)] rounded-2xl p-5 border border-[var(--hm-border)]">
+                  <h3 className="font-semibold text-[var(--hm-n-800)] mb-4 flex items-center gap-2">
                     <Sparkles className="w-5 h-5" strokeWidth={1.5} />
                     {t('tools.analyzer.results.recommendations')}
                   </h3>
                   <ul className="space-y-2">
                     {aiAnalysis.recommendations.map((rec, index) => (
-                      <li key={index} className="flex items-start gap-3 text-sm text-neutral-700 dark:text-neutral-300">
-                        <Check className="w-4 h-4 text-forest-500 flex-shrink-0 mt-0.5" />
+                      <li key={index} className="flex items-start gap-3 text-sm text-[var(--hm-fg-secondary)]">
+                        <Check className="w-4 h-4 text-[var(--hm-fg-secondary)] flex-shrink-0 mt-0.5" />
                         {rec}
                       </li>
                     ))}
@@ -826,12 +826,12 @@ Heating:
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={resetAnalysis}
-                  className="flex-1 px-6 py-3.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3.5 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] font-semibold rounded-xl hover:bg-[var(--hm-bg-tertiary)] transition-colors flex items-center justify-center gap-2"
                 >
                   <RefreshCw className="w-4 h-4" strokeWidth={1.5} />
                   {t('tools.analyzer.analyzeAnother')}
                 </button>
-                <button className="flex-1 px-6 py-3.5 bg-terracotta-500 hover:bg-terracotta-600 text-white font-semibold rounded-xl shadow-lg shadow-terracotta-500/25 hover:shadow-terracotta-500/40 transition-all flex items-center justify-center gap-2">
+                <button className="flex-1 px-6 py-3.5 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white font-semibold rounded-xl shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-[var(--hm-brand-500)]/40 transition-all flex items-center justify-center gap-2">
                   <Download className="w-4 h-4" strokeWidth={1.5} />
                   {t('tools.analyzer.downloadPdf')}
                 </button>
@@ -842,21 +842,21 @@ Heating:
             <div className="space-y-4">
               {/* Summary Cards */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-800">
-                  <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mb-2">
+                <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-5 border border-[var(--hm-border)]">
+                  <div className="flex items-center gap-2 text-sm text-[var(--hm-fg-muted)] mb-2">
                     <BarChart3 className="w-4 h-4" strokeWidth={1.5} />
                     {t('tools.analyzer.results.totalAmount')}
                   </div>
-                  <div className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tabular-nums">
+                  <div className="text-2xl sm:text-3xl font-bold text-[var(--hm-fg-primary)] tabular-nums">
                     {formatCurrency(analysis.totalAmount)}
                   </div>
                 </div>
-                <div className="bg-gradient-to-br from-forest-50 to-forest-100 dark:from-forest-900/30 dark:to-forest-800/20 rounded-2xl p-5 border border-forest-200 dark:border-forest-800/30">
-                  <div className="flex items-center gap-2 text-sm text-forest-600 dark:text-forest-400 mb-2">
+                <div className="bg-gradient-to-br from-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] rounded-2xl p-5 border border-[var(--hm-border)]">
+                  <div className="flex items-center gap-2 text-sm text-[var(--hm-fg-secondary)] mb-2">
                     <TrendingDown className="w-4 h-4" strokeWidth={1.5} />
                     {t('tools.analyzer.results.potentialSavings')}
                   </div>
-                  <div className="text-2xl sm:text-3xl font-bold text-forest-700 dark:text-forest-300 tabular-nums">
+                  <div className="text-2xl sm:text-3xl font-bold text-[var(--hm-n-700)] tabular-nums">
                     ~{formatCurrency(analysis.potentialSavings)}
                   </div>
                 </div>
@@ -864,8 +864,8 @@ Heating:
 
               {/* Alerts */}
               {analysis.alerts.length > 0 && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-5 border border-amber-200 dark:border-amber-800/30">
-                  <h3 className="font-semibold text-amber-800 dark:text-amber-300 mb-4 flex items-center gap-2">
+                <div className="bg-[var(--hm-warning-50)]/20 rounded-2xl p-5 border border-amber-200">
+                  <h3 className="font-semibold text-[var(--hm-warning-500)] mb-4 flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5" strokeWidth={1.5} />
                     {t('tools.analyzer.results.alerts')} ({analysis.alerts.length})
                   </h3>
@@ -873,15 +873,15 @@ Heating:
                     {analysis.alerts.map((alert, index) => (
                       <div
                         key={index}
-                        className="flex items-start gap-3 p-3 bg-white/60 dark:bg-neutral-900/40 rounded-xl"
+                        className="flex items-start gap-3 p-3 bg-white/40 rounded-xl"
                       >
                         <div
                           className={`
                           mt-0.5 w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0
                           ${
                             alert.type === 'missing_price'
-                              ? 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400'
-                              : 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
+                              ? 'bg-[var(--hm-error-100)]/40 text-[var(--hm-error-500)]'
+                              : 'bg-[var(--hm-warning-100)]/40 text-[var(--hm-warning-500)]'
                           }
                         `}
                         >
@@ -891,9 +891,9 @@ Heating:
                             <TrendingUp className="w-3.5 h-3.5" strokeWidth={2} />
                           )}
                         </div>
-                        <div className="text-sm text-neutral-700 dark:text-neutral-300">
+                        <div className="text-sm text-[var(--hm-fg-secondary)]">
                           <span className="font-semibold">{alert.itemName}</span>
-                          <span className="text-neutral-500 dark:text-neutral-400"> — {alert.message}</span>
+                          <span className="text-[var(--hm-fg-muted)]"> — {alert.message}</span>
                         </div>
                       </div>
                     ))}
@@ -902,12 +902,12 @@ Heating:
               )}
 
               {/* Items by Category */}
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
-                <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-terracotta-100 dark:bg-terracotta-900/30 flex items-center justify-center">
-                    <BarChart3 className="w-4 h-4 text-terracotta-600 dark:text-terracotta-400" strokeWidth={1.5} />
+              <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border)] overflow-hidden">
+                <div className="p-4 border-b border-[var(--hm-border)] flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--hm-brand-100)] flex items-center justify-center">
+                    <BarChart3 className="w-4 h-4 text-[var(--hm-brand-600)]" strokeWidth={1.5} />
                   </div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-white">
+                  <h3 className="font-semibold text-[var(--hm-fg-primary)]">
                     {t('tools.analyzer.results.byCategory')}
                   </h3>
                 </div>
@@ -920,39 +920,39 @@ Heating:
                     const hasIssues = items.some((item) => item.status === 'high' || item.status === 'very_high' || item.status === 'missing');
 
                     return (
-                      <div key={category} className="border-b border-neutral-100 dark:border-neutral-800 last:border-0">
+                      <div key={category} className="border-b border-[var(--hm-border-subtle)] last:border-0">
                         {/* Category Header */}
                         <button
                           onClick={() => toggleCategory(category)}
-                          className="w-full px-4 py-4 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
+                          className="w-full px-4 py-4 flex items-center justify-between hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                              <CategoryIcon className="w-4.5 h-4.5 text-neutral-600 dark:text-neutral-400" strokeWidth={1.5} />
+                            <div className="w-9 h-9 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                              <CategoryIcon className="w-4.5 h-4.5 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
                             </div>
                             <div className="text-left">
-                              <span className="font-medium text-neutral-900 dark:text-white">
+                              <span className="font-medium text-[var(--hm-fg-primary)]">
                                 {getCategoryName(category as PriceCategory)}
                               </span>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-xs text-neutral-400">
+                                <span className="text-xs text-[var(--hm-fg-muted)]">
                                   {items.length} {t('tools.analyzer.items')}
                                 </span>
                                 {hasIssues && (
-                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--hm-warning-500)]" />
                                 )}
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                            <span className="font-semibold text-[var(--hm-fg-primary)] tabular-nums">
                               {formatCurrency(categoryTotal)}
                             </span>
-                            <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
                               {isExpanded ? (
-                                <ChevronUp className="w-4 h-4 text-neutral-500" strokeWidth={1.5} />
+                                <ChevronUp className="w-4 h-4 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
                               ) : (
-                                <ChevronDown className="w-4 h-4 text-neutral-500" strokeWidth={1.5} />
+                                <ChevronDown className="w-4 h-4 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
                               )}
                             </div>
                           </div>
@@ -960,7 +960,7 @@ Heating:
 
                         {/* Items */}
                         {isExpanded && (
-                          <div className="divide-y divide-neutral-100 dark:divide-neutral-800 bg-neutral-50 dark:bg-neutral-800/30">
+                          <div className="divide-y divide-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)]/30">
                             {items.map((item) => {
                               const config = getStatusConfig(item.status);
                               const StatusIcon = config.icon;
@@ -971,10 +971,10 @@ Heating:
                               return (
                                 <div key={item.id} className="px-4 py-4 flex items-center justify-between gap-4">
                                   <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-medium text-neutral-900 dark:text-white truncate">
+                                    <div className="text-sm font-medium text-[var(--hm-fg-primary)] truncate">
                                       {item.name}
                                     </div>
-                                    <div className="flex items-center gap-3 mt-1 text-xs text-neutral-500">
+                                    <div className="flex items-center gap-3 mt-1 text-xs text-[var(--hm-fg-muted)]">
                                       {item.unitPrice > 0 && (
                                         <span>
                                           {item.quantity} × {item.unitPrice}₾
@@ -982,7 +982,7 @@ Heating:
                                       )}
                                       {item.marketAverage > 0 && (
                                         <span className="flex items-center gap-1">
-                                          <span className="text-neutral-400">{t('tools.analyzer.marketAvg')}:</span>
+                                          <span className="text-[var(--hm-fg-muted)]">{t('tools.analyzer.marketAvg')}:</span>
                                           <span>{item.marketAverage}₾</span>
                                         </span>
                                       )}
@@ -990,11 +990,11 @@ Heating:
                                   </div>
                                   <div className="flex items-center gap-3">
                                     {priceDiff !== null && priceDiff !== 0 && (
-                                      <span className={`text-xs font-medium ${priceDiff > 0 ? 'text-red-500' : 'text-forest-500'}`}>
+                                      <span className={`text-xs font-medium ${priceDiff > 0 ? 'text-[var(--hm-error-500)]' : 'text-[var(--hm-fg-secondary)]'}`}>
                                         {priceDiff > 0 ? '+' : ''}{priceDiff}%
                                       </span>
                                     )}
-                                    <span className="font-semibold text-neutral-900 dark:text-white tabular-nums text-sm min-w-[70px] text-right">
+                                    <span className="font-semibold text-[var(--hm-fg-primary)] tabular-nums text-sm min-w-[70px] text-right">
                                       {item.total > 0 ? formatCurrency(item.total) : '—'}
                                     </span>
                                     <span
@@ -1015,19 +1015,19 @@ Heating:
               </div>
 
               {/* Confidence Score */}
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 border border-neutral-200 dark:border-neutral-800">
+              <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-5 border border-[var(--hm-border)]">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-terracotta-500" strokeWidth={1.5} />
-                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    <Shield className="w-4 h-4 text-[var(--hm-brand-500)]" strokeWidth={1.5} />
+                    <span className="text-sm font-medium text-[var(--hm-fg-secondary)]">
                       {t('tools.analyzer.results.confidence')}
                     </span>
                   </div>
-                  <span className="text-lg font-bold text-terracotta-600 dark:text-terracotta-400">
+                  <span className="text-lg font-bold text-[var(--hm-brand-600)]">
                     {analysis.confidence}%
                   </span>
                 </div>
-                <div className="h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-[var(--hm-bg-tertiary)] rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-terracotta-400 to-terracotta-500 rounded-full transition-all duration-1000"
                     style={{ width: `${analysis.confidence}%` }}
@@ -1039,12 +1039,12 @@ Heating:
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={resetAnalysis}
-                  className="flex-1 px-6 py-3.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3.5 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] font-semibold rounded-xl hover:bg-[var(--hm-bg-tertiary)] transition-colors flex items-center justify-center gap-2"
                 >
                   <RefreshCw className="w-4 h-4" strokeWidth={1.5} />
                   {t('tools.analyzer.analyzeAnother')}
                 </button>
-                <button className="flex-1 px-6 py-3.5 bg-terracotta-500 hover:bg-terracotta-600 text-white font-semibold rounded-xl shadow-lg shadow-terracotta-500/25 hover:shadow-terracotta-500/40 transition-all flex items-center justify-center gap-2">
+                <button className="flex-1 px-6 py-3.5 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white font-semibold rounded-xl shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-[var(--hm-brand-500)]/40 transition-all flex items-center justify-center gap-2">
                   <Download className="w-4 h-4" strokeWidth={1.5} />
                   {t('tools.analyzer.downloadPdf')}
                 </button>

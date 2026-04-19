@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import HomicoLogo from '@/components/common/HomicoLogo';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -201,7 +202,7 @@ export default function ForBusinessPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)]">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       <Header />
       <HeaderSpacer />
 
@@ -210,13 +211,13 @@ export default function ForBusinessPage() {
         <div className="absolute inset-0" style={{ background: GRADIENTS.accent.primary }} />
         <div className="absolute inset-0">
           <motion.div
-            className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full opacity-[0.08] bg-white blur-3xl"
+            className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full opacity-[0.08] bg-[var(--hm-bg-elevated)] blur-3xl"
             initial={{ x: '30%', y: '-60%' }}
             animate={{ x: '25%', y: '-50%' }}
             transition={{ duration: 12, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
           />
           <motion.div
-            className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-[0.06] bg-white blur-3xl"
+            className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-[0.06] bg-[var(--hm-bg-elevated)] blur-3xl"
             initial={{ x: '-30%', y: '40%' }}
             animate={{ x: '-25%', y: '33%' }}
             transition={{ duration: 10, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
@@ -310,7 +311,7 @@ export default function ForBusinessPage() {
 
       {/* ─── Trusted By ─── */}
       <motion.section
-        className="py-10 sm:py-14 px-4 sm:px-6 border-b border-[var(--color-border-subtle)]"
+        className="py-10 sm:py-14 px-4 sm:px-6 border-b border-[var(--hm-border-subtle)]"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: '-50px' }}
@@ -319,7 +320,7 @@ export default function ForBusinessPage() {
         <div className="max-w-5xl mx-auto">
           <motion.p
             variants={fadeIn}
-            className="text-center text-sm font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-8"
+            className="text-center text-sm font-medium text-[var(--hm-fg-muted)] uppercase tracking-wider mb-8"
           >
             {t('business.trustedByTitle')}
           </motion.p>
@@ -329,7 +330,7 @@ export default function ForBusinessPage() {
                 key={i}
                 variants={scaleIn}
                 custom={i}
-                className="flex items-center gap-2.5 px-5 py-3 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-default)]"
+                className="flex items-center gap-2.5 px-5 py-3 rounded-xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] transition-colors hover:border-[var(--hm-border)]"
               >
                 <Icon className="w-4 h-4 flex-shrink-0 opacity-60" />
                 <span className="text-sm font-medium whitespace-nowrap">{t(`business.${labelKey}`)}</span>
@@ -358,7 +359,7 @@ export default function ForBusinessPage() {
             <motion.h2
               variants={fadeUp}
               custom={1}
-              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)]"
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--hm-fg-primary)]"
             >
               {t('business.howItWorksTitle')}
             </motion.h2>
@@ -404,10 +405,10 @@ export default function ForBusinessPage() {
                     <StepIcon className="w-6 h-6" style={{ color: ACCENT_COLOR }} />
                   </motion.div>
                 </div>
-                <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-2">
+                <h3 className="text-lg font-bold text-[var(--hm-fg-primary)] mb-2">
                   {t(`business.${titleKey}`)}
                 </h3>
-                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed max-w-[260px] mx-auto">
+                <p className="text-sm text-[var(--hm-fg-secondary)] leading-relaxed max-w-[260px] mx-auto">
                   {t(`business.${descKey}`)}
                 </p>
               </motion.div>
@@ -417,7 +418,7 @@ export default function ForBusinessPage() {
       </section>
 
       {/* ─── Benefits ─── */}
-      <section className="py-20 sm:py-28 px-4 sm:px-6 bg-[var(--color-bg-secondary)]">
+      <section className="py-20 sm:py-28 px-4 sm:px-6 bg-[var(--hm-bg-page)]">
         <div className="max-w-6xl mx-auto">
           <motion.div
             className="text-center mb-14 sm:mb-16"
@@ -427,7 +428,7 @@ export default function ForBusinessPage() {
           >
             <motion.h2
               variants={fadeUp}
-              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)]"
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--hm-fg-primary)]"
             >
               {t('business.benefitsTitle')}
             </motion.h2>
@@ -444,7 +445,7 @@ export default function ForBusinessPage() {
                 viewport={{ once: true, margin: '-40px' }}
                 whileHover={{ y: -4 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                className="group relative p-6 sm:p-8 rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] transition-shadow duration-300 hover:shadow-lg"
+                className="group relative p-6 sm:p-8 rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] transition-shadow duration-300 hover:shadow-lg"
               >
                 <div
                   className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
@@ -459,10 +460,10 @@ export default function ForBusinessPage() {
                   >
                     <BenefitIcon className="w-5 h-5" style={{ color: ACCENT_COLOR }} />
                   </motion.div>
-                  <h3 className="text-base sm:text-lg font-bold text-[var(--color-text-primary)] mb-2">
+                  <h3 className="text-base sm:text-lg font-bold text-[var(--hm-fg-primary)] mb-2">
                     {t(`business.${titleKey}`)}
                   </h3>
-                  <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                  <p className="text-sm text-[var(--hm-fg-secondary)] leading-relaxed">
                     {t(`business.${descKey}`)}
                   </p>
                 </div>
@@ -483,14 +484,14 @@ export default function ForBusinessPage() {
           >
             <motion.h2
               variants={fadeUp}
-              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)] mb-3"
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--hm-fg-primary)] mb-3"
             >
               {t('business.tiersTitle')}
             </motion.h2>
             <motion.p
               variants={fadeUp}
               custom={1}
-              className="text-[var(--color-text-secondary)] max-w-lg mx-auto"
+              className="text-[var(--hm-fg-secondary)] max-w-lg mx-auto"
             >
               {t('business.tiersSubtitle')}
             </motion.p>
@@ -511,7 +512,7 @@ export default function ForBusinessPage() {
                   'relative rounded-2xl border overflow-hidden',
                   featured
                     ? 'border-transparent shadow-xl md:-mt-4 md:mb-[-16px]'
-                    : 'border-[var(--color-border-subtle)] hover:shadow-md',
+                    : 'border-[var(--hm-border-subtle)] hover:shadow-md',
                 )}
                 style={featured ? {
                   border: `2px solid ${ACCENT_COLOR}`,
@@ -529,9 +530,9 @@ export default function ForBusinessPage() {
                   />
                 )}
 
-                <div className="p-6 sm:p-8 bg-[var(--color-bg-elevated)]">
+                <div className="p-6 sm:p-8 bg-[var(--hm-bg-elevated)]">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-[var(--color-text-primary)]">
+                    <h3 className="text-xl font-bold text-[var(--hm-fg-primary)]">
                       {t(`business.${titleKey}`)}
                     </h3>
                     {featured && (
@@ -541,7 +542,7 @@ export default function ForBusinessPage() {
                     )}
                   </div>
 
-                  <p className="text-sm text-[var(--color-text-secondary)] mb-6 leading-relaxed min-h-[44px]">
+                  <p className="text-sm text-[var(--hm-fg-secondary)] mb-6 leading-relaxed min-h-[44px]">
                     {t(`business.${descKey}`)}
                   </p>
 
@@ -549,7 +550,7 @@ export default function ForBusinessPage() {
                     {features.map((featureKey, fi) => (
                       <motion.li
                         key={featureKey}
-                        className="flex items-start gap-3 text-sm text-[var(--color-text-secondary)]"
+                        className="flex items-start gap-3 text-sm text-[var(--hm-fg-secondary)]"
                         initial={{ opacity: 0, x: -10 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
@@ -585,7 +586,7 @@ export default function ForBusinessPage() {
       </section>
 
       {/* ─── Testimonial ─── */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 bg-[var(--color-bg-secondary)]">
+      <section className="py-16 sm:py-24 px-4 sm:px-6 bg-[var(--hm-bg-page)]">
         <motion.div
           className="max-w-3xl mx-auto text-center"
           initial="hidden"
@@ -601,15 +602,15 @@ export default function ForBusinessPage() {
           <motion.blockquote
             variants={fadeUp}
             custom={1}
-            className="text-lg sm:text-xl lg:text-2xl font-medium text-[var(--color-text-primary)] leading-relaxed mb-8"
+            className="text-lg sm:text-xl lg:text-2xl font-medium text-[var(--hm-fg-primary)] leading-relaxed mb-8"
           >
             &ldquo;{t('business.testimonialQuote')}&rdquo;
           </motion.blockquote>
           <motion.div variants={fadeUp} custom={2}>
-            <p className="font-semibold text-[var(--color-text-primary)]">
+            <p className="font-semibold text-[var(--hm-fg-primary)]">
               {t('business.testimonialAuthor')}
             </p>
-            <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">
+            <p className="text-sm text-[var(--hm-fg-secondary)] mt-0.5">
               {t('business.testimonialRole')}
             </p>
           </motion.div>
@@ -621,7 +622,7 @@ export default function ForBusinessPage() {
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: `linear-gradient(180deg, var(--color-bg-secondary) 0%, transparent 15%, transparent 85%, var(--color-bg-primary) 100%)`,
+            background: `linear-gradient(180deg, var(--hm-bg-page) 0%, transparent 15%, transparent 85%, var(--hm-bg-page) 100%)`,
           }}
         />
 
@@ -642,14 +643,14 @@ export default function ForBusinessPage() {
             <motion.h2
               variants={fadeUp}
               custom={1}
-              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--color-text-primary)] mb-3"
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--hm-fg-primary)] mb-3"
             >
               {t('business.quoteTitle')}
             </motion.h2>
             <motion.p
               variants={fadeUp}
               custom={2}
-              className="text-[var(--color-text-secondary)] max-w-md mx-auto"
+              className="text-[var(--hm-fg-secondary)] max-w-md mx-auto"
             >
               {t('business.quoteSubtitle')}
             </motion.p>
@@ -665,7 +666,7 @@ export default function ForBusinessPage() {
               viewport={{ once: true, margin: '-60px' }}
             >
               <div className="lg:sticky lg:top-24 space-y-4">
-                <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-5">
+                <h3 className="text-lg font-bold text-[var(--hm-fg-primary)] mb-5">
                   {t('business.formWhyTitle')}
                 </h3>
 
@@ -681,7 +682,7 @@ export default function ForBusinessPage() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.2 + i * 0.1, duration: 0.4 }}
-                    className="flex items-center gap-4 p-4 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+                    className="flex items-center gap-4 p-4 rounded-xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]"
                   >
                     <div
                       className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -689,7 +690,7 @@ export default function ForBusinessPage() {
                     >
                       <TrustIcon className="w-5 h-5" style={{ color: ACCENT_COLOR }} />
                     </div>
-                    <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                    <span className="text-sm font-medium text-[var(--hm-fg-primary)]">
                       {t(`business.${labelKey}`)}
                     </span>
                   </motion.div>
@@ -711,7 +712,7 @@ export default function ForBusinessPage() {
                       style={{ background: `${ACCENT_COLOR}08`, border: `1px solid ${ACCENT_COLOR}12` }}
                     >
                       <p className="text-2xl font-bold" style={{ color: ACCENT_COLOR }}>{stat.value}</p>
-                      <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                      <p className="text-xs text-[var(--hm-fg-secondary)] mt-0.5">
                         {t(`business.${stat.labelKey}`)}
                       </p>
                     </motion.div>
@@ -746,10 +747,10 @@ export default function ForBusinessPage() {
                       >
                         <CheckCircle className="w-8 h-8 text-green-500" />
                       </motion.div>
-                      <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">
+                      <h3 className="text-xl font-bold text-[var(--hm-fg-primary)] mb-2">
                         {t('business.formSuccess')}
                       </h3>
-                      <p className="text-[var(--color-text-secondary)] mb-8 max-w-sm mx-auto">
+                      <p className="text-[var(--hm-fg-secondary)] mb-8 max-w-sm mx-auto">
                         {t('business.formSuccessMessage')}
                       </p>
                       <Button
@@ -890,7 +891,7 @@ export default function ForBusinessPage() {
         <div className="absolute inset-0" style={{ background: GRADIENTS.accent.primary }} />
         <div className="absolute inset-0">
           <motion.div
-            className="absolute top-0 left-1/2 w-[500px] h-[500px] rounded-full opacity-[0.08] bg-white blur-3xl -translate-x-1/2 -translate-y-1/2"
+            className="absolute top-0 left-1/2 w-[500px] h-[500px] rounded-full opacity-[0.08] bg-[var(--hm-bg-elevated)] blur-3xl -translate-x-1/2 -translate-y-1/2"
             animate={{ scale: [1, 1.15, 1] }}
             transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
           />
@@ -929,22 +930,22 @@ export default function ForBusinessPage() {
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="py-10 px-4 sm:px-6 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-primary)]">
+      <footer className="py-10 px-4 sm:px-6 border-t border-[var(--hm-border-subtle)] bg-[var(--hm-bg-page)]">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <Image src="/favicon.png" alt="Homico" width={28} height={28} className="rounded-lg" />
-            <span className="text-base font-bold text-[var(--color-text-primary)] group-hover:opacity-80 transition-opacity">
+            <HomicoLogo size={28} />
+            <span className="text-base font-bold text-[var(--hm-fg-primary)] group-hover:opacity-80 transition-opacity">
               Homico
             </span>
           </Link>
-          <div className="flex items-center gap-6 text-sm text-[var(--color-text-secondary)]">
-            <Link href="/about" className="hover:text-[var(--color-text-primary)] transition-colors">
+          <div className="flex items-center gap-6 text-sm text-[var(--hm-fg-secondary)]">
+            <Link href="/about" className="hover:text-[var(--hm-fg-primary)] transition-colors">
               {t('common.about')}
             </Link>
-            <Link href="/help" className="hover:text-[var(--color-text-primary)] transition-colors">
+            <Link href="/help" className="hover:text-[var(--hm-fg-primary)] transition-colors">
               {t('common.help')}
             </Link>
-            <Link href="/privacy" className="hover:text-[var(--color-text-primary)] transition-colors">
+            <Link href="/privacy" className="hover:text-[var(--hm-fg-primary)] transition-colors">
               {t('settings.privacy')}
             </Link>
           </div>

@@ -40,6 +40,7 @@ import {
 // UI Components
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 // Tools Components
 import { categoryIconMap } from '@/components/tools/prices/categoryIcons';
@@ -95,11 +96,11 @@ const allCategories: PriceCategory[] = [
 ];
 
 const contractorColors = [
-  { bg: 'bg-terracotta-500', light: 'bg-terracotta-100 dark:bg-terracotta-900/30', text: 'text-terracotta-600 dark:text-terracotta-400' },
-  { bg: 'bg-forest-500', light: 'bg-forest-100 dark:bg-forest-900/30', text: 'text-forest-600 dark:text-forest-400' },
-  { bg: 'bg-amber-500', light: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-600 dark:text-amber-400' },
-  { bg: 'bg-blue-500', light: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400' },
-  { bg: 'bg-purple-500', light: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400' },
+  { bg: 'bg-[var(--hm-brand-500)]', light: 'bg-[var(--hm-brand-100)]', text: 'text-[var(--hm-brand-600)]' },
+  { bg: 'bg-[var(--hm-n-600)]', light: 'bg-[var(--hm-bg-tertiary)]', text: 'text-[var(--hm-fg-secondary)]' },
+  { bg: 'bg-[var(--hm-warning-500)]', light: 'bg-[var(--hm-warning-100)]/30', text: 'text-[var(--hm-warning-500)]' },
+  { bg: 'bg-[var(--hm-info-500)]', light: 'bg-[var(--hm-info-100)]/30', text: 'text-[var(--hm-info-500)]' },
+  { bg: 'bg-purple-500', light: 'bg-purple-100', text: 'text-purple-600' },
 ];
 
 // File type icon helper
@@ -395,7 +396,7 @@ Grand Total: 91,600₾`,
   };
 
   return (
-    <div className="min-h-screen bg-cream-50 dark:bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       {/* Page Header */}
       <PageHeader
         icon={Scale}
@@ -411,16 +412,16 @@ Grand Total: 91,600₾`,
           {!estimates && !isComparing ? (
             <>
               {/* Upload Section */}
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 sm:p-8 border border-neutral-200 dark:border-neutral-800">
+              <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-6 sm:p-8 border border-[var(--hm-border)]">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-forest-100 dark:bg-forest-900/30 flex items-center justify-center">
-                    <Upload className="w-5 h-5 text-forest-600 dark:text-forest-400" strokeWidth={1.5} />
+                  <div className="w-10 h-10 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                    <Upload className="w-5 h-5 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
                   </div>
-                  <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
+                  <h2 className="text-xl font-semibold text-[var(--hm-fg-primary)]">
                     {t('tools.compare.uploadEstimates')}
                   </h2>
                 </div>
-                <p className="text-neutral-600 dark:text-neutral-400 mb-6 ml-13">
+                <p className="text-[var(--hm-fg-secondary)] mb-6 ml-13">
                   {t('tools.compare.uploadSubtitle')}
                 </p>
 
@@ -432,7 +433,7 @@ Grand Total: 91,600₾`,
                     return (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl group hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all hover:shadow-sm"
+                        className="flex items-center justify-between p-4 bg-[var(--hm-bg-tertiary)]/50 rounded-xl group hover:bg-[var(--hm-bg-tertiary)] transition-all hover:shadow-sm"
                       >
                         <div className="flex items-center gap-4">
                           <div className={`w-12 h-12 rounded-xl ${contractorColors[index].light} flex items-center justify-center relative`}>
@@ -442,8 +443,8 @@ Grand Total: 91,600₾`,
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-neutral-900 dark:text-white truncate max-w-[200px] sm:max-w-none">{file.name}</div>
-                            <div className="flex items-center gap-2 text-xs text-neutral-500">
+                            <div className="font-medium text-[var(--hm-fg-primary)] truncate max-w-[200px] sm:max-w-none">{file.name}</div>
+                            <div className="flex items-center gap-2 text-xs text-[var(--hm-fg-muted)]">
                               <span className={`px-1.5 py-0.5 rounded ${contractorColors[index].light} ${contractorColors[index].text} font-medium`}>
                                 {ext}
                               </span>
@@ -451,12 +452,15 @@ Grand Total: 91,600₾`,
                             </div>
                           </div>
                         </div>
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
                           onClick={() => removeFile(index)}
-                          className="p-2.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all sm:opacity-0 sm:group-hover:opacity-100"
+                          className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)] rounded-xl sm:opacity-0 sm:group-hover:opacity-100"
+                          aria-label={t('common.remove')}
                         >
                           <X className="w-5 h-5" strokeWidth={1.5} />
-                        </button>
+                        </Button>
                       </div>
                     );
                   })}
@@ -471,17 +475,17 @@ Grand Total: 91,600₾`,
                       className={`
                         w-full p-8 border-2 border-dashed rounded-xl cursor-pointer transition-all
                         ${isDragOver
-                          ? 'border-forest-500 bg-forest-50 dark:bg-forest-900/20 scale-[1.02]'
-                          : 'border-neutral-200 dark:border-neutral-700 hover:border-forest-400 hover:bg-forest-50/50 dark:hover:bg-forest-900/10'
+                          ? 'border-forest-500 bg-[var(--hm-bg-tertiary)] scale-[1.02]'
+                          : 'border-[var(--hm-border)] hover:border-forest-400 hover:bg-forest-50/50'
                         }
                       `}
                     >
-                      <div className="flex flex-col items-center justify-center gap-3 text-neutral-500 dark:text-neutral-400">
-                        <div className={`w-14 h-14 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center transition-transform ${isDragOver ? 'scale-110' : ''}`}>
+                      <div className="flex flex-col items-center justify-center gap-3 text-[var(--hm-fg-muted)]">
+                        <div className={`w-14 h-14 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center transition-transform ${isDragOver ? 'scale-110' : ''}`}>
                           <Plus className="w-7 h-7" strokeWidth={1.5} />
                         </div>
                         <span className="font-medium">{t('tools.compare.addEstimate')}</span>
-                        <span className="text-sm text-neutral-400">{t('tools.compare.dragDropHint')}</span>
+                        <span className="text-sm text-[var(--hm-fg-muted)]">{t('tools.compare.dragDropHint')}</span>
                       </div>
                     </div>
                   )}
@@ -503,66 +507,59 @@ Grand Total: 91,600₾`,
                       key={num}
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
                         num <= uploadedFiles.length
-                          ? 'bg-forest-500 text-white'
-                          : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400'
+                          ? 'bg-[var(--hm-n-600)] text-white'
+                          : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                       }`}
                     >
                       {num <= uploadedFiles.length ? <Check className="w-4 h-4" strokeWidth={2} /> : num}
                     </div>
                   ))}
-                  <span className="text-sm text-neutral-500 ml-2">
+                  <span className="text-sm text-[var(--hm-fg-muted)] ml-2">
                     {uploadedFiles.length}/5 {t('tools.compare.estimatesUploaded')}
                   </span>
                 </div>
 
                 {/* Compare Button */}
-                <button
+                <Button
                   onClick={handleCompare}
                   disabled={uploadedFiles.length < 2}
-                  className={`
-                    w-full py-4 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2
-                    ${uploadedFiles.length >= 2
-                      ? 'bg-terracotta-500 hover:bg-terracotta-600 text-white shadow-lg shadow-terracotta-500/25 hover:shadow-terracotta-500/40'
-                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
-                    }
-                  `}
+                  className="w-full py-4 h-auto rounded-xl font-semibold text-lg flex items-center justify-center gap-2"
                 >
                   <Scale className="w-5 h-5" strokeWidth={1.5} />
                   {t('tools.compare.compare')}
-                </button>
+                </Button>
               </div>
 
               {/* Demo Button */}
               <div className="mt-8 text-center">
-                <button
+                <Button
+                  variant="outline"
                   onClick={handleDemo}
-                  className="group px-8 py-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
+                  className="group px-8 py-4 h-auto rounded-xl font-semibold"
                 >
-                  <span className="flex items-center gap-2">
-                    {t('tools.compare.tryDemo')}
-                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
-                  </span>
-                </button>
+                  {t('tools.compare.tryDemo')}
+                  <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
+                </Button>
               </div>
             </>
           ) : isComparing ? (
             /* Loading State */
             <div className="flex flex-col items-center justify-center py-20">
               <div className="relative w-24 h-24 mb-8">
-                <div className="absolute inset-0 rounded-full border-4 border-terracotta-200 dark:border-terracotta-900/50" />
+                <div className="absolute inset-0 rounded-full border-4 border-[var(--hm-brand-200)]" />
                 <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-terracotta-500 animate-spin" />
-                <div className="absolute inset-3 rounded-full bg-terracotta-50 dark:bg-terracotta-900/20 flex items-center justify-center">
-                  <Scale className="w-8 h-8 text-terracotta-500 animate-pulse" strokeWidth={1.5} />
+                <div className="absolute inset-3 rounded-full bg-[var(--hm-brand-50)] flex items-center justify-center">
+                  <Scale className="w-8 h-8 text-[var(--hm-brand-500)] animate-pulse" strokeWidth={1.5} />
                 </div>
               </div>
-              <p className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+              <p className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-2">
                 {t('tools.compare.comparing')}
               </p>
               <div className="flex gap-1">
                 {[0, 1, 2].map((i) => (
                   <div
                     key={i}
-                    className="w-2 h-2 rounded-full bg-terracotta-500 animate-bounce"
+                    className="w-2 h-2 rounded-full bg-[var(--hm-brand-500)] animate-bounce"
                     style={{ animationDelay: `${i * 0.15}s` }}
                   />
                 ))}
@@ -574,7 +571,7 @@ Grand Total: 91,600₾`,
               {/* Winner Summary */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Best Price */}
-                <div className="bg-gradient-to-br from-forest-500 to-forest-600 rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-forest-500/20">
+                <div className="bg-gradient-to-br from-[var(--hm-bg-page)]0 to-forest-600 rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-forest-500/20">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                   <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
                   <div className="absolute top-3 right-3">
@@ -603,7 +600,7 @@ Grand Total: 91,600₾`,
                 </div>
 
                 {/* Best Value */}
-                <div className="bg-gradient-to-br from-terracotta-500 to-terracotta-600 rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-terracotta-500/20">
+                <div className="bg-gradient-to-br from-terracotta-500 to-terracotta-600 rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-[var(--hm-brand-500)]/20">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                   <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
                   <div className="absolute top-3 right-3">
@@ -641,26 +638,29 @@ Grand Total: 91,600₾`,
               </div>
 
               {/* Visual Price Comparison Bar Chart */}
-              <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-neutral-200 dark:border-neutral-800">
+              <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-6 border border-[var(--hm-border)]">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                      <BarChart3 className="w-5 h-5 text-neutral-600 dark:text-neutral-400" strokeWidth={1.5} />
+                    <div className="w-10 h-10 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                      <BarChart3 className="w-5 h-5 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
                     </div>
-                    <h3 className="font-semibold text-neutral-900 dark:text-white">
+                    <h3 className="font-semibold text-[var(--hm-fg-primary)]">
                       {t('tools.compare.priceOverview') || 'Price Overview'}
                     </h3>
                   </div>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => setShowPercentages(!showPercentages)}
-                    className={`p-2 rounded-lg transition-colors ${
+                    className={`rounded-lg ${
                       showPercentages
-                        ? 'bg-forest-100 dark:bg-forest-900/30 text-forest-600 dark:text-forest-400'
-                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
+                        ? 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-forest-100/50'
+                        : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                     }`}
+                    aria-label={showPercentages ? t('common.hide') : t('common.show')}
                   >
                     {showPercentages ? <Eye className="w-4 h-4" strokeWidth={1.5} /> : <EyeOff className="w-4 h-4" strokeWidth={1.5} />}
-                  </button>
+                  </Button>
                 </div>
                 <div className="space-y-4">
                   {sortedEstimates?.map((est, idx) => {
@@ -676,9 +676,9 @@ Grand Total: 91,600₾`,
                             <div className={`w-8 h-8 rounded-lg ${contractorColors[originalIdx].bg} flex items-center justify-center text-white text-sm font-bold`}>
                               {originalIdx + 1}
                             </div>
-                            <span className="font-medium text-neutral-900 dark:text-white">{est.name}</span>
+                            <span className="font-medium text-[var(--hm-fg-primary)]">{est.name}</span>
                             {isWinner && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-forest-100 dark:bg-forest-900/30 text-forest-700 dark:text-forest-300 text-xs font-semibold rounded-full">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[var(--hm-bg-tertiary)] text-[var(--hm-n-700)] text-xs font-semibold rounded-full">
                                 <Trophy className="w-3 h-3" strokeWidth={2} />
                                 {t('tools.compare.lowest') || 'Lowest'}
                               </span>
@@ -686,23 +686,23 @@ Grand Total: 91,600₾`,
                           </div>
                           <div className="flex items-center gap-3">
                             {showPercentages && percentDiff > 0 && (
-                              <span className="text-sm text-red-500 dark:text-red-400 font-medium flex items-center gap-1">
+                              <span className="text-sm text-[var(--hm-error-500)] font-medium flex items-center gap-1">
                                 <TrendingUp className="w-3.5 h-3.5" strokeWidth={2} />
                                 +{percentDiff}%
                               </span>
                             )}
                             {showPercentages && percentDiff === 0 && (
-                              <span className="text-sm text-forest-500 dark:text-forest-400 font-medium flex items-center gap-1">
+                              <span className="text-sm text-[var(--hm-fg-secondary)] font-medium flex items-center gap-1">
                                 <Minus className="w-3.5 h-3.5" strokeWidth={2} />
                                 {t('tools.compare.baseline') || 'Baseline'}
                               </span>
                             )}
-                            <span className="font-bold text-neutral-900 dark:text-white tabular-nums min-w-[100px] text-right">
+                            <span className="font-bold text-[var(--hm-fg-primary)] tabular-nums min-w-[100px] text-right">
                               {formatCurrency(est.total)}
                             </span>
                           </div>
                         </div>
-                        <div className="h-3 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                        <div className="h-3 bg-[var(--hm-bg-tertiary)] rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all duration-700 ease-out ${
                               isWinner
@@ -719,15 +719,15 @@ Grand Total: 91,600₾`,
               </div>
 
               {/* Controls Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-neutral-900 rounded-xl p-3 border border-neutral-200 dark:border-neutral-800">
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-[var(--hm-bg-elevated)] rounded-xl p-3 border border-[var(--hm-border)]">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-neutral-500 dark:text-neutral-400 hidden sm:inline">
+                  <span className="text-sm text-[var(--hm-fg-muted)] hidden sm:inline">
                     {t('tools.compare.sortBy') || 'Sort by'}:
                   </span>
                   <select
                     value={sortOption}
                     onChange={(e) => setSortOption(e.target.value as SortOption)}
-                    className="px-3 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-700 dark:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-terracotta-500/20"
+                    className="px-3 py-2 text-sm bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] rounded-lg text-[var(--hm-fg-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)]/20"
                   >
                     <option value="default">{t('tools.compare.sortDefault') || 'Default'}</option>
                     <option value="price-asc">{t('tools.compare.sortPriceLow') || 'Price: Low to High'}</option>
@@ -736,50 +736,56 @@ Grand Total: 91,600₾`,
                   </select>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => setViewMode('table')}
-                    className={`p-2.5 rounded-lg transition-colors ${
+                    className={`rounded-lg ${
                       viewMode === 'table'
-                        ? 'bg-terracotta-100 dark:bg-terracotta-900/30 text-terracotta-600 dark:text-terracotta-400'
-                        : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+                        ? 'bg-[var(--hm-brand-100)] text-[var(--hm-brand-600)] hover:bg-[var(--hm-brand-100)]/80'
+                        : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                     }`}
+                    aria-label={t('tools.compare.tableView') || 'Table view'}
                   >
                     <BarChart3 className="w-4 h-4" strokeWidth={1.5} />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => setViewMode('cards')}
-                    className={`p-2.5 rounded-lg transition-colors ${
+                    className={`rounded-lg ${
                       viewMode === 'cards'
-                        ? 'bg-terracotta-100 dark:bg-terracotta-900/30 text-terracotta-600 dark:text-terracotta-400'
-                        : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+                        ? 'bg-[var(--hm-brand-100)] text-[var(--hm-brand-600)] hover:bg-[var(--hm-brand-100)]/80'
+                        : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                     }`}
+                    aria-label={t('tools.compare.cardsView') || 'Cards view'}
                   >
                     <PieChart className="w-4 h-4" strokeWidth={1.5} />
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               {/* Comparison Table - Table View */}
               {viewMode === 'table' && sortedEstimates && (
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+                <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border)] overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[600px]">
                       <thead>
-                        <tr className="border-b border-neutral-100 dark:border-neutral-800">
-                          <th className="px-5 py-4 text-left text-sm font-semibold text-neutral-700 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-800/50">
+                        <tr className="border-b border-[var(--hm-border-subtle)]">
+                          <th className="px-5 py-4 text-left text-sm font-semibold text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)]/50">
                             {t('tools.compare.category')}
                           </th>
                           {sortedEstimates.map((est) => {
                             const originalIdx = estimates?.findIndex((e) => e.id === est.id) ?? 0;
                             return (
-                              <th key={est.id} className="px-5 py-4 text-center bg-neutral-50 dark:bg-neutral-800/50">
+                              <th key={est.id} className="px-5 py-4 text-center bg-[var(--hm-bg-tertiary)]/50">
                                 <div className="flex flex-col items-center gap-2">
                                   <div className={`w-10 h-10 rounded-xl ${contractorColors[originalIdx].bg} flex items-center justify-center`}>
                                     <span className="text-white font-bold text-sm">{originalIdx + 1}</span>
                                   </div>
-                                  <div className="font-semibold text-neutral-900 dark:text-white">{est.name}</div>
+                                  <div className="font-semibold text-[var(--hm-fg-primary)]">{est.name}</div>
                                   {est.rating && (
-                                    <div className="flex items-center gap-1 text-amber-500">
+                                    <div className="flex items-center gap-1 text-[var(--hm-warning-500)]">
                                       <Star className="w-3.5 h-3.5 fill-current" strokeWidth={1.5} />
                                       <span className="text-sm font-medium">{est.rating}</span>
                                     </div>
@@ -800,11 +806,11 @@ Grand Total: 91,600₾`,
                           const categoryMin = getCategoryMin(category);
 
                           return (
-                            <tr key={category} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
+                            <tr key={category} className="border-b border-[var(--hm-border-subtle)] hover:bg-[var(--hm-bg-tertiary)]/30 transition-colors">
                               <td className="px-5 py-4">
                                 <div className="flex items-center gap-3">
-                                  <CategoryIcon className="w-5 h-5 text-neutral-500" strokeWidth={1.5} />
-                                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                  <CategoryIcon className="w-5 h-5 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
+                                  <span className="text-sm font-medium text-[var(--hm-fg-secondary)]">
                                     {getCategoryName(category)}
                                   </span>
                                 </div>
@@ -818,15 +824,15 @@ Grand Total: 91,600₾`,
                                       <span className={`
                                         inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-sm tabular-nums
                                         ${isWinner
-                                          ? 'bg-forest-100 dark:bg-forest-900/30 text-forest-700 dark:text-forest-300'
-                                          : 'text-neutral-700 dark:text-neutral-300'
+                                          ? 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-n-700)]'
+                                          : 'text-[var(--hm-fg-secondary)]'
                                         }
                                       `}>
                                         {formatCurrency(est.categories[category])}
                                         {isWinner && <Check className="w-4 h-4" strokeWidth={2} />}
                                       </span>
                                       {showPercentages && percentDiff > 0 && (
-                                        <span className="text-xs text-red-500/70 dark:text-red-400/70">
+                                        <span className="text-xs text-[var(--hm-error-500)]/70">
                                           +{percentDiff}%
                                         </span>
                                       )}
@@ -839,9 +845,9 @@ Grand Total: 91,600₾`,
                         })}
 
                         {/* Total Row */}
-                        <tr className="bg-neutral-50 dark:bg-neutral-800/50">
+                        <tr className="bg-[var(--hm-bg-tertiary)]/50">
                           <td className="px-5 py-5">
-                            <span className="text-lg font-bold text-neutral-900 dark:text-white">
+                            <span className="text-lg font-bold text-[var(--hm-fg-primary)]">
                               {t('tools.compare.total')}
                             </span>
                           </td>
@@ -851,16 +857,16 @@ Grand Total: 91,600₾`,
                             return (
                               <td key={est.id} className="px-5 py-5 text-center">
                                 <div className="flex flex-col items-center gap-2">
-                                  <span className={`text-xl font-bold tabular-nums ${isWinner ? 'text-forest-600 dark:text-forest-400' : 'text-neutral-900 dark:text-white'}`}>
+                                  <span className={`text-xl font-bold tabular-nums ${isWinner ? 'text-[var(--hm-fg-secondary)]' : 'text-[var(--hm-fg-primary)]'}`}>
                                     {formatCurrency(est.total)}
                                   </span>
                                   {showPercentages && percentDiff > 0 && (
-                                    <span className="text-xs text-red-500 dark:text-red-400 font-medium">
+                                    <span className="text-xs text-[var(--hm-error-500)] font-medium">
                                       +{percentDiff}% vs lowest
                                     </span>
                                   )}
                                   {isWinner && (
-                                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-forest-500 text-white text-xs font-bold rounded-full">
+                                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-[var(--hm-n-600)] text-white text-xs font-bold rounded-full">
                                       <Trophy className="w-3 h-3" strokeWidth={2} />
                                       {t('tools.compare.winner')}
                                     </span>
@@ -889,12 +895,12 @@ Grand Total: 91,600₾`,
                       <div
                         key={est.id}
                         className={`
-                          bg-white dark:bg-neutral-900 rounded-2xl border-2 overflow-hidden transition-all
+                          bg-[var(--hm-bg-elevated)] rounded-2xl border-2 overflow-hidden transition-all
                           ${isWinner
                             ? 'border-forest-500 shadow-lg shadow-forest-500/10'
                             : isBestValue
-                            ? 'border-terracotta-500 shadow-lg shadow-terracotta-500/10'
-                            : 'border-neutral-200 dark:border-neutral-800'
+                            ? 'border-[var(--hm-brand-500)] shadow-lg shadow-[var(--hm-brand-500)]/10'
+                            : 'border-[var(--hm-border)]'
                           }
                         `}
                       >
@@ -906,9 +912,9 @@ Grand Total: 91,600₾`,
                                 {originalIdx + 1}
                               </div>
                               <div>
-                                <div className="font-bold text-neutral-900 dark:text-white">{est.name}</div>
+                                <div className="font-bold text-[var(--hm-fg-primary)]">{est.name}</div>
                                 {est.rating && (
-                                  <div className="flex items-center gap-1 text-amber-500">
+                                  <div className="flex items-center gap-1 text-[var(--hm-warning-500)]">
                                     <Star className="w-3.5 h-3.5 fill-current" strokeWidth={1.5} />
                                     <span className="text-sm font-medium">{est.rating}</span>
                                   </div>
@@ -917,13 +923,13 @@ Grand Total: 91,600₾`,
                             </div>
                             <div className="flex flex-col items-end gap-1">
                               {isWinner && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-forest-500 text-white text-xs font-bold rounded-full">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[var(--hm-n-600)] text-white text-xs font-bold rounded-full">
                                   <Trophy className="w-3 h-3" strokeWidth={2} />
                                   {t('tools.compare.bestPrice')}
                                 </span>
                               )}
                               {isBestValue && !isWinner && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-terracotta-500 text-white text-xs font-bold rounded-full">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[var(--hm-brand-500)] text-white text-xs font-bold rounded-full">
                                   <Award className="w-3 h-3" strokeWidth={2} />
                                   {t('tools.compare.bestValue')}
                                 </span>
@@ -933,16 +939,16 @@ Grand Total: 91,600₾`,
                         </div>
 
                         {/* Total Price */}
-                        <div className="p-4 border-b border-neutral-100 dark:border-neutral-800">
+                        <div className="p-4 border-b border-[var(--hm-border-subtle)]">
                           <div className="text-center">
-                            <div className={`text-3xl font-bold tabular-nums ${isWinner ? 'text-forest-600 dark:text-forest-400' : 'text-neutral-900 dark:text-white'}`}>
+                            <div className={`text-3xl font-bold tabular-nums ${isWinner ? 'text-[var(--hm-fg-secondary)]' : 'text-[var(--hm-fg-primary)]'}`}>
                               {formatCurrency(est.total)}
                             </div>
                             {showPercentages && (
                               <div className={`text-sm mt-1 ${
                                 percentDiff === 0
-                                  ? 'text-forest-500'
-                                  : 'text-red-500'
+                                  ? 'text-[var(--hm-fg-secondary)]'
+                                  : 'text-[var(--hm-error-500)]'
                               }`}>
                                 {percentDiff === 0 ? (
                                   <span className="flex items-center justify-center gap-1">
@@ -970,22 +976,22 @@ Grand Total: 91,600₾`,
                               <div
                                 key={category}
                                 className={`flex items-center justify-between py-2 px-3 rounded-lg ${
-                                  isCategoryWinner ? 'bg-forest-50 dark:bg-forest-900/20' : ''
+                                  isCategoryWinner ? 'bg-[var(--hm-bg-tertiary)]' : ''
                                 }`}
                               >
                                 <div className="flex items-center gap-2">
-                                  <CategoryIcon className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />
-                                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                                  <CategoryIcon className="w-4 h-4 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
+                                  <span className="text-sm text-[var(--hm-fg-secondary)]">
                                     {getCategoryName(category)}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                   <span className={`text-sm font-semibold tabular-nums ${
-                                    isCategoryWinner ? 'text-forest-600 dark:text-forest-400' : 'text-neutral-900 dark:text-white'
+                                    isCategoryWinner ? 'text-[var(--hm-fg-secondary)]' : 'text-[var(--hm-fg-primary)]'
                                   }`}>
                                     {formatCurrency(value)}
                                   </span>
-                                  {isCategoryWinner && <Check className="w-3.5 h-3.5 text-forest-500" strokeWidth={2} />}
+                                  {isCategoryWinner && <Check className="w-3.5 h-3.5 text-[var(--hm-fg-secondary)]" strokeWidth={2} />}
                                 </div>
                               </div>
                             );
@@ -999,20 +1005,20 @@ Grand Total: 91,600₾`,
 
               {/* AI Analysis Section */}
               {aiComparison && (
-                <div className="bg-gradient-to-br from-forest-50 to-forest-100 dark:from-forest-900/20 dark:to-forest-800/10 rounded-2xl border border-forest-200 dark:border-forest-800/30 overflow-hidden">
-                  <div className="p-4 border-b border-forest-200 dark:border-forest-800/30 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-forest-200 dark:bg-forest-900/40 flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-forest-600 dark:text-forest-400" strokeWidth={1.5} />
+                <div className="bg-gradient-to-br from-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] rounded-2xl border border-[var(--hm-border)] overflow-hidden">
+                  <div className="p-4 border-b border-[var(--hm-border)] flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
                     </div>
-                    <h3 className="font-semibold text-forest-800 dark:text-forest-200">
+                    <h3 className="font-semibold text-[var(--hm-n-800)]">
                       {t('tools.compare.aiAnalysis')}
                     </h3>
                   </div>
 
                   <div className="p-5 space-y-5">
                     {/* AI Summary */}
-                    <div className="p-4 bg-white/60 dark:bg-neutral-900/40 rounded-xl">
-                      <p className="text-sm text-forest-700 dark:text-forest-300 leading-relaxed">
+                    <div className="p-4 bg-[var(--hm-bg-elevated)]/60 rounded-xl">
+                      <p className="text-sm text-[var(--hm-n-700)] leading-relaxed">
                         {aiComparison.summary}
                       </p>
                     </div>
@@ -1020,21 +1026,21 @@ Grand Total: 91,600₾`,
                     {/* Detailed Comparison */}
                     <div className="space-y-4">
                       {aiComparison.comparison.map((item, index) => (
-                        <div key={index} className="p-4 bg-white/60 dark:bg-neutral-900/40 rounded-xl">
+                        <div key={index} className="p-4 bg-[var(--hm-bg-elevated)]/60 rounded-xl">
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-3">
-                              <div className={`w-10 h-10 rounded-lg ${contractorColors[index]?.bg || 'bg-neutral-500'} flex items-center justify-center text-white font-bold`}>
+                              <div className={`w-10 h-10 rounded-lg ${contractorColors[index]?.bg || 'bg-[var(--hm-fg-secondary)]'} flex items-center justify-center text-white font-bold`}>
                                 {index + 1}
                               </div>
                               <div>
-                                <h4 className="font-semibold text-neutral-900 dark:text-white">{item.name}</h4>
-                                <p className="text-sm text-forest-600 dark:text-forest-400 font-medium">
+                                <h4 className="font-semibold text-[var(--hm-fg-primary)]">{item.name}</h4>
+                                <p className="text-sm text-[var(--hm-fg-secondary)] font-medium">
                                   {formatCurrency(item.totalPrice)}
                                 </p>
                               </div>
                             </div>
                             {aiComparison.winner.index === index && (
-                              <span className="inline-flex items-center gap-1 px-3 py-1 bg-forest-500 text-white text-xs font-bold rounded-full">
+                              <span className="inline-flex items-center gap-1 px-3 py-1 bg-[var(--hm-n-600)] text-white text-xs font-bold rounded-full">
                                 <Trophy className="w-3 h-3" strokeWidth={2} />
                                 {t('tools.compare.aiWinner')}
                               </span>
@@ -1045,14 +1051,14 @@ Grand Total: 91,600₾`,
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                             {item.pros.length > 0 && (
                               <div className="space-y-1">
-                                <p className="text-xs font-medium text-forest-600 dark:text-forest-400 flex items-center gap-1">
+                                <p className="text-xs font-medium text-[var(--hm-fg-secondary)] flex items-center gap-1">
                                   <ThumbsUp className="w-3 h-3" strokeWidth={2} />
                                   {t('tools.compare.pros')}
                                 </p>
                                 <ul className="space-y-1">
                                   {item.pros.slice(0, 3).map((pro, i) => (
-                                    <li key={i} className="text-xs text-neutral-600 dark:text-neutral-400 flex items-start gap-1.5">
-                                      <span className="text-forest-500 mt-0.5">+</span>
+                                    <li key={i} className="text-xs text-[var(--hm-fg-secondary)] flex items-start gap-1.5">
+                                      <span className="text-[var(--hm-fg-secondary)] mt-0.5">+</span>
                                       {pro}
                                     </li>
                                   ))}
@@ -1061,14 +1067,14 @@ Grand Total: 91,600₾`,
                             )}
                             {item.cons.length > 0 && (
                               <div className="space-y-1">
-                                <p className="text-xs font-medium text-red-600 dark:text-red-400 flex items-center gap-1">
+                                <p className="text-xs font-medium text-[var(--hm-error-500)] flex items-center gap-1">
                                   <ThumbsDown className="w-3 h-3" strokeWidth={2} />
                                   {t('tools.compare.cons')}
                                 </p>
                                 <ul className="space-y-1">
                                   {item.cons.slice(0, 3).map((con, i) => (
-                                    <li key={i} className="text-xs text-neutral-600 dark:text-neutral-400 flex items-start gap-1.5">
-                                      <span className="text-red-500 mt-0.5">−</span>
+                                    <li key={i} className="text-xs text-[var(--hm-fg-secondary)] flex items-start gap-1.5">
+                                      <span className="text-[var(--hm-error-500)] mt-0.5">−</span>
                                       {con}
                                     </li>
                                   ))}
@@ -1085,32 +1091,32 @@ Grand Total: 91,600₾`,
 
               {/* Error Display */}
               {comparisonError && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl">
+                <div className="p-4 bg-[var(--hm-error-50)]/20 border border-red-200 rounded-xl">
                   <div className="flex items-center gap-3">
-                    <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                    <p className="text-sm text-red-700 dark:text-red-300">{comparisonError}</p>
+                    <AlertTriangle className="w-5 h-5 text-[var(--hm-error-500)] flex-shrink-0" />
+                    <p className="text-sm text-[var(--hm-error-500)]">{comparisonError}</p>
                   </div>
                 </div>
               )}
 
               {/* Recommendation */}
-              <div className="bg-terracotta-50 dark:bg-terracotta-900/20 rounded-2xl p-6 border border-terracotta-200/50 dark:border-terracotta-800/30">
+              <div className="bg-[var(--hm-brand-50)] rounded-2xl p-6 border border-[var(--hm-brand-200)]/50">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-terracotta-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-[var(--hm-brand-500)] flex items-center justify-center flex-shrink-0">
                     <Lightbulb className="w-6 h-6 text-white" strokeWidth={1.5} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-terracotta-800 dark:text-terracotta-300 mb-2 text-lg">
+                    <h3 className="font-bold text-[var(--hm-brand-800)] mb-2 text-lg">
                       {t('tools.compare.recommendation')}
                     </h3>
-                    <p className="text-terracotta-700 dark:text-terracotta-400 leading-relaxed">
+                    <p className="text-[var(--hm-brand-700)] leading-relaxed">
                       {aiComparison ? (
                         <>
                           <strong>{aiComparison.winner.name}</strong> — {aiComparison.recommendation}
                         </>
                       ) : (
                         <>
-                          <strong>{bestValueWinner?.name}</strong> {t('tools.compare.recommendationText')} <Star className="w-4 h-4 inline text-amber-500 fill-current" />{bestValueWinner?.rating} - {formatCurrency(bestValueWinner?.total ?? 0)}
+                          <strong>{bestValueWinner?.name}</strong> {t('tools.compare.recommendationText')} <Star className="w-4 h-4 inline text-[var(--hm-warning-500)] fill-current" />{bestValueWinner?.rating} - {formatCurrency(bestValueWinner?.total ?? 0)}
                         </>
                       )}
                     </p>
@@ -1120,17 +1126,18 @@ Grand Total: 91,600₾`,
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <button
+                <Button
+                  variant="outline"
                   onClick={resetComparison}
-                  className="flex-1 px-6 py-3.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-semibold rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3.5 h-auto rounded-xl font-semibold"
                 >
-                  <RefreshCw className="w-4 h-4" strokeWidth={1.5} />
+                  <RefreshCw className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   {t('tools.compare.startOver')}
-                </button>
-                <button className="flex-1 px-6 py-3.5 bg-terracotta-500 hover:bg-terracotta-600 text-white font-semibold rounded-xl shadow-lg shadow-terracotta-500/25 hover:shadow-terracotta-500/40 transition-all flex items-center justify-center gap-2">
-                  <Download className="w-4 h-4" strokeWidth={1.5} />
+                </Button>
+                <Button className="flex-1 px-6 py-3.5 h-auto rounded-xl font-semibold">
+                  <Download className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   {t('tools.compare.downloadComparison')}
-                </button>
+                </Button>
               </div>
             </div>
           ) : null}

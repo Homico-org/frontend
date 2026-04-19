@@ -1,35 +1,41 @@
-'use client';
+"use client";
 
-import {
-  ArrowRight,
-  CheckCircle2,
-  Grid3X3,
-  Star,
-  Tag,
-} from 'lucide-react';
-import Link from 'next/link';
-import MiniProCard from './MiniProCard';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { ArrowRight, CheckCircle2, Grid3X3, Star, Tag } from "lucide-react";
+import Link from "next/link";
+import React from "react";
+import MiniProCard from "./MiniProCard";
 import {
   CategoryItem,
+  FaqItem,
   FeatureExplanation,
   FeatureStep,
-  FaqItem,
   PriceInfo,
   ProfessionalCardData,
   ReviewItem,
   RichContent,
   RichContentType,
-} from './types';
+} from "./types";
 
 interface RichContentRendererProps {
   content: RichContent;
   locale: string;
 }
 
+// Locale-aware field picker
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function pickLocale(obj: any, field: string, locale: string): string {
+  if (locale === "ka" && obj[`${field}Ka`]) return obj[`${field}Ka`] as string;
+  if (locale === "ru" && obj[`${field}Ru`]) return obj[`${field}Ru`] as string;
+  return (obj[field] as string) || "";
+}
+
 export default function RichContentRenderer({
   content,
   locale,
-}: RichContentRendererProps) {
+}: RichContentRendererProps): React.ReactElement | null {
   switch (content.type) {
     case RichContentType.PROFESSIONAL_LIST:
       return (
@@ -91,10 +97,7 @@ export default function RichContentRenderer({
 
     case RichContentType.FAQ_LIST:
       return (
-        <FaqListRenderer
-          faqs={content.data as FaqItem[]}
-          locale={locale}
-        />
+        <FaqListRenderer faqs={content.data as FaqItem[]} locale={locale} />
       );
 
     default:
@@ -102,14 +105,13 @@ export default function RichContentRenderer({
   }
 }
 
-// Professional List Renderer
 function ProfessionalListRenderer({
   professionals,
   locale,
 }: {
   professionals: ProfessionalCardData[];
   locale: string;
-}) {
+}): React.ReactElement | null {
   if (professionals.length === 0) return null;
 
   return (
@@ -121,51 +123,50 @@ function ProfessionalListRenderer({
   );
 }
 
-// Category List Renderer
 function CategoryListRenderer({
   categories,
   locale,
 }: {
   categories: CategoryItem[];
   locale: string;
-}) {
+}): React.ReactElement | null {
   if (categories.length === 0) return null;
 
   return (
-    <div className="mt-3">
-      <div className="flex flex-wrap gap-2">
-        {categories.map((category) => (
-          <Link
-            key={category.key}
-            href={`/professionals?category=${category.key}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-full text-sm text-neutral-700 hover:text-neutral-900 transition-colors"
+    <div className="mt-3 flex flex-wrap gap-2">
+      {categories.map((category) => (
+        <Link
+          key={category.key}
+          href={`/professionals?category=${category.key}`}
+        >
+          <Badge
+            variant="secondary"
+            size="sm"
+            className="gap-1.5 cursor-pointer hover:opacity-80"
           >
             <Grid3X3 className="w-3.5 h-3.5" />
-            <span>
-              {locale === 'ka' && category.nameKa
-                ? category.nameKa
-                : category.name}
-            </span>
-            {category.subcategoryCount !== undefined && category.subcategoryCount > 0 && (
-              <span className="text-xs text-neutral-400">
-                ({category.subcategoryCount})
-              </span>
-            )}
-          </Link>
-        ))}
-      </div>
+            {locale === "ka" && category.nameKa
+              ? category.nameKa
+              : category.name}
+            {category.subcategoryCount !== undefined &&
+              category.subcategoryCount > 0 && (
+                <span className="opacity-50">
+                  ({category.subcategoryCount})
+                </span>
+              )}
+          </Badge>
+        </Link>
+      ))}
     </div>
   );
 }
 
-// Review List Renderer
 function ReviewListRenderer({
   reviews,
-  locale,
 }: {
   reviews: ReviewItem[];
   locale: string;
-}) {
+}): React.ReactElement | null {
   if (reviews.length === 0) return null;
 
   return (
@@ -173,9 +174,12 @@ function ReviewListRenderer({
       {reviews.map((review) => (
         <div
           key={review.id}
-          className="p-3 bg-neutral-50 rounded-xl border border-neutral-100"
+          className="p-3 rounded-xl"
+          style={{
+            backgroundColor: "var(--hm-bg-tertiary)",
+            border: "1px solid var(--hm-border-subtle)",
+          }}
         >
-          {/* Rating and client */}
           <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => (
@@ -183,30 +187,37 @@ function ReviewListRenderer({
                   key={i}
                   className={`w-3.5 h-3.5 ${
                     i < review.rating
-                      ? 'text-amber-400 fill-amber-400'
-                      : 'text-neutral-200'
+                      ? "text-amber-400 fill-amber-400"
+                      : "text-neutral-200"
                   }`}
                 />
               ))}
             </div>
-            <span className="text-xs text-neutral-500">
+            <span
+              className="text-xs"
+              style={{ color: "var(--hm-fg-muted)" }}
+            >
               {review.clientName}
               {review.isVerified && (
-                <span className="ml-1 text-blue-500">✓</span>
+                <CheckCircle2 className="w-3 h-3 text-[var(--hm-info-500)] inline ml-1" />
               )}
             </span>
           </div>
 
-          {/* Review text */}
           {review.text && (
-            <p className="text-sm text-neutral-600 line-clamp-3">
+            <p
+              className="text-sm line-clamp-3"
+              style={{ color: "var(--hm-fg-secondary)" }}
+            >
               {review.text}
             </p>
           )}
 
-          {/* Project title */}
           {review.projectTitle && (
-            <p className="mt-1.5 text-xs text-neutral-400">
+            <p
+              className="mt-1.5 text-xs"
+              style={{ color: "var(--hm-fg-muted)" }}
+            >
               {review.projectTitle}
             </p>
           )}
@@ -216,140 +227,155 @@ function ReviewListRenderer({
   );
 }
 
-// Price Info Renderer
 function PriceInfoRenderer({
   priceInfo,
   locale,
 }: {
   priceInfo: PriceInfo;
   locale: string;
-}) {
+}): React.ReactElement {
+  const { t } = useLanguage();
   const categoryName =
-    locale === 'ka' && priceInfo.categoryKa
+    locale === "ka" && priceInfo.categoryKa
       ? priceInfo.categoryKa
       : priceInfo.category;
 
   return (
-    <div className="mt-3 p-4 bg-gradient-to-br from-neutral-50 to-white rounded-xl border border-neutral-200">
-      {/* Header */}
+    <div
+      className="mt-3 p-4 rounded-xl"
+      style={{
+        backgroundColor: "var(--hm-bg-tertiary)",
+        border: "1px solid var(--hm-border-subtle)",
+      }}
+    >
       <div className="flex items-center gap-2 mb-3">
-        <Tag className="w-4 h-4 text-[#C4735B]" />
-        <span className="font-medium text-neutral-900">
-          {locale === 'ka' ? 'ფასები:' : 'Pricing:'} {categoryName}
+        <Tag className="w-4 h-4 text-[var(--hm-brand-500)]" />
+        <span
+          className="font-medium"
+          style={{ color: "var(--hm-fg-primary)" }}
+        >
+          {t("ai.pricing")}: {categoryName}
         </span>
       </div>
 
-      {/* Average price */}
       {priceInfo.averagePrice && (
-        <div className="mb-3 p-2.5 bg-[#C4735B]/10 rounded-lg">
-          <p className="text-xs text-neutral-500 mb-0.5">
-            {locale === 'ka' ? 'საშუალო ფასი' : 'Average Price'}
+        <div className="mb-3 p-2.5 bg-[var(--hm-brand-500)]/10 rounded-lg">
+          <p
+            className="text-xs mb-0.5"
+            style={{ color: "var(--hm-fg-muted)" }}
+          >
+            {t("ai.averagePrice")}
           </p>
-          <p className="text-lg font-semibold text-[#C4735B]">
-            ₾{priceInfo.averagePrice.min.toLocaleString()} -{' '}
-            ₾{priceInfo.averagePrice.max.toLocaleString()}
+          <p className="text-lg font-semibold text-[var(--hm-brand-500)]">
+            ₾{priceInfo.averagePrice.min.toLocaleString()} – ₾
+            {priceInfo.averagePrice.max.toLocaleString()}
           </p>
         </div>
       )}
 
-      {/* Price ranges */}
       {priceInfo.priceRanges.length > 0 && (
         <div className="space-y-2">
           {priceInfo.priceRanges.map((range, idx) => (
             <div
               key={idx}
-              className="flex items-center justify-between py-1.5 border-b border-neutral-100 last:border-0"
+              className="flex items-center justify-between py-1.5"
+              style={{
+                borderBottom:
+                  idx < priceInfo.priceRanges.length - 1
+                    ? "1px solid var(--hm-border-subtle)"
+                    : undefined,
+              }}
             >
-              <span className="text-sm text-neutral-600">
-                {locale === 'ka' && range.labelKa ? range.labelKa : range.label}
+              <span
+                className="text-sm"
+                style={{ color: "var(--hm-fg-secondary)" }}
+              >
+                {locale === "ka" && range.labelKa ? range.labelKa : range.label}
               </span>
-              <span className="text-sm font-medium text-neutral-900">
-                ₾{range.min.toLocaleString()} - ₾{range.max.toLocaleString()}
+              <span
+                className="text-sm font-medium"
+                style={{ color: "var(--hm-fg-primary)" }}
+              >
+                ₾{range.min.toLocaleString()} – ₾{range.max.toLocaleString()}
               </span>
             </div>
           ))}
         </div>
       )}
 
-      {/* Note */}
       {priceInfo.note && (
-        <p className="mt-3 text-xs text-neutral-500">
-          {locale === 'ka' && priceInfo.noteKa ? priceInfo.noteKa : priceInfo.note}
+        <p
+          className="mt-3 text-xs"
+          style={{ color: "var(--hm-fg-muted)" }}
+        >
+          {locale === "ka" && priceInfo.noteKa
+            ? priceInfo.noteKa
+            : priceInfo.note}
         </p>
       )}
 
-      {/* Pro count */}
-      <p className="mt-2 text-xs text-neutral-400">
-        {locale === 'ka'
-          ? `${priceInfo.professionalCount} პროფესიონალი`
-          : `Based on ${priceInfo.professionalCount} professionals`}
+      <p className="mt-2 text-xs" style={{ color: "var(--hm-fg-muted)" }}>
+        {t("ai.basedOnProfessionals", { count: priceInfo.professionalCount })}
       </p>
     </div>
   );
 }
 
-// Feature Explanation Renderer
 function FeatureExplanationRenderer({
   feature,
   locale,
 }: {
   feature: FeatureExplanation;
   locale: string;
-}) {
-  const title =
-    locale === 'ka'
-      ? feature.titleKa
-      : locale === 'ru'
-        ? feature.titleRu
-        : feature.title;
+}): React.ReactElement {
+  const title = pickLocale(feature, "title", locale);
+  const description = pickLocale(feature, "description", locale);
+  const actionLabel = pickLocale(feature, "actionLabel", locale);
 
-  const description =
-    locale === 'ka'
-      ? feature.descriptionKa
-      : locale === 'ru'
-        ? feature.descriptionRu
-        : feature.description;
-
-  const actionLabel =
-    locale === 'ka'
-      ? feature.actionLabelKa
-      : locale === 'ru'
-        ? feature.actionLabelRu
-        : feature.actionLabel;
-
-  const getStepTitle = (step: FeatureStep) =>
-    locale === 'ka'
-      ? step.titleKa
-      : locale === 'ru'
-        ? step.titleRu
-        : step.title;
-
-  const getStepDescription = (step: FeatureStep) =>
-    locale === 'ka'
-      ? step.descriptionKa
-      : locale === 'ru'
-        ? step.descriptionRu
-        : step.description;
+  const getStepTitle = (step: FeatureStep): string =>
+    pickLocale(step, "title", locale);
+  const getStepDescription = (step: FeatureStep): string =>
+    pickLocale(step, "description", locale);
 
   return (
-    <div className="mt-3 p-4 bg-gradient-to-br from-blue-50 to-white rounded-xl border border-blue-100">
-      {/* Header */}
-      <h4 className="font-semibold text-neutral-900 mb-1">{title}</h4>
-      <p className="text-sm text-neutral-600 mb-3">{description}</p>
+    <div
+      className="mt-3 p-4 rounded-xl"
+      style={{
+        backgroundColor: "var(--hm-bg-tertiary)",
+        border: "1px solid var(--hm-border-subtle)",
+      }}
+    >
+      <h4
+        className="font-semibold mb-1"
+        style={{ color: "var(--hm-fg-primary)" }}
+      >
+        {title}
+      </h4>
+      <p
+        className="text-sm mb-3"
+        style={{ color: "var(--hm-fg-secondary)" }}
+      >
+        {description}
+      </p>
 
-      {/* Steps */}
       {feature.steps && feature.steps.length > 0 && (
         <div className="space-y-2.5">
           {feature.steps.map((step) => (
             <div key={step.step} className="flex items-start gap-2.5">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#C4735B] text-white flex items-center justify-center text-xs font-medium">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--hm-brand-500)] text-white flex items-center justify-center text-xs font-medium">
                 {step.step}
               </div>
               <div className="flex-1 pt-0.5">
-                <p className="text-sm font-medium text-neutral-800">
+                <p
+                  className="text-sm font-medium"
+                  style={{ color: "var(--hm-fg-primary)" }}
+                >
                   {getStepTitle(step)}
                 </p>
-                <p className="text-xs text-neutral-500 mt-0.5">
+                <p
+                  className="text-xs mt-0.5"
+                  style={{ color: "var(--hm-fg-muted)" }}
+                >
                   {getStepDescription(step)}
                 </p>
               </div>
@@ -358,15 +384,13 @@ function FeatureExplanationRenderer({
         </div>
       )}
 
-      {/* Action button */}
       {feature.actionUrl && actionLabel && (
-        <Link
-          href={feature.actionUrl}
-          className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[#C4735B] text-white text-sm font-medium rounded-lg hover:bg-[#A85D47] transition-colors"
-        >
-          <CheckCircle2 className="w-4 h-4" />
-          {actionLabel}
-          <ArrowRight className="w-3.5 h-3.5" />
+        <Link href={feature.actionUrl} className="inline-block mt-4">
+          <Button size="sm">
+            <CheckCircle2 className="w-4 h-4 mr-1.5" />
+            {actionLabel}
+            <ArrowRight className="w-3.5 h-3.5 ml-1" />
+          </Button>
         </Link>
       )}
     </div>
@@ -379,45 +403,39 @@ function FeatureListRenderer({
 }: {
   features: FeatureExplanation[];
   locale: string;
-}) {
+}): React.ReactElement | null {
+  const { t } = useLanguage();
   if (!features?.length) return null;
-
-  const getTitle = (f: FeatureExplanation) =>
-    locale === 'ka' ? f.titleKa : locale === 'ru' ? f.titleRu : f.title;
-
-  const getDescription = (f: FeatureExplanation) =>
-    locale === 'ka'
-      ? f.descriptionKa
-      : locale === 'ru'
-        ? f.descriptionRu
-        : f.description;
-
-  const getActionLabel = (f: FeatureExplanation) =>
-    locale === 'ka'
-      ? f.actionLabelKa
-      : locale === 'ru'
-        ? f.actionLabelRu
-        : f.actionLabel;
 
   return (
     <div className="mt-3 space-y-2">
       {features.slice(0, 5).map((f) => (
         <div
           key={f.feature}
-          className="p-3 bg-white rounded-xl border border-neutral-200"
+          className="p-3 rounded-xl"
+          style={{
+            backgroundColor: "var(--hm-bg-elevated)",
+            border: "1px solid var(--hm-border-subtle)",
+          }}
         >
-          <p className="text-sm font-semibold text-neutral-900">
-            {getTitle(f) || f.feature}
+          <p
+            className="text-sm font-semibold"
+            style={{ color: "var(--hm-fg-primary)" }}
+          >
+            {pickLocale(f, "title", locale) || f.feature}
           </p>
-          <p className="text-xs text-neutral-600 mt-1">
-            {getDescription(f)}
+          <p
+            className="text-xs mt-1"
+            style={{ color: "var(--hm-fg-secondary)" }}
+          >
+            {pickLocale(f, "description", locale)}
           </p>
           {f.actionUrl && (
             <Link
               href={f.actionUrl}
-              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#C4735B] hover:underline"
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[var(--hm-brand-500)] hover:underline"
             >
-              {getActionLabel(f) || (locale === 'ka' ? 'გახსნა' : locale === 'ru' ? 'Открыть' : 'Open')}
+              {pickLocale(f, "actionLabel", locale) || t("common.open")}
               <ArrowRight className="w-3 h-3" />
             </Link>
           )}
@@ -433,36 +451,57 @@ function FaqListRenderer({
 }: {
   faqs: FaqItem[];
   locale: string;
-}) {
+}): React.ReactElement | null {
+  const { t } = useLanguage();
   if (!faqs?.length) return null;
 
-  const getQ = (f: FaqItem) =>
-    locale === 'ka' ? f.questionKa : locale === 'ru' ? f.questionRu : f.question;
-
-  const getA = (f: FaqItem) =>
-    locale === 'ka' ? f.answerKa : locale === 'ru' ? f.answerRu : f.answer;
-
   return (
-    <div className="mt-3 p-4 bg-gradient-to-br from-neutral-50 to-white rounded-xl border border-neutral-200">
+    <div
+      className="mt-3 p-4 rounded-xl"
+      style={{
+        backgroundColor: "var(--hm-bg-tertiary)",
+        border: "1px solid var(--hm-border-subtle)",
+      }}
+    >
       <div className="flex items-center gap-2 mb-3">
-        <CheckCircle2 className="w-4 h-4 text-[#C4735B]" />
-        <span className="font-medium text-neutral-900">
-          {locale === 'ka' ? 'ხშირი კითხვები' : locale === 'ru' ? 'Частые вопросы' : 'FAQs'}
+        <CheckCircle2 className="w-4 h-4 text-[var(--hm-brand-500)]" />
+        <span
+          className="font-medium"
+          style={{ color: "var(--hm-fg-primary)" }}
+        >
+          {t("ai.faqs")}
         </span>
       </div>
 
       <div className="space-y-2">
         {faqs.slice(0, 4).map((f, idx) => (
           <details
-            key={`${idx}-${f.relatedFeature || ''}`}
-            className="group rounded-lg border border-neutral-200 bg-white px-3 py-2"
+            key={`${idx}-${f.relatedFeature || ""}`}
+            className="group rounded-lg px-3 py-2"
+            style={{
+              backgroundColor: "var(--hm-bg-elevated)",
+              border: "1px solid var(--hm-border-subtle)",
+            }}
           >
-            <summary className="cursor-pointer list-none text-sm font-medium text-neutral-800 flex items-center justify-between gap-2">
-              <span className="min-w-0">{getQ(f)}</span>
-              <span className="text-neutral-400 group-open:rotate-90 transition-transform">›</span>
+            <summary
+              className="cursor-pointer list-none text-sm font-medium flex items-center justify-between gap-2"
+              style={{ color: "var(--hm-fg-primary)" }}
+            >
+              <span className="min-w-0">
+                {pickLocale(f, "question", locale)}
+              </span>
+              <span
+                className="group-open:rotate-90 transition-transform"
+                style={{ color: "var(--hm-fg-muted)" }}
+              >
+                ›
+              </span>
             </summary>
-            <p className="mt-2 text-xs text-neutral-600 leading-relaxed whitespace-pre-wrap">
-              {getA(f)}
+            <p
+              className="mt-2 text-xs leading-relaxed whitespace-pre-wrap"
+              style={{ color: "var(--hm-fg-secondary)" }}
+            >
+              {pickLocale(f, "answer", locale)}
             </p>
           </details>
         ))}

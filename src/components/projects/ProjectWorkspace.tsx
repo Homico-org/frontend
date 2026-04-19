@@ -312,7 +312,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
     <>
       {/* Toolbar */}
       {!isClient && (
-        <div className={embedded ? "pb-3 mb-3 border-b border-[var(--color-border)]" : "px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-elevated)]"}>
+        <div className={embedded ? "pb-3 mb-3 border-b border-[var(--hm-border)]" : "px-4 py-3 border-b border-[var(--hm-border)] bg-[var(--hm-bg-elevated)]"}>
           <Button
             size="sm"
             onClick={() => setShowSectionModal(true)}
@@ -330,7 +330,7 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
             <LoadingSpinner size="lg" color={ACCENT} />
           </div>
         ) : sections.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-[var(--color-text-tertiary)]">
+          <div className="flex flex-col items-center justify-center py-12 text-[var(--hm-fg-muted)]">
             <FolderPlus className="w-12 h-12 mb-3 opacity-40" />
             <p className="text-sm font-medium">{t('projects.noMaterialsYet')}</p>
             <p className="text-xs mt-1">
@@ -438,16 +438,16 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
 
   // Accordion mode (default)
   return (
-    <div className="border-t border-[var(--color-border)]">
+    <div className="border-t border-[var(--hm-border)]">
       {/* Header Toggle */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-[var(--color-bg-tertiary)]/50 transition-colors"
+        className="w-full flex items-center justify-between p-4 hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-bg-tertiary)]">
-            <FolderPlus className="w-4 h-4 text-[var(--color-text-secondary)]" />
-            <span className="text-sm font-semibold text-[var(--color-text-primary)]">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--hm-bg-tertiary)]">
+            <FolderPlus className="w-4 h-4 text-[var(--hm-fg-secondary)]" />
+            <span className="text-sm font-semibold text-[var(--hm-fg-primary)]">
               {t('projects.projectMaterials')}
             </span>
             {totalItems > 0 && (
@@ -457,20 +457,20 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
             )}
           </div>
           {sections.length > 0 && (
-            <span className="text-xs text-[var(--color-text-tertiary)] hidden sm:inline">
+            <span className="text-xs text-[var(--hm-fg-muted)] hidden sm:inline">
               {sections.length} {t('projects.sections')}
             </span>
           )}
         </div>
         <ChevronRight
-          className={`w-5 h-5 text-[var(--color-text-tertiary)] transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}
+          className={`w-5 h-5 text-[var(--hm-fg-muted)] transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}
         />
       </button>
 
       {/* Expanded Content */}
       {isExpanded && (
         <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
-          <div className="bg-[var(--color-bg-tertiary)]/30 rounded-2xl border border-[var(--color-border)] overflow-hidden">
+          <div className="bg-[var(--hm-bg-tertiary)]/30 rounded-2xl border border-[var(--hm-border)] overflow-hidden">
             {renderContent()}
           </div>
         </div>
@@ -535,31 +535,31 @@ function SectionCard({
   };
 
   return (
-    <div className="bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border)] overflow-hidden">
+    <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
       {/* Section Header */}
       <div
-        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-[var(--color-bg-tertiary)]/50 transition-colors"
+        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
         onClick={onToggle}
       >
         <ChevronDown
-          className={`w-4 h-4 text-[var(--color-text-tertiary)] transition-transform ${section.isExpanded ? '' : '-rotate-90'}`}
+          className={`w-4 h-4 text-[var(--hm-fg-muted)] transition-transform ${section.isExpanded ? '' : '-rotate-90'}`}
         />
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
+          <h4 className="text-sm font-semibold text-[var(--hm-fg-primary)] truncate">
             {section.title}
           </h4>
           {section.description && (
-            <p className="text-xs text-[var(--color-text-tertiary)] truncate">{section.description}</p>
+            <p className="text-xs text-[var(--hm-fg-muted)] truncate">{section.description}</p>
           )}
         </div>
         <div className="flex items-center gap-1.5">
           {section.attachments && section.attachments.length > 0 && (
-            <span className="text-xs text-[var(--color-text-tertiary)] px-2 py-0.5 rounded-full bg-[var(--color-bg-tertiary)] flex items-center gap-1">
+            <span className="text-xs text-[var(--hm-fg-muted)] px-2 py-0.5 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center gap-1">
               <ImageIcon className="w-3 h-3" />
               {section.attachments.length}
             </span>
           )}
-          <span className="text-xs text-[var(--color-text-tertiary)] px-2 py-0.5 rounded-full bg-[var(--color-bg-tertiary)]">
+          <span className="text-xs text-[var(--hm-fg-muted)] px-2 py-0.5 rounded-full bg-[var(--hm-bg-tertiary)]">
             {section.items.length} {t('common.items')}
           </span>
         </div>
@@ -578,7 +578,7 @@ function SectionCard({
               <>
                 <div className="fixed inset-0 z-[9998]" onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} />
                 <div
-                  className="fixed z-[9999] w-36 bg-[var(--color-bg-elevated)] rounded-lg border border-[var(--color-border)] shadow-xl py-1"
+                  className="fixed z-[9999] w-36 bg-[var(--hm-bg-elevated)] rounded-lg border border-[var(--hm-border)] shadow-xl py-1"
                   style={{ top: menuPosition.top, left: menuPosition.left }}
                 >
                   <Button
@@ -594,7 +594,7 @@ function SectionCard({
                     variant="ghost"
                     size="sm"
                     onClick={(e) => { e.stopPropagation(); setShowMenu(false); onDelete(); }}
-                    className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
+                    className="w-full justify-start text-[var(--hm-error-500)] hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)]"
                     leftIcon={<Trash2 className="w-3.5 h-3.5" />}
                   >
                     {t('common.delete')}
@@ -608,13 +608,13 @@ function SectionCard({
 
       {/* Section Content */}
       {section.isExpanded && (
-        <div className="border-t border-[var(--color-border)]">
+        <div className="border-t border-[var(--hm-border)]">
           {/* Section Attachments Gallery */}
           {section.attachments && section.attachments.length > 0 && (
-            <div className="p-4 bg-[var(--color-bg-tertiary)]/30 border-b border-[var(--color-border)]">
+            <div className="p-4 bg-[var(--hm-bg-tertiary)]/30 border-b border-[var(--hm-border)]">
               <div className="flex items-center gap-2 mb-3">
-                <ImageIcon className="w-4 h-4 text-[var(--color-text-tertiary)]" />
-                <span className="text-xs font-medium text-[var(--color-text-secondary)]">
+                <ImageIcon className="w-4 h-4 text-[var(--hm-fg-muted)]" />
+                <span className="text-xs font-medium text-[var(--hm-fg-secondary)]">
                   {t('projects.attachments')} ({section.attachments.length})
                 </span>
               </div>
@@ -627,7 +627,7 @@ function SectionCard({
                     <button
                       key={getId(att)}
                       onClick={() => onOpenImageLightbox(imageAtts, idx)}
-                      className="aspect-square rounded-lg overflow-hidden bg-[var(--color-bg-primary)] border border-[var(--color-border)] hover:border-[#E07B4F] transition-colors group cursor-pointer"
+                      className="aspect-square rounded-lg overflow-hidden bg-[var(--hm-bg-page)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-500)] transition-colors group cursor-pointer"
                     >
                       <img
                         src={storage.getFileUrl(att.fileUrl)}
@@ -648,11 +648,11 @@ function SectionCard({
                       href={storage.getFileUrl(att.fileUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-bg-primary)] border border-[var(--color-border)] hover:border-[#E07B4F] transition-colors group"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--hm-bg-page)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-500)] transition-colors group"
                     >
-                      <FileText className="w-4 h-4 text-[var(--color-text-tertiary)] group-hover:text-[#E07B4F]" />
-                      <span className="text-xs text-[var(--color-text-primary)] truncate max-w-[120px]">{att.fileName}</span>
-                      <ExternalLink className="w-3 h-3 text-[var(--color-text-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <FileText className="w-4 h-4 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)]" />
+                      <span className="text-xs text-[var(--hm-fg-primary)] truncate max-w-[120px]">{att.fileName}</span>
+                      <ExternalLink className="w-3 h-3 text-[var(--hm-fg-muted)] opacity-0 group-hover:opacity-100 transition-opacity" />
                     </a>
                   ))}
                 </div>
@@ -662,12 +662,12 @@ function SectionCard({
 
           {section.items.length === 0 && (!section.attachments || section.attachments.length === 0) ? (
             <div className="px-4 py-8 text-center">
-              <p className="text-xs text-[var(--color-text-tertiary)]">
+              <p className="text-xs text-[var(--hm-fg-muted)]">
                 {t('projects.noItemsInThisSection')}
               </p>
             </div>
           ) : section.items.length > 0 ? (
-            <div className="divide-y divide-[var(--color-border)]">
+            <div className="divide-y divide-[var(--hm-border)]">
               {section.items.map((item) => (
                 <ItemRow
                   key={getId(item)}
@@ -689,7 +689,7 @@ function SectionCard({
 
           {/* Add Item Button */}
           {!isClient && (
-            <div className="px-4 py-3 bg-[var(--color-bg-tertiary)]/30">
+            <div className="px-4 py-3 bg-[var(--hm-bg-tertiary)]/30">
               <Button
                 variant="ghost"
                 size="sm"
@@ -748,10 +748,10 @@ function ItemRow({
   const isImage = item.type === 'image' || (item.fileUrl && item.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i));
 
   return (
-    <div className="px-4 py-3 hover:bg-[var(--color-bg-tertiary)]/30 transition-colors">
+    <div className="px-4 py-3 hover:bg-[var(--hm-bg-tertiary)]/30 transition-colors">
       <div className="flex items-start gap-3">
         {/* Thumbnail or Icon */}
-        <div className="w-12 h-12 rounded-lg bg-[var(--color-bg-tertiary)] flex items-center justify-center flex-shrink-0 overflow-hidden border border-[var(--color-border)]">
+        <div className="w-12 h-12 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0 overflow-hidden border border-[var(--hm-border)]">
           {isImage && item.fileUrl ? (
             <img
               src={storage.getFileUrl(item.fileUrl)}
@@ -759,7 +759,7 @@ function ItemRow({
               className="w-full h-full object-cover"
             />
           ) : (
-            <span className="text-[var(--color-text-tertiary)]">{getItemIcon()}</span>
+            <span className="text-[var(--hm-fg-muted)]">{getItemIcon()}</span>
           )}
         </div>
 
@@ -767,11 +767,11 @@ function ItemRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h5 className="text-sm font-medium text-[var(--color-text-primary)] truncate">
+              <h5 className="text-sm font-medium text-[var(--hm-fg-primary)] truncate">
                 {item.title}
               </h5>
               {item.description && (
-                <p className="text-xs text-[var(--color-text-tertiary)] line-clamp-1 mt-0.5">
+                <p className="text-xs text-[var(--hm-fg-muted)] line-clamp-1 mt-0.5">
                   {item.description}
                 </p>
               )}
@@ -782,7 +782,7 @@ function ItemRow({
                 variant="ghost"
                 size="icon-sm"
                 onClick={onDelete}
-                className="hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
+                className="hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)]"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </Button>
@@ -793,17 +793,17 @@ function ItemRow({
           {item.type === 'product' && (
             <div className="flex flex-wrap items-center gap-2 mt-2">
               {item.price && (
-                <span className="text-xs font-semibold text-[#E07B4F]">
+                <span className="text-xs font-semibold text-[var(--hm-brand-500)]">
                   {item.currency || '₾'}{item.price}
                 </span>
               )}
               {item.storeName && (
-                <span className="text-xs text-[var(--color-text-tertiary)]">
+                <span className="text-xs text-[var(--hm-fg-muted)]">
                   @ {item.storeName}
                 </span>
               )}
               {item.storeAddress && (
-                <span className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-1">
+                <span className="text-xs text-[var(--hm-fg-muted)] flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
                   {item.storeAddress}
                 </span>
@@ -817,7 +817,7 @@ function ItemRow({
               href={item.linkUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-[#E07B4F] hover:underline mt-1"
+              className="inline-flex items-center gap-1 text-xs text-[var(--hm-brand-500)] hover:underline mt-1"
             >
               <ExternalLink className="w-3 h-3" />
               {t('projects.openLink')}
@@ -833,8 +833,8 @@ function ItemRow({
                   onClick={() => onReaction('like')}
                   className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
                     userReaction?.type === 'like'
-                      ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600'
-                      : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]'
+                      ? 'bg-[var(--hm-info-100)] text-[var(--hm-info-500)]'
+                      : 'hover:bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                   }`}
                 >
                   <ThumbsUp className="w-3 h-3" />
@@ -844,8 +844,8 @@ function ItemRow({
                   onClick={() => onReaction('love')}
                   className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
                     userReaction?.type === 'love'
-                      ? 'bg-red-100 dark:bg-red-500/20 text-red-500'
-                      : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]'
+                      ? 'bg-[var(--hm-error-100)] text-[var(--hm-error-500)]'
+                      : 'hover:bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                   }`}
                 >
                   <Heart className="w-3 h-3" />
@@ -855,8 +855,8 @@ function ItemRow({
                   onClick={() => onReaction('approved')}
                   className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
                     userReaction?.type === 'approved'
-                      ? 'bg-green-100 dark:bg-green-500/20 text-green-600'
-                      : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]'
+                      ? 'bg-green-100 text-green-600'
+                      : 'hover:bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                   }`}
                 >
                   ✓
@@ -867,13 +867,13 @@ function ItemRow({
               /* Pro can see reaction counts but not interact */
               <div className="flex items-center gap-1 opacity-60">
                 {(item.reactions?.filter(r => r.type === 'like').length || 0) > 0 && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-blue-600">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-[var(--hm-info-500)]">
                     <ThumbsUp className="w-3 h-3" />
                     {item.reactions?.filter(r => r.type === 'like').length}
                   </span>
                 )}
                 {(item.reactions?.filter(r => r.type === 'love').length || 0) > 0 && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-red-500">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-[var(--hm-error-500)]">
                     <Heart className="w-3 h-3" />
                     {item.reactions?.filter(r => r.type === 'love').length}
                   </span>
@@ -891,8 +891,8 @@ function ItemRow({
               onClick={onToggleComment}
               className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
                 isCommentActive
-                  ? 'bg-[#E07B4F]/10 text-[#E07B4F]'
-                  : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]'
+                  ? 'bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]'
+                  : 'hover:bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
               }`}
             >
               <MessageCircle className="w-3 h-3" />
@@ -902,7 +902,7 @@ function ItemRow({
 
           {/* Comments Section */}
           {isCommentActive && (
-            <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
+            <div className="mt-3 pt-3 border-t border-[var(--hm-border)]">
               {/* Existing Comments */}
               {item.comments?.length > 0 && (
                 <div className="space-y-2 mb-3">
@@ -916,14 +916,14 @@ function ItemRow({
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2">
-                          <span className="text-xs font-medium text-[var(--color-text-primary)]">
+                          <span className="text-xs font-medium text-[var(--hm-fg-primary)]">
                             {comment.userName}
                           </span>
-                          <span className="text-[10px] text-[var(--color-text-tertiary)]">
+                          <span className="text-[10px] text-[var(--hm-fg-muted)]">
                             {new Date(comment.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                        <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                        <p className="text-xs text-[var(--hm-fg-secondary)] mt-0.5">
                           {comment.content}
                         </p>
                       </div>
@@ -1058,9 +1058,9 @@ function SectionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[var(--color-bg-elevated)] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 shadow-xl">
+      <div className="relative bg-[var(--hm-bg-elevated)] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
+          <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
             {section
               ? (t('projects.editSection'))
               : (t('projects.newSection'))
@@ -1073,7 +1073,7 @@ function SectionModal({
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
               {t('projects.title')} *
             </label>
             <Input
@@ -1085,7 +1085,7 @@ function SectionModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
               {t('common.description')}
             </label>
             <Textarea
@@ -1098,13 +1098,13 @@ function SectionModal({
 
           {/* Attachments Section */}
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
               {locale === 'ka' ? 'დანართები' : 'Attachments'}
             </label>
 
             {/* Upload Error */}
             {uploadError && (
-              <div className="mb-2 p-2 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs">
+              <div className="mb-2 p-2 rounded-lg bg-[var(--hm-error-50)] text-[var(--hm-error-500)] text-xs">
                 {uploadError}
               </div>
             )}
@@ -1123,7 +1123,7 @@ function SectionModal({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-[var(--color-border)] text-[var(--color-text-tertiary)] hover:border-[#E07B4F] hover:text-[#E07B4F] transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-[var(--hm-border)] text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] transition-colors disabled:opacity-50"
             >
               {isUploading ? (
                 <>
@@ -1144,10 +1144,10 @@ function SectionModal({
                 {attachments.map((att, index) => (
                   <div
                     key={getId(att)}
-                    className="flex items-center gap-3 p-2.5 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]"
+                    className="flex items-center gap-3 p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)]"
                   >
                     {att.fileType === 'image' ? (
-                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-[var(--color-bg-primary)] flex-shrink-0">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-[var(--hm-bg-page)] flex-shrink-0">
                         <img
                           src={storage.getFileUrl(att.fileUrl)}
                           alt={att.fileName}
@@ -1155,20 +1155,20 @@ function SectionModal({
                         />
                       </div>
                     ) : (
-                      <div className="w-10 h-10 rounded-lg bg-[var(--color-bg-primary)] flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-5 h-5 text-[var(--color-text-tertiary)]" />
+                      <div className="w-10 h-10 rounded-lg bg-[var(--hm-bg-page)] flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-[var(--hm-fg-muted)]" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-[var(--color-text-primary)] truncate">{att.fileName}</p>
+                      <p className="text-sm text-[var(--hm-fg-primary)] truncate">{att.fileName}</p>
                       {att.fileSize && (
-                        <p className="text-xs text-[var(--color-text-tertiary)]">{formatFileSize(att.fileSize)}</p>
+                        <p className="text-xs text-[var(--hm-fg-muted)]">{formatFileSize(att.fileSize)}</p>
                       )}
                     </div>
                     <button
                       type="button"
                       onClick={() => removeAttachment(index)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--color-text-tertiary)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0"
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)] transition-colors flex-shrink-0"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -1298,9 +1298,9 @@ function ItemModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[var(--color-bg-elevated)] rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 shadow-xl">
+      <div className="relative bg-[var(--hm-bg-elevated)] rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
+          <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
             {t('projects.addItem')}
           </h3>
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -1311,7 +1311,7 @@ function ItemModal({
         <div className="space-y-4">
           {/* Type Selector */}
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
               {t('common.type')}
             </label>
             <div className="grid grid-cols-4 gap-2">
@@ -1323,8 +1323,8 @@ function ItemModal({
                     onClick={() => setType(opt.value as typeof type)}
                     className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all ${
                       type === opt.value
-                        ? 'border-[#E07B4F] bg-[#E07B4F]/10 text-[#E07B4F]'
-                        : 'border-[var(--color-border)] text-[var(--color-text-tertiary)] hover:border-[var(--color-text-tertiary)]'
+                        ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]'
+                        : 'border-[var(--hm-border)] text-[var(--hm-fg-muted)] hover:border-[var(--hm-fg-muted)]'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -1337,7 +1337,7 @@ function ItemModal({
 
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
               {locale === 'ka' ? 'სათაური' : 'Title'} *
             </label>
             <Input
@@ -1349,7 +1349,7 @@ function ItemModal({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
               {locale === 'ka' ? 'აღწერა' : 'Description'}
             </label>
             <Textarea
@@ -1362,11 +1362,11 @@ function ItemModal({
           {/* File Upload for image/file/product */}
           {(type === 'image' || type === 'file' || type === 'product') && (
             <div>
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                 {type === 'image' ? (locale === 'ka' ? 'სურათი' : 'Image') : (locale === 'ka' ? 'ფაილი' : 'File')}
               </label>
               {uploadError && (
-                <div className="mb-2 p-2 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs">
+                <div className="mb-2 p-2 rounded-lg bg-[var(--hm-error-50)] text-[var(--hm-error-500)] text-xs">
                   {uploadError}
                 </div>
               )}
@@ -1378,17 +1378,17 @@ function ItemModal({
                 className="hidden"
               />
               {fileUrl ? (
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)]">
                   {type === 'image' ? (
                     <Image src={storage.getFileUrl(fileUrl)} alt="Attachment" width={64} height={64} className="rounded-lg object-cover" />
                   ) : (
-                    <FileText className="w-8 h-8 text-[var(--color-text-tertiary)]" />
+                    <FileText className="w-8 h-8 text-[var(--hm-fg-muted)]" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-[var(--color-text-primary)] truncate">{fileUrl.split("/").pop()}</p>
+                    <p className="text-sm text-[var(--hm-fg-primary)] truncate">{fileUrl.split("/").pop()}</p>
                     <button
                       onClick={() => setFileUrl('')}
-                      className="text-xs text-red-500 hover:underline"
+                      className="text-xs text-[var(--hm-error-500)] hover:underline"
                     >
                       {t('common.remove')}
                     </button>
@@ -1398,7 +1398,7 @@ function ItemModal({
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-8 rounded-xl border-2 border-dashed border-[var(--color-border)] text-[var(--color-text-tertiary)] hover:border-[#E07B4F] hover:text-[#E07B4F] transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-8 rounded-xl border-2 border-dashed border-[var(--hm-border)] text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] transition-colors"
                 >
                   {isUploading ? (
                     <LoadingSpinner size="md" color="currentColor" />
@@ -1416,7 +1416,7 @@ function ItemModal({
           {/* Link URL for link/product */}
           {(type === 'link' || type === 'product') && (
             <div>
-              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                 {t('projects.url')}
               </label>
               <Input
@@ -1433,7 +1433,7 @@ function ItemModal({
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+                  <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                     {t('common.price')}
                   </label>
                   <Input
@@ -1450,7 +1450,7 @@ function ItemModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+                  <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                     {t('projects.store')}
                   </label>
                   <Input
@@ -1461,7 +1461,7 @@ function ItemModal({
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
+                <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                   {t('common.address')}
                 </label>
                 <Input

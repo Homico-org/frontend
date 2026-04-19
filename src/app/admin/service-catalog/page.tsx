@@ -3,6 +3,7 @@
 import AuthGuard from '@/components/common/AuthGuard';
 import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
@@ -254,7 +255,7 @@ const editingToAddonPayload = (e: EditingAddon): CatalogAddon => ({
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '6px 10px',
-  borderRadius: 6,
+  borderRadius: 0,
   border: `1px solid ${THEME.border}`,
   background: THEME.surface,
   color: THEME.text,
@@ -347,7 +348,7 @@ function IconPickerModal({
         style={{
           background: THEME.surfaceLight,
           border: `1px solid ${THEME.border}`,
-          borderRadius: 12,
+          borderRadius: 0,
           width: 560,
           maxWidth: '95vw',
           maxHeight: '80vh',
@@ -430,7 +431,7 @@ function IconPickerModal({
                 alignItems: 'center',
                 gap: 3,
                 padding: '8px 4px',
-                borderRadius: 8,
+                borderRadius: 0,
                 border: name === current ? `2px solid ${THEME.primary}` : `1px solid transparent`,
                 background: name === current ? `${THEME.primary}20` : 'transparent',
                 cursor: 'pointer',
@@ -534,7 +535,7 @@ const PROJECT_COLORS: { hex: string; name: string; group: string }[] = [
   { hex: '#3B82F6', name: 'Blue', group: 'Category' },
   { hex: '#0EA5E9', name: 'Sky', group: 'Category' },
   { hex: '#EF4444', name: 'Red', group: 'Category' },
-  { hex: '#C4735B', name: 'Terracotta', group: 'Category' },
+  { hex: 'var(--hm-brand-500)', name: 'Terracotta', group: 'Category' },
   { hex: '#8B5CF6', name: 'Purple', group: 'Category' },
   { hex: '#F59E0B', name: 'Amber', group: 'Category' },
   { hex: '#6366F1', name: 'Indigo', group: 'Category' },
@@ -543,10 +544,10 @@ const PROJECT_COLORS: { hex: string; name: string; group: string }[] = [
   { hex: '#2563EB', name: 'Royal Blue', group: 'Category' },
   { hex: '#D97706', name: 'Dark Amber', group: 'Category' },
   // Brand
-  { hex: '#B5624A', name: 'Brand Hover', group: 'Brand' },
-  { hex: '#A85D4A', name: 'Brand Dark', group: 'Brand' },
+  { hex: '#D13C14', name: 'Brand Hover', group: 'Brand' },
+  { hex: '#A92B08', name: 'Brand Dark', group: 'Brand' },
   { hex: '#E8A593', name: 'Brand Light', group: 'Brand' },
-  { hex: '#D98B74', name: 'Brand Accent', group: 'Brand' },
+  { hex: '#F7B49B', name: 'Brand Accent', group: 'Brand' },
   // Status
   { hex: '#22C55E', name: 'Success', group: 'Status' },
   { hex: '#16A34A', name: 'Success Dark', group: 'Status' },
@@ -594,7 +595,7 @@ function ColorPickerModal({
         onClick={(e) => e.stopPropagation()}
         style={{
           background: THEME.surface,
-          borderRadius: 12,
+          borderRadius: 0,
           border: `1px solid ${THEME.border}`,
           width: 400,
           maxHeight: '80vh',
@@ -655,7 +656,7 @@ function ColorPickerModal({
                         alignItems: 'center',
                         gap: 4,
                         padding: '8px 4px',
-                        borderRadius: 8,
+                        borderRadius: 0,
                         border: selected ? `2px solid ${THEME.primary}` : `1px solid ${THEME.border}`,
                         background: selected ? `${THEME.primary}15` : 'transparent',
                         cursor: 'pointer',
@@ -672,7 +673,7 @@ function ColorPickerModal({
                         style={{
                           width: 32,
                           height: 32,
-                          borderRadius: 8,
+                          borderRadius: 0,
                           background: c.hex,
                           border: selected ? `2px solid white` : `1px solid rgba(255,255,255,0.15)`,
                           boxShadow: selected ? `0 0 0 2px ${THEME.primary}` : 'none',
@@ -726,14 +727,14 @@ function ColorPickerButton({
           style={{
             width: 18,
             height: 18,
-            borderRadius: 4,
-            background: value || '#C4735B',
+            borderRadius: 0,
+            background: value || 'var(--hm-brand-500)',
             border: '1px solid rgba(255,255,255,0.2)',
             flexShrink: 0,
           }}
         />
         <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: 12 }}>
-          {value || '#C4735B'}
+          {value || 'var(--hm-brand-500)'}
         </span>
         <ChevronDown size={14} color={THEME.textDim} />
       </button>
@@ -787,7 +788,7 @@ function LocalizedRichText({
               fontWeight: 600,
               border: `1px solid ${THEME.border}`,
               borderBottom: tab === l.key ? 'none' : `1px solid ${THEME.border}`,
-              borderRadius: tab === l.key ? '6px 6px 0 0' : '6px 6px 0 0',
+              borderRadius: 0,
               background: tab === l.key ? THEME.surfaceLight : 'transparent',
               color: tab === l.key ? THEME.primary : THEME.textDim,
               cursor: 'pointer',
@@ -807,7 +808,7 @@ function LocalizedRichText({
         className="admin-quill"
         style={{
           border: `1px solid ${THEME.border}`,
-          borderRadius: '0 6px 6px 6px',
+          borderRadius: 0,
           overflow: 'hidden',
         }}
       >
@@ -851,7 +852,7 @@ function SectionHeader({ title, count }: { title: string; count?: number }) {
           fontSize: 11,
           fontWeight: 600,
           padding: '1px 7px',
-          borderRadius: 10,
+          borderRadius: 0,
           background: `${THEME.primary}20`,
           color: THEME.primary,
         }}>
@@ -881,7 +882,7 @@ function ServiceRow({
       gap: 8,
       alignItems: 'center',
       padding: '8px 10px',
-      borderRadius: 6,
+      borderRadius: 0,
       background: THEME.surface,
       border: `1px solid ${THEME.border}`,
       fontSize: 12,
@@ -898,14 +899,14 @@ function ServiceRow({
       <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
         <button
           onClick={() => onEdit(service)}
-          style={{ padding: '3px 6px', borderRadius: 4, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.textMuted }}
+          style={{ padding: '3px 6px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.textMuted }}
           title={t('common.edit')}
         >
           <Edit2 size={11} />
         </button>
         <button
           onClick={() => onDelete(service.key)}
-          style={{ padding: '3px 6px', borderRadius: 4, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error }}
+          style={{ padding: '3px 6px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error }}
           title={t('common.delete')}
         >
           <Trash2 size={11} />
@@ -934,7 +935,7 @@ function AddonRow({
       gap: 8,
       alignItems: 'center',
       padding: '8px 10px',
-      borderRadius: 6,
+      borderRadius: 0,
       background: THEME.surface,
       border: `1px solid ${THEME.border}`,
       fontSize: 12,
@@ -948,14 +949,14 @@ function AddonRow({
       <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
         <button
           onClick={() => onEdit(addon)}
-          style={{ padding: '3px 6px', borderRadius: 4, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.textMuted }}
+          style={{ padding: '3px 6px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.textMuted }}
           title={t('common.edit')}
         >
           <Edit2 size={11} />
         </button>
         <button
           onClick={() => onDelete(addon.key)}
-          style={{ padding: '3px 6px', borderRadius: 4, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error }}
+          style={{ padding: '3px 6px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error }}
           title={t('common.delete')}
         >
           <Trash2 size={11} />
@@ -986,7 +987,7 @@ function ServiceEditForm({
   return (
     <div style={{
       padding: 12,
-      borderRadius: 8,
+      borderRadius: 0,
       background: THEME.surfaceLight,
       border: `1px solid ${THEME.borderLight}`,
       display: 'flex',
@@ -1074,7 +1075,7 @@ function ServiceEditForm({
                   const tiers = value.discountTiers.filter((_, j) => j !== i);
                   onChange({ ...value, discountTiers: tiers });
                 }}
-                style={{ padding: '6px', borderRadius: 4, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error, height: 32 }}
+                style={{ padding: '6px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error, height: 32 }}
               >
                 <X size={12} />
               </button>
@@ -1084,7 +1085,7 @@ function ServiceEditForm({
             onClick={() => onChange({ ...value, discountTiers: [...value.discountTiers, { minQuantity: '', percent: '' }] })}
             style={{
               display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px',
-              borderRadius: 5, border: `1px dashed ${THEME.border}`, background: 'transparent',
+              borderRadius: 0, border: `1px dashed ${THEME.border}`, background: 'transparent',
               color: THEME.textMuted, cursor: 'pointer', fontSize: 11, width: 'fit-content',
             }}
           >
@@ -1094,10 +1095,10 @@ function ServiceEditForm({
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <button onClick={onCancel} style={{ padding: '6px 14px', borderRadius: 6, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 13 }}>
+        <button onClick={onCancel} style={{ padding: '6px 14px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 13 }}>
           {t('common.cancel')}
         </button>
-        <button onClick={onSave} disabled={saving} style={{ padding: '6px 14px', borderRadius: 6, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button onClick={onSave} disabled={saving} style={{ padding: '6px 14px', borderRadius: 0, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
           {saving && <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />}
           {t('common.save')}
         </button>
@@ -1127,7 +1128,7 @@ function AddonEditForm({
   return (
     <div style={{
       padding: 12,
-      borderRadius: 8,
+      borderRadius: 0,
       background: THEME.surfaceLight,
       border: `1px solid ${THEME.borderLight}`,
       display: 'flex',
@@ -1196,10 +1197,10 @@ function AddonEditForm({
         <IconPickerButton value={value.iconName} onChange={v => set('iconName', v)} label={t('admin.iconName')} />
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <button onClick={onCancel} style={{ padding: '6px 14px', borderRadius: 6, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 13 }}>
+        <button onClick={onCancel} style={{ padding: '6px 14px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 13 }}>
           {t('common.cancel')}
         </button>
-        <button onClick={onSave} disabled={saving} style={{ padding: '6px 14px', borderRadius: 6, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button onClick={onSave} disabled={saving} style={{ padding: '6px 14px', borderRadius: 0, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
           {saving && <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />}
           {t('common.save')}
         </button>
@@ -1231,6 +1232,7 @@ function ServiceAddonPanel({
 }) {
   const safeItems = items ?? [];
   const toast = useToast();
+  const confirm = useConfirm();
   const [addingNew, setAddingNew] = useState(false);
   const [newService, setNewService] = useState<EditingService>(emptyEditingService);
   const [newAddon, setNewAddon] = useState<EditingAddon>(emptyEditingAddon);
@@ -1292,7 +1294,13 @@ function ServiceAddonPanel({
   };
 
   const deleteItem = async (key: string) => {
-    if (!confirm(t('common.confirm'))) return;
+    const ok = await confirm({
+      title: t('common.confirm'),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       if (context.type === 'variant') {
         await api.delete(`/service-catalog/${context.catKey}/subcategories/${context.subKey}/variants/${context.variantKey}`);
@@ -1456,7 +1464,7 @@ function ServiceAddonPanel({
           onClick={() => setAddingNew(true)}
           style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px',
-            borderRadius: 6, border: `1px dashed ${THEME.border}`, background: 'transparent',
+            borderRadius: 0, border: `1px dashed ${THEME.border}`, background: 'transparent',
             color: THEME.textMuted, cursor: 'pointer', fontSize: 12, width: '100%',
           }}
         >
@@ -1511,7 +1519,7 @@ function VariantPanel({
 
   return (
     <div style={{
-      borderRadius: 8,
+      borderRadius: 0,
       border: `1px solid ${THEME.border}`,
       background: THEME.surface,
       marginBottom: 8,
@@ -1531,13 +1539,13 @@ function VariantPanel({
         <div style={{ display: 'flex', gap: 6 }} onClick={e => e.stopPropagation()}>
           <button
             onClick={() => setEditing(p => !p)}
-            style={{ padding: '3px 8px', borderRadius: 5, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.textMuted, fontSize: 12 }}
+            style={{ padding: '3px 8px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.textMuted, fontSize: 12 }}
           >
             <Edit2 size={11} />
           </button>
           <button
             onClick={onDelete}
-            style={{ padding: '3px 8px', borderRadius: 5, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error, fontSize: 12 }}
+            style={{ padding: '3px 8px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error, fontSize: 12 }}
           >
             <Trash2 size={11} />
           </button>
@@ -1561,10 +1569,10 @@ function VariantPanel({
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <button onClick={() => setEditing(false)} style={{ padding: '5px 12px', borderRadius: 6, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 12 }}>
+            <button onClick={() => setEditing(false)} style={{ padding: '5px 12px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 12 }}>
               {t('common.cancel')}
             </button>
-            <button onClick={saveVariant} disabled={saving} style={{ padding: '5px 12px', borderRadius: 6, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 12 }}>
+            <button onClick={saveVariant} disabled={saving} style={{ padding: '5px 12px', borderRadius: 0, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 12 }}>
               {t('common.save')}
             </button>
           </div>
@@ -1642,7 +1650,7 @@ function AddVariantForm({
   };
 
   return (
-    <div style={{ padding: 12, borderRadius: 8, background: THEME.surfaceLight, border: `1px solid ${THEME.borderLight}`, display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ padding: 12, borderRadius: 0, background: THEME.surfaceLight, border: `1px solid ${THEME.borderLight}`, display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div>
         <label style={labelStyle}>{t('admin.categoryKey')}</label>
         <input style={inputStyle} value={key} onChange={e => setKey(e.target.value)} placeholder="variant_key" />
@@ -1662,10 +1670,10 @@ function AddVariantForm({
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <button onClick={onCancel} style={{ padding: '6px 14px', borderRadius: 6, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 13 }}>
+        <button onClick={onCancel} style={{ padding: '6px 14px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 13 }}>
           {t('common.cancel')}
         </button>
-        <button onClick={save} disabled={saving} style={{ padding: '6px 14px', borderRadius: 6, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 13 }}>
+        <button onClick={save} disabled={saving} style={{ padding: '6px 14px', borderRadius: 0, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 13 }}>
           {t('common.save')}
         </button>
       </div>
@@ -1688,6 +1696,7 @@ function SubcategoryDetail({
 }) {
   const { locale } = useLanguage();
   const toast = useToast();
+  const confirm = useConfirm();
   const [editing, setEditing] = useState<EditingSubcategory>({
     key: sub.key,
     label: sub.label ? { ...sub.label } : emptyLocalized(),
@@ -1742,7 +1751,13 @@ function SubcategoryDetail({
   };
 
   const deleteVariant = async (varKey: string) => {
-    if (!confirm(t('admin.deleteVariantConfirmation'))) return;
+    const ok = await confirm({
+      title: t('admin.deleteVariantConfirmation'),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await api.delete(`/service-catalog/${catKey}/subcategories/${sub.key}/variants/${varKey}`);
       toast.success(t('admin.variantDeleted'));
@@ -1761,7 +1776,7 @@ function SubcategoryDetail({
       {/* Subcategory edit form */}
       <div style={{
         padding: 16,
-        borderRadius: 8,
+        borderRadius: 0,
         background: THEME.surfaceLight,
         border: `1px solid ${THEME.border}`,
         marginBottom: 20,
@@ -1772,7 +1787,7 @@ function SubcategoryDetail({
             <div
               onClick={toggleActive}
               style={{
-                width: 36, height: 20, borderRadius: 10, cursor: 'pointer', position: 'relative',
+                width: 36, height: 20, borderRadius: 0, cursor: 'pointer', position: 'relative',
                 background: editing.isActive ? THEME.success : THEME.border, transition: 'background 0.2s',
               }}
             >
@@ -1826,7 +1841,7 @@ function SubcategoryDetail({
             disabled={saving}
             style={{
               display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px',
-              borderRadius: 7, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 13,
+              borderRadius: 0, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 13,
             }}
           >
             {saving ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={13} />}
@@ -1861,7 +1876,7 @@ function SubcategoryDetail({
                     const tiers = editing.orderDiscountTiers.filter((_, j) => j !== i);
                     setEditing(p => ({ ...p, orderDiscountTiers: tiers }));
                   }}
-                  style={{ padding: '6px', borderRadius: 4, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error, height: 32 }}
+                  style={{ padding: '6px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error, height: 32 }}
                 >
                   <X size={12} />
                 </button>
@@ -1871,7 +1886,7 @@ function SubcategoryDetail({
               onClick={() => setEditing(p => ({ ...p, orderDiscountTiers: [...p.orderDiscountTiers, { minQuantity: '', percent: '' }] }))}
               style={{
                 display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px',
-                borderRadius: 5, border: `1px dashed ${THEME.border}`, background: 'transparent',
+                borderRadius: 0, border: `1px dashed ${THEME.border}`, background: 'transparent',
                 color: THEME.textMuted, cursor: 'pointer', fontSize: 11, width: 'fit-content',
               }}
             >
@@ -1893,7 +1908,7 @@ function SubcategoryDetail({
                 key={v.key}
                 onClick={() => setActiveVariant(v.key)}
                 style={{
-                  padding: '5px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
+                  padding: '5px 12px', borderRadius: 0, fontSize: 12, cursor: 'pointer',
                   background: activeVariant === v.key ? THEME.primary : THEME.surface,
                   color: activeVariant === v.key ? 'white' : THEME.textMuted,
                   border: `1px solid ${activeVariant === v.key ? THEME.primary : THEME.border}`,
@@ -1932,7 +1947,7 @@ function SubcategoryDetail({
           onClick={() => setAddingVariant(true)}
           style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px',
-            borderRadius: 6, border: `1px dashed ${THEME.border}`, background: 'transparent',
+            borderRadius: 0, border: `1px dashed ${THEME.border}`, background: 'transparent',
             color: THEME.textMuted, cursor: 'pointer', fontSize: 12, marginBottom: 20,
           }}
         >
@@ -1993,6 +2008,7 @@ function CategoryDetail({
   locale: string;
 }) {
   const toast = useToast();
+  const confirm = useConfirm();
   const [editingCat, setEditingCat] = useState<EditingCategory>({
     key: category.key,
     label: { ...category.label },
@@ -2100,7 +2116,13 @@ function CategoryDetail({
   };
 
   const deleteSubcategory = async (subKey: string) => {
-    if (!confirm(t('admin.deleteSubcategoryConfirmation'))) return;
+    const ok = await confirm({
+      title: t('admin.deleteSubcategoryConfirmation'),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await api.delete(`/service-catalog/${category.key}/subcategories/${subKey}`);
       toast.success(t('admin.subcategoryDeleted'));
@@ -2148,19 +2170,25 @@ function CategoryDetail({
               disabled={saving}
               style={{
                 display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px',
-                borderRadius: 7, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 12,
+                borderRadius: 0, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 12,
               }}
             >
               {saving ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={12} />}
               {t('common.save')}
             </button>
             <button
-              onClick={() => {
-                if (confirm(t('admin.deleteCategoryConfirmation'))) onDelete();
+              onClick={async () => {
+                const ok = await confirm({
+                  title: t('admin.deleteCategoryConfirmation'),
+                  confirmLabel: t('common.delete'),
+                  cancelLabel: t('common.cancel'),
+                  variant: 'danger',
+                });
+                if (ok) onDelete();
               }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px',
-                borderRadius: 7, border: `1px solid ${THEME.error}40`, background: `${THEME.error}10`, color: THEME.error, cursor: 'pointer', fontSize: 12,
+                borderRadius: 0, border: `1px solid ${THEME.error}40`, background: `${THEME.error}10`, color: THEME.error, cursor: 'pointer', fontSize: 12,
               }}
             >
               <Trash2 size={12} />
@@ -2174,7 +2202,7 @@ function CategoryDetail({
           <div
             onClick={toggleCatActive}
             style={{
-              width: 36, height: 20, borderRadius: 10, cursor: 'pointer', position: 'relative',
+              width: 36, height: 20, borderRadius: 0, cursor: 'pointer', position: 'relative',
               background: editingCat.isActive ? THEME.success : THEME.border, transition: 'background 0.2s',
             }}
           >
@@ -2273,7 +2301,7 @@ function CategoryDetail({
                         {sub.label?.[locale as 'en' | 'ka' | 'ru'] || sub.label?.en || sub.key}
                       </span>
                       {sub.isActive === false && (
-                        <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: `${THEME.error}20`, color: THEME.error }}>
+                        <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 0, background: `${THEME.error}20`, color: THEME.error }}>
                           {t('admin.inactive')}
                         </span>
                       )}
@@ -2309,10 +2337,10 @@ function CategoryDetail({
                   <input style={inputStyle} value={newSub.label.ru} onChange={e => setNewSub(p => ({ ...p, label: { ...p.label, ru: e.target.value } }))} />
                 </div>
                 <div style={{ display: 'flex', gap: 4 }}>
-                  <button onClick={() => setAddingSubcategory(false)} style={{ flex: 1, padding: '5px', borderRadius: 5, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 11 }}>
+                  <button onClick={() => setAddingSubcategory(false)} style={{ flex: 1, padding: '5px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 11 }}>
                     {t('common.cancel')}
                   </button>
-                  <button onClick={saveNewSubcategory} disabled={savingNewSub} style={{ flex: 1, padding: '5px', borderRadius: 5, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 11 }}>
+                  <button onClick={saveNewSubcategory} disabled={savingNewSub} style={{ flex: 1, padding: '5px', borderRadius: 0, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 11 }}>
                     {t('common.save')}
                   </button>
                 </div>
@@ -2322,7 +2350,7 @@ function CategoryDetail({
                 onClick={() => setAddingSubcategory(true)}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-                  padding: '7px', borderRadius: 6, border: `1px dashed ${THEME.border}`,
+                  padding: '7px', borderRadius: 0, border: `1px dashed ${THEME.border}`,
                   background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 12,
                 }}
               >
@@ -2369,7 +2397,7 @@ function AddCategoryForm({
   const toast = useToast();
   const [form, setForm] = useState<EditingCategory>({
     key: '', label: emptyLocalized(), description: emptyLocalized(),
-    iconName: '', color: '#C4735B', minPrice: 0, sortOrder: 0, isActive: true,
+    iconName: '', color: 'var(--hm-brand-500)', minPrice: 0, sortOrder: 0, isActive: true,
   });
   const [saving, setSaving] = useState(false);
 
@@ -2432,10 +2460,10 @@ function AddCategoryForm({
         <ColorPickerButton value={form.color} onChange={v => setForm(p => ({ ...p, color: v }))} label={t('admin.colorCode')} />
       </div>
       <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-        <button onClick={onCancel} style={{ padding: '6px 14px', borderRadius: 6, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 13 }}>
+        <button onClick={onCancel} style={{ padding: '6px 14px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 13 }}>
           {t('common.cancel')}
         </button>
-        <button onClick={save} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 6, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 13 }}>
+        <button onClick={save} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 0, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 13 }}>
           {saving && <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />}
           {t('common.save')}
         </button>
@@ -2450,6 +2478,7 @@ function ServiceCatalogPageContent() {
   const { isAuthenticated } = useAuth();
   const { t, locale } = useLanguage();
   const toast = useToast();
+  const confirm = useConfirm();
 
   const [categories, setCategories] = useState<ServiceCatalogCategory[]>([]);
   const [orderedCategories, setOrderedCategories] = useState<ServiceCatalogCategory[]>([]);
@@ -2492,7 +2521,13 @@ function ServiceCatalogPageContent() {
   };
 
   const handleSeed = async () => {
-    if (!confirm(t('admin.seedConfirmation'))) return;
+    const ok = await confirm({
+      title: t('admin.seedConfirmation'),
+      confirmLabel: t('common.continue'),
+      cancelLabel: t('common.cancel'),
+      variant: 'warning',
+    });
+    if (!ok) return;
     setSeeding(true);
     try {
       await api.post('/service-catalog/seed');
@@ -2537,7 +2572,7 @@ function ServiceCatalogPageContent() {
       <div style={{ minHeight: '100vh', background: THEME.surface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{
-            width: 64, height: 64, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
+            width: 64, height: 64, borderRadius: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
             background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})`,
             animation: 'pulse 2s infinite',
           }}>
@@ -2553,13 +2588,13 @@ function ServiceCatalogPageContent() {
     return (
       <div style={{ minHeight: '100vh', background: THEME.surface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', background: `${THEME.error}20` }}>
+          <div style={{ width: 64, height: 64, borderRadius: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', background: `${THEME.error}20` }}>
             <AlertCircle size={32} color={THEME.error} />
           </div>
           <p style={{ color: THEME.text, fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{error}</p>
           <button
             onClick={loadCatalog}
-            style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 14 }}
+            style={{ padding: '8px 20px', borderRadius: 0, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 14 }}
           >
             {t('common.cancel')}
           </button>
@@ -2582,7 +2617,7 @@ function ServiceCatalogPageContent() {
         display: 'flex', alignItems: 'center', gap: 16,
       }}>
         <div style={{
-          width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 40, height: 40, borderRadius: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})`,
           boxShadow: `0 4px 16px ${THEME.primary}40`,
         }}>
@@ -2596,7 +2631,7 @@ function ServiceCatalogPageContent() {
           <Link
             href="/admin"
             style={{
-              padding: '7px 14px', borderRadius: 8, border: `1px solid ${THEME.border}`,
+              padding: '7px 14px', borderRadius: 0, border: `1px solid ${THEME.border}`,
               background: THEME.surfaceLight, color: THEME.textMuted, fontSize: 13, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6,
             }}
           >
@@ -2608,7 +2643,7 @@ function ServiceCatalogPageContent() {
             disabled={seeding}
             style={{
               display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
-              borderRadius: 8, border: `1px solid ${THEME.border}`,
+              borderRadius: 0, border: `1px solid ${THEME.border}`,
               background: THEME.surfaceLight, color: THEME.textMuted, cursor: 'pointer', fontSize: 13,
             }}
           >
@@ -2644,7 +2679,7 @@ function ServiceCatalogPageContent() {
                 { label: t('admin.totalServices'), value: totalServices },
               ].map(stat => (
                 <div key={stat.label} style={{
-                  padding: '6px 8px', borderRadius: 6, background: THEME.surface,
+                  padding: '6px 8px', borderRadius: 0, background: THEME.surface,
                   border: `1px solid ${THEME.border}`, textAlign: 'center',
                 }}>
                   <div style={{ fontSize: 16, fontWeight: 700, color: THEME.text, fontFamily: 'monospace' }}>{stat.value}</div>
@@ -2692,12 +2727,12 @@ function ServiceCatalogPageContent() {
                         </span>
                         <span style={{ fontSize: 10, color: THEME.textDim, flexShrink: 0 }}>{cat.subcategories.length}</span>
                         {cat.isActive === false && (
-                          <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: `${THEME.error}20`, color: THEME.error, flexShrink: 0 }}>
+                          <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 0, background: `${THEME.error}20`, color: THEME.error, flexShrink: 0 }}>
                             {t('admin.inactive')}
                           </span>
                         )}
                         {cat.isActive !== false && (
-                          <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 4, background: `${THEME.success}20`, color: THEME.success, flexShrink: 0 }}>
+                          <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 0, background: `${THEME.success}20`, color: THEME.success, flexShrink: 0 }}>
                             {t('admin.active')}
                           </span>
                         )}
@@ -2722,7 +2757,7 @@ function ServiceCatalogPageContent() {
                 onClick={() => setAddingCategory(true)}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  padding: '9px', borderRadius: 7, border: `1px dashed ${THEME.primary}60`,
+                  padding: '9px', borderRadius: 0, border: `1px dashed ${THEME.primary}60`,
                   background: `${THEME.primary}08`, color: THEME.primary, cursor: 'pointer', fontSize: 13, fontWeight: 500,
                 }}
               >
@@ -2746,7 +2781,7 @@ function ServiceCatalogPageContent() {
             />
           ) : (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-              <div style={{ width: 80, height: 80, borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${THEME.primary}15` }}>
+              <div style={{ width: 80, height: 80, borderRadius: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${THEME.primary}15` }}>
                 <Layers size={40} color={THEME.primary} style={{ opacity: 0.6 }} />
               </div>
               <div style={{ textAlign: 'center' }}>

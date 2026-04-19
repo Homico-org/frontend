@@ -100,23 +100,23 @@ export default function BookingModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
       <ModalHeader
-        icon={<Calendar size={18} style={{ color: "#C4735B" }} />}
+        icon={<Calendar size={18} style={{ color: 'var(--hm-brand-500)' }} />}
         title={t("booking.bookAppointment")}
       />
 
       <ModalBody>
         {success ? (
           <div className="text-center py-6">
-            <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center bg-green-50 dark:bg-green-900/20">
+            <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center bg-green-50">
               <Check size={24} className="text-green-500" />
             </div>
-            <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-1">
+            <h3 className="text-base font-semibold text-[var(--hm-fg-primary)] mb-1">
               {t("booking.bookingSuccess")}
             </h3>
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-[var(--hm-fg-muted)]">
               {selectedDate} · {selectedSlot !== null ? `${formatHour(selectedSlot)} – ${formatHour(selectedSlot + 1)}` : ""}
             </p>
-            <p className="text-xs text-neutral-400 mt-0.5">
+            <p className="text-xs text-[var(--hm-fg-muted)] mt-0.5">
               {professionalName}
             </p>
           </div>
@@ -124,7 +124,7 @@ export default function BookingModal({
           <div className="space-y-4">
             {/* Date */}
             <div>
-              <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5 block">
+              <label className="text-xs font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider mb-1.5 block">
                 {t("booking.selectDate")}
               </label>
               <DatePicker
@@ -139,14 +139,14 @@ export default function BookingModal({
             {/* Time Slots */}
             {selectedDate && (
               <div>
-                <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <label className="text-xs font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider mb-1.5 flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   {t("booking.selectTime")}
                 </label>
 
                 {loadingSlots ? (
                   <div className="flex justify-center py-4">
-                    <LoadingSpinner size="sm" color="#C4735B" />
+                    <LoadingSpinner size="sm" color="var(--hm-brand-500)" />
                   </div>
                 ) : availableSlots.length === 0 ? (
                   <Alert variant="info" size="sm">
@@ -162,8 +162,8 @@ export default function BookingModal({
                           onClick={() => setSelectedSlot(slot.hour)}
                           className={`py-2 rounded-lg text-xs font-medium transition-all ${
                             selectedSlot === slot.hour
-                              ? "bg-[#C4735B] text-white shadow-sm"
-                              : "bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                              ? "bg-[var(--hm-brand-500)] text-white shadow-sm"
+                              : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
                           }`}
                         >
                           {formatHour(slot.hour)}
@@ -177,7 +177,7 @@ export default function BookingModal({
             {/* Note */}
             {selectedSlot !== null && (
               <div>
-                <label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5 block">
+                <label className="text-xs font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider mb-1.5 block">
                   {t("booking.yourNote")}
                 </label>
                 <Textarea

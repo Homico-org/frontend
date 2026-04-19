@@ -338,17 +338,17 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
     <div className="space-y-6">
       {/* AI Upload Section */}
       {showUpload && (
-        <div className="bg-gradient-to-br from-forest-50 to-forest-100 dark:from-forest-900/20 dark:to-forest-800/10 rounded-2xl border border-forest-200 dark:border-forest-800/30 overflow-hidden">
+        <div className="bg-gradient-to-br from-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] rounded-2xl border border-[var(--hm-border)] overflow-hidden">
           <div className="p-5">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-forest-200 dark:bg-forest-900/40 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-forest-600 dark:text-forest-400" strokeWidth={1.5} />
+              <div className="w-10 h-10 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
               </div>
               <div>
-                <h3 className="font-semibold text-forest-800 dark:text-forest-200">
+                <h3 className="font-semibold text-[var(--hm-n-800)]">
                   {t('tools.calculator.aiUpload.title')}
                 </h3>
-                <p className="text-sm text-forest-600 dark:text-forest-400">
+                <p className="text-sm text-[var(--hm-fg-secondary)]">
                   {t('tools.calculator.aiUpload.subtitle')}
                 </p>
               </div>
@@ -357,41 +357,41 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
             {isAnalyzing ? (
               <div className="flex flex-col items-center justify-center py-8">
                 <div className="relative w-16 h-16 mb-4">
-                  <div className="absolute inset-0 rounded-full border-4 border-forest-200 dark:border-forest-900/50" />
+                  <div className="absolute inset-0 rounded-full border-4 border-[var(--hm-border)]" />
                   <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-forest-500 animate-spin" />
-                  <div className="absolute inset-2 rounded-full bg-forest-100 dark:bg-forest-900/30 flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-forest-500 animate-pulse" strokeWidth={1.5} />
+                  <div className="absolute inset-2 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-[var(--hm-fg-secondary)] animate-pulse" strokeWidth={1.5} />
                   </div>
                 </div>
-                <p className="text-sm text-forest-700 dark:text-forest-300 font-medium">
+                <p className="text-sm text-[var(--hm-n-700)] font-medium">
                   {t('tools.calculator.aiUpload.analyzing')}
                 </p>
                 {uploadedFile && (
-                  <p className="text-xs text-forest-600 dark:text-forest-400 mt-2">{uploadedFile.name}</p>
+                  <p className="text-xs text-[var(--hm-fg-secondary)] mt-2">{uploadedFile.name}</p>
                 )}
               </div>
             ) : (
               <>
                 {aiError && (
-                  <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl">
+                  <div className="mb-4 p-3 bg-[var(--hm-error-50)]/20 border border-red-200 rounded-xl">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                      <p className="text-sm text-red-700 dark:text-red-300">{aiError}</p>
+                      <AlertTriangle className="w-4 h-4 text-[var(--hm-error-500)] flex-shrink-0" />
+                      <p className="text-sm text-[var(--hm-error-500)]">{aiError}</p>
                     </div>
                   </div>
                 )}
 
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-forest-300 dark:border-forest-700 rounded-xl p-6 text-center cursor-pointer hover:border-forest-400 dark:hover:border-forest-600 hover:bg-forest-50/50 dark:hover:bg-forest-900/20 transition-all"
+                  className="border-2 border-dashed border-forest-300 rounded-xl p-6 text-center cursor-pointer hover:border-forest-400 hover:bg-forest-50/50 transition-all"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-forest-200/50 dark:bg-forest-900/30 flex items-center justify-center mx-auto mb-3">
-                    <Upload className="w-6 h-6 text-forest-600 dark:text-forest-400" strokeWidth={1.5} />
+                  <div className="w-12 h-12 rounded-xl bg-forest-200/30 flex items-center justify-center mx-auto mb-3">
+                    <Upload className="w-6 h-6 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
                   </div>
-                  <p className="text-sm font-medium text-forest-700 dark:text-forest-300 mb-1">
+                  <p className="text-sm font-medium text-[var(--hm-n-700)] mb-1">
                     {t('tools.calculator.aiUpload.dropHere')}
                   </p>
-                  <p className="text-xs text-forest-500 dark:text-forest-500">
+                  <p className="text-xs text-[var(--hm-fg-secondary)]">
                     {t('tools.calculator.aiUpload.formats')}
                   </p>
                 </div>
@@ -406,7 +406,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
 
                 <button
                   onClick={skipUpload}
-                  className="w-full mt-4 py-3 text-sm font-medium text-forest-600 dark:text-forest-400 hover:text-forest-700 dark:hover:text-forest-300 transition-colors"
+                  className="w-full mt-4 py-3 text-sm font-medium text-[var(--hm-fg-secondary)] hover:text-[var(--hm-n-700)] transition-colors"
                 >
                   {t('tools.calculator.aiUpload.skip')}
                 </button>
@@ -418,17 +418,17 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
 
       {/* AI Notes (shown after successful upload) */}
       {!showUpload && aiNotes.length > 0 && (
-        <div className="bg-forest-50 dark:bg-forest-900/20 rounded-xl p-4 border border-forest-200 dark:border-forest-800/30">
+        <div className="bg-[var(--hm-bg-tertiary)] rounded-xl p-4 border border-[var(--hm-border)]">
           <div className="flex items-start gap-3">
-            <Sparkles className="w-5 h-5 text-forest-500 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+            <Sparkles className="w-5 h-5 text-[var(--hm-fg-secondary)] flex-shrink-0 mt-0.5" strokeWidth={1.5} />
             <div>
-              <p className="text-sm font-medium text-forest-700 dark:text-forest-300 mb-2">
+              <p className="text-sm font-medium text-[var(--hm-n-700)] mb-2">
                 {t('tools.calculator.aiUpload.notes')}
               </p>
               <ul className="space-y-1">
                 {aiNotes.slice(0, 3).map((note, i) => (
-                  <li key={i} className="text-xs text-forest-600 dark:text-forest-400 flex items-start gap-1.5">
-                    <span className="text-forest-400 mt-0.5">•</span>
+                  <li key={i} className="text-xs text-[var(--hm-fg-secondary)] flex items-start gap-1.5">
+                    <span className="text-[var(--hm-fg-muted)] mt-0.5">•</span>
                     {note}
                   </li>
                 ))}
@@ -436,7 +436,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
             </div>
             <button
               onClick={() => setAiNotes([])}
-              className="p-1 text-forest-400 hover:text-forest-600 transition-colors"
+              className="p-1 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors"
             >
               <X className="w-4 h-4" strokeWidth={1.5} />
             </button>
@@ -445,7 +445,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
       )}
 
       {/* Step Progress */}
-      <div className="bg-white dark:bg-neutral-900 rounded-2xl p-4 border border-neutral-200 dark:border-neutral-800">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-4 border border-[var(--hm-border)]">
         <div className="flex items-center justify-center">
           {STEPS.map(({ step, icon: Icon, key }, index) => {
             const isActive = currentStep === step;
@@ -464,10 +464,10 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                       isActive
-                        ? 'bg-terracotta-500 text-white shadow-lg shadow-terracotta-500/30'
+                        ? 'bg-[var(--hm-brand-500)] text-white shadow-lg shadow-[var(--hm-brand-500)]/30'
                         : isCompleted
-                        ? 'bg-forest-100 dark:bg-forest-900/30 text-forest-600 dark:text-forest-400'
-                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400'
+                        ? 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)]'
+                        : 'bg-[var(--hm-bg-tertiary)] text-neutral-400'
                     }`}
                   >
                     {isCompleted ? (
@@ -479,9 +479,9 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
                   <span
                     className={`text-xs font-medium hidden sm:block min-w-[60px] text-center ${
                       isActive
-                        ? 'text-terracotta-600 dark:text-terracotta-400'
+                        ? 'text-[var(--hm-brand-600)]'
                         : isCompleted
-                        ? 'text-forest-600 dark:text-forest-400'
+                        ? 'text-[var(--hm-fg-secondary)]'
                         : 'text-neutral-400'
                     }`}
                   >
@@ -493,8 +493,8 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
                   <div
                     className={`w-8 sm:w-12 h-0.5 mx-2 sm:mx-3 rounded-full transition-colors ${
                       currentStep > step
-                        ? 'bg-forest-400 dark:bg-forest-600'
-                        : 'bg-neutral-200 dark:bg-neutral-700'
+                        ? 'bg-forest-400'
+                        : 'bg-neutral-200'
                     }`}
                   />
                 )}
@@ -513,7 +513,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
           <button
             onClick={handlePrev}
             disabled={currentStep === 1}
-            className="flex items-center gap-2 px-5 py-3 text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-5 py-3 text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-n-200)] rounded-xl font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
             {t('tools.calculator.back')}
@@ -522,7 +522,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
           <button
             onClick={handleNext}
             disabled={!canProceed}
-            className="flex items-center gap-2 px-6 py-3 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl font-semibold shadow-lg shadow-terracotta-500/25 hover:shadow-terracotta-500/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+            className="flex items-center gap-2 px-6 py-3 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white rounded-xl font-semibold shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-[var(--hm-brand-500)]/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
           >
             {t('tools.calculator.next')}
             <ChevronRight className="w-5 h-5" strokeWidth={1.5} />

@@ -155,19 +155,19 @@ export default function AboutStep({
 
         {/* Avatar Upload Card - REQUIRED */}
         <div className={`
-          bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all
+          bg-[var(--hm-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all
           ${hasAvatar
-            ? 'border-2 border-emerald-500/30'
-            : 'border-2 border-[#C4735B]/50 ring-4 ring-[#C4735B]/10'
+            ? 'border-2 border-[var(--hm-success-500)]/30'
+            : 'border-2 border-[var(--hm-brand-500)]/50 ring-4 ring-[var(--hm-brand-500)]/10'
           }
         `}>
           {/* Required Badge */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Camera className="w-5 h-5 text-[#C4735B]" />
-              <h3 className="font-semibold text-[var(--color-text-primary)]">
+              <Camera className="w-5 h-5 text-[var(--hm-brand-500)]" />
+              <h3 className="font-semibold text-[var(--hm-fg-primary)]">
                 {t('common.profilePhoto')}
-                <span className="text-[#C4735B] ml-1">*</span>
+                <span className="text-[var(--hm-brand-500)] ml-1">*</span>
               </h3>
             </div>
             {hasAvatar ? (
@@ -186,11 +186,11 @@ export default function AboutStep({
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="relative w-28 h-28 rounded-2xl bg-gradient-to-br from-[#C4735B]/10 to-[#C4735B]/5 border-2 border-dashed border-[#C4735B]/40 flex items-center justify-center group transition-all hover:scale-105 hover:border-[#C4735B] overflow-hidden"
+                className="relative w-28 h-28 rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border-2 border-dashed border-[var(--hm-brand-500)]/40 flex items-center justify-center group transition-all hover:scale-105 hover:border-[var(--hm-brand-500)] overflow-hidden"
               >
                 <div className="text-center">
-                  <Camera className="w-8 h-8 text-[#C4735B]/60 group-hover:text-[#C4735B] transition-colors mx-auto mb-1" />
-                  <span className="text-xs font-medium text-[#C4735B]/60 group-hover:text-[#C4735B]">
+                  <Camera className="w-8 h-8 text-[var(--hm-brand-500)]/60 group-hover:text-[var(--hm-brand-500)] transition-colors mx-auto mb-1" />
+                  <span className="text-xs font-medium text-[var(--hm-brand-500)]/60 group-hover:text-[var(--hm-brand-500)]">
                     {t('common.upload')}
                   </span>
                 </div>
@@ -205,7 +205,7 @@ export default function AboutStep({
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
-                  className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-[#C4735B] flex items-center justify-center shadow-lg hover:bg-[#A85D47] transition-colors"
+                  className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center shadow-lg hover:bg-[#A85D47] transition-colors"
                 >
                   <Camera className="w-4 h-4 text-white" />
                 </button>
@@ -213,13 +213,13 @@ export default function AboutStep({
             )}
 
             <div className="flex-1">
-              <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+              <p className="text-sm text-[var(--hm-fg-secondary)] mb-3">
                 {t('common.clientsTrustProfessionalsWithPhotos')}
               </p>
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#C4735B] text-white text-sm font-medium hover:bg-[#A85D47] transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--hm-brand-500)] text-white text-sm font-medium hover:bg-[#A85D47] transition-colors"
               >
                 <Camera className="w-4 h-4" />
                 {avatarPreview
@@ -227,7 +227,7 @@ export default function AboutStep({
                   : (t('common.uploadPhoto'))
                 }
               </button>
-              <p className="text-xs text-[var(--color-text-muted)] mt-2">
+              <p className="text-xs text-[var(--hm-fg-muted)] mt-2">
                 PNG, JPG {t('common.max')} 5MB
               </p>
             </div>
@@ -244,18 +244,18 @@ export default function AboutStep({
         {/* Years of Experience - REQUIRED (hidden if experience is per-service) */}
         {!hideExperience && (
           <div className={`
-            bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all
+            bg-[var(--hm-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all
             ${validation.experience
-              ? 'border-2 border-emerald-500/30'
-              : 'border-2 border-[var(--color-border-subtle)]'
+              ? 'border-2 border-[var(--hm-success-500)]/30'
+              : 'border-2 border-[var(--hm-border-subtle)]'
             }
           `}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-[#C4735B]" />
-                <span className="font-semibold text-[var(--color-text-primary)]">
+                <Clock className="w-5 h-5 text-[var(--hm-brand-500)]" />
+                <span className="font-semibold text-[var(--hm-fg-primary)]">
                   {t('common.yearsOfExperience')}
-                  <span className="text-[#C4735B] ml-1">*</span>
+                  <span className="text-[var(--hm-brand-500)] ml-1">*</span>
                 </span>
               </div>
               {validation.experience ? (
@@ -287,7 +287,7 @@ export default function AboutStep({
               rightIcon={<span className="text-sm">{t('common.years')}</span>}
               className="text-lg font-medium"
             />
-            <p className="text-xs text-[var(--color-text-muted)] mt-2">
+            <p className="text-xs text-[var(--hm-fg-muted)] mt-2">
               {t('common.howManyYearsHaveYou')}
             </p>
           </div>
@@ -295,18 +295,18 @@ export default function AboutStep({
 
         {/* Bio / About - REQUIRED */}
         <div className={`
-          bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all
+          bg-[var(--hm-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all
           ${validation.bio
-            ? 'border-2 border-emerald-500/30'
-            : 'border-2 border-[var(--color-border-subtle)]'
+            ? 'border-2 border-[var(--hm-success-500)]/30'
+            : 'border-2 border-[var(--hm-border-subtle)]'
           }
         `}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-[#C4735B]" />
-              <span className="font-semibold text-[var(--color-text-primary)]">
+              <FileText className="w-5 h-5 text-[var(--hm-brand-500)]" />
+              <span className="font-semibold text-[var(--hm-fg-primary)]">
                 {t('common.aboutYou')}
-                <span className="text-[#C4735B] ml-1">*</span>
+                <span className="text-[var(--hm-brand-500)] ml-1">*</span>
               </span>
             </div>
             {validation.bio ? (
@@ -334,9 +334,9 @@ export default function AboutStep({
               placeholder={getLocalizedField(subcatConfig.bio.placeholder, locale)}
             />
             {isGeneratingBio && (
-              <div className="absolute inset-0 bg-[var(--color-bg-elevated)]/80 backdrop-blur-[2px] rounded-xl flex items-center justify-center">
-                <div className="flex items-center gap-2.5 text-[#C4735B]">
-                  <LoadingSpinner size="sm" color="#C4735B" />
+              <div className="absolute inset-0 bg-[var(--hm-bg-elevated)]/80 backdrop-blur-[2px] rounded-xl flex items-center justify-center">
+                <div className="flex items-center gap-2.5 text-[var(--hm-brand-500)]">
+                  <LoadingSpinner size="sm" color="var(--hm-brand-500)" />
                   <span className="text-sm font-medium">
                     {t('common.aiGeneratingBio')}
                   </span>
@@ -346,11 +346,11 @@ export default function AboutStep({
           </div>
           <div className="flex items-center justify-between mt-2 gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <p className="text-xs text-[var(--color-text-muted)] shrink-0">
+              <p className="text-xs text-[var(--hm-fg-muted)] shrink-0">
                 {t('common.minimum50CharactersRequired')}
               </p>
               {aiError && (
-                <p className="text-xs text-red-500 truncate">{aiError}</p>
+                <p className="text-xs text-[var(--hm-error-500)] truncate">{aiError}</p>
               )}
             </div>
             <div className="flex items-center gap-3 shrink-0">
@@ -361,17 +361,17 @@ export default function AboutStep({
                 variant={canGenerateBio ? 'default' : 'secondary'}
                 size="sm"
                 leftIcon={<Wand2 className="w-3.5 h-3.5" />}
-                className={canGenerateBio ? 'bg-gradient-to-r from-[#C4735B] to-[#B5624A] hover:from-[#B5624A] hover:to-[#A85D4A] border-0' : ''}
+                className={canGenerateBio ? 'bg-gradient-to-r from-[var(--hm-brand-500)] to-[#D13C14] hover:from-[#D13C14] hover:to-[#A92B08] border-0' : ''}
               >
                 {t('common.aiWrite')}
               </Button>
-              <span className={`text-xs font-medium tabular-nums ${formData.bio.length >= 50 ? 'text-emerald-600' : formData.bio.length > 0 ? 'text-amber-600' : 'text-[var(--color-text-muted)]'}`}>
+              <span className={`text-xs font-medium tabular-nums ${formData.bio.length >= 50 ? 'text-[var(--hm-success-500)]' : formData.bio.length > 0 ? 'text-[var(--hm-warning-500)]' : 'text-[var(--hm-fg-muted)]'}`}>
                 {formData.bio.length}/500
               </span>
             </div>
           </div>
           {wordCount > 0 && wordCount < 5 && (
-            <p className="text-[11px] text-[var(--color-text-muted)] mt-1 flex items-center gap-1">
+            <p className="text-[11px] text-[var(--hm-fg-muted)] mt-1 flex items-center gap-1">
               <Wand2 className="w-3 h-3" />
               {t('common.aiWordsToUnlock', { count: 5 - wordCount })}
             </p>
@@ -380,19 +380,19 @@ export default function AboutStep({
 
         {/* Custom Skills - OPTIONAL */}
         {onCustomServicesChange && (
-          <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm border-2 border-[var(--color-border-subtle)]">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm border-2 border-[var(--hm-border-subtle)]">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-[#C4735B]" />
-                <span className="font-semibold text-[var(--color-text-primary)]">
+                <Sparkles className="w-5 h-5 text-[var(--hm-brand-500)]" />
+                <span className="font-semibold text-[var(--hm-fg-primary)]">
                   {t('common.customSkills')}
                 </span>
               </div>
-              <span className="text-xs font-medium text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] px-2.5 py-1 rounded-full">
+              <span className="text-xs font-medium text-[var(--hm-fg-muted)] bg-[var(--hm-bg-tertiary)] px-2.5 py-1 rounded-full">
                 {t('common.optional')}
               </span>
             </div>
-            <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+            <p className="text-sm text-[var(--hm-fg-secondary)] mb-3">
               {getLocalizedField(subcatConfig.skills.description, locale)}
             </p>
 
@@ -411,7 +411,7 @@ export default function AboutStep({
                           onCustomServicesChange([...customServices, suggestion]);
                         }
                       }}
-                      className="px-2.5 py-1 rounded-full text-xs font-medium transition-all border border-dashed border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5"
+                      className="px-2.5 py-1 rounded-full text-xs font-medium transition-all border border-dashed border-[var(--hm-border-subtle)] text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/5"
                     >
                       + {suggestion}
                     </button>
@@ -425,13 +425,13 @@ export default function AboutStep({
                 {customServices.map(skill => (
                   <span
                     key={skill}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-sm dark:bg-emerald-900/30 dark:text-emerald-400"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--hm-success-50)] text-[var(--hm-success-500)] text-sm/30"
                   >
                     {skill}
                     <button
                       type="button"
                       onClick={() => removeCustomSkill(skill)}
-                      className="w-4 h-4 rounded-full hover:bg-emerald-200 dark:hover:bg-emerald-800 flex items-center justify-center transition-colors"
+                      className="w-4 h-4 rounded-full hover:bg-emerald-200 flex items-center justify-center transition-colors"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -460,7 +460,7 @@ export default function AboutStep({
                 type="button"
                 onClick={addCustomSkill}
                 disabled={!customSkillInput.trim()}
-                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:bg-neutral-200 dark:disabled:bg-neutral-700 text-white transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-[var(--hm-success-500)] hover:bg-emerald-600 disabled:bg-[var(--hm-n-200)] text-white transition-colors flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline text-sm font-medium">{t('common.add')}</span>
@@ -470,26 +470,26 @@ export default function AboutStep({
         )}
 
         {/* Contact & Social Media - OPTIONAL */}
-        <div className="bg-[var(--color-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm border-2 border-[var(--color-border-subtle)]">
+        <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm border-2 border-[var(--hm-border-subtle)]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-[#C4735B]" />
-              <span className="font-semibold text-[var(--color-text-primary)]">
+              <MessageCircle className="w-5 h-5 text-[var(--hm-brand-500)]" />
+              <span className="font-semibold text-[var(--hm-fg-primary)]">
                 {t('common.contactSocialMedia')}
               </span>
             </div>
-            <span className="text-xs font-medium text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] px-2.5 py-1 rounded-full">
+            <span className="text-xs font-medium text-[var(--hm-fg-muted)] bg-[var(--hm-bg-tertiary)] px-2.5 py-1 rounded-full">
               {t('common.optional')}
             </span>
           </div>
-          <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+          <p className="text-sm text-[var(--hm-fg-secondary)] mb-4">
             {t('common.addContactInfoSoClients')}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* WhatsApp */}
             <div>
-              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+              <label className="block text-xs font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                 WhatsApp
               </label>
               <Input
@@ -509,7 +509,7 @@ export default function AboutStep({
 
             {/* Telegram */}
             <div>
-              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+              <label className="block text-xs font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                 Telegram
               </label>
               <Input
@@ -525,7 +525,7 @@ export default function AboutStep({
 
             {/* Instagram */}
             <div>
-              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+              <label className="block text-xs font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                 Instagram
               </label>
               <Input
@@ -541,7 +541,7 @@ export default function AboutStep({
 
             {/* Facebook */}
             <div>
-              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+              <label className="block text-xs font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                 Facebook
               </label>
               <Input
@@ -557,7 +557,7 @@ export default function AboutStep({
 
             {/* LinkedIn */}
             <div>
-              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+              <label className="block text-xs font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                 LinkedIn
               </label>
               <Input
@@ -573,7 +573,7 @@ export default function AboutStep({
 
             {/* Website */}
             <div>
-              <label className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
+              <label className="block text-xs font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                 {t('common.website')}
               </label>
               <Input
@@ -583,7 +583,7 @@ export default function AboutStep({
                 variant="filled"
                 inputSize="default"
                 placeholder="https://example.com"
-                leftIcon={<Globe className="w-4 h-4 text-[var(--color-text-tertiary)]" />}
+                leftIcon={<Globe className="w-4 h-4 text-[var(--hm-fg-muted)]" />}
               />
             </div>
           </div>

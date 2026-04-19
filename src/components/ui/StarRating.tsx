@@ -70,12 +70,12 @@ export function StarRating({
         style={starColor ? { fill: starColor, color: starColor } : undefined}
       />
       {showValue && (
-        <span className={cn(config.text, 'font-semibold text-neutral-900 dark:text-white')}>
+        <span className={cn(config.text, 'font-semibold text-[var(--hm-fg-primary)]')}>
           {displayRating}
         </span>
       )}
       {showCount && displayCount && (
-        <span className={cn(config.count, 'text-neutral-500 dark:text-neutral-400')}>
+        <span className={cn(config.count, 'text-[var(--hm-fg-muted)]')}>
           {displayCount}
         </span>
       )}
@@ -133,7 +133,7 @@ export function StarRatingInput({
               config.star,
               starValue <= value
                 ? 'fill-amber-400 text-amber-400'
-                : 'fill-neutral-200 text-neutral-200 dark:fill-neutral-700 dark:text-neutral-700'
+                : 'fill-neutral-200 text-neutral-200'
             )}
           />
         </button>
@@ -178,7 +178,7 @@ export function MultiStarDisplay({
               ? 'fill-amber-400 text-amber-400'
               : i < rating
               ? 'fill-amber-400/50 text-amber-400/50'
-              : 'fill-neutral-200 text-neutral-200 dark:fill-neutral-700 dark:text-neutral-700'
+              : 'fill-neutral-200 text-neutral-200'
           )}
         />
       ))}

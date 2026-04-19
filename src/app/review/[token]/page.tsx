@@ -115,7 +115,7 @@ export default function ExternalReviewPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--hm-bg-page)] flex items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -124,15 +124,15 @@ export default function ExternalReviewPage() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+      <div className="min-h-screen bg-[var(--hm-bg-page)]">
         <Header />
         <div className="flex flex-col items-center justify-center pt-32 px-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 max-w-md w-full text-center shadow-lg">
-            <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-8 max-w-md w-full text-center shadow-lg">
+            <XCircle className="w-16 h-16 text-[var(--hm-error-500)] mx-auto mb-4" />
+            <h1 className="text-xl font-bold text-[var(--hm-fg-primary)] mb-2">
               {t('reviews.invalidLinkTitle')}
             </h1>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+            <p className="text-[var(--hm-fg-secondary)] mb-6">
               {error}
             </p>
             <Button onClick={() => router.push('/')} variant="outline">
@@ -147,15 +147,15 @@ export default function ExternalReviewPage() {
   // Success state
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+      <div className="min-h-screen bg-[var(--hm-bg-page)]">
         <Header />
         <div className="flex flex-col items-center justify-center pt-32 px-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 max-w-md w-full text-center shadow-lg">
-            <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
-            <h1 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-8 max-w-md w-full text-center shadow-lg">
+            <CheckCircle className="w-16 h-16 text-[var(--hm-success-500)] mx-auto mb-4" />
+            <h1 className="text-xl font-bold text-[var(--hm-fg-primary)] mb-2">
               {t('reviews.thankYouForReview')}
             </h1>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+            <p className="text-[var(--hm-fg-secondary)] mb-6">
               {t('reviews.reviewAddedToProfile', { name: requestInfo?.proName || '' })}
             </p>
             <div className="flex gap-3 justify-center">
@@ -177,11 +177,11 @@ export default function ExternalReviewPage() {
 
   // Review form
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       <Header />
       <div className="max-w-2xl mx-auto pt-24 pb-12 px-4">
         {/* Pro Info Card */}
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 mb-6 shadow-lg">
+        <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-6 mb-6 shadow-lg">
           <div className="flex items-center gap-4 mb-4">
             <Avatar
               src={requestInfo?.proAvatar}
@@ -189,30 +189,30 @@ export default function ExternalReviewPage() {
               size="lg"
             />
             <div>
-              <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
                 {requestInfo?.proName}
               </h2>
               {requestInfo?.proTitle && (
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                <p className="text-sm text-[var(--hm-fg-muted)]">
                   {requestInfo.proTitle}
                 </p>
               )}
             </div>
           </div>
-          <p className="text-neutral-600 dark:text-neutral-400">
+          <p className="text-[var(--hm-fg-secondary)]">
             {t('reviews.requestedFeedback', { name: requestInfo?.proName || '' })}
           </p>
         </div>
 
         {/* Review Form */}
-        <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-lg">
-          <h1 className="text-xl font-bold text-neutral-900 dark:text-white mb-6">
+        <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-6 shadow-lg">
+          <h1 className="text-xl font-bold text-[var(--hm-fg-primary)] mb-6">
             {t('reviews.leaveReview')}
           </h1>
 
           {/* Rating */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
               {t('reviews.rating')} *
             </label>
             <div className="flex gap-2">
@@ -229,14 +229,14 @@ export default function ExternalReviewPage() {
                     className={`w-10 h-10 transition-colors ${
                       star <= (hoverRating || rating)
                         ? 'text-amber-400 fill-amber-400'
-                        : 'text-neutral-300 dark:text-neutral-600'
+                        : 'text-neutral-300'
                     }`}
                   />
                 </button>
               ))}
             </div>
             {rating > 0 && (
-              <p className="text-sm text-neutral-500 mt-1">
+              <p className="text-sm text-[var(--hm-fg-muted)] mt-1">
                 {getRatingLabel(rating)}
               </p>
             )}
@@ -244,7 +244,7 @@ export default function ExternalReviewPage() {
 
           {/* Review Text */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
               {t('reviews.yourReview')}
             </label>
             <Textarea
@@ -257,9 +257,9 @@ export default function ExternalReviewPage() {
 
           {/* Project Title */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
               {t('reviews.projectName')}
-              <span className="text-neutral-400 font-normal ml-1">
+              <span className="text-[var(--hm-fg-muted)] font-normal ml-1">
                 ({t('common.optional')})
               </span>
             </label>
@@ -271,10 +271,10 @@ export default function ExternalReviewPage() {
           </div>
 
           {/* Divider */}
-          <hr className="my-6 border-neutral-200 dark:border-neutral-700" />
+          <hr className="my-6 border-[var(--hm-border)]" />
 
           {/* Your Info */}
-          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">
+          <h3 className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-4">
             {t('reviews.yourInformation')}
           </h3>
 
@@ -285,9 +285,9 @@ export default function ExternalReviewPage() {
                 type="checkbox"
                 checked={isAnonymous}
                 onChange={(e) => setIsAnonymous(e.target.checked)}
-                className="w-5 h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
+                className="w-5 h-5 rounded border-[var(--hm-border-strong)] text-[var(--hm-brand-500)] focus:ring-[var(--hm-brand-500)]"
               />
-              <span className="text-sm text-neutral-700 dark:text-neutral-300">
+              <span className="text-sm text-[var(--hm-fg-secondary)]">
                 {t('reviews.leaveAnonymously')}
               </span>
             </label>
@@ -297,7 +297,7 @@ export default function ExternalReviewPage() {
             <>
               {/* Name */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                   {t('reviews.yourName')} *
                 </label>
                 <Input
@@ -309,9 +309,9 @@ export default function ExternalReviewPage() {
 
               {/* Phone (optional, for verification) */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                   {t('reviews.phoneNumber')}
-                  <span className="text-neutral-400 font-normal ml-1">
+                  <span className="text-[var(--hm-fg-muted)] font-normal ml-1">
                     ({t('reviews.optionalForVerification')})
                   </span>
                 </label>
@@ -321,7 +321,7 @@ export default function ExternalReviewPage() {
                   onChange={(e) => setClientPhone(e.target.value)}
                   placeholder="+995 555 123 456"
                 />
-                <p className="text-xs text-neutral-500 mt-1">
+                <p className="text-xs text-[var(--hm-fg-muted)] mt-1">
                   {t('reviews.verifiedReviewsTrusted')}
                 </p>
               </div>
@@ -344,9 +344,9 @@ export default function ExternalReviewPage() {
         </div>
 
         {/* Homico branding */}
-        <p className="text-center text-sm text-neutral-400 mt-6">
+        <p className="text-center text-sm text-[var(--hm-fg-muted)] mt-6">
           {t('reviews.reviewCollectedVia')}{' '}
-          <a href="https://homico.ge" className="text-[#C4735B] hover:underline">
+          <a href="https://homico.ge" className="text-[var(--hm-brand-500)] hover:underline">
             Homico
           </a>
         </p>

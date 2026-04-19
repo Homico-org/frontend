@@ -19,8 +19,8 @@ export default function ProRegisterPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">
-          <LoadingSpinner size="xl" variant="border" color="#C4735B" />
+        <div className="min-h-screen flex items-center justify-center bg-[var(--hm-bg-page)]">
+          <LoadingSpinner size="xl" variant="border" color="var(--hm-brand-500)" />
         </div>
       }
     >

@@ -147,7 +147,7 @@ export default function AddressPicker({
       animation: google.maps.Animation.DROP,
       icon: {
         path: 'M12 0C7.58 0 4 3.58 4 8c0 5.25 8 13 8 13s8-7.75 8-13c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
-        fillColor: '#E07B4F',
+        fillColor: 'var(--hm-brand-500)',
         fillOpacity: 1,
         strokeColor: '#ffffff',
         strokeWeight: 2.5,
@@ -359,8 +359,8 @@ export default function AddressPicker({
       <div className={`space-y-3 ${className}`}>
         {/* Label */}
         {label && (
-          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            {label} {required && <span className="text-[#C4735B]">*</span>}
+          <label className="block text-sm font-medium text-[var(--hm-fg-secondary)]">
+            {label} {required && <span className="text-[var(--hm-brand-500)]">*</span>}
           </label>
         )}
 
@@ -368,14 +368,14 @@ export default function AddressPicker({
         <div
           className={`rounded-2xl overflow-hidden relative group transition-all ${
             required && !selectedAddress
-              ? 'ring-2 ring-[#C4735B]/30 ring-offset-2'
+              ? 'ring-2 ring-[var(--hm-brand-500)]/30 ring-offset-2'
               : selectedAddress
                 ? 'ring-2 ring-emerald-500/30 ring-offset-2'
                 : ''
           }`}
           style={{
             height: '320px',
-            border: required && !selectedAddress ? '2px solid #C4735B' : selectedAddress ? '2px solid rgb(16 185 129 / 0.3)' : '1px solid var(--color-border)',
+            border: required && !selectedAddress ? '2px solid var(--hm-brand-500)' : selectedAddress ? '2px solid rgb(16 185 129 / 0.3)' : '1px solid var(--hm-border)',
             backgroundColor: isDarkMode ? '#28282c' : '#f8f9fa',
           }}
         >
@@ -395,7 +395,7 @@ export default function AddressPicker({
                     {isSearching ? (
                       <LoadingSpinner size="sm" color="#9ca3af" />
                     ) : (
-                      <Search className="w-4 h-4 text-neutral-400" />
+                      <Search className="w-4 h-4 text-[var(--hm-fg-muted)]" />
                     )}
                   </div>
                   <input
@@ -404,7 +404,7 @@ export default function AddressPicker({
                     onChange={(e) => handleSearch(e.target.value)}
                     onFocus={() => searchQuery && setShowSearchResults(true)}
                     placeholder={t('common.searchAddress')}
-                    className="w-full pl-10 pr-10 py-2.5 rounded-xl text-sm bg-white dark:bg-neutral-900 border-0 outline-none placeholder:text-neutral-400 text-neutral-900 dark:text-white"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl text-sm bg-[var(--hm-bg-elevated)] border-0 outline-none placeholder:text-[var(--hm-fg-muted)] text-[var(--hm-fg-primary)]"
                     style={{
                       boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                     }}
@@ -417,16 +417,16 @@ export default function AddressPicker({
                         setSearchResults([]);
                         setShowSearchResults(false);
                       }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                     >
-                      <X className="w-3.5 h-3.5 text-neutral-400" />
+                      <X className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
                     </button>
                   )}
 
                   {/* Search Results Dropdown */}
                   {showSearchResults && searchResults.length > 0 && (
                     <div
-                      className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden bg-white dark:bg-neutral-900"
+                      className="absolute top-full left-0 right-0 mt-2 rounded-xl overflow-hidden bg-[var(--hm-bg-elevated)]"
                       style={{
                         boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
                       }}
@@ -436,18 +436,18 @@ export default function AddressPicker({
                           type="button"
                           key={result.place_id}
                           onClick={() => selectSearchResult(result.place_id)}
-                          className="w-full px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors flex items-start gap-3 border-b border-neutral-100 dark:border-neutral-800 last:border-0"
+                          className="w-full px-4 py-3 text-left hover:bg-[var(--hm-bg-tertiary)] transition-colors flex items-start gap-3 border-b border-[var(--hm-border-subtle)] last:border-0"
                           style={{
                             animationDelay: `${index * 30}ms`,
                           }}
                         >
-                          <MapPin className="w-4 h-4 text-[#E07B4F] mt-0.5 flex-shrink-0" />
+                          <MapPin className="w-4 h-4 text-[var(--hm-brand-500)] mt-0.5 flex-shrink-0" />
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
+                            <p className="text-sm font-medium text-[var(--hm-fg-primary)] truncate">
                               {result.structured_formatting?.main_text || result.description}
                             </p>
                             {result.structured_formatting?.secondary_text && (
-                              <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
+                              <p className="text-xs text-[var(--hm-fg-muted)] truncate mt-0.5">
                                 {result.structured_formatting.secondary_text}
                               </p>
                             )}
@@ -495,15 +495,15 @@ export default function AddressPicker({
                   }}
                 >
                   <div
-                    className="px-4 py-3 rounded-xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md flex items-center gap-3"
+                    className="px-4 py-3 rounded-xl bg-white/95 backdrop-blur-md flex items-center gap-3"
                     style={{
                       boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
                     }}
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#E07B4F] flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center flex-shrink-0">
                       <MapPin className="w-4 h-4 text-white" />
                     </div>
-                    <p className="text-sm font-medium text-neutral-900 dark:text-white truncate flex-1">
+                    <p className="text-sm font-medium text-[var(--hm-fg-primary)] truncate flex-1">
                       {selectedAddress}
                     </p>
                   </div>
@@ -513,14 +513,14 @@ export default function AddressPicker({
               {/* Map hint - only show when no address selected */}
               {!selectedAddress && (
                 <div
-                  className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm text-xs font-medium pointer-events-none z-10"
+                  className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/95 backdrop-blur-sm text-xs font-medium pointer-events-none z-10"
                   style={{
-                    color: 'var(--color-text-secondary)',
+                    color: 'var(--hm-fg-secondary)',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                   }}
                 >
                   <span className="flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-[#E07B4F]" />
+                    <MapPin className="w-3.5 h-3.5 text-[var(--hm-brand-500)]" />
                     {t('common.clickOrDragMarker')}
                   </span>
                 </div>
@@ -528,8 +528,8 @@ export default function AddressPicker({
             </>
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-              <LoadingSpinner size="lg" color="#E07B4F" />
-              <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+              <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
+              <p className="text-sm font-medium text-[var(--hm-fg-muted)]">
                 {t('common.loadingMap')}
               </p>
             </div>
@@ -538,29 +538,29 @@ export default function AddressPicker({
 
         {/* Selected Address Display Below Map */}
         {selectedAddress ? (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20">
-            <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--hm-success-50)] border border-emerald-200">
+            <div className="w-8 h-8 rounded-full bg-[var(--hm-success-500)] flex items-center justify-center flex-shrink-0">
               <MapPin className="w-4 h-4 text-white" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-0.5">
+              <p className="text-xs font-medium text-[var(--hm-success-500)] mb-0.5">
                 {t('common.selectedAddress')}
               </p>
-              <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
+              <p className="text-sm font-medium text-[var(--hm-fg-primary)] truncate">
                 {selectedAddress}
               </p>
             </div>
           </div>
         ) : required ? (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#C4735B]/5 border border-[#C4735B]/20">
-            <div className="w-8 h-8 rounded-full bg-[#C4735B]/10 flex items-center justify-center flex-shrink-0">
-              <MapPin className="w-4 h-4 text-[#C4735B]" />
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20">
+            <div className="w-8 h-8 rounded-full bg-[var(--hm-brand-500)]/10 flex items-center justify-center flex-shrink-0">
+              <MapPin className="w-4 h-4 text-[var(--hm-brand-500)]" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-[#C4735B]">
+              <p className="text-sm font-medium text-[var(--hm-brand-500)]">
                 {t('common.pleaseSelectAnAddressOn')}
               </p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              <p className="text-xs text-[var(--hm-fg-muted)] mt-0.5">
                 {t('common.clickOnTheMapOr')}
               </p>
             </div>
@@ -571,7 +571,7 @@ export default function AddressPicker({
       {/* Fullscreen Modal - Portal to body */}
       {isFullscreen && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 bg-white dark:bg-neutral-950"
+          className="fixed inset-0 bg-[var(--hm-bg-elevated)]"
           style={{
             animation: 'fadeIn 0.2s ease-out',
             zIndex: 99999,
@@ -592,7 +592,7 @@ export default function AddressPicker({
                 {isSearching ? (
                   <LoadingSpinner size="md" color="#9ca3af" />
                 ) : (
-                  <Search className="w-5 h-5 text-neutral-400" />
+                  <Search className="w-5 h-5 text-[var(--hm-fg-muted)]" />
                 )}
               </div>
               <input
@@ -602,7 +602,7 @@ export default function AddressPicker({
                 onChange={(e) => handleSearch(e.target.value)}
                 onFocus={() => searchQuery && setShowSearchResults(true)}
                 placeholder={locale === 'ka' ? 'მოძებნე მისამართი...' : 'Search address...'}
-                className="w-full pl-12 pr-12 py-4 rounded-2xl text-base bg-white dark:bg-neutral-900 border-0 outline-none placeholder:text-neutral-400 text-neutral-900 dark:text-white"
+                className="w-full pl-12 pr-12 py-4 rounded-2xl text-base bg-[var(--hm-bg-elevated)] border-0 outline-none placeholder:text-[var(--hm-fg-muted)] text-[var(--hm-fg-primary)]"
               />
               {searchQuery && (
                 <button
@@ -612,16 +612,16 @@ export default function AddressPicker({
                     setSearchResults([]);
                     setShowSearchResults(false);
                   }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                 >
-                  <X className="w-4 h-4 text-neutral-400" />
+                  <X className="w-4 h-4 text-[var(--hm-fg-muted)]" />
                 </button>
               )}
 
               {/* Fullscreen Search Results */}
               {showSearchResults && searchResults.length > 0 && (
                 <div
-                  className="absolute top-full left-0 right-0 mt-3 rounded-2xl overflow-hidden bg-white dark:bg-neutral-900"
+                  className="absolute top-full left-0 right-0 mt-3 rounded-2xl overflow-hidden bg-[var(--hm-bg-elevated)]"
                   style={{
                     boxShadow: '0 12px 32px rgba(0,0,0,0.15)',
                   }}
@@ -631,20 +631,20 @@ export default function AddressPicker({
                       type="button"
                       key={result.place_id}
                       onClick={() => selectSearchResult(result.place_id)}
-                      className="w-full px-5 py-4 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors flex items-start gap-4 border-b border-neutral-100 dark:border-neutral-800 last:border-0"
+                      className="w-full px-5 py-4 text-left hover:bg-[var(--hm-bg-tertiary)] transition-colors flex items-start gap-4 border-b border-[var(--hm-border-subtle)] last:border-0"
                       style={{
                         animationDelay: `${index * 30}ms`,
                       }}
                     >
-                      <div className="w-10 h-10 rounded-full bg-[#E07B4F]/10 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-5 h-5 text-[#E07B4F]" />
+                      <div className="w-10 h-10 rounded-full bg-[var(--hm-brand-500)]/10 flex items-center justify-center flex-shrink-0">
+                        <MapPin className="w-5 h-5 text-[var(--hm-brand-500)]" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-base font-medium text-neutral-900 dark:text-white">
+                        <p className="text-base font-medium text-[var(--hm-fg-primary)]">
                           {result.structured_formatting?.main_text || result.description}
                         </p>
                         {result.structured_formatting?.secondary_text && (
-                          <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate mt-1">
+                          <p className="text-sm text-[var(--hm-fg-muted)] truncate mt-1">
                             {result.structured_formatting.secondary_text}
                           </p>
                         )}
@@ -691,19 +691,19 @@ export default function AddressPicker({
               }}
             >
               <div
-                className="px-5 py-4 rounded-2xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md flex items-center gap-4"
+                className="px-5 py-4 rounded-2xl bg-white/95 backdrop-blur-md flex items-center gap-4"
                 style={{
                   boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
                 }}
               >
-                <div className="w-12 h-12 rounded-full bg-[#E07B4F] flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-6 h-6 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-[#E07B4F] dark:text-[#CD853F] uppercase tracking-wide mb-1">
+                  <p className="text-xs font-medium text-[var(--hm-brand-500)] uppercase tracking-wide mb-1">
                     {locale === 'ka' ? 'არჩეული მისამართი' : 'Selected Address'}
                   </p>
-                  <p className="text-base font-medium text-neutral-900 dark:text-white truncate">
+                  <p className="text-base font-medium text-[var(--hm-fg-primary)] truncate">
                     {selectedAddress}
                   </p>
                 </div>
@@ -714,14 +714,14 @@ export default function AddressPicker({
           {/* Hint when no address */}
           {!selectedAddress && (
             <div
-              className="absolute left-1/2 -translate-x-1/2 px-6 py-3 rounded-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md text-sm font-medium text-neutral-600 dark:text-neutral-300 z-10"
+              className="absolute left-1/2 -translate-x-1/2 px-6 py-3 rounded-full bg-white/95 backdrop-blur-md text-sm font-medium text-[var(--hm-fg-secondary)] z-10"
               style={{
                 boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
                 bottom: '24px',
               }}
             >
               <span className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#E07B4F]" />
+                <MapPin className="w-4 h-4 text-[var(--hm-brand-500)]" />
                 {t('common.clickOnMapOrSearch')}
               </span>
             </div>

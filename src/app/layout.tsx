@@ -8,7 +8,7 @@ import "@/styles/globals.css";
 import type { Metadata, Viewport } from "next";
 
 export const viewport: Viewport = {
-  themeColor: "#C4735B",
+  themeColor: '#EF4E24',
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -110,6 +110,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Homico Design System fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Georgian:wght@400;500;600;700&family=Noto+Serif+Georgian:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
         {/* Chrome/Android PWA meta (pairs with appleWebApp capable) */}
         <meta name="mobile-web-app-capable" content="yes" />
 
@@ -205,7 +210,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           }}
         />
       </head>
-      <body style={{ backgroundColor: "var(--color-bg-app)" }}>
+      <body style={{ backgroundColor: "var(--hm-bg-page)" }}>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe

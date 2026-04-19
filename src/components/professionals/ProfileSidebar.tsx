@@ -70,17 +70,17 @@ export default function ProfileSidebar({
               group relative flex items-center gap-3 px-4 py-3.5 rounded-2xl
               font-medium text-[13px] transition-all duration-300 ease-out
               ${isActive
-                ? "text-white shadow-lg shadow-[#C4735B]/25"
-                : "text-neutral-600 dark:text-neutral-400 hover:bg-gradient-to-r hover:from-[#C4735B]/5 hover:to-[#C4735B]/10 dark:hover:from-[#C4735B]/10 dark:hover:to-[#C4735B]/5"
+                ? "text-white shadow-lg shadow-[var(--hm-brand-500)]/25"
+                : "text-[var(--hm-fg-secondary)] hover:bg-gradient-to-r hover:from-[var(--hm-brand-500)]/5 hover:to-[var(--hm-brand-500)]/10"
               }
             `}
             style={isActive ? {
-              background: "linear-gradient(135deg, #C4735B 0%, #B5624A 50%, #A85D4A 100%)",
+              background: "linear-gradient(135deg, var(--hm-brand-500) 0%, var(--hm-brand-600) 50%, var(--hm-brand-700) 100%)",
             } : {}}
           >
             {/* Active glow effect */}
             {isActive && (
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#C4735B] to-[#A85D4A] blur-xl opacity-40 -z-10" />
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[var(--hm-brand-500)] to-[#A92B08] blur-xl opacity-40 -z-10" />
             )}
 
             {/* Icon */}
@@ -88,14 +88,14 @@ export default function ProfileSidebar({
               className={`transition-all duration-300 ${
                 isActive
                   ? "text-white"
-                  : "text-neutral-500 dark:text-neutral-400 group-hover:text-[#C4735B] group-hover:scale-110"
+                  : "text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)] group-hover:scale-110"
               }`}
             >
               {item.icon}
             </span>
 
             {/* Label */}
-            <span className={`flex-1 text-left tracking-wide ${isActive ? "" : "group-hover:text-neutral-900 dark:group-hover:text-neutral-100"}`}>
+            <span className={`flex-1 text-left tracking-wide ${isActive ? "" : "group-hover:text-[var(--hm-fg-primary)]"}`}>
               {locale === "ka" ? item.labelKa : item.label}
             </span>
 
@@ -107,7 +107,7 @@ export default function ProfileSidebar({
                 className={`!min-w-[22px] !h-[22px] !px-1.5 !text-[11px] !font-semibold transition-all ${
                   isActive
                     ? "!bg-white/25 !text-white !border-white/20"
-                    : "!bg-neutral-100 dark:!bg-neutral-800 !text-neutral-600 dark:!text-neutral-300 group-hover:!bg-[#C4735B]/10 group-hover:!text-[#C4735B] group-hover:!border-[#C4735B]/20"
+                    : "!bg-[var(--hm-bg-tertiary)] !text-[var(--hm-fg-secondary)] group-hover:!bg-[var(--hm-brand-500)]/10 group-hover:!text-[var(--hm-brand-500)] group-hover:!border-[var(--hm-brand-500)]/20"
                 }`}
               >
                 {item.count > 99 ? "99+" : item.count}
@@ -152,7 +152,7 @@ export function ProfileSidebarMobile({
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-1.5 sm:gap-2 p-0.5 sm:p-1 bg-neutral-100/80 dark:bg-neutral-800/50 rounded-xl sm:rounded-2xl">
+    <div className="grid grid-cols-3 gap-1.5 sm:gap-2 p-0.5 sm:p-1 bg-neutral-100/50 rounded-xl sm:rounded-2xl">
       {menuItems.map((item) => {
         const isActive = activeTab === item.key;
 
@@ -164,15 +164,15 @@ export function ProfileSidebarMobile({
               relative flex flex-col items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-2.5 sm:py-3 rounded-lg sm:rounded-xl
               font-semibold text-[10px] sm:text-[11px] leading-tight transition-all duration-300 ease-out
               ${isActive
-                ? "text-white shadow-lg shadow-[#C4735B]/30"
-                : "text-neutral-600 dark:text-neutral-300 hover:bg-white/50 dark:hover:bg-neutral-700/50"
+                ? "text-white shadow-lg shadow-[var(--hm-brand-500)]/30"
+                : "text-[var(--hm-fg-secondary)] hover:bg-white/50"
               }
             `}
             style={isActive ? {
-              background: "linear-gradient(135deg, #C4735B 0%, #B5624A 50%, #A85D4A 100%)",
+              background: "linear-gradient(135deg, var(--hm-brand-500) 0%, var(--hm-brand-600) 50%, var(--hm-brand-700) 100%)",
             } : {}}
           >
-            <span className={`transition-all duration-300 ${isActive ? "text-white scale-110" : "text-neutral-500 dark:text-neutral-400"}`}>
+            <span className={`transition-all duration-300 ${isActive ? "text-white scale-110" : "text-[var(--hm-fg-muted)]"}`}>
               {item.icon}
             </span>
             <span className="text-center px-0.5 tracking-wide">
@@ -186,8 +186,8 @@ export function ProfileSidebarMobile({
                 size="xs"
                 className={`absolute -top-0.5 -right-0.5 !min-w-[18px] sm:!min-w-[20px] !h-[18px] sm:!h-[20px] !px-1 !text-[9px] sm:!text-[10px] !font-bold transition-all ${
                   isActive
-                    ? "!bg-white !text-[#C4735B] !border-white shadow-sm"
-                    : "!bg-neutral-200 dark:!bg-neutral-700 !text-neutral-600 dark:!text-neutral-300"
+                    ? "!bg-white !text-[var(--hm-brand-500)] !border-white shadow-sm"
+                    : "!bg-[var(--hm-n-200)] !text-[var(--hm-fg-secondary)]"
                 }`}
               >
                 {item.count > 9 ? "9+" : item.count}

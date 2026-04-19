@@ -156,17 +156,17 @@ const FeedCard = React.memo(function FeedCard({
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
         {/* Premium border glow effect - hidden on mobile for performance */}
-        <div className="hidden sm:block absolute -inset-[1px] rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#C4735B]/0 via-[#C4735B]/0 to-[#C4735B]/0 group-hover:from-[#C4735B]/30 group-hover:via-[#D4937B]/15 group-hover:to-[#C4735B]/30 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
+        <div className="hidden sm:block absolute -inset-[1px] rounded-xl sm:rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)]/0 via-[var(--hm-brand-500)]/0 to-[var(--hm-brand-500)]/0 group-hover:from-[var(--hm-brand-500)]/30 group-hover:via-[#F06B43]/15 group-hover:to-[var(--hm-brand-500)]/30 transition-all duration-500 opacity-0 group-hover:opacity-100 blur-[1px]" />
 
         {/* Main Card */}
-        <div className="relative h-full flex flex-col bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm sm:shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[#C4735B]/25 transition-all duration-500 sm:group-hover:shadow-[0_20px_50px_-12px_rgba(196,115,91,0.15)]">
+        <div className="relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] shadow-sm sm:shadow-[0_1px_0_rgba(0,0,0,0.03),0_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:border-[var(--hm-brand-500)]/25 transition-all duration-500 sm:group-hover:shadow-[0_20px_50px_-12px_rgba(239,78,36,0.15)]">
           {/* Shine effect overlay - desktop only */}
           <div className="hidden sm:block absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-30">
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
           </div>
 
           {/* Decorative corner accent - desktop only */}
-          <div className="hidden sm:block absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[#C4735B]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
+          <div className="hidden sm:block absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[var(--hm-brand-500)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
 
           {/* Image Section */}
           <div className="relative">
@@ -174,7 +174,7 @@ const FeedCard = React.memo(function FeedCard({
             {item.isVerified !== undefined && (
               <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-20">
                 {item.isVerified ? (
-                  <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-emerald-500/90 backdrop-blur-md text-white text-[9px] sm:text-[11px] font-semibold shadow-lg border border-white/20">
+                  <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-[var(--hm-success-500)]/90 backdrop-blur-md text-white text-[9px] sm:text-[11px] font-semibold shadow-lg border border-white/20">
                     <BadgeCheck className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
                     <span className="hidden sm:inline">{t("browse.viaHomico")}</span>
                     <span className="sm:hidden">✓</span>
@@ -196,7 +196,7 @@ const FeedCard = React.memo(function FeedCard({
               />
             ) : (
               <div
-                className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-800 overflow-hidden"
+                className="relative aspect-[4/3] bg-[var(--hm-bg-tertiary)] overflow-hidden"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
               >
@@ -271,9 +271,9 @@ const FeedCard = React.memo(function FeedCard({
                       );
                     })()
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-800 dark:to-neutral-700">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--hm-bg-tertiary)] to-[var(--hm-border)]">
                       <svg
-                        className="w-12 h-12 text-neutral-300 dark:text-neutral-600"
+                        className="w-12 h-12 text-[var(--hm-n-300)]"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -309,7 +309,7 @@ const FeedCard = React.memo(function FeedCard({
                       whileTap={{ scale: 0.95 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <ChevronLeft className="w-5 h-5 text-neutral-700" />
+                      <ChevronLeft className="w-5 h-5 text-[var(--hm-fg-secondary)]" />
                     </motion.button>
                     <motion.button
                       onClick={nextImage}
@@ -320,7 +320,7 @@ const FeedCard = React.memo(function FeedCard({
                       whileTap={{ scale: 0.95 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <ChevronRight className="w-5 h-5 text-neutral-700" />
+                      <ChevronRight className="w-5 h-5 text-[var(--hm-fg-secondary)]" />
                     </motion.button>
 
                     {/* Image Counter Indicator */}
@@ -329,7 +329,7 @@ const FeedCard = React.memo(function FeedCard({
                         {/* Progress bar - hidden on mobile */}
                         <div className="hidden sm:block w-12 h-1 rounded-full bg-white/30 overflow-hidden">
                           <motion.div
-                            className="h-full bg-white rounded-full"
+                            className="h-full bg-[var(--hm-bg-elevated)] rounded-full"
                             initial={false}
                             animate={{
                               width: `${((currentImageIndex + 1) / totalImages) * 100}%`,
@@ -374,20 +374,20 @@ const FeedCard = React.memo(function FeedCard({
           <div className="p-2.5 sm:p-4 flex-1 flex flex-col">
             {/* Service Type + Subcategories */}
             <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
-              <div className="flex items-center gap-1 text-[10px] sm:text-[12px] font-semibold text-[#C4735B]">
+              <div className="flex items-center gap-1 text-[10px] sm:text-[12px] font-semibold text-[var(--hm-brand-500)]">
                 <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                 <span className="truncate">{getCategoryLabel()}</span>
               </div>
               {item.subcategories && item.subcategories.length > 0 && (
                 <>
-                  <span className="text-neutral-300 dark:text-neutral-600 text-[10px]">·</span>
+                  <span className="text-[var(--hm-n-300)] text-[10px]">·</span>
                   {item.subcategories.slice(0, 2).map((sub) => (
-                    <span key={sub} className="text-[9px] sm:text-[10px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded-full">
+                    <span key={sub} className="text-[9px] sm:text-[10px] font-medium text-[var(--hm-fg-muted)] bg-[var(--hm-bg-tertiary)] px-1.5 py-0.5 rounded-full">
                       {getCategoryLabelStatic(sub, locale)}
                     </span>
                   ))}
                   {item.subcategories.length > 2 && (
-                    <span className="text-[9px] sm:text-[10px] font-semibold text-[#C4735B]">
+                    <span className="text-[9px] sm:text-[10px] font-semibold text-[var(--hm-brand-500)]">
                       +{item.subcategories.length - 2}
                     </span>
                   )}
@@ -398,11 +398,11 @@ const FeedCard = React.memo(function FeedCard({
             {/* Title Row */}
             <div className="flex items-start justify-between gap-2 sm:gap-3 mb-1.5 sm:mb-2">
               <div className="relative min-w-0 flex-1">
-                <h3 className="font-semibold text-[13px] sm:text-base text-neutral-900 dark:text-white leading-tight line-clamp-2 group-hover:text-[#C4735B] transition-colors duration-300">
+                <h3 className="font-semibold text-[13px] sm:text-base text-[var(--hm-fg-primary)] leading-tight line-clamp-2 group-hover:text-[var(--hm-brand-500)] transition-colors duration-300">
                   {svcNameMap[item.title?.toLowerCase().replace(/[\s-]+/g, '_')] || svcNameMap[item.category || ''] || item.title}
                 </h3>
                 {/* Animated underline - desktop only */}
-                <span className="hidden sm:block absolute -bottom-0.5 left-0 w-0 h-[2px] bg-gradient-to-r from-[#C4735B] via-[#D4937B] to-[#C4735B] group-hover:w-full transition-all duration-500 ease-out rounded-full" />
+                <span className="hidden sm:block absolute -bottom-0.5 left-0 w-0 h-[2px] bg-gradient-to-r from-[var(--hm-brand-500)] via-[#F06B43] to-[var(--hm-brand-500)] group-hover:w-full transition-all duration-500 ease-out rounded-full" />
               </div>
 
               {/* Rating or New badge */}
@@ -411,7 +411,7 @@ const FeedCard = React.memo(function FeedCard({
                   rating={item.pro.rating}
                   size="xs"
                   starColor={ACCENT_COLOR}
-                  className="flex-shrink-0 [&>span]:!text-[#C4735B]"
+                  className="flex-shrink-0 [&>span]:!text-[var(--hm-brand-500)]"
                 />
               ) : isNew ? (
                 <StatusPill
@@ -424,7 +424,7 @@ const FeedCard = React.memo(function FeedCard({
 
             {/* Description or Bio - hidden on mobile, max 2 lines on desktop */}
             {(item.description || item.pro.bio) && (
-              <p className="hidden sm:line-clamp-2 text-sm text-neutral-500 dark:text-neutral-400 mb-4 leading-relaxed">
+              <p className="hidden sm:line-clamp-2 text-sm text-[var(--hm-fg-muted)] mb-4 leading-relaxed">
                 {item.description || item.pro.bio}
               </p>
             )}
@@ -440,10 +440,10 @@ const FeedCard = React.memo(function FeedCard({
                     size="xs"
                     className="w-5 h-5 sm:w-7 sm:h-7"
                   />
-                  <div className="hidden sm:block absolute -inset-0.5 rounded-full border-2 border-transparent group-hover/pro:border-[#C4735B]/30 transition-all duration-300" />
+                  <div className="hidden sm:block absolute -inset-0.5 rounded-full border-2 border-transparent group-hover/pro:border-[var(--hm-brand-500)]/30 transition-all duration-300" />
                 </div>
                 {/* Name with hover color */}
-                <span className="text-[11px] sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 truncate group-hover/pro:text-[#C4735B] transition-colors duration-300">
+                <span className="text-[11px] sm:text-sm font-medium text-[var(--hm-fg-secondary)] truncate group-hover/pro:text-[var(--hm-brand-500)] transition-colors duration-300">
                   {item.pro.name}
                 </span>
               </div>

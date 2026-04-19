@@ -12,7 +12,7 @@ const tools = [
     icon: FileSearch,
     accentColor: "terracotta",
     featured: true,
-    gradient: "from-[#C4735B] via-[#D4836B] to-[#B4634B]",
+    gradient: "from-[var(--hm-brand-500)] via-[#D4836B] to-[#B4634B]",
   },
   {
     id: "prices",
@@ -28,7 +28,7 @@ const tools = [
     icon: Calculator,
     accentColor: "terracotta",
     featured: false,
-    gradient: "from-[#C4735B] via-[#D4836B] to-[#B4634B]",
+    gradient: "from-[var(--hm-brand-500)] via-[#D4836B] to-[#B4634B]",
   },
   {
     id: "compare",
@@ -74,7 +74,7 @@ export default function ToolsPage() {
             >
               {/* Outer glow on hover - desktop only */}
               <div
-                className={`hidden sm:block absolute -inset-1 rounded-[28px] bg-gradient-to-r ${tool.gradient} opacity-0 blur-xl transition-opacity duration-500 ${
+                className={`hidden sm:block absolute -inset-1  bg-gradient-to-r ${tool.gradient} opacity-0 blur-xl transition-opacity duration-500 ${
                   isHovered ? "opacity-30" : ""
                 }`}
               />
@@ -84,8 +84,8 @@ export default function ToolsPage() {
                   relative overflow-hidden rounded-2xl sm:rounded-3xl
                   bg-gradient-to-br ${tool.gradient}
                   transition-all duration-500 ease-out
-                  shadow-lg shadow-[#C4735B]/20
-                  ${isHovered ? "sm:-translate-y-1 sm:shadow-2xl sm:shadow-[#C4735B]/30" : ""}
+                  shadow-lg shadow-[var(--hm-brand-500)]/20
+                  ${isHovered ? "sm:-translate-y-1 sm:shadow-2xl sm:shadow-[var(--hm-brand-500)]/30" : ""}
                 `}
               >
                 {/* Glass overlay pattern - desktop only */}
@@ -186,7 +186,7 @@ export default function ToolsPage() {
             const isHovered = hoveredTool === tool.id;
             const Icon = tool.icon;
             const isTerracotta = tool.accentColor === "terracotta";
-            const accentColor = isTerracotta ? "#C4735B" : "#2D5A47";
+            const accentColor = isTerracotta ? "var(--hm-brand-500)" : "#2D5A47";
 
             return (
               <Link
@@ -201,7 +201,7 @@ export default function ToolsPage() {
               >
                 {/* Outer glow on hover - desktop only */}
                 <div
-                  className={`hidden sm:block absolute -inset-0.5 rounded-[22px] bg-gradient-to-br ${tool.gradient} opacity-0 blur-lg transition-all duration-500 ${
+                  className={`hidden sm:block absolute -inset-0.5  bg-gradient-to-br ${tool.gradient} opacity-0 blur-lg transition-all duration-500 ${
                     isHovered ? "opacity-40" : ""
                   }`}
                 />
@@ -209,13 +209,13 @@ export default function ToolsPage() {
                 <div
                   className={`
                     relative overflow-hidden rounded-xl sm:rounded-2xl h-full
-                    bg-white dark:bg-neutral-900
-                    border border-neutral-200/60 dark:border-neutral-800/60
+                    bg-[var(--hm-bg-elevated)]
+                    border border-neutral-200/60
                     transition-all duration-500 ease-out
                     shadow-sm sm:shadow-md
                     ${
                       isHovered
-                        ? "sm:-translate-y-1.5 sm:shadow-xl sm:border-neutral-300/80 dark:sm:border-neutral-700/80"
+                        ? "sm:-translate-y-1.5 sm:shadow-xl sm:border-neutral-300/80"
                         : ""
                     }
                   `}
@@ -247,15 +247,15 @@ export default function ToolsPage() {
                         transition-all duration-500 border
                         ${
                           isTerracotta
-                            ? "bg-gradient-to-br from-[#C4735B]/10 to-[#C4735B]/5 border-[#C4735B]/20 dark:from-[#C4735B]/20 dark:to-[#C4735B]/10 dark:border-[#C4735B]/30"
-                            : "bg-gradient-to-br from-[#2D5A47]/10 to-[#2D5A47]/5 border-[#2D5A47]/20 dark:from-[#2D5A47]/20 dark:to-[#2D5A47]/10 dark:border-[#2D5A47]/30"
+                            ? "bg-gradient-to-br from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border-[var(--hm-brand-500)]/20"
+                            : "bg-gradient-to-br from-[#2D5A47]/10 to-[#2D5A47]/5 border-[#2D5A47]/20"
                         }
                         ${isHovered ? "sm:scale-110 sm:rotate-6" : ""}
                       `}
                     >
                       <Icon
                         className={`w-5 h-5 sm:w-7 sm:h-7 ${
-                          isTerracotta ? "text-[#C4735B]" : "text-[#2D5A47]"
+                          isTerracotta ? "text-[var(--hm-brand-500)]" : "text-[#2D5A47]"
                         }`}
                         strokeWidth={1.5}
                       />
@@ -263,10 +263,10 @@ export default function ToolsPage() {
 
                     {/* Title */}
                     <h2
-                      className={`text-[11px] sm:text-xl font-bold text-neutral-900 dark:text-white mb-0 sm:mb-2.5 transition-colors duration-300 leading-tight ${
+                      className={`text-[11px] sm:text-xl font-bold text-[var(--hm-fg-primary)] mb-0 sm:mb-2.5 transition-colors duration-300 leading-tight ${
                         isHovered
                           ? isTerracotta
-                            ? "sm:text-[#C4735B]"
+                            ? "sm:text-[var(--hm-brand-500)]"
                             : "sm:text-[#2D5A47]"
                           : ""
                       }`}
@@ -275,7 +275,7 @@ export default function ToolsPage() {
                     </h2>
 
                     {/* Description - desktop only */}
-                    <p className="hidden sm:block text-sm text-neutral-600 dark:text-neutral-400 mb-4 leading-relaxed line-clamp-2">
+                    <p className="hidden sm:block text-sm text-[var(--hm-fg-secondary)] mb-4 leading-relaxed line-clamp-2">
                       {toolT.description}
                     </p>
 
@@ -285,8 +285,8 @@ export default function ToolsPage() {
                         hidden sm:inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300
                         ${
                           isTerracotta
-                            ? "bg-[#C4735B]/10 text-[#C4735B] dark:bg-[#C4735B]/20 dark:text-[#D4836B]"
-                            : "bg-[#2D5A47]/10 text-[#2D5A47] dark:bg-[#2D5A47]/20 dark:text-[#4D7A67]"
+                            ? "bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]"
+                            : "bg-[#2D5A47]/10 text-[#2D5A47]"
                         }
                       `}
                     >
