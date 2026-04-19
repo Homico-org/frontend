@@ -1,14 +1,15 @@
 'use client';
 
+import { FilterPills } from '@/components/ui/FilterPills';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 // Budget filter options
 const BUDGET_FILTERS = [
-  { key: 'all', name: 'Any Budget', nameKa: 'ნებისმიერი' },
-  { key: 'under-500', name: 'Under ₾500', nameKa: '₾500-მდე', max: 500 },
-  { key: '500-2000', name: '₾500 - ₾2000', nameKa: '₾500 - ₾2000', min: 500, max: 2000 },
-  { key: '2000-5000', name: '₾2000 - ₾5000', nameKa: '₾2000 - ₾5000', min: 2000, max: 5000 },
-  { key: 'over-5000', name: 'Over ₾5000', nameKa: '₾5000+', min: 5000 },
+  { key: 'all', name: 'Any Budget', nameKa: 'ნებისმიერი', nameRu: 'Любой' },
+  { key: 'under-500', name: 'Under ₾500', nameKa: '₾500-მდე', nameRu: 'До ₾500', max: 500 },
+  { key: '500-2000', name: '₾500 - ₾2000', nameKa: '₾500 - ₾2000', nameRu: '₾500 - ₾2000', min: 500, max: 2000 },
+  { key: '2000-5000', name: '₾2000 - ₾5000', nameKa: '₾2000 - ₾5000', nameRu: '₾2000 - ₾5000', min: 2000, max: 5000 },
+  { key: 'over-5000', name: 'Over ₾5000', nameKa: '₾5000+', nameRu: 'Больше ₾5000', min: 5000 },
 ];
 
 export { BUDGET_FILTERS };
@@ -22,30 +23,24 @@ export default function JobsFilterSection({
   selectedBudget,
   onSelectBudget,
 }: JobsFilterSectionProps) {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
 
   return (
     <div className="w-full">
-      {/* Budget Filter - compact styling */}
-      <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-0.5 -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap">
-        <span className="text-[11px] text-[var(--hm-fg-muted)] mr-1 flex-shrink-0 font-medium">
+      <div className="flex items-center gap-2">
+        <span className="text-[11px] text-[var(--hm-fg-muted)] flex-shrink-0 font-medium">
           {t('common.budget')}
         </span>
-        {BUDGET_FILTERS.map((budget) => (
-          <button
-            key={budget.key}
-            onClick={() => onSelectBudget(budget.key)}
-            className={`
-              px-2 py-1.5 rounded text-[11px] font-medium transition-all duration-150 flex-shrink-0
-              ${selectedBudget === budget.key
-                ? 'bg-[var(--hm-brand-500)]/15 text-[var(--hm-brand-500)]'
-                : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-brand-500)]/5'
-              }
-            `}
-          >
-            {locale === 'ka' ? budget.nameKa : budget.name}
-          </button>
-        ))}
+        <FilterPills
+          size="sm"
+          activeVariant="terracotta"
+          value={selectedBudget}
+          onChange={onSelectBudget}
+          options={BUDGET_FILTERS.map((b) => ({
+            key: b.key,
+            label: pick({ en: b.name, ka: b.nameKa, ru: b.nameRu }),
+          }))}
+        />
       </div>
     </div>
   );

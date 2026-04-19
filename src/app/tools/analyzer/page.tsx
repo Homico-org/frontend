@@ -31,6 +31,8 @@ import {
 
 // UI Components
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/input';
 
 // Tools Components
 import { categoryIconMap } from '@/components/tools/prices/categoryIcons';
@@ -184,7 +186,7 @@ const extractTextFromFile = async (file: File): Promise<string> => {
 };
 
 export default function AnalyzerPage() {
-  const { t, locale } = useLanguage();
+  const { t, locale, pick } = useLanguage();
 
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [estimateText, setEstimateText] = useState('');
@@ -278,8 +280,7 @@ export default function AnalyzerPage() {
 
   const handleDemo = useCallback(() => {
     // Demo estimate text
-    const demoText = locale === 'ka'
-      ? `რემონტის ხარჯთაღრიცხვა - 80კვმ ბინა
+    const demoTextKa = `რემონტის ხარჯთაღრიცხვა - 80კვმ ბინა
 
 ელექტრიკა:
 - ელექტროწერტილები (56 ცალი) - 60₾ თითო = 3,360₾
@@ -311,8 +312,8 @@ export default function AnalyzerPage() {
 - შიდა კარები (4 ცალი) - 200₾ თითო = 800₾
 
 გათბობა:
-- რადიატორების მონტაჟი (8 ცალი) - ფასი არ არის მითითებული`
-      : `Renovation Estimate - 80sqm Apartment
+- რადიატორების მონტაჟი (8 ცალი) - ფასი არ არის მითითებული`;
+    const demoTextEn = `Renovation Estimate - 80sqm Apartment
 
 Electrical:
 - Electrical points (56 pcs) - 60₾ each = 3,360₾
@@ -345,10 +346,11 @@ Doors:
 
 Heating:
 - Radiator installation (8 pcs) - price not specified`;
+    const demoText = pick({ en: demoTextEn, ka: demoTextKa });
 
     setEstimateText(demoText);
     analyzeWithAI(demoText);
-  }, [locale, analyzeWithAI]);
+  }, [pick, analyzeWithAI]);
 
   const resetAnalysis = useCallback(() => {
     setAnalysis(null);
@@ -378,7 +380,7 @@ Heating:
         return {
           bg: 'bg-[var(--hm-info-50)]/20',
           text: 'text-[var(--hm-info-500)]',
-          border: 'border-blue-200',
+          border: 'border-[var(--hm-info-500)]/20',
           icon: TrendingDown,
         };
       case 'normal':
@@ -392,14 +394,14 @@ Heating:
         return {
           bg: 'bg-[var(--hm-warning-50)]/20',
           text: 'text-[var(--hm-warning-500)]',
-          border: 'border-amber-200',
+          border: 'border-[var(--hm-warning-500)]/20',
           icon: TrendingUp,
         };
       case 'very_high':
         return {
           bg: 'bg-[var(--hm-error-50)]/20',
           text: 'text-[var(--hm-error-500)]',
-          border: 'border-red-200',
+          border: 'border-[var(--hm-error-500)]/20',
           icon: TrendingUp,
         };
       case 'missing':
@@ -411,9 +413,9 @@ Heating:
         };
       default:
         return {
-          bg: 'bg-neutral-100',
-          text: 'text-neutral-600',
-          border: 'border-neutral-200',
+          bg: 'bg-[var(--hm-bg-tertiary)]',
+          text: 'text-[var(--hm-fg-secondary)]',
+          border: 'border-[var(--hm-border)]',
           icon: Minus,
         };
     }
@@ -457,7 +459,7 @@ Heating:
         <div className="mx-auto max-w-3xl">
           {/* Error Display */}
           {error && (
-            <div className="mb-6 p-4 bg-[var(--hm-error-50)]/20 border border-red-200 rounded-xl">
+            <div className="mb-6 p-4 bg-[var(--hm-error-50)]/20 border border-[var(--hm-error-500)]/20 rounded-xl">
               <div className="flex items-center gap-3">
                 <AlertTriangle className="w-5 h-5 text-[var(--hm-error-500)] flex-shrink-0" />
                 <p className="text-sm text-[var(--hm-error-500)]">{error}</p>
@@ -469,28 +471,22 @@ Heating:
             <>
               {/* Mode Tabs */}
               <div className="flex gap-2 mb-5">
-                <button
+                <Button
+                  variant={inputMode === 'text' ? 'default' : 'outline'}
                   onClick={() => setInputMode('text')}
-                  className={`flex-1 px-4 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
-                    inputMode === 'text'
-                      ? 'bg-[var(--hm-brand-500)] text-white shadow-lg shadow-[var(--hm-brand-500)]/25'
-                      : 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-300)]'
-                  }`}
+                  className="flex-1 px-4 py-3 h-auto rounded-xl font-medium text-sm"
                 >
-                  <FileText className="w-4 h-4" strokeWidth={1.5} />
+                  <FileText className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   {t('tools.analyzer.pasteText')}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant={inputMode === 'upload' ? 'default' : 'outline'}
                   onClick={() => setInputMode('upload')}
-                  className={`flex-1 px-4 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
-                    inputMode === 'upload'
-                      ? 'bg-[var(--hm-brand-500)] text-white shadow-lg shadow-[var(--hm-brand-500)]/25'
-                      : 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-300)]'
-                  }`}
+                  className="flex-1 px-4 py-3 h-auto rounded-xl font-medium text-sm"
                 >
-                  <Upload className="w-4 h-4" strokeWidth={1.5} />
+                  <Upload className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   {t('tools.analyzer.uploadFile')}
-                </button>
+                </Button>
               </div>
 
               {inputMode === 'text' ? (
@@ -500,22 +496,22 @@ Heating:
                     <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                       {t('tools.analyzer.pasteEstimate')}
                     </label>
-                    <textarea
+                    <Textarea
+                      variant="filled"
                       value={estimateText}
                       onChange={(e) => setEstimateText(e.target.value)}
                       placeholder={t('tools.analyzer.textPlaceholder')}
                       rows={10}
-                      className="w-full px-4 py-3 bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] rounded-xl text-sm text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)]/50 focus:border-[var(--hm-brand-500)] transition-all resize-none"
                     />
                   </div>
-                  <button
+                  <Button
                     onClick={handleTextAnalyze}
                     disabled={!estimateText.trim()}
-                    className="w-full px-6 py-3.5 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] disabled:bg-neutral-300 text-white disabled:text-[var(--hm-fg-muted)] font-semibold rounded-xl shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-[var(--hm-brand-500)]/40 disabled:shadow-none transition-all flex items-center justify-center gap-2"
+                    className="w-full px-6 py-3.5 h-auto rounded-xl font-semibold"
                   >
-                    <Sparkles className="w-4 h-4" strokeWidth={1.5} />
+                    <Sparkles className="w-4 h-4 mr-2" strokeWidth={1.5} />
                     {t('tools.analyzer.analyzeButton')}
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 /* Upload Mode */
@@ -530,7 +526,7 @@ Heating:
                     ${
                       isDragOver
                         ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-50)] scale-[1.01]'
-                        : 'border-[var(--hm-border)] hover:border-terracotta-400 hover:bg-[var(--hm-bg-tertiary)]'
+                        : 'border-[var(--hm-border)] hover:border-[var(--hm-brand-500)] hover:bg-[var(--hm-bg-tertiary)]'
                     }
                   `}
                 >
@@ -546,7 +542,7 @@ Heating:
                     <div
                       className={`
                       mx-auto w-16 h-16 rounded-2xl flex items-center justify-center
-                      bg-gradient-to-br from-terracotta-100 to-terracotta-200
+                      bg-gradient-to-br from-[var(--hm-brand-50)] to-[var(--hm-brand-100)]
                       transition-transform duration-200
                       ${isDragOver ? 'scale-110' : ''}
                     `}
@@ -565,12 +561,15 @@ Heating:
 
                   <div className="flex items-center justify-center gap-3">
                     <span className="text-sm text-[var(--hm-fg-muted)]">{t('tools.analyzer.orTakePhoto')}</span>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
                       onClick={(e) => e.stopPropagation()}
-                      className="p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-border)] transition-colors"
+                      className="rounded-xl bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-border)]"
+                      aria-label={t('tools.analyzer.takePhoto') || 'Take photo'}
                     >
                       <Camera className="w-5 h-5 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -594,13 +593,13 @@ Heating:
 
               {/* Demo Button */}
               <div className="mt-8 text-center">
-                <button
+                <Button
                   onClick={handleDemo}
-                  className="group inline-flex items-center gap-2 px-8 py-4 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white font-semibold rounded-xl shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-[var(--hm-brand-500)]/40 transition-all"
+                  className="group px-8 py-4 h-auto rounded-xl font-semibold"
                 >
                   {t('tools.analyzer.tryDemo')}
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
-                </button>
+                  <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
+                </Button>
               </div>
             </>
           ) : isAnalyzing ? (
@@ -608,7 +607,7 @@ Heating:
             <div className="flex flex-col items-center justify-center py-20">
               <div className="relative w-24 h-24 mb-8">
                 <div className="absolute inset-0 rounded-full border-4 border-[var(--hm-brand-200)]" />
-                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-terracotta-500 animate-spin" />
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[var(--hm-brand-500)] animate-spin" />
                 <div className="absolute inset-3 rounded-full bg-[var(--hm-brand-50)] flex items-center justify-center">
                   <FileSearch className="w-8 h-8 text-[var(--hm-brand-500)] animate-pulse" strokeWidth={1.5} />
                 </div>
@@ -644,16 +643,16 @@ Heating:
                 ${aiAnalysis.overallAssessment === 'fair'
                   ? 'bg-[var(--hm-bg-tertiary)] border-[var(--hm-border)]'
                   : aiAnalysis.overallAssessment === 'cheap'
-                  ? 'bg-[var(--hm-info-50)]/20 border-blue-200'
+                  ? 'bg-[var(--hm-info-50)]/20 border-[var(--hm-info-500)]/20'
                   : aiAnalysis.overallAssessment === 'expensive'
-                  ? 'bg-[var(--hm-error-50)]/20 border-red-200'
-                  : 'bg-[var(--hm-warning-50)]/20 border-amber-200'
+                  ? 'bg-[var(--hm-error-50)]/20 border-[var(--hm-error-500)]/20'
+                  : 'bg-[var(--hm-warning-50)]/20 border-[var(--hm-warning-500)]/20'
                 }
               `}>
                 <div className={`
                   w-12 h-12 rounded-xl flex items-center justify-center
                   ${aiAnalysis.overallAssessment === 'fair'
-                    ? 'bg-forest-100/40'
+                    ? 'bg-[var(--hm-bg-tertiary)]'
                     : aiAnalysis.overallAssessment === 'cheap'
                     ? 'bg-[var(--hm-info-100)]/40'
                     : aiAnalysis.overallAssessment === 'expensive'
@@ -674,9 +673,9 @@ Heating:
                 <div className="flex-1">
                   <p className={`font-semibold ${
                     aiAnalysis.overallAssessment === 'fair'
-                      ? 'text-[var(--hm-n-700)]'
+                      ? 'text-[var(--hm-success-500)]'
                       : aiAnalysis.overallAssessment === 'cheap'
-                      ? 'text-blue-700'
+                      ? 'text-[var(--hm-info-500)]'
                       : aiAnalysis.overallAssessment === 'expensive'
                       ? 'text-[var(--hm-error-500)]'
                       : 'text-[var(--hm-warning-500)]'
@@ -716,7 +715,7 @@ Heating:
 
               {/* Red Flags */}
               {aiAnalysis.redFlags.length > 0 && (
-                <div className="bg-[var(--hm-error-50)]/20 rounded-2xl p-5 border border-red-200">
+                <div className="bg-[var(--hm-error-50)]/20 rounded-2xl p-5 border border-[var(--hm-error-500)]/20">
                   <h3 className="font-semibold text-[var(--hm-error-500)] mb-4 flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5" strokeWidth={1.5} />
                     {t('tools.analyzer.results.redFlags')} ({aiAnalysis.redFlags.length})
@@ -824,17 +823,18 @@ Heating:
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <button
+                <Button
+                  variant="outline"
                   onClick={resetAnalysis}
-                  className="flex-1 px-6 py-3.5 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] font-semibold rounded-xl hover:bg-[var(--hm-bg-tertiary)] transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3.5 h-auto rounded-xl font-semibold"
                 >
-                  <RefreshCw className="w-4 h-4" strokeWidth={1.5} />
+                  <RefreshCw className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   {t('tools.analyzer.analyzeAnother')}
-                </button>
-                <button className="flex-1 px-6 py-3.5 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white font-semibold rounded-xl shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-[var(--hm-brand-500)]/40 transition-all flex items-center justify-center gap-2">
-                  <Download className="w-4 h-4" strokeWidth={1.5} />
+                </Button>
+                <Button className="flex-1 px-6 py-3.5 h-auto rounded-xl font-semibold">
+                  <Download className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   {t('tools.analyzer.downloadPdf')}
-                </button>
+                </Button>
               </div>
             </div>
           ) : analysis ? (
@@ -864,7 +864,7 @@ Heating:
 
               {/* Alerts */}
               {analysis.alerts.length > 0 && (
-                <div className="bg-[var(--hm-warning-50)]/20 rounded-2xl p-5 border border-amber-200">
+                <div className="bg-[var(--hm-warning-50)]/20 rounded-2xl p-5 border border-[var(--hm-warning-500)]/20">
                   <h3 className="font-semibold text-[var(--hm-warning-500)] mb-4 flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5" strokeWidth={1.5} />
                     {t('tools.analyzer.results.alerts')} ({analysis.alerts.length})
@@ -922,9 +922,10 @@ Heating:
                     return (
                       <div key={category} className="border-b border-[var(--hm-border-subtle)] last:border-0">
                         {/* Category Header */}
-                        <button
+                        <Button
+                          variant="ghost"
                           onClick={() => toggleCategory(category)}
-                          className="w-full px-4 py-4 flex items-center justify-between hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
+                          className="w-full px-4 py-4 h-auto flex items-center justify-between hover:bg-[var(--hm-bg-tertiary)]/50 rounded-none"
                         >
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
@@ -956,7 +957,7 @@ Heating:
                               )}
                             </div>
                           </div>
-                        </button>
+                        </Button>
 
                         {/* Items */}
                         {isExpanded && (
@@ -1027,9 +1028,9 @@ Heating:
                     {analysis.confidence}%
                   </span>
                 </div>
-                <div className="h-2.5 bg-[var(--hm-bg-tertiary)] rounded-full overflow-hidden">
+                <div className="h-2.5 bg-[var(--hm-bg-tertiary)] overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-terracotta-400 to-terracotta-500 rounded-full transition-all duration-1000"
+                    className="h-full bg-gradient-to-r from-[var(--hm-brand-500)] to-[var(--hm-brand-600)] transition-all duration-1000"
                     style={{ width: `${analysis.confidence}%` }}
                   />
                 </div>
@@ -1037,17 +1038,18 @@ Heating:
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <button
+                <Button
+                  variant="outline"
                   onClick={resetAnalysis}
-                  className="flex-1 px-6 py-3.5 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] font-semibold rounded-xl hover:bg-[var(--hm-bg-tertiary)] transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3.5 h-auto rounded-xl font-semibold"
                 >
-                  <RefreshCw className="w-4 h-4" strokeWidth={1.5} />
+                  <RefreshCw className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   {t('tools.analyzer.analyzeAnother')}
-                </button>
-                <button className="flex-1 px-6 py-3.5 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white font-semibold rounded-xl shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-[var(--hm-brand-500)]/40 transition-all flex items-center justify-center gap-2">
-                  <Download className="w-4 h-4" strokeWidth={1.5} />
+                </Button>
+                <Button className="flex-1 px-6 py-3.5 h-auto rounded-xl font-semibold">
+                  <Download className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   {t('tools.analyzer.downloadPdf')}
-                </button>
+                </Button>
               </div>
             </div>
           ) : null}

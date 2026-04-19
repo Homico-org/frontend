@@ -11,12 +11,12 @@ import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useLikes } from "@/hooks/useLikes";
 import { api } from "@/lib/api";
 import { LikeTargetType, ProProfile } from "@/types";
-import { ArrowRight, Briefcase, Users } from "lucide-react";
+import { ArrowRight, Users } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function ProfessionalsPage() {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { user, isAuthenticated } = useAuth();
   const { trackEvent } = useAnalytics();
   const {
@@ -189,22 +189,22 @@ export default function ProfessionalsPage() {
           key={i}
           className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)]"
         >
-          <div className="grid grid-cols-3 gap-px aspect-[3/1.15] bg-[var(--hm-n-200)]">
+          <div className="grid grid-cols-3 gap-px aspect-[3/1.15] bg-[var(--hm-bg-tertiary)]">
             {[0, 1, 2].map(j => (
               <div key={j} className="bg-[var(--hm-bg-tertiary)] animate-pulse" />
             ))}
           </div>
           <div className="p-3 sm:p-4">
             <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-10 h-10 rounded-full bg-[var(--hm-n-200)] animate-pulse flex-shrink-0" />
+              <div className="w-10 h-10 rounded-full bg-[var(--hm-bg-tertiary)] animate-pulse flex-shrink-0" />
               <div className="flex-1">
-                <div className="h-4 bg-[var(--hm-n-200)] rounded w-2/3 animate-pulse mb-1.5" />
-                <div className="h-3 bg-[var(--hm-n-200)] rounded w-1/3 animate-pulse" />
+                <div className="h-4 bg-[var(--hm-bg-tertiary)] rounded w-2/3 animate-pulse mb-1.5" />
+                <div className="h-3 bg-[var(--hm-bg-tertiary)] rounded w-1/3 animate-pulse" />
               </div>
             </div>
             <div className="flex gap-1.5">
-              <div className="h-5 bg-[var(--hm-n-200)] rounded-full w-16 animate-pulse" />
-              <div className="h-5 bg-[var(--hm-n-200)] rounded-full w-20 animate-pulse" />
+              <div className="h-5 bg-[var(--hm-bg-tertiary)] rounded-full w-16 animate-pulse" />
+              <div className="h-5 bg-[var(--hm-bg-tertiary)] rounded-full w-20 animate-pulse" />
             </div>
           </div>
         </div>
@@ -241,39 +241,10 @@ export default function ProfessionalsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate">
-                    {locale === "ka"
-                      ? "დარეგისტრირდი პროფესიონალად"
-                      : "Register as a Professional"}
+                    {pick({ en: "Register as a Professional", ka: "დარეგისტრირდი პროფესიონალად" })}
                   </p>
                   <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
-                    {locale === "ka"
-                      ? "შემოგვიერთდი და იპოვე კლიენტები"
-                      : "Join and start finding clients"}
-                  </p>
-                </div>
-              </div>
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-          )}
-          {isAuthenticated && user?.role === "client" && (
-            <Link
-              href="/post-job"
-              className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gradient-to-r from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20 rounded-xl sm:rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all group"
-            >
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[var(--hm-brand-500)]/15 flex items-center justify-center flex-shrink-0">
-                  <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)]" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate">
-                    {locale === "ka"
-                      ? "განათავსე დავალება"
-                      : "Post a Job to Find a Pro"}
-                  </p>
-                  <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
-                    {locale === "ka"
-                      ? "აღწერე დავალება და მიიღე შეთავაზებები"
-                      : "Describe your project and get proposals"}
+                    {pick({ en: "Join and start finding clients", ka: "შემოგვიერთდი და იპოვე კლიენტები" })}
                   </p>
                 </div>
               </div>

@@ -142,7 +142,7 @@ export default function StepAccount({
                 className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden cursor-pointer border-2 border-dashed transition-all ${
                   avatarPreview
                     ? "border-transparent"
-                    : "border-[var(--hm-brand-500)] hover:border-[#A85D47]"
+                    : "border-[var(--hm-brand-500)] hover:border-[var(--hm-brand-600)]"
                 }`}
               >
                 {avatarPreview ? (
@@ -275,7 +275,7 @@ export default function StepAccount({
               size="sm"
               className={`h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm ${
                 verificationChannel === "sms"
-                  ? "bg-[var(--hm-brand-500)] text-white hover:bg-[#A85D47] hover:text-white shadow-sm"
+                  ? "bg-[var(--hm-brand-500)] text-white hover:bg-[var(--hm-brand-600)] hover:text-white shadow-sm"
                   : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:bg-[var(--hm-border)] hover:text-[var(--hm-fg-secondary)]"
               }`}
             >

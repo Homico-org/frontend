@@ -867,6 +867,7 @@ export default function JobDetailClient() {
 
   const isOwner = user && job?.clientId && user.id === job.clientId.id;
   const isPro = user?.role === "pro" || user?.role === "admin";
+  const isVerified = !!user?.isPhoneVerified;
 
   // Check if current user is the hired pro for this job
   // hiredPro structure can vary:
@@ -1836,15 +1837,15 @@ export default function JobDetailClient() {
         <Header />
         <HeaderSpacer />
         <div className="animate-pulse">
-          <div className="h-[60vh] bg-[var(--hm-n-200)]" />
+          <div className="h-[60vh] bg-[var(--hm-bg-tertiary)]" />
           <div className="max-w-6xl mx-auto px-6 py-12">
-            <div className="h-8 w-48 bg-[var(--hm-n-200)] rounded-full mb-4" />
-            <div className="h-12 w-3/4 bg-[var(--hm-n-200)] rounded-lg mb-8" />
+            <div className="h-8 w-48 bg-[var(--hm-bg-tertiary)] rounded-full mb-4" />
+            <div className="h-12 w-3/4 bg-[var(--hm-bg-tertiary)] rounded-lg mb-8" />
             <div className="grid grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-24 bg-[var(--hm-n-200)] rounded-2xl"
+                  className="h-24 bg-[var(--hm-bg-tertiary)] rounded-2xl"
                 />
               ))}
             </div>
@@ -2038,7 +2039,7 @@ export default function JobDetailClient() {
                       <span className="font-bold text-sm sm:text-base text-[var(--hm-fg-primary)]" style={{ color: ACCENT }}>
                         {budgetDisplay}
                       </span>
-                      <span className="w-px h-4 bg-[var(--hm-n-200)]" />
+                      <span className="w-px h-4 bg-[var(--hm-bg-tertiary)]" />
                     </>
                   )}
                   <div className="flex items-center gap-1.5 text-[var(--hm-fg-muted)]">
@@ -2152,7 +2153,7 @@ export default function JobDetailClient() {
                 )}
                 {(job.propertyType || job.areaSize != null || job.roomCount != null || job.deadline) && (
                   <>
-                    <span className="w-px h-4 bg-[var(--hm-n-200)]" />
+                    <span className="w-px h-4 bg-[var(--hm-bg-tertiary)]" />
                     <div className="flex flex-wrap items-center gap-2 text-[var(--hm-fg-secondary)]">
                       {job.propertyType && (
                         <span className="flex items-center gap-1">
@@ -2223,7 +2224,16 @@ export default function JobDetailClient() {
             isAuthValidated && (
               <div className="flex justify-end mb-4">
                 <Button
-                  onClick={() => setShowProposalForm(true)}
+                  onClick={() => {
+                    if (!isVerified) {
+                      toast.error(
+                        t("job.verificationRequired"),
+                        t("job.verificationRequiredToSendProposal"),
+                      );
+                      return;
+                    }
+                    setShowProposalForm(true);
+                  }}
                   leftIcon={<Send className="w-4 h-4" />}
                 >
                   {t("jobDetail.submitProposal")}
@@ -2372,7 +2382,7 @@ export default function JobDetailClient() {
                       ) : (
                         <div className="relative">
                           {/* Timeline Line */}
-                          <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-[var(--hm-n-200)]" />
+                          <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-[var(--hm-bg-tertiary)]" />
 
                           <div className="space-y-4">
                             {filteredHistory.slice(0, 30).map((event, idx) => {
@@ -2845,7 +2855,7 @@ export default function JobDetailClient() {
                                   }
                                 })()}
                             </span>
-                            <ChevronRight className="w-4 h-4 text-[var(--hm-n-300)] group-hover:text-[var(--hm-fg-muted)] group-hover:translate-x-1 transition-all" />
+                            <ChevronRight className="w-4 h-4 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-fg-muted)] group-hover:translate-x-1 transition-all" />
                           </a>
                         ))}
                       </div>
@@ -2871,7 +2881,7 @@ export default function JobDetailClient() {
                               key={proposal._id || proposal.id}
                               className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${
                                 isShortlisted
-                                  ? 'border-emerald-200 bg-[var(--hm-success-50)]/50'
+                                  ? 'border-[var(--hm-success-500)]/20 bg-[var(--hm-success-50)]/50'
                                   : 'border-[var(--hm-border-subtle)]'
                               }`}
                             >
@@ -2880,7 +2890,7 @@ export default function JobDetailClient() {
                                   /* eslint-disable-next-line @next/next/no-img-element */
                                   <img src={pro.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
                                 ) : (
-                                  <div className="w-10 h-10 rounded-full bg-[var(--hm-n-200)] flex items-center justify-center text-sm font-bold text-[var(--hm-fg-muted)]">
+                                  <div className="w-10 h-10 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-sm font-bold text-[var(--hm-fg-muted)]">
                                     {(pro.name || '?')[0]}
                                   </div>
                                 )}
@@ -3060,13 +3070,13 @@ export default function JobDetailClient() {
                       {isOwner &&
                         projectStage === "completed" &&
                         !isClientConfirmed && (
-                          <div className="mb-4 p-4 rounded-xl bg-[var(--hm-success-50)]/20 border border-emerald-200">
+                          <div className="mb-4 p-4 rounded-xl bg-[var(--hm-success-50)]/20 border border-[var(--hm-success-500)]/20">
                             <div className="flex items-start gap-3 mb-3">
                               <div className="w-8 h-8 rounded-lg bg-[var(--hm-success-500)]/20 flex items-center justify-center flex-shrink-0">
                                 <CheckCircle2 className="w-4 h-4 text-[var(--hm-success-500)]" />
                               </div>
                               <div>
-                                <p className="text-sm font-semibold text-emerald-800">
+                                <p className="text-sm font-semibold text-[var(--hm-success-500)]">
                                   {t("jobDetail.workCompleted")}
                                 </p>
                                 <p className="text-xs text-[var(--hm-success-500)] mt-0.5">
@@ -3109,7 +3119,7 @@ export default function JobDetailClient() {
                         projectStage === "completed" &&
                         isClientConfirmed &&
                         !hasSubmittedReview && (
-                          <div className="mb-4 p-4 rounded-xl bg-[var(--hm-warning-50)]/20 border border-amber-200">
+                          <div className="mb-4 p-4 rounded-xl bg-[var(--hm-warning-50)]/20 border border-[var(--hm-warning-500)]/20">
                             <div className="flex items-start gap-3 mb-3">
                               <div className="w-8 h-8 rounded-lg bg-[var(--hm-warning-500)]/20 flex items-center justify-center flex-shrink-0">
                                 <Star className="w-4 h-4 text-[var(--hm-warning-500)]" />
@@ -3192,7 +3202,7 @@ export default function JobDetailClient() {
                                     className={`w-0.5 flex-1 min-h-[24px] transition-colors duration-300 ${
                                       isStageCompleted
                                         ? "bg-[var(--hm-success-500)]"
-                                        : "bg-[var(--hm-n-200)]"
+                                        : "bg-[var(--hm-bg-tertiary)]"
                                     }`}
                                   />
                                 )}
@@ -3518,7 +3528,16 @@ export default function JobDetailClient() {
         isAuthValidated && (
           <div className="sm:hidden fixed bottom-16 left-0 right-0 z-40 bg-[var(--hm-bg-elevated)] border-t border-[var(--hm-border)] p-3 safe-area-bottom">
             <Button
-              onClick={() => setShowProposalForm(true)}
+              onClick={() => {
+                if (!isVerified) {
+                  toast.error(
+                    t("job.verificationRequired"),
+                    t("job.verificationRequiredToSendProposal"),
+                  );
+                  return;
+                }
+                setShowProposalForm(true);
+              }}
               leftIcon={<Send className="w-4 h-4" />}
               className="w-full h-12 text-base"
             >

@@ -296,7 +296,7 @@ export default function TermsPage() {
                     <li>{t('terms.directCommunicationBetweenUsers')}</li>
                     <li>{t('terms.ratingsAndReviewsSystem')}</li>
                   </ul>
-                  <div className="mt-6 p-4 bg-[var(--hm-warning-50)]/20 rounded-xl border border-amber-200">
+                  <div className="mt-6 p-4 bg-[var(--hm-warning-50)]/20 rounded-xl border border-[var(--hm-warning-500)]/20">
                     <p className="text-sm text-[var(--hm-warning-500)] !mb-0">
                       <strong>{t('terms.important')}</strong> {t('terms.homicoIsNotADirect')}
                     </p>

@@ -312,8 +312,8 @@ export default function PrivacyPage() {
                     <li>{t('privacy.serviceProvidersForTechnicalSupport')}</li>
                     <li>{t('privacy.lawEnforcementWhenRequiredBy')}</li>
                   </ul>
-                  <div className="mt-6 p-4 bg-[var(--hm-success-50)]/20 rounded-xl border border-emerald-200">
-                    <p className="text-sm text-emerald-800 !mb-0">
+                  <div className="mt-6 p-4 bg-[var(--hm-success-50)]/20 rounded-xl border border-[var(--hm-success-500)]/20">
+                    <p className="text-sm text-[var(--hm-success-500)] !mb-0">
                       <strong>{t('privacy.protection')}</strong> {t('privacy.weNeverSellYourPersonal')}
                     </p>
                   </div>
@@ -354,7 +354,7 @@ export default function PrivacyPage() {
                     <li>{t('privacy.regularSecurityAudits')}</li>
                     <li>{t('privacy.accessControls')}</li>
                   </ul>
-                  <div className="mt-6 p-4 bg-[var(--hm-warning-50)]/20 rounded-xl border border-amber-200">
+                  <div className="mt-6 p-4 bg-[var(--hm-warning-50)]/20 rounded-xl border border-[var(--hm-warning-500)]/20">
                     <p className="text-sm text-[var(--hm-warning-500)] !mb-0">
                       <strong>{t('privacy.note')}</strong> {t('privacy.despiteOurEffortsNoInternet')}
                     </p>

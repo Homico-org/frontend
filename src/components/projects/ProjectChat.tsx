@@ -4,6 +4,7 @@ import Avatar from '@/components/common/Avatar';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Badge, CountBadge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -272,7 +273,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
       await handleSendMessage([fileUrl]);
     } catch (err) {
       toast.error(
-        locale === 'ka' ? 'შეცდომა' : 'Error',
+        t('common.error'),
         t('projects.failedToUploadFile')
       );
     } finally {
@@ -388,11 +389,12 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
         {/* Search Bar (when open) */}
         {isSearchOpen && (
           <div className="mb-3 flex items-center gap-2">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--hm-fg-muted)]" />
-              <input
+            <div className="flex-1">
+              <Input
                 ref={searchInputRef}
                 type="text"
+                variant="filled"
+                inputSize="sm"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -406,7 +408,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                   }
                 }}
                 placeholder={t('projects.searchMessages')}
-                className="w-full pl-9 pr-3 py-2 text-sm bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] rounded-xl text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)]/50"
+                leftIcon={<Search className="w-4 h-4" />}
               />
             </div>
             {searchQuery && (
@@ -498,11 +500,11 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                       {/* Date Separator */}
                       {showDateSeparator && (
                         <div className="flex items-center gap-3 my-4">
-                          <div className="flex-1 h-px bg-[var(--hm-n-200)]" />
+                          <div className="flex-1 h-px bg-[var(--hm-bg-tertiary)]" />
                           <Badge variant="secondary" size="xs">
                             {formatChatDateSeparator(msg.createdAt, t, locale as Locale)}
                           </Badge>
-                          <div className="flex-1 h-px bg-[var(--hm-n-200)]" />
+                          <div className="flex-1 h-px bg-[var(--hm-bg-tertiary)]" />
                         </div>
                       )}
                       <div
@@ -594,17 +596,20 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
           <div className="p-3 border-t border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]">
             <div className="flex items-center gap-2">
               {/* File Upload Button */}
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] transition-colors disabled:opacity-50"
+                className="rounded-full text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
               >
                 {isUploading ? (
                   <LoadingSpinner size="sm" color="currentColor" />
                 ) : (
                   <Paperclip className="w-5 h-5" />
                 )}
-              </button>
+              </Button>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -614,37 +619,41 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
               />
 
               {/* Text Input */}
-              <input
-                ref={inputRef}
-                type="text"
-                value={newMessage}
-                onChange={(e) => {
-                  setNewMessage(e.target.value);
-                  emitTyping();
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                placeholder={t('projects.typeAMessage')}
-                className="flex-1 px-4 py-2 text-sm bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] rounded-full text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)]/50 focus:ring-2 focus:ring-[var(--hm-brand-500)]/10 transition-all"
-              />
+              <div className="flex-1">
+                <Input
+                  ref={inputRef}
+                  type="text"
+                  variant="filled"
+                  inputSize="sm"
+                  value={newMessage}
+                  onChange={(e) => {
+                    setNewMessage(e.target.value);
+                    emitTyping();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  placeholder={t('projects.typeAMessage')}
+                />
+              </div>
 
               {/* Send Button */}
-              <button
+              <Button
                 type="button"
+                size="icon-sm"
                 onClick={(e) => {
                   e.preventDefault();
                   handleSendMessage();
                 }}
                 disabled={!newMessage.trim() || isSubmitting}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+                className="rounded-full"
                 style={{ backgroundColor: ACCENT }}
               >
                 <Send className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
         </div>

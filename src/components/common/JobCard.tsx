@@ -36,22 +36,22 @@ const JobCard = React.memo(function JobCard({
   hasApplied = false,
 }: JobCardProps) {
   const { getCategoryLabel, locale } = useCategoryLabels();
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
   const { categories: catalogCats } = useCategories();
 
   // Catalog-aware label lookup
   const getLabel = useCallback((key: string): string => {
     for (const cat of catalogCats) {
-      if (cat.key === key) return locale === 'ka' ? cat.nameKa : cat.name;
+      if (cat.key === key) return pick({ en: cat.name, ka: cat.nameKa });
       for (const sub of cat.subcategories) {
-        if (sub.key === key) return locale === 'ka' ? sub.nameKa : sub.name;
+        if (sub.key === key) return pick({ en: sub.name, ka: sub.nameKa });
         for (const svc of (sub.services || [])) {
-          if (svc.key === key) return locale === 'ka' ? svc.nameKa : svc.name;
+          if (svc.key === key) return pick({ en: svc.name, ka: svc.nameKa });
         }
       }
     }
     return getCategoryLabel(key);
-  }, [catalogCats, locale, getCategoryLabel]);
+  }, [catalogCats, pick, getCategoryLabel]);
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);

@@ -28,7 +28,7 @@ export default function BecomeProPage() {
   const router = useRouter();
   const { user, isLoading: authLoading, isAuthenticated, login } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { t, locale } = useLanguage();
+  const { t, pick: pickLang } = useLanguage();
   const toast = useToast();
 
   const [isUpgrading, setIsUpgrading] = useState(false);
@@ -79,8 +79,7 @@ export default function BecomeProPage() {
     }
   };
 
-  const pick = (en: string, ka: string, ru: string) =>
-    locale === "ka" ? ka : locale === "ru" ? ru : en;
+  const pick = (en: string, ka: string, ru: string) => pickLang({ en, ka, ru });
 
   if (authLoading) {
     return (

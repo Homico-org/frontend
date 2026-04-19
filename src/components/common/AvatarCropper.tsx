@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Cropper, { Area } from 'react-easy-crop';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
@@ -100,7 +101,7 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, locale 
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
       <div className="bg-[var(--hm-bg-elevated)] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
@@ -141,7 +142,7 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, locale 
               step={0.1}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="flex-1 h-1.5 bg-[var(--hm-n-200)] rounded-full appearance-none cursor-pointer accent-[var(--hm-brand-500)] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--hm-brand-500)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer"
+              className="flex-1 h-1.5 bg-[var(--hm-bg-tertiary)] rounded-full appearance-none cursor-pointer accent-[var(--hm-brand-500)] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--hm-brand-500)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer"
             />
             <svg className="w-5 h-5 text-[var(--hm-fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
@@ -161,7 +162,7 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, locale 
           <button
             onClick={handleSave}
             disabled={isProcessing}
-            className="flex-1 py-2.5 rounded-lg bg-[var(--hm-brand-500)] hover:bg-[#A85D47] disabled:bg-neutral-300 text-sm font-medium text-white transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-lg bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] disabled:bg-neutral-300 text-sm font-medium text-white transition-colors flex items-center justify-center gap-2"
           >
             {isProcessing ? (
               <>
@@ -174,6 +175,7 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, locale 
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

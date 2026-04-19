@@ -100,7 +100,7 @@ export default function LikeButton({
   // Sparkle component for extra delight
   const Sparkle = ({ delay, size: sparkleSize }: { delay: number; size: number }) => (
     <svg
-      className="absolute text-amber-400 animate-sparkle"
+      className="absolute text-[var(--hm-warning-500)] animate-sparkle"
       style={{
         animationDelay: `${delay}ms`,
         width: sparkleSize,
@@ -225,7 +225,7 @@ export default function LikeButton({
           transition-all duration-200
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           py-1 px-1 -mx-1 rounded-lg
-          hover:bg-rose-50
+          hover:bg-[var(--hm-error-50)]
         `}
         aria-label={isLiked ? 'Unlike' : 'Like'}
       >
@@ -236,7 +236,7 @@ export default function LikeButton({
               ${config.icon}
               transition-all duration-300 ease-out
               ${isLiked
-                ? 'text-rose-500'
+                ? 'text-[var(--hm-error-500)]'
                 : 'text-[var(--hm-fg-muted)] group-hover:text-rose-400'
               }
               ${isAnimating ? (isLiked ? 'scale-125 animate-heartbeat' : 'scale-90') : 'group-hover:scale-110'}
@@ -264,7 +264,7 @@ export default function LikeButton({
             className={`
               ${config.text} font-medium tabular-nums
               transition-all duration-300
-              ${isLiked ? 'text-rose-500' : 'text-[var(--hm-fg-muted)]'}
+              ${isLiked ? 'text-[var(--hm-error-500)]' : 'text-[var(--hm-fg-muted)]'}
               ${isAnimating ? 'scale-110' : ''}
             `}
           >
@@ -305,7 +305,7 @@ export default function LikeButton({
           className={`
             ${config.icon}
             transition-all duration-300 ease-out
-            ${isLiked ? 'text-rose-500' : 'text-[var(--hm-fg-muted)] group-hover:text-rose-400'}
+            ${isLiked ? 'text-[var(--hm-error-500)]' : 'text-[var(--hm-fg-muted)] group-hover:text-rose-400'}
             ${isAnimating ? (isLiked ? 'scale-125 animate-heartbeat' : 'scale-90') : ''}
           `}
         />
@@ -328,7 +328,7 @@ export default function LikeButton({
           className={`
             ${config.text} font-semibold tabular-nums relative
             transition-all duration-300
-            ${isLiked ? 'text-rose-600' : 'text-[var(--hm-fg-secondary)]'}
+            ${isLiked ? 'text-[var(--hm-error-500)]' : 'text-[var(--hm-fg-secondary)]'}
           `}
         >
           <span className={isAnimating ? 'animate-count-bump' : ''}>{likeCount}</span>

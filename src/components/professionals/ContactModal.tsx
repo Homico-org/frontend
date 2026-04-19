@@ -64,7 +64,7 @@ export default function ContactModal({
       >
         {/* Mobile drag handle */}
         <div className="sm:hidden flex justify-center pt-1 pb-3">
-          <div className="w-10 h-1 bg-neutral-300 rounded-full" />
+          <div className="w-10 h-1 bg-[var(--hm-border-strong)] rounded-full" />
         </div>
 
         {/* Profile header */}

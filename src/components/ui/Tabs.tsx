@@ -13,8 +13,8 @@ const tabsContainerVariants = cva('relative flex', {
   variants: {
     variant: {
       default: 'border-b border-[var(--hm-border)]',
-      pills: 'gap-[2px] p-1 bg-[var(--hm-bg-tertiary)] rounded-full',
-      underline: 'gap-1',
+      pills: 'gap-[2px] p-1 bg-[var(--hm-bg-tertiary)]',
+      underline: 'gap-1 border-b border-[var(--hm-border)]',
     },
     size: {
       sm: '',
@@ -34,7 +34,7 @@ const tabVariants = cva(
     variants: {
       variant: {
         default: 'px-4 py-3 text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]',
-        pills: 'px-4 py-2 rounded-full text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]',
+        pills: 'px-4 py-2 text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]',
         underline: 'px-4 py-3 text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]',
       },
       size: {
@@ -118,7 +118,7 @@ export function Tabs({
     const activeIndex = tabs.findIndex((tab) => tab.id === activeTab);
     const activeTabRef = tabRefs.current[activeIndex];
 
-    if (activeTabRef && variant === 'default') {
+    if (activeTabRef && (variant === 'default' || variant === 'underline')) {
       setIndicatorStyle({
         left: activeTabRef.offsetLeft,
         width: activeTabRef.offsetWidth,
@@ -158,11 +158,12 @@ export function Tabs({
           {tab.badge !== undefined && (
             <span
               className={cn(
-                'flex-shrink-0 px-1.5 py-0.5 rounded-full text-xs font-semibold',
+                'flex-shrink-0 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-mono font-medium tracking-[0.04em] rounded-full',
                 activeTab === tab.id
                   ? 'bg-[var(--hm-brand-500)] text-white'
-                  : 'bg-[var(--hm-n-200)] text-[var(--hm-fg-secondary)]'
+                  : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
               )}
+              style={{ fontFamily: 'var(--hm-font-mono)' }}
             >
               {tab.badge}
             </span>
@@ -170,8 +171,8 @@ export function Tabs({
         </button>
       ))}
 
-      {/* Animated underline indicator for default variant */}
-      {variant === 'default' && (
+      {/* Animated 2px brand-500 underline for default & underline variants */}
+      {(variant === 'default' || variant === 'underline') && (
         <div
           className="absolute bottom-0 h-0.5 bg-[var(--hm-brand-500)] transition-all duration-300 ease-out"
           style={{

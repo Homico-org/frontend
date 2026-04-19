@@ -67,7 +67,7 @@ function CollapsibleCard({
         </div>
         <ChevronDown
           className={`w-3.5 h-3.5 text-[var(--hm-fg-muted)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-            isOpen ? 'rotate-180 text-neutral-600' : 'rotate-0'
+            isOpen ? 'rotate-180 text-[var(--hm-fg-secondary)]' : 'rotate-0'
           }`}
         />
       </button>
@@ -96,7 +96,7 @@ export default function BrowseFiltersSidebar({
   showBudgetFilter = true,
   showRatingFilter = true,
 }: BrowseFiltersSidebarProps) {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
   const {
     minRating,
     setMinRating,
@@ -141,7 +141,7 @@ export default function BrowseFiltersSidebar({
     return Array.from({ length: count }).map((_, i) => (
       <svg
         key={i}
-        className={`w-4 h-4 ${i < filled ? 'text-amber-400' : 'text-neutral-300'}`}
+        className={`w-4 h-4 ${i < filled ? 'text-[var(--hm-warning-500)]' : 'text-neutral-300'}`}
         fill="currentColor"
         viewBox="0 0 20 20"
       >
@@ -193,7 +193,7 @@ export default function BrowseFiltersSidebar({
               </div>
 
               {/* Separator */}
-              <span className="text-[var(--hm-n-300)] mt-4 text-xs">—</span>
+              <span className="text-[var(--hm-fg-muted)] mt-4 text-xs">—</span>
 
               {/* Max Input */}
               <div className="flex-1">
@@ -230,8 +230,8 @@ export default function BrowseFiltersSidebar({
                     <svg
                       className={`w-4 h-4 transition-colors ${
                         minRating > 0 && star <= minRating
-                          ? 'text-amber-400'
-                          : 'text-[var(--hm-n-300)] hover:text-amber-300'
+                          ? 'text-[var(--hm-warning-500)]'
+                          : 'text-[var(--hm-fg-muted)] hover:text-amber-300'
                       }`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -244,7 +244,7 @@ export default function BrowseFiltersSidebar({
               {/* Helper text */}
               <p className="text-[10px] text-[var(--hm-fg-muted)]">
                 {minRating > 0
-                  ? `${minRating}+ ${locale === 'ka' ? 'ვარსკვლავი' : 'stars'}`
+                  ? `${minRating}+ ${t('browse.stars')}`
                   : t('browse.selectMinimum')}
               </p>
             </div>

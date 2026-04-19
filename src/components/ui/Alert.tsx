@@ -35,7 +35,7 @@ const alertVariants = cva(
 );
 
 const iconColors = {
-  default: 'text-[var(--hm-n-500)]',
+  default: 'text-[var(--hm-fg-secondary)]',
   success: 'text-[var(--hm-success-500)]',
   error: 'text-[var(--hm-error-500)]',
   warning: 'text-[var(--hm-warning-500)]',
@@ -45,10 +45,10 @@ const iconColors = {
 
 const textColors = {
   default: 'text-[var(--hm-fg-primary)]',
-  success: 'text-green-800',
+  success: 'text-[var(--hm-success-500)]',
   error: 'text-[var(--hm-error-500)]',
-  warning: 'text-yellow-800',
-  info: 'text-blue-800',
+  warning: 'text-[var(--hm-warning-500)]',
+  info: 'text-[var(--hm-info-500)]',
   accent: 'text-[var(--hm-brand-500)]',
 };
 

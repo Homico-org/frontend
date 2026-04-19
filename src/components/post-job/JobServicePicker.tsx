@@ -311,7 +311,7 @@ export default function JobServicePicker({
 
       {/* Category switch confirmation */}
       {!searchQuery && pendingCategory && (
-        <div className="rounded-xl border border-amber-200 bg-[var(--hm-warning-50)] p-4 flex flex-col gap-3">
+        <div className="rounded-xl border border-[var(--hm-warning-500)]/20 bg-[var(--hm-warning-50)] p-4 flex flex-col gap-3">
           <p className="text-sm text-[var(--hm-warning-500)]">
             {t('job.switchCategoryConfirm')}
           </p>

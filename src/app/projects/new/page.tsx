@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { IconBadge } from '@/components/ui/IconBadge';
 import { FormGroup, Input, Label, Textarea } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { StepProgress } from '@/components/ui/progress';
+import { Stepper } from '@/components/ui/Stepper';
 import { useAuth } from '@/contexts/AuthContext';
 import { Check, ChevronRight, Plus, Search, X } from 'lucide-react';
 import Link from 'next/link';
@@ -254,9 +254,9 @@ export default function StartProjectPage() {
 
           {/* Stepper */}
           <div className="mb-8">
-            <StepProgress
-              steps={steps.map(s => ({ label: s.title }))}
-              currentStep={step - 1}
+            <Stepper
+              steps={steps.map(s => ({ key: String(s.id), label: s.title }))}
+              currentIndex={step - 1}
             />
           </div>
 
@@ -375,7 +375,7 @@ export default function StartProjectPage() {
                           variant="secondary"
                           size="default"
                           onClick={() => removeRole(role.name)}
-                          className="cursor-pointer hover:bg-[var(--hm-error-50)] hover:text-[var(--hm-error-500)] hover:border-red-200 transition-colors"
+                          className="cursor-pointer hover:bg-[var(--hm-error-50)] hover:text-[var(--hm-error-500)] hover:border-[var(--hm-error-500)]/20 transition-colors"
                         >
                           {role.name}
                           <X className="w-3 h-3 ml-1" />

@@ -21,7 +21,6 @@ export default function PhoneChangeModal({
   isOpen,
   onClose,
   currentPhone,
-  locale,
   onSuccess,
 }: PhoneChangeModalProps) {
   const [step, setStep] = useState<'phone' | 'otp' | 'success'>('phone');
@@ -101,7 +100,7 @@ export default function PhoneChangeModal({
         setError(data.message || (t('settings.invalidCode')));
       }
     } catch {
-      setError(locale === 'ka' ? 'კავშირის შეცდომა' : 'Connection error');
+      setError(t('settings.connectionError'));
     } finally {
       setIsLoading(false);
     }
@@ -171,7 +170,7 @@ export default function PhoneChangeModal({
                 </h3>
                 {step === 'otp' && (
                   <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: 'var(--hm-fg-secondary)' }}>
-                    {locale === 'ka' ? `კოდი გაიგზავნა ${fullPhone}-ზე` : `Code sent to ${fullPhone}`}
+                    {t('settings.codeSentToValue', { value: fullPhone })}
                   </p>
                 )}
               </div>
@@ -188,8 +187,8 @@ export default function PhoneChangeModal({
         <div className="p-4 sm:p-5">
           {step === 'success' ? (
             <div className="text-center py-4 sm:py-6 pb-6 sm:pb-0">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-green-500" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[var(--hm-success-50)] flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-[var(--hm-success-500)]" />
               </div>
               <p className="text-xs sm:text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
                 {t('settings.yourPhoneNumberHasBeen')}

@@ -411,7 +411,7 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
                                 <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
                                   config.step <= (stageConfig?.step || 0)
                                     ? config.step === stageConfig?.step ? stageConfig.color : "bg-[var(--hm-success-500)]"
-                                    : "bg-[var(--hm-n-200)]"
+                                    : "bg-[var(--hm-bg-tertiary)]"
                                 }`} />
                                 <span className={`hidden sm:inline text-[10px] ${
                                   key === stage ? "font-semibold text-[var(--hm-fg-secondary)]" : "text-[var(--hm-fg-muted)]"

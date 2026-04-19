@@ -104,7 +104,7 @@ export default function StepPhone({
             <button
               onClick={onResend}
               disabled={isLoading}
-              className="text-xs sm:text-sm font-medium text-[var(--hm-brand-500)] hover:text-[#A85D47] active:scale-95 transition-all p-2 -m-2"
+              className="text-xs sm:text-sm font-medium text-[var(--hm-brand-500)] hover:text-[var(--hm-brand-600)] active:scale-95 transition-all p-2 -m-2"
             >
               {t('register.resendCode')}
             </button>

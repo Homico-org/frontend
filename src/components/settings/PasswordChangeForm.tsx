@@ -5,6 +5,7 @@ import { Eye, EyeOff, Lock, Check } from 'lucide-react';
 import { getPasswordStrength, passwordsMatch } from '@/utils/validationUtils';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -87,7 +88,7 @@ export default function PasswordChangeForm({
       const err = error as { message?: string };
       setMessage({
         type: 'error',
-        text: err.message || (locale === 'ka' ? 'პაროლის შეცვლა ვერ მოხერხდა' : 'Failed to change password'),
+        text: err.message || t('settings.failedToChangePassword'),
       });
     } finally {
       setIsChanging(false);
@@ -122,17 +123,12 @@ export default function PasswordChangeForm({
             {t('settings.currentPassword')}
           </label>
           <div className="relative">
-            <input
+            <Input
               type={showCurrentPassword ? 'text' : 'password'}
               value={passwordData.currentPassword}
               onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
               placeholder={t('settings.enterCurrentPassword')}
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
-              style={{
-                backgroundColor: 'var(--hm-bg-elevated)',
-                border: '1px solid var(--hm-border)',
-                color: 'var(--hm-fg-primary)',
-              }}
+              className="pr-12"
             />
             <Button
               type="button"
@@ -155,17 +151,12 @@ export default function PasswordChangeForm({
             {t('settings.newPassword')}
           </label>
           <div className="relative">
-            <input
+            <Input
               type={showNewPassword ? 'text' : 'password'}
               value={passwordData.newPassword}
               onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
               placeholder={t('settings.enterNewPassword')}
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
-              style={{
-                backgroundColor: 'var(--hm-bg-elevated)',
-                border: '1px solid var(--hm-border)',
-                color: 'var(--hm-fg-primary)',
-              }}
+              className="pr-12"
             />
             <Button
               type="button"
@@ -182,9 +173,9 @@ export default function PasswordChangeForm({
           {passwordData.newPassword && (
             <div className="mt-2">
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-[var(--hm-n-200)] rounded-full overflow-hidden">
+                <div className="flex-1 h-1.5 bg-[var(--hm-bg-tertiary)] overflow-hidden">
                   <div
-                    className="h-full rounded-full transition-all duration-300"
+                    className="h-full transition-all duration-300"
                     style={{
                       width: `${(passwordStrength.strength / 5) * 100}%`,
                       backgroundColor: passwordStrength.color,
@@ -217,19 +208,13 @@ export default function PasswordChangeForm({
             {t('settings.confirmNewPassword')}
           </label>
           <div className="relative">
-            <input
+            <Input
               type={showConfirmPassword ? 'text' : 'password'}
               value={passwordData.confirmPassword}
               onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
               placeholder={t('settings.confirmNewPassword')}
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
-              style={{
-                backgroundColor: 'var(--hm-bg-elevated)',
-                border: passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword
-                  ? '1px solid #ef4444'
-                  : '1px solid var(--hm-border)',
-                color: 'var(--hm-fg-primary)',
-              }}
+              className="pr-12"
+              error={!!(passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword)}
             />
             <Button
               type="button"
@@ -247,7 +232,7 @@ export default function PasswordChangeForm({
             </p>
           )}
           {passwordData.confirmPassword && passwordData.newPassword === passwordData.confirmPassword && passwordData.newPassword.length >= 6 && (
-            <p className="text-xs mt-1 text-green-500 flex items-center gap-1">
+            <p className="text-xs mt-1 text-[var(--hm-success-500)] flex items-center gap-1">
               <Check className="w-3 h-3" />
               {t('settings.passwordsMatch')}
             </p>
@@ -265,7 +250,7 @@ export default function PasswordChangeForm({
           >
             {isChanging
               ? (t('settings.changing'))
-              : (locale === 'ka' ? 'პაროლის შეცვლა' : 'Change Password')}
+              : (t('settings.changePassword'))}
           </Button>
         </div>
       </div>

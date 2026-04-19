@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
 import { IconBadge } from '@/components/ui/IconBadge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { features } from '@/config/features';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AlertCircle, AlertTriangle, BriefcaseBusiness, Check, EyeOff, Trash2, User } from 'lucide-react';
@@ -95,9 +96,9 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
           {isProfileDeactivated ? (
             <div className="space-y-3">
               <div className="flex items-start gap-2">
-                <EyeOff className="w-4 h-4 text-yellow-600 shrink-0 mt-0.5" />
+                <EyeOff className="w-4 h-4 text-[var(--hm-warning-500)] shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-yellow-700">
+                  <p className="text-sm font-medium text-[var(--hm-warning-500)]">
                     {t('settings.profileIsDeactivated')}
                   </p>
                   <p className="text-xs text-[var(--hm-fg-muted)] mt-0.5">
@@ -129,7 +130,7 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
                 size="sm"
                 variant="outline"
                 onClick={onOpenDeactivateModal}
-                className="w-full text-yellow-600 border-yellow-400 hover:bg-yellow-50"
+                className="w-full text-[var(--hm-warning-500)] border-yellow-400 hover:bg-[var(--hm-warning-50)]"
               >
                 {t('settings.pauseProfile')}
               </Button>
@@ -138,38 +139,40 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
         </div>
       )}
 
-      {/* Danger Zone */}
-      <Card className="overflow-hidden border-[var(--hm-error-500)]/30 bg-gradient-to-br from-red-500/5 to-red-500/10">
-        <div className="px-4 py-3 border-b border-[var(--hm-error-500)]/15">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-[var(--hm-error-500)] shrink-0" />
-            <h3 className="text-sm font-semibold text-[var(--hm-error-500)]">
-              {t('settings.dangerZone')}
-            </h3>
-          </div>
-        </div>
-
-        <div className="p-4">
-          <div className="space-y-3">
-            <div>
-              <h4 className="text-sm font-medium text-[var(--hm-fg-primary)]">
-                {t('settings.deleteAccount')}
-              </h4>
-              <p className="text-sm mt-1 text-[var(--hm-fg-muted)]">
-                {t('settings.permanentlyDeleteYourAccountAnd')}
-              </p>
+      {/* Danger Zone — gated by features.accountDeletion */}
+      {features.accountDeletion && (
+        <Card className="overflow-hidden border-[var(--hm-error-500)]/30 bg-gradient-to-br from-red-500/5 to-red-500/10">
+          <div className="px-4 py-3 border-b border-[var(--hm-error-500)]/15">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-[var(--hm-error-500)] shrink-0" />
+              <h3 className="text-sm font-semibold text-[var(--hm-error-500)]">
+                {t('settings.dangerZone')}
+              </h3>
             </div>
-            <Button
-              variant="destructive"
-              onClick={onOpenDeleteModal}
-              leftIcon={<Trash2 className="w-4 h-4" />}
-              className="w-full sm:w-auto"
-            >
-              {t('settings.deleteAccount')}
-            </Button>
           </div>
-        </div>
-      </Card>
+
+          <div className="p-4">
+            <div className="space-y-3">
+              <div>
+                <h4 className="text-sm font-medium text-[var(--hm-fg-primary)]">
+                  {t('settings.deleteAccount')}
+                </h4>
+                <p className="text-sm mt-1 text-[var(--hm-fg-muted)]">
+                  {t('settings.permanentlyDeleteYourAccountAnd')}
+                </p>
+              </div>
+              <Button
+                variant="destructive"
+                onClick={onOpenDeleteModal}
+                leftIcon={<Trash2 className="w-4 h-4" />}
+                className="w-full sm:w-auto"
+              >
+                {t('settings.deleteAccount')}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Account Info */}
       <Card className="p-4">

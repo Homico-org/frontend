@@ -6,9 +6,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Avatar from "@/components/common/Avatar";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/input";
 import { ConfirmModal } from "@/components/ui/Modal";
 import type { JobComment, JobCommentsResponse, CommentAuthor } from "@/types/shared";
 import Link from "next/link";
+import Image from "next/image";
+import {
+  Star,
+  Phone,
+  ChevronRight,
+  MessageSquare,
+  AlertTriangle,
+  Check,
+} from "lucide-react";
 
 interface JobCommentsSectionProps {
   jobId: string;
@@ -80,7 +90,7 @@ const CommentForm = ({
       setFormData({ content: "", phoneNumber: "", showProfile: true, portfolioItems: [] });
       onSubmit();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to submit comment");
+      setError(err.response?.data?.message || t("jobComments.failedToSubmit"));
     } finally {
       setIsSubmitting(false);
     }
@@ -89,11 +99,11 @@ const CommentForm = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <textarea
+        <Textarea
           value={formData.content}
           onChange={(e) => setFormData({ ...formData, content: e.target.value })}
           placeholder={isReply ? t("jobComments.replyPlaceholder") : t("jobComments.commentPlaceholder")}
-          className="w-full p-3 border border-[var(--hm-border)] rounded-lg resize-none focus:ring-2 focus:ring-[var(--hm-brand-500)] focus:border-transparent bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)]"
+          className="rounded-lg"
           rows={isReply ? 2 : 3}
           maxLength={2000}
         />
@@ -112,7 +122,6 @@ const CommentForm = ({
         <Button
           type="submit"
           disabled={isSubmitting || !formData.content.trim()}
-          className="bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-700)] text-white"
         >
           {isSubmitting ? t("common.loading") : isEditing ? t("common.update") : isReply ? t("jobComments.reply") : t("jobComments.addComment")}
         </Button>
@@ -237,17 +246,13 @@ const CommentItem = ({
             )}
             {comment.isMarkedInteresting && (
               <span className="px-2 py-0.5 bg-[var(--hm-warning-100)]/30 text-[var(--hm-warning-500)] text-xs rounded-full flex items-center gap-1">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
+                <Star className="w-3 h-3" fill="currentColor" />
                 {t("jobComments.interesting")}
               </span>
             )}
             {author?.rating && (
               <span className="text-xs text-[var(--hm-fg-muted)] flex items-center gap-1">
-                <svg className="w-3 h-3 text-[var(--hm-warning-500)]" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
+                <Star className="w-3 h-3 text-[var(--hm-warning-500)]" fill="currentColor" />
                 {author.rating.toFixed(1)}
               </span>
             )}
@@ -264,9 +269,7 @@ const CommentItem = ({
           {/* Phone Number */}
           {comment.phoneNumber && (
             <div className="mt-2 flex items-center gap-2 text-sm">
-              <svg className="w-4 h-4 text-[var(--hm-fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
+              <Phone className="w-4 h-4 text-[var(--hm-fg-muted)]" />
               <a href={`tel:${comment.phoneNumber}`} className="text-[var(--hm-brand-500)] hover:underline">
                 {comment.phoneNumber}
               </a>
@@ -284,12 +287,15 @@ const CommentItem = ({
                     href={`/portfolio/${item._id}`}
                     className="flex-shrink-0 group"
                   >
-                    <div className="w-20 h-20 rounded-lg overflow-hidden bg-[var(--hm-bg-tertiary)]">
+                    <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-[var(--hm-bg-tertiary)]">
                       {item.images?.[0] && (
-                        <img
+                        <Image
                           src={item.images[0]}
                           alt={item.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          fill
+                          sizes="80px"
+                          className="object-cover group-hover:scale-105 transition-transform"
+                          unoptimized
                         />
                       )}
                     </div>
@@ -309,54 +315,58 @@ const CommentItem = ({
               className="mt-2 inline-flex items-center gap-1 text-sm text-[var(--hm-brand-500)] hover:underline"
             >
               {t("jobComments.viewFullProfile")}
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              <ChevronRight className="w-3 h-3" />
             </Link>
           )}
 
           {/* Actions */}
           <div className="mt-3 flex items-center gap-4 text-sm">
             {canReply && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsReplying(!isReplying)}
-                className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors"
+                className="px-2 h-auto py-1 text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)]"
               >
                 {t("jobComments.reply")}
-              </button>
+              </Button>
             )}
             {canEdit && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsEditing(true)}
-                className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-info-500)] transition-colors"
+                className="px-2 h-auto py-1 text-[var(--hm-fg-muted)] hover:text-[var(--hm-info-500)]"
               >
                 {t("common.edit")}
-              </button>
+              </Button>
             )}
             {canDelete && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={isDeleting}
-                className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] transition-colors"
+                className="px-2 h-auto py-1 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)]"
               >
                 {isDeleting ? t("common.deleting") : t("common.delete")}
-              </button>
+              </Button>
             )}
             {canMarkInteresting && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={handleMarkInteresting}
                 disabled={isMarking}
-                className={`flex items-center gap-1 transition-colors ${
+                className={`px-2 h-auto py-1 flex items-center gap-1 ${
                   comment.isMarkedInteresting
                     ? "text-[var(--hm-warning-500)]"
                     : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-warning-500)]"
                 }`}
               >
-                <svg className="w-4 h-4" fill={comment.isMarkedInteresting ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
+                <Star className="w-4 h-4" fill={comment.isMarkedInteresting ? "currentColor" : "none"} />
                 {isMarking ? "..." : comment.isMarkedInteresting ? t("jobComments.interesting") : t("jobComments.markInteresting")}
-              </button>
+              </Button>
             )}
           </div>
 
@@ -453,8 +463,9 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
     ? comments.filter((c) => c.isMarkedInteresting)
     : comments;
 
-  const canComment = !!user;
-  const showVerificationWarning = false; // removed for MVP — all pros can comment
+  const isVerified = !!user?.isPhoneVerified;
+  const canComment = !!user && isVerified;
+  const showVerificationWarning = !!user && !isVerified && !isJobOwner;
 
   return (
     <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
@@ -463,9 +474,7 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)] flex items-center gap-2">
-              <svg className="w-5 h-5 text-[var(--hm-brand-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-              </svg>
+              <MessageSquare className="w-5 h-5 text-[var(--hm-brand-500)]" />
               {t("jobComments.title")}
             </h3>
             <p className="text-sm text-[var(--hm-fg-muted)] mt-0.5">
@@ -496,9 +505,7 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
                     : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
                 }`}
               >
-                <svg className="w-3 h-3 text-[var(--hm-warning-500)]" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
+                <Star className="w-3 h-3 text-[var(--hm-warning-500)]" fill="currentColor" />
                 {t("jobComments.interesting")}
               </button>
             </div>
@@ -534,9 +541,7 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
       {showVerificationWarning && (
         <div className="p-4 border-b border-[var(--hm-border)] bg-[var(--hm-warning-50)]/20">
           <div className="flex items-center gap-3">
-            <svg className="w-5 h-5 text-[var(--hm-warning-500)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+            <AlertTriangle className="w-5 h-5 text-[var(--hm-warning-500)] flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm text-[var(--hm-warning-500)] font-medium">
                 {t("jobComments.verificationRequiredToExpressInterest")}
@@ -556,9 +561,7 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
       {user && !isJobOwner && hasCommented && (
         <div className="p-4 border-b border-[var(--hm-border)] bg-[var(--hm-success-50)]/20">
           <div className="flex items-center gap-2 text-[var(--hm-success-500)]">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+            <Check className="w-5 h-5" />
             <span className="text-sm">
               {t("jobComments.alreadyExpressedInterest")}
             </span>
@@ -584,9 +587,7 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
         ) : filteredComments.length === 0 ? (
           <div className="text-center py-8">
             <div className="w-16 h-16 mx-auto mb-4 bg-[var(--hm-bg-tertiary)] rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-[var(--hm-fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
+              <MessageSquare className="w-8 h-8 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
             </div>
             <h4 className="text-[var(--hm-fg-primary)] font-medium mb-1">
               {filter === "interesting" ? t("jobComments.noInterestingYet") : t("jobComments.noInterestYet")}

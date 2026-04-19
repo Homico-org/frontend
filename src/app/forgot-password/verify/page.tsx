@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 
 export default function VerifyResetCodePage() {
   const router = useRouter();
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -115,7 +115,7 @@ export default function VerifyResetCodePage() {
   const maskedPhone = phone ? phone.replace(/^(\+\d{1,3})(\d{2,3})(.*)(\d{2})$/, '$1 $2*** ***$4') : '';
 
   return (
-    <div className="min-h-screen bg-neutral-500/50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--hm-bg-page)] flex items-center justify-center p-4">
       {/* Modal Card */}
       <Card variant="glass" size="xl" className="w-full max-w-[440px] shadow-xl">
         {/* Shield Icon */}
@@ -175,7 +175,7 @@ export default function VerifyResetCodePage() {
             ) : (
               <p className="text-sm text-[var(--hm-fg-muted)]">
                 {t('forgotPassword.resendIn')}{' '}
-                <span className="font-medium text-[#C47B65]">{countdown}s</span>
+                <span className="font-medium text-[var(--hm-brand-500)]">{countdown}s</span>
               </p>
             )}
           </div>
@@ -188,15 +188,15 @@ export default function VerifyResetCodePage() {
             size="lg"
             className="w-full"
           >
-            {locale === 'ka' ? 'კოდის დადასტურება' : 'Verify Code'}
+            {pick({ en: 'Verify Code', ka: 'კოდის დადასტურება' })}
           </Button>
         </form>
 
         {/* OR Divider */}
         <div className="flex items-center my-6">
-          <div className="flex-1 h-px bg-[var(--hm-n-200)]" />
+          <div className="flex-1 h-px bg-[var(--hm-bg-tertiary)]" />
           <span className="px-4 text-sm text-[var(--hm-fg-muted)]">OR</span>
-          <div className="flex-1 h-px bg-[var(--hm-n-200)]" />
+          <div className="flex-1 h-px bg-[var(--hm-bg-tertiary)]" />
         </div>
 
         {/* Change Phone Link */}

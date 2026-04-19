@@ -2,6 +2,7 @@
   "common": {
     "save": "Save",
     "cancel": "Cancel",
+    "proposals": "proposals",
     "change": "Change",
     "delete": "Delete",
     "edit": "Edit",
@@ -533,7 +534,19 @@
     "registerAsProfessionalCta": "Register as a Professional",
     "registerAsProfessionalDescription": "Showcase your work and find clients",
     "postAJobToFindPro": "Post a Job to Find a Pro",
-    "postAJobToFindProDescription": "Describe your project and get proposals"
+    "postAJobToFindProDescription": "Describe your project and get proposals",
+    "propertyTypes": {
+      "apartment": "Apartment",
+      "house": "House",
+      "office": "Office",
+      "building": "Building"
+    },
+    "deadlineFilters": {
+      "urgent": "Urgent",
+      "week": "This week",
+      "month": "This month",
+      "flexible": "Flexible"
+    }
   },
   "job": {
     "title": "Title",
@@ -545,6 +558,9 @@
     "subcategory": "Subcategory",
     "postJob": "Post a Job",
     "editJob": "Edit",
+    "verificationRequired": "Verification required",
+    "verificationRequiredToSendProposal": "Verify your phone number in Settings before sending a proposal.",
+    "verificationRequiredToComment": "Verify your phone number in Settings before commenting.",
     "deleteJob": "Delete",
     "viewJob": "View",
     "applyNow": "Apply now",
@@ -756,7 +772,8 @@
     "anonymous": "Anonymous",
     "sharedProjects": "Shared Projects:",
     "viewFullProfile": "View Full Profile",
-    "markInteresting": "Mark Interesting"
+    "markInteresting": "Mark Interesting",
+    "failedToSubmit": "Failed to submit comment"
   },
   "jobDetail": {
     "guestCtaTitle": "Join Homico — get hired for projects like this",
@@ -1366,6 +1383,8 @@
   },
   "reviews": {
     "title": "Reviews",
+    "reviewsGiven": "Reviews Given",
+    "reviewsPending": "Pending",
     "leaveReview": "Leave a review",
     "writeReview": "Write a review...",
     "rating": "Rating",
@@ -1501,6 +1520,7 @@
     "changingYourNumberRequiresVerification": "Changing Your Number Requires Verification",
     "chooseHowYouWantTo": "Choose How You Want To...",
     "city": "City",
+    "codeSentToValue": "Code sent to {value}",
     "confirmNewPassword": "Confirm New Password",
     "connectionError": "Connection Error",
     "construction": "Construction",
@@ -2454,6 +2474,7 @@
     "verificationPanel": "Admin Verification Panel",
     "currentStatus": "Current Status",
     "notes": "Notes",
+    "editProfile": "Edit Profile",
     "updateStatus": "Update Status",
     "updateVerificationStatus": "Update Verification Status",
     "verificationStatus": "Verification Status",
@@ -2658,6 +2679,7 @@
     "useMethod": "Use the same method when logging in next time",
     "continueGoogle": "Click to continue with Google",
     "projectsCount": "project",
+    "projectNumber": "Project {count}",
     "servicesCount": "service",
     "backToClient": "Back to client registration",
     "registerAsPro": "Register as a professional",
@@ -2711,6 +2733,7 @@
     "enterPhoneToVerify": "Enter your phone number to verify",
     "codeSentTo": "Code sent to",
     "yourProfile": "Your Profile",
+    "yourServices": "Your Services",
     "tellUsAboutYourself": "Tell us about yourself",
     "fullName": "Full Name",
     "enterYourName": "Enter your name",

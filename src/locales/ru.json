@@ -2,6 +2,7 @@
   "common": {
     "save": "Сохранить",
     "cancel": "Отмена",
+    "proposals": "предложения",
     "change": "Изменить",
     "delete": "Удалить",
     "edit": "Редактировать",
@@ -532,7 +533,19 @@
     "registerAsProfessionalCta": "Зарегистрируйтесь как специалист",
     "registerAsProfessionalDescription": "Покажите свои работы и найдите клиентов",
     "postAJobToFindPro": "Разместите работу, чтобы найти специалиста",
-    "postAJobToFindProDescription": "Опишите проект и получите предложения"
+    "postAJobToFindProDescription": "Опишите проект и получите предложения",
+    "propertyTypes": {
+      "apartment": "Квартира",
+      "house": "Дом",
+      "office": "Офис",
+      "building": "Здание"
+    },
+    "deadlineFilters": {
+      "urgent": "Срочно",
+      "week": "Эта неделя",
+      "month": "Этот месяц",
+      "flexible": "Гибкий"
+    }
   },
   "job": {
     "title": "Название",
@@ -544,6 +557,9 @@
     "subcategory": "Подкатегория",
     "postJob": "Разместить заказ",
     "editJob": "Редактировать",
+    "verificationRequired": "Требуется верификация",
+    "verificationRequiredToSendProposal": "Подтвердите номер телефона в настройках, прежде чем отправить предложение.",
+    "verificationRequiredToComment": "Подтвердите номер телефона в настройках, прежде чем оставить комментарий.",
     "deleteJob": "Удалить",
     "viewJob": "Просмотр",
     "applyNow": "Откликнуться",
@@ -755,7 +771,8 @@
     "anonymous": "Аноним",
     "sharedProjects": "Общие проекты:",
     "viewFullProfile": "Посмотреть профиль",
-    "markInteresting": "Отметить как интересный"
+    "markInteresting": "Отметить как интересный",
+    "failedToSubmit": "Не удалось отправить комментарий"
   },
   "jobDetail": {
     "guestCtaTitle": "Присоединяйтесь — получайте заказы как этот",
@@ -1365,6 +1382,8 @@
   },
   "reviews": {
     "title": "Отзывы",
+    "reviewsGiven": "Оставленные",
+    "reviewsPending": "Ожидающие",
     "leaveReview": "Оставить отзыв",
     "writeReview": "Напишите отзыв...",
     "rating": "Рейтинг",
@@ -1500,6 +1519,7 @@
     "changingYourNumberRequiresVerification": "Изменение номера требует подтверждения",
     "chooseHowYouWantTo": "Выберите, как вы хотите...",
     "city": "Город",
+    "codeSentToValue": "Код отправлен на {value}",
     "confirmNewPassword": "Подтвердите новый пароль",
     "connectionError": "Ошибка подключения",
     "construction": "Строительство",
@@ -2453,6 +2473,7 @@
     "verificationPanel": "Панель верификации администратора",
     "currentStatus": "Текущий статус",
     "notes": "Заметки",
+    "editProfile": "Редактировать профиль",
     "updateStatus": "Обновить статус",
     "updateVerificationStatus": "Обновить статус верификации",
     "verificationStatus": "Статус верификации",
@@ -2656,6 +2677,7 @@
     "useMethod": "Используйте тот же метод при следующем входе",
     "continueGoogle": "Нажмите чтобы продолжить с Google",
     "projectsCount": "проект",
+    "projectNumber": "Проект {count}",
     "servicesCount": "услуга",
     "backToClient": "Назад к регистрации клиента",
     "registerAsPro": "Регистрация специалистом",
@@ -2709,6 +2731,7 @@
     "enterPhoneToVerify": "Введите номер телефона для подтверждения",
     "codeSentTo": "Код отправлен на",
     "yourProfile": "Ваш профиль",
+    "yourServices": "Ваши услуги",
     "tellUsAboutYourself": "Расскажите о себе",
     "fullName": "Полное имя",
     "enterYourName": "Введите ваше имя",

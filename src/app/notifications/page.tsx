@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/IconBadge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { Tabs } from '@/components/ui/Tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -477,7 +478,7 @@ function NotificationsPageContent() {
                 {t('common.notifications')}
               </h1>
               {unreadCount > 0 && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-[var(--hm-brand-500)] text-white">
+                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full bg-[var(--hm-brand-500)] text-white">
                   {unreadCount}
                 </span>
               )}
@@ -510,29 +511,18 @@ function NotificationsPageContent() {
           </div>
 
           {/* Filter Tabs - Desktop */}
-          <div className="hidden sm:flex px-4 pb-3 gap-2">
-            {filters.map((filter) => (
-              <button
-                key={filter.key}
-                onClick={() => setActiveFilter(filter.key)}
-                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
-                  activeFilter === filter.key
-                    ? 'bg-[var(--hm-brand-500)] text-white'
-                    : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]'
-                }`}
-              >
-                {filter.label}
-                {filter.count !== undefined && filter.count > 0 && (
-                  <Badge
-                    variant={activeFilter === filter.key ? "ghost" : "premium"}
-                    size="xs"
-                    className={activeFilter === filter.key ? "bg-white/20 text-white" : ""}
-                  >
-                    {filter.count}
-                  </Badge>
-                )}
-              </button>
-            ))}
+          <div className="hidden sm:block px-4 pb-3">
+            <Tabs
+              variant="default"
+              size="sm"
+              activeTab={activeFilter}
+              onChange={(id) => setActiveFilter(id as FilterKey)}
+              tabs={filters.map((filter) => ({
+                id: filter.key,
+                label: filter.label,
+                badge: filter.count && filter.count > 0 ? filter.count : undefined,
+              }))}
+            />
           </div>
 
           {/* Filter Button - Mobile */}

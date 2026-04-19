@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { features } from '@/config/features';
 import { Briefcase, Calendar, LayoutDashboard, Plus, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -56,7 +57,7 @@ export default function MobileBottomNav({ extraAction: _extraAction }: MobileBot
 
   const myKey = isPro ? 'mySpace.mySpace' : 'mySpace.mySpace';
 
-  const slots: Slot[] = isPro
+  const allSlots: Slot[] = isPro
     ? [
         { key: 'my-space', href: '/my-space', labelKey: myKey, icon: LayoutDashboard, isActive: isActive(['/my-space', '/my-work', '/my-proposals']) },
         { key: 'jobs', href: '/jobs', labelKey: 'nav.jobs', icon: Briefcase, isActive: isActive(['/jobs']) },
@@ -86,6 +87,8 @@ export default function MobileBottomNav({ extraAction: _extraAction }: MobileBot
           { key: 'bookings', href: '/bookings', labelKey: 'nav.bookings', icon: Calendar, isActive: isActive(['/bookings']) },
           { key: 'my-space', href: '/my-space', labelKey: 'mySpace.mySpace', icon: LayoutDashboard, isActive: isActive(['/my-space']) },
         ];
+
+  const slots = allSlots.filter((s) => s.key !== 'bookings' || features.bookings);
 
   return (
     <>

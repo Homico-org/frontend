@@ -860,7 +860,7 @@ function ItemRow({
                   onClick={() => onReaction('approved')}
                   className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
                     userReaction?.type === 'approved'
-                      ? 'bg-green-100 text-green-600'
+                      ? 'bg-[var(--hm-success-50)] text-[var(--hm-success-500)]'
                       : 'hover:bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                   }`}
                 >
@@ -884,7 +884,7 @@ function ItemRow({
                   </span>
                 )}
                 {(item.reactions?.filter(r => r.type === 'approved').length || 0) > 0 && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-green-600">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-[var(--hm-success-500)]">
                     ✓ {item.reactions?.filter(r => r.type === 'approved').length}
                   </span>
                 )}

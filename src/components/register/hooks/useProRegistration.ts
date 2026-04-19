@@ -75,7 +75,7 @@ export interface UseProRegistrationReturn {
 export function useProRegistration(): UseProRegistrationReturn {
   const router = useRouter();
   const { login } = useAuth();
-  const { country, locale } = useLanguage();
+  const { country, locale, pick } = useLanguage();
   
   // Step state
   const [currentStep, setCurrentStep] = useState<ProRegistrationStep>('phone');
@@ -131,7 +131,7 @@ export function useProRegistration(): UseProRegistrationReturn {
       ).then(r => r.json());
 
       if (phoneCheck.exists) {
-        setError(locale === 'ka' ? 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია' : 'This phone number is already registered');
+        setError(pick({ en: 'This phone number is already registered', ka: 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია' }));
         setIsLoading(false);
         return;
       }
@@ -158,7 +158,7 @@ export function useProRegistration(): UseProRegistrationReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [phone, phoneCountry, verificationChannel, locale]);
+  }, [phone, phoneCountry, verificationChannel, pick]);
   
   // Verify OTP
   const verifyOtp = useCallback(async (code: string) => {
@@ -299,10 +299,10 @@ export function useProRegistration(): UseProRegistrationReturn {
         const msg = data.message || 'Registration failed';
         // Translate known backend errors
         if (msg.includes('phone number already exists')) {
-          throw new Error(locale === 'ka' ? 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია' : 'This phone number is already registered');
+          throw new Error(pick({ en: 'This phone number is already registered', ka: 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია' }));
         }
         if (msg.includes('email already exists')) {
-          throw new Error(locale === 'ka' ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' : 'This email is already registered');
+          throw new Error(pick({ en: 'This email is already registered', ka: 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' }));
         }
         throw new Error(msg);
       }
@@ -318,11 +318,11 @@ export function useProRegistration(): UseProRegistrationReturn {
 
       setCurrentStep('complete');
     } catch (err) {
-      setError(err instanceof Error ? err.message : (locale === 'ka' ? 'რეგისტრაცია ვერ მოხერხდა' : 'Registration failed'));
+      setError(err instanceof Error ? err.message : pick({ en: 'Registration failed', ka: 'რეგისტრაცია ვერ მოხერხდა' }));
     } finally {
       setIsLoading(false);
     }
-  }, [phone, phoneCountry, fullName, city, password, uploadedAvatarUrl, selectedServices, login]);
+  }, [phone, phoneCountry, fullName, city, password, uploadedAvatarUrl, selectedServices, login, pick]);
   
   const handleNext = useCallback(async () => {
     setError('');

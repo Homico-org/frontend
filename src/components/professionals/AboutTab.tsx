@@ -3,6 +3,7 @@
 import { SocialIcon, socialColors } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input, Textarea } from '@/components/ui/input';
 import { Check, Edit3, Globe, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -180,26 +181,29 @@ export default function AboutTab({
             {t('professional.about')}
           </h3>
           {isOwner && !isEditingBio && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => {
                 setEditBio(bio || '');
                 setIsEditingBio(true);
               }}
-              className="w-8 h-8 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)] transition-colors"
+              className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)]"
+              aria-label={t('common.edit')}
             >
               <Edit3 className="w-4 h-4" />
-            </button>
+            </Button>
           )}
         </div>
 
         {isEditingBio ? (
           <div className="space-y-3">
-            <textarea
+            <Textarea
               value={editBio}
               onChange={(e) => setEditBio(e.target.value)}
               placeholder={t('professional.describeYourExperienceAndServices')}
               rows={5}
-              className="w-full px-4 py-3 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] focus:border-transparent resize-none"
+              className="rounded-xl"
             />
             <div className="flex justify-end gap-2">
               <Button
@@ -226,13 +230,14 @@ export default function AboutTab({
             {bio}
           </p>
         ) : isOwner ? (
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setIsEditingBio(true)}
-            className="w-full py-6 border-2 border-dashed border-[var(--hm-border)] rounded-xl text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:border-[var(--hm-brand-500)] transition-colors"
+            className="w-full h-auto py-6 border-2 border-dashed border-[var(--hm-border)] rounded-xl text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:border-[var(--hm-brand-500)] flex-col gap-1"
           >
-            <Plus className="w-5 h-5 mx-auto mb-1" />
+            <Plus className="w-5 h-5" />
             <span className="text-sm">{t('professional.addBio')}</span>
-          </button>
+          </Button>
         ) : (
           <p className="text-[var(--hm-fg-muted)] italic">{t('professional.noBio')}</p>
         )}
@@ -245,15 +250,18 @@ export default function AboutTab({
             {t('professional.services')}
           </h3>
           {isOwner && !isEditingServices && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => {
                 setEditServices(customServices || []);
                 setIsEditingServices(true);
               }}
-              className="w-8 h-8 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)] transition-colors"
+              className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)]"
+              aria-label={t('common.edit')}
             >
               <Edit3 className="w-4 h-4" />
-            </button>
+            </Button>
           )}
         </div>
 
@@ -279,13 +287,14 @@ export default function AboutTab({
 
             {/* Add new service */}
             <div className="flex gap-2">
-              <input
+              <Input
                 type="text"
                 value={newService}
                 onChange={(e) => setNewService(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && addService()}
                 placeholder={t('professional.newService')}
-                className="flex-1 px-4 py-2 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] focus:border-transparent text-sm"
+                inputSize="sm"
+                className="flex-1 rounded-xl"
               />
               <Button variant="outline" size="sm" onClick={addService}>
                 <Plus className="w-4 h-4" />
@@ -300,7 +309,7 @@ export default function AboutTab({
                 disabled={isSavingServices}
               >
                 <X className="w-4 h-4 mr-1" />
-                {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+                {t('common.cancel')}
               </Button>
               <Button
                 size="sm"
@@ -308,7 +317,7 @@ export default function AboutTab({
                 loading={isSavingServices}
               >
                 <Check className="w-4 h-4 mr-1" />
-                {locale === 'ka' ? 'შენახვა' : 'Save'}
+                {t('common.save')}
               </Button>
             </div>
           </div>
@@ -321,13 +330,14 @@ export default function AboutTab({
             ))}
           </div>
         ) : isOwner ? (
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setIsEditingServices(true)}
-            className="w-full py-6 border-2 border-dashed border-[var(--hm-border)] rounded-xl text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:border-[var(--hm-brand-500)] transition-colors"
+            className="w-full h-auto py-6 border-2 border-dashed border-[var(--hm-border)] rounded-xl text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:border-[var(--hm-brand-500)] flex-col gap-1"
           >
-            <Plus className="w-5 h-5 mx-auto mb-1" />
+            <Plus className="w-5 h-5" />
             <span className="text-sm">{t('professional.addServices')}</span>
-          </button>
+          </Button>
         ) : (
           <p className="text-[var(--hm-fg-muted)] italic">{t('professional.noServicesListed')}</p>
         )}
@@ -341,7 +351,9 @@ export default function AboutTab({
               {t('professional.contactSocial')}
             </h3>
             {!isEditingSocial && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon-sm"
                 onClick={() => {
                   setEditSocial({
                     whatsapp: whatsapp || '',
@@ -353,10 +365,11 @@ export default function AboutTab({
                   });
                   setIsEditingSocial(true);
                 }}
-                className="w-8 h-8 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)] transition-colors"
+                className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)]"
+                aria-label={t('common.edit')}
               >
                 <Edit3 className="w-4 h-4" />
-              </button>
+              </Button>
             )}
           </div>
 
@@ -370,12 +383,13 @@ export default function AboutTab({
                 >
                   <SocialIcon name="whatsapp" size="md" />
                 </div>
-                <input
+                <Input
                   type="text"
                   value={editSocial.whatsapp || ''}
                   onChange={(e) => setEditSocial({ ...editSocial, whatsapp: e.target.value })}
                   placeholder={t('professional.995XxxXxxXxx')}
-                  className="flex-1 px-3 py-2 rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] focus:border-transparent text-sm"
+                  inputSize="sm"
+                  className="flex-1 rounded-lg"
                 />
               </div>
 
@@ -387,12 +401,13 @@ export default function AboutTab({
                 >
                   <SocialIcon name="telegram" size="md" />
                 </div>
-                <input
+                <Input
                   type="text"
                   value={editSocial.telegram || ''}
                   onChange={(e) => setEditSocial({ ...editSocial, telegram: e.target.value })}
                   placeholder={t('professional.username')}
-                  className="flex-1 px-3 py-2 rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] focus:border-transparent text-sm"
+                  inputSize="sm"
+                  className="flex-1 rounded-lg"
                 />
               </div>
 
@@ -404,12 +419,13 @@ export default function AboutTab({
                 >
                   <SocialIcon name="facebook" size="md" />
                 </div>
-                <input
+                <Input
                   type="url"
                   value={editSocial.facebookUrl || ''}
                   onChange={(e) => setEditSocial({ ...editSocial, facebookUrl: e.target.value })}
                   placeholder="https://facebook.com/..."
-                  className="flex-1 px-3 py-2 rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] focus:border-transparent text-sm"
+                  inputSize="sm"
+                  className="flex-1 rounded-lg"
                 />
               </div>
 
@@ -421,12 +437,13 @@ export default function AboutTab({
                 >
                   <SocialIcon name="instagram" size="md" />
                 </div>
-                <input
+                <Input
                   type="url"
                   value={editSocial.instagramUrl || ''}
                   onChange={(e) => setEditSocial({ ...editSocial, instagramUrl: e.target.value })}
                   placeholder="https://instagram.com/..."
-                  className="flex-1 px-3 py-2 rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] focus:border-transparent text-sm"
+                  inputSize="sm"
+                  className="flex-1 rounded-lg"
                 />
               </div>
 
@@ -438,12 +455,13 @@ export default function AboutTab({
                 >
                   <SocialIcon name="linkedin" size="md" />
                 </div>
-                <input
+                <Input
                   type="url"
                   value={editSocial.linkedinUrl || ''}
                   onChange={(e) => setEditSocial({ ...editSocial, linkedinUrl: e.target.value })}
                   placeholder="https://linkedin.com/in/..."
-                  className="flex-1 px-3 py-2 rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] focus:border-transparent text-sm"
+                  inputSize="sm"
+                  className="flex-1 rounded-lg"
                 />
               </div>
 
@@ -452,12 +470,13 @@ export default function AboutTab({
                 <div className="w-10 h-10 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0 text-[var(--hm-fg-secondary)]">
                   <Globe className="w-4 h-4" />
                 </div>
-                <input
+                <Input
                   type="url"
                   value={editSocial.websiteUrl || ''}
                   onChange={(e) => setEditSocial({ ...editSocial, websiteUrl: e.target.value })}
                   placeholder="https://your-website.com"
-                  className="flex-1 px-3 py-2 rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] focus:border-transparent text-sm"
+                  inputSize="sm"
+                  className="flex-1 rounded-lg"
                 />
               </div>
 
@@ -469,7 +488,7 @@ export default function AboutTab({
                   disabled={isSavingSocial}
                 >
                   <X className="w-4 h-4 mr-1" />
-                  {locale === 'ka' ? 'გაუქმება' : 'Cancel'}
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   size="sm"
@@ -477,7 +496,7 @@ export default function AboutTab({
                   loading={isSavingSocial}
                 >
                   <Check className="w-4 h-4 mr-1" />
-                  {locale === 'ka' ? 'შენახვა' : 'Save'}
+                  {t('common.save')}
                 </Button>
               </div>
             </div>
@@ -567,13 +586,14 @@ export default function AboutTab({
               )}
             </div>
           ) : (
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setIsEditingSocial(true)}
-              className="w-full py-6 border-2 border-dashed border-[var(--hm-border)] rounded-xl text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:border-[var(--hm-brand-500)] transition-colors"
+              className="w-full h-auto py-6 border-2 border-dashed border-[var(--hm-border)] rounded-xl text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:border-[var(--hm-brand-500)] flex-col gap-1"
             >
-              <Plus className="w-5 h-5 mx-auto mb-1" />
+              <Plus className="w-5 h-5" />
               <span className="text-sm">{t('professional.addSocialLinks')}</span>
-            </button>
+            </Button>
           )}
         </div>
       )}

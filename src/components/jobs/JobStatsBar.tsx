@@ -69,7 +69,7 @@ export default function JobStatsBar({
 
         {/* Divider */}
         {budget && (
-          <div className="hidden md:block w-px h-12 bg-[var(--hm-n-200)]" />
+          <div className="hidden md:block w-px h-12 bg-[var(--hm-bg-tertiary)]" />
         )}
 
         {/* Stats */}
@@ -95,7 +95,7 @@ export default function JobStatsBar({
         {/* Actions */}
         {actions && (
           <>
-            <div className="hidden md:block w-px h-12 bg-[var(--hm-n-200)]" />
+            <div className="hidden md:block w-px h-12 bg-[var(--hm-bg-tertiary)]" />
             {actions}
           </>
         )}

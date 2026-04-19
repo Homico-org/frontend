@@ -115,7 +115,7 @@ export default function PollCard({
       'rounded-2xl border overflow-hidden transition-all',
       'bg-[var(--hm-bg-elevated)]',
       isApproved
-        ? 'border-emerald-200'
+        ? 'border-[var(--hm-success-500)]/20'
         : isClosed
           ? 'border-[var(--hm-border)] opacity-75'
           : 'border-[var(--hm-border)]'

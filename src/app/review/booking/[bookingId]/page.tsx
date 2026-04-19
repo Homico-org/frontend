@@ -371,7 +371,7 @@ export default function BookingReviewPage() {
                   <Star
                     className={`w-10 h-10 transition-colors ${
                       star <= displayRating
-                        ? 'text-amber-400 fill-amber-400'
+                        ? 'text-[var(--hm-warning-500)] fill-amber-400'
                         : 'text-neutral-300'
                     }`}
                   />

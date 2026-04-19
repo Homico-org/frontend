@@ -314,7 +314,7 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
               <button
                 onClick={handleConfirm}
                 disabled={!inputValue}
-                className="w-full py-3 bg-neutral-900 hover:bg-neutral-800 disabled:bg-[var(--hm-n-200)] disabled:text-[var(--hm-fg-muted)] text-white font-medium rounded-xl transition-all duration-200 ease-out"
+                className="w-full py-3 bg-neutral-900 hover:bg-neutral-800 disabled:bg-[var(--hm-bg-tertiary)] disabled:text-[var(--hm-fg-muted)] text-white font-medium rounded-xl transition-all duration-200 ease-out"
               >
                 Confirm Location
               </button>

@@ -12,6 +12,7 @@ import {
   ChevronDown,
   LayoutGrid,
   MapPin,
+  Search,
   SlidersHorizontal,
   Star,
   Wallet,
@@ -171,12 +172,28 @@ export default function BrowseFilterBar() {
     setSelectedSubcategories,
     hasActiveFilters,
     clearAllFilters,
+    searchQuery,
+    setSearchQuery,
   } = useBrowseContext();
 
   const [open, setOpen] = useState<OpenDropdown>(null);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [draftMin, setDraftMin] = useState<string>(budgetMin?.toString() ?? "");
   const [draftMax, setDraftMax] = useState<string>(budgetMax?.toString() ?? "");
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+  }, [searchQuery]);
+
+  const handleSearchChange = (value: string) => {
+    setLocalSearch(value);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      setSearchQuery(value);
+    }, 300);
+  };
 
   const activeFilterCount = [
     selectedCity && selectedCity !== "all",
@@ -266,7 +283,30 @@ export default function BrowseFilterBar() {
       />
 
       {/* Desktop filter bar */}
-      <div className="hidden lg:flex items-center gap-2">
+      <div
+        className="hidden lg:flex items-center gap-2 px-3 py-2 border border-[var(--hm-border-subtle)]"
+        style={{ backgroundColor: 'var(--hm-bg-page)' }}
+      >
+        {/* Search */}
+        <div className="relative w-64">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
+          <input
+            type="text"
+            value={localSearch}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder={t("browse.searchProfessionals")}
+            className="w-full h-9 pl-8 pr-8 text-sm bg-[var(--hm-bg-elevated)] border border-[var(--hm-border-subtle)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)]/40 focus:ring-2 focus:ring-[var(--hm-brand-500)]/10 transition-all"
+          />
+          {localSearch && (
+            <button
+              onClick={() => handleSearchChange("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 hover:bg-[var(--hm-bg-tertiary)] transition-colors"
+            >
+              <X className="w-3 h-3 text-[var(--hm-fg-muted)]" />
+            </button>
+          )}
+        </div>
+
         {/* Category picker button */}
         <button
           type="button"
@@ -304,7 +344,7 @@ export default function BrowseFilterBar() {
                     setOpen(null);
                   }}
                   className={[
-                    "px-2.5 py-1 rounded-full text-xs font-medium border transition-all",
+                    "px-2.5 py-1 text-xs font-medium border transition-all",
                     selectedCity === v
                       ? "bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)] text-white"
                       : "border-[var(--hm-border-subtle)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-brand-500)]/40",
@@ -373,7 +413,7 @@ export default function BrowseFilterBar() {
                   setOpen(null);
                 }}
                 className={[
-                  "flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border transition-all",
+                  "flex items-center gap-1 px-3 py-1.5 text-sm font-medium border transition-all",
                   minRating === opt.value
                     ? "bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)] text-white"
                     : "border-[var(--hm-border-subtle)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-brand-500)]/40",
@@ -403,7 +443,7 @@ export default function BrowseFilterBar() {
                   type="button"
                   onClick={() => selectBudgetPreset(preset.min, preset.max)}
                   className={[
-                    "px-2.5 py-1 rounded-full text-xs font-medium border transition-all",
+                    "px-2.5 py-1 text-xs font-medium border transition-all",
                     isBudgetPresetActive(preset.min, preset.max)
                       ? "bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)] text-white"
                       : "border-[var(--hm-border-subtle)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-brand-500)]/40",
@@ -603,7 +643,7 @@ function ActivePill({
   return (
     <Badge
       variant="default"
-      className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full border border-[var(--hm-brand-500)]/30 text-[var(--hm-brand-500)] cursor-default"
+      className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium border border-[var(--hm-brand-500)]/30 text-[var(--hm-brand-500)] cursor-default"
       style={{ background: "rgba(239,78,36,0.10)" }}
     >
       {label}

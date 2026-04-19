@@ -5,6 +5,7 @@ import Header from "@/components/common/Header";
 import MobileBottomNav from "@/components/common/MobileBottomNav";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { features } from "@/config/features";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
@@ -16,6 +17,7 @@ import api from "@/lib/api";
 import {
   Briefcase,
   Calendar,
+  Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -470,7 +472,7 @@ function SidebarCategoriesUI({
   onCategoryClick: (catKey: string) => void;
   onSubClick: (catKey: string, subKey: string) => void;
 }) {
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
 
   if (isCollapsed) {
     return (
@@ -513,7 +515,7 @@ function SidebarCategoriesUI({
         const active = isCategoryActive(catKey);
         const subcategories = getSubcategoriesForCategory(catKey);
         const isExpanded = expandedCategories[catKey] ?? false;
-        const label = (locale === 'ka' ? cat.nameKa : cat.name) || getCategoryLabelStatic(catKey, locale);
+        const label = pick({ en: cat.name, ka: cat.nameKa }) || getCategoryLabelStatic(catKey, locale);
         const hasSelectedSub = subcategories.some(s => isSubSelected(s.key));
 
         return (
@@ -558,7 +560,7 @@ function SidebarCategoriesUI({
               <div className="ml-5 mt-0.5 space-y-0.5 pb-0.5">
                 {subcategories.map((sub) => {
                   const selected = isSubSelected(sub.key);
-                  const subLabel = (locale === 'ka' ? sub.nameKa : sub.name) || getCategoryLabelStatic(sub.key, locale);
+                  const subLabel = pick({ en: sub.name, ka: sub.nameKa }) || getCategoryLabelStatic(sub.key, locale);
                   return (
                     <button
                       key={sub.key}
@@ -578,9 +580,7 @@ function SidebarCategoriesUI({
                         style={selected ? { backgroundColor: 'var(--hm-brand-500)' } : {}}
                       >
                         {selected && (
-                          <svg className="w-2 h-2 text-white" viewBox="0 0 12 12" fill="none">
-                            <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
+                          <Check className="w-2 h-2 text-white" strokeWidth={3} />
                         )}
                       </div>
                       <span
@@ -606,7 +606,7 @@ function SidebarCategoriesUI({
 
 function ShellContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [showMobileCategories, setShowMobileCategories] = useState(false);
@@ -619,7 +619,7 @@ function ShellContent({ children }: { children: ReactNode }) {
 
   // Fetch pending booking count for badge
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !features.bookings) return;
     api.get('/bookings/my/pending-count')
       .then(res => setPendingBookingCount(res.data?.count || 0))
       .catch(() => {});
@@ -652,6 +652,7 @@ function ShellContent({ children }: { children: ReactNode }) {
               : null;
 
   const visibleTabs = TABS.filter((tab) => {
+    if (tab.key === "bookings" && !features.bookings) return false;
     if (tab.showFor === "all") return true;
     if (tab.showFor === "auth") return isAuthenticated;
     if (tab.showFor === "pro") return isPro;
@@ -692,7 +693,7 @@ function ShellContent({ children }: { children: ReactNode }) {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-[#fafafa] max-w-full">
+    <div className="h-screen flex flex-col overflow-hidden bg-[var(--hm-bg-page)] max-w-full">
       <Header fixed={false} />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
@@ -770,12 +771,12 @@ function ShellContent({ children }: { children: ReactNode }) {
                           ? {}
                           : { borderLeft: '2px solid transparent' }
                     }
-                    title={isCollapsed ? (locale === "ka" ? tab.labelKa : locale === "ru" ? tab.labelRu : tab.label) : undefined}
+                    title={isCollapsed ? pick({ en: tab.label, ka: tab.labelKa, ru: tab.labelRu }) : undefined}
                   >
                     <Icon className="w-4 h-4 flex-shrink-0" />
                     {!isCollapsed && (
                       <span className="flex-1">
-                        {locale === "ka" ? tab.labelKa : locale === "ru" ? tab.labelRu : tab.label}
+                        {pick({ en: tab.label, ka: tab.labelKa, ru: tab.labelRu })}
                       </span>
                     )}
                     {tab.key === "bookings" && pendingBookingCount > 0 && (
@@ -970,16 +971,10 @@ function ShellContent({ children }: { children: ReactNode }) {
                 />
               )}
 
-              {showSearchFilters && (
+              {showSearchFilters && !isJobsPage && !isProfessionalsPage && (
                 <div className="hidden lg:block mb-4 sm:mb-5">
                   <div className="max-w-xl">
-                    {isJobsPage ? (
-                      <JobsSearchInput />
-                    ) : isProfessionalsPage ? (
-                      <BrowseSearchInput placeholder={t("browse.searchProfessionals")} />
-                    ) : (
-                      <BrowseSearchInput placeholder={t("browse.searchPortfolio")} />
-                    )}
+                    <BrowseSearchInput placeholder={t("browse.searchPortfolio")} />
                   </div>
                 </div>
               )}
@@ -1037,7 +1032,7 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
   return (
     <Suspense
       fallback={
-        <div className="h-screen flex items-center justify-center bg-[#fafafa]">
+        <div className="h-screen flex items-center justify-center bg-[var(--hm-bg-page)]">
           <LoadingSpinner size="lg" color={ACCENT_COLOR} />
         </div>
       }

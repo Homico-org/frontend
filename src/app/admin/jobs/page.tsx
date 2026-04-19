@@ -3,6 +3,7 @@
 import AuthGuard from "@/components/common/AuthGuard";
 import Avatar from "@/components/common/Avatar";
 import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ADMIN_THEME as THEME } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -1045,7 +1046,7 @@ function AdminJobsPageContent() {
 
             {isLoadingProposals ? (
               <div className="py-12 text-center">
-                <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto" style={{ borderColor: THEME.primary }} />
+                <LoadingSpinner size="xl" color={THEME.primary} variant="border" className="mx-auto" />
                 <p className="text-sm mt-3" style={{ color: THEME.textMuted }}>{t("common.loading")}</p>
               </div>
             ) : proposals.length === 0 ? (

@@ -1,7 +1,9 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Tabs } from "@/components/ui/Tabs";
 import { ACCENT_COLOR as ACCENT } from "@/constants/theme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   FileText,
   FolderKanban,
@@ -30,10 +32,10 @@ interface SidebarMenuItem {
 export default function ProfileSidebar({
   activeTab,
   onTabChange,
-  locale,
   portfolioCount = 0,
   reviewsCount = 0,
 }: ProfileSidebarProps) {
+  const { pick } = useLanguage();
   const menuItems: SidebarMenuItem[] = [
     {
       key: "about",
@@ -96,7 +98,7 @@ export default function ProfileSidebar({
 
             {/* Label */}
             <span className={`flex-1 text-left tracking-wide ${isActive ? "" : "group-hover:text-[var(--hm-fg-primary)]"}`}>
-              {locale === "ka" ? item.labelKa : item.label}
+              {pick({ en: item.label, ka: item.labelKa })}
             </span>
 
             {/* Count Badge */}
@@ -120,82 +122,40 @@ export default function ProfileSidebar({
   );
 }
 
-// Mobile version - premium segmented tabs
+// Mobile version — uses shared Tabs component (default underline variant)
 export function ProfileSidebarMobile({
   activeTab,
   onTabChange,
-  locale,
   portfolioCount = 0,
   reviewsCount = 0,
 }: ProfileSidebarProps) {
-  const menuItems: SidebarMenuItem[] = [
-    {
-      key: "about",
-      icon: <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />,
-      label: "About",
-      labelKa: "შესახებ",
-    },
-    {
-      key: "portfolio",
-      icon: <FolderKanban className="w-3.5 h-3.5 sm:w-4 sm:h-4" />,
-      label: "Portfolio",
-      labelKa: "ნამუშევრები",
-      count: portfolioCount,
-    },
-    {
-      key: "reviews",
-      icon: <MessageSquareQuote className="w-3.5 h-3.5 sm:w-4 sm:h-4" />,
-      label: "Reviews",
-      labelKa: "შეფასებები",
-      count: reviewsCount,
-    },
-  ];
+  const { pick } = useLanguage();
 
   return (
-    <div className="grid grid-cols-3 gap-1.5 sm:gap-2 p-0.5 sm:p-1 bg-neutral-100/50 rounded-xl sm:rounded-2xl">
-      {menuItems.map((item) => {
-        const isActive = activeTab === item.key;
-
-        return (
-          <button
-            key={item.key}
-            onClick={() => onTabChange(item.key)}
-            className={`
-              relative flex flex-col items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-2.5 sm:py-3 rounded-lg sm:rounded-xl
-              font-semibold text-[10px] sm:text-[11px] leading-tight transition-all duration-300 ease-out
-              ${isActive
-                ? "text-white shadow-lg shadow-[var(--hm-brand-500)]/30"
-                : "text-[var(--hm-fg-secondary)] hover:bg-white/50"
-              }
-            `}
-            style={isActive ? {
-              background: "linear-gradient(135deg, var(--hm-brand-500) 0%, var(--hm-brand-600) 50%, var(--hm-brand-700) 100%)",
-            } : {}}
-          >
-            <span className={`transition-all duration-300 ${isActive ? "text-white scale-110" : "text-[var(--hm-fg-muted)]"}`}>
-              {item.icon}
-            </span>
-            <span className="text-center px-0.5 tracking-wide">
-              {locale === "ka" ? item.labelKa : item.label}
-            </span>
-
-            {/* Count Badge */}
-            {item.count !== undefined && item.count > 0 && (
-              <Badge
-                variant={isActive ? "secondary" : "outline"}
-                size="xs"
-                className={`absolute -top-0.5 -right-0.5 !min-w-[18px] sm:!min-w-[20px] !h-[18px] sm:!h-[20px] !px-1 !text-[9px] sm:!text-[10px] !font-bold transition-all ${
-                  isActive
-                    ? "!bg-white !text-[var(--hm-brand-500)] !border-white shadow-sm"
-                    : "!bg-[var(--hm-n-200)] !text-[var(--hm-fg-secondary)]"
-                }`}
-              >
-                {item.count > 9 ? "9+" : item.count}
-              </Badge>
-            )}
-          </button>
-        );
-      })}
-    </div>
+    <Tabs
+      variant="default"
+      fullWidth
+      activeTab={activeTab}
+      onChange={(id) => onTabChange(id as ProfileSidebarTab)}
+      tabs={[
+        {
+          id: "about",
+          label: pick({ en: "About", ka: "შესახებ" }),
+          icon: <FileText className="w-4 h-4" />,
+        },
+        {
+          id: "portfolio",
+          label: pick({ en: "Portfolio", ka: "ნამუშევრები" }),
+          icon: <FolderKanban className="w-4 h-4" />,
+          badge: portfolioCount > 0 ? (portfolioCount > 9 ? "9+" : portfolioCount) : undefined,
+        },
+        {
+          id: "reviews",
+          label: pick({ en: "Reviews", ka: "შეფასებები" }),
+          icon: <MessageSquareQuote className="w-4 h-4" />,
+          badge: reviewsCount > 0 ? (reviewsCount > 9 ? "9+" : reviewsCount) : undefined,
+        },
+      ]}
+    />
   );
 }

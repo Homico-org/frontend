@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 import { storage } from '@/services/storage';
 import { Badge } from '@/components/ui/badge';
-import { Check, ZoomIn } from 'lucide-react';
+import { Check, X, ZoomIn } from 'lucide-react';
 import { useState } from 'react';
 
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -169,9 +169,7 @@ export default function PollOptionCard({
             onClick={() => setShowFullImage(false)}
             className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-6 h-6" />
           </button>
           <img
             src={imageUrl}

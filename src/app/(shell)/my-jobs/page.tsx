@@ -33,6 +33,7 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -539,11 +540,11 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                                 return (
                                   <div
                                     key={i}
-                                    className="relative w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[var(--hm-n-200)] border-2 border-white overflow-hidden"
+                                    className="relative w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[var(--hm-bg-tertiary)] border-2 border-white overflow-hidden"
                                     style={{ zIndex: 3 - i }}
                                   >
                                     {proposal?.proId?.avatar ? (
-                                      <img src={storage.getFileUrl(proposal.proId.avatar)} alt={proName} className="w-full h-full object-cover" />
+                                      <Image src={storage.getFileUrl(proposal.proId.avatar)} alt={proName} fill sizes="32px" className="object-cover" />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-[9px] sm:text-[11px] font-semibold text-[var(--hm-fg-muted)] bg-gradient-to-br from-[var(--hm-bg-tertiary)] to-[var(--hm-border)]">
                                         {initial || <Users className="w-2.5 h-2.5" />}

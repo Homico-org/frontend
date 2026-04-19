@@ -275,7 +275,7 @@ function ProReviewsPageContent() {
               <Button
                 onClick={sendInvitation}
                 disabled={isSendingInvite || !invitePhone.trim()}
-                className="bg-[var(--hm-brand-500)] hover:bg-[#B5654D]"
+                className="bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)]"
               >
                 {isSendingInvite ? (
                   <LoadingSpinner size="sm" color="white" />

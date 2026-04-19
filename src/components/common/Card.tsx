@@ -23,33 +23,26 @@ interface CardProps {
 
 // Base card styles - the foundation for all card variants
 const baseStyles = `
-  relative rounded-2xl overflow-hidden
+  relative overflow-hidden
   transition-all duration-300 ease-out
 `;
 
 // Variant styles with sophisticated gradients
 const variantStyles = {
   default: `
-    bg-gradient-to-br from-[#FFFDF9] via-[#FFF9F0]/95 to-[#FDF5E6]/90
-
-    border border-[#E8D5C4]/60
-    shadow-[0_2px_8px_-2px_rgba(210,105,30,0.08),0_4px_16px_-4px_rgba(139,69,19,0.06)]
-,0,0,0.3),0_4px_16px_-4px_rgba(0,0,0,0.2)]
+    bg-[var(--hm-bg-elevated)]
+    border border-[var(--hm-border)]
+    shadow-sm
   `,
   elevated: `
-    bg-gradient-to-br from-[#FFFDF9]/95 via-[#FFF9F0]/90 to-[#FDF5E6]/85
-
-    border-2 border-[var(--hm-brand-500)]/25
-    shadow-[0_4px_12px_-2px_rgba(210,105,30,0.12),0_8px_24px_-6px_rgba(139,69,19,0.1)]
-,0,0,0.4),0_8px_24px_-6px_rgba(0,0,0,0.3)]
-    backdrop-blur-sm
+    bg-[var(--hm-bg-elevated)]
+    border border-[var(--hm-border-strong)]
+    shadow-md
   `,
   subtle: `
-    bg-gradient-to-br from-[var(--hm-bg-elevated)]/80 via-[var(--hm-bg-page)]/70 to-[var(--hm-bg-tertiary)]/60
-
-    border border-[#E8D5C4]/30
-    shadow-[0_1px_4px_-1px_rgba(210,105,30,0.05)]
-,0,0,0.2)]
+    bg-[var(--hm-bg-page)]
+    border border-[var(--hm-border-subtle)]
+    shadow-sm
   `,
   outlined: `
     bg-transparent
@@ -228,7 +221,7 @@ export function CardFooter({
   return (
     <div className={`
       px-4 py-3
-      ${border ? 'border-t border-[#E8D5C4]/40' : ''}
+      ${border ? 'border-t border-[var(--hm-border)]' : ''}
       ${className}
     `}>
       {children}

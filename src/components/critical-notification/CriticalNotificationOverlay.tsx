@@ -180,7 +180,7 @@ export default function CriticalNotificationOverlay() {
           <div className="px-6 py-5 space-y-3">
             {/* Date & Time */}
             {(date || time) && (
-              <div className="flex items-center gap-3 text-[var(--hm-n-300)]">
+              <div className="flex items-center gap-3 text-[var(--hm-fg-muted)]">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-[var(--hm-fg-muted)]" />
                   <span className="text-sm">{date}</span>

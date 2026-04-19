@@ -745,7 +745,7 @@ export default function ForBusinessPage() {
                         animate={{ scale: 1 }}
                         transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.1 }}
                       >
-                        <CheckCircle className="w-8 h-8 text-green-500" />
+                        <CheckCircle className="w-8 h-8 text-[var(--hm-success-500)]" />
                       </motion.div>
                       <h3 className="text-xl font-bold text-[var(--hm-fg-primary)] mb-2">
                         {t('business.formSuccess')}

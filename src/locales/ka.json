@@ -2,6 +2,7 @@
   "common": {
     "save": "შენახვა",
     "cancel": "გაუქმება",
+    "proposals": "შეთავაზება",
     "change": "შეცვლა",
     "delete": "წაშლა",
     "edit": "რედაქტირება",
@@ -533,7 +534,19 @@
     "registerAsProfessionalCta": "დარეგისტრირდი პროფესიონალად",
     "registerAsProfessionalDescription": "აჩვენე შენი ნამუშევრები და იპოვე კლიენტები",
     "postAJobToFindPro": "განათავსე დავალება",
-    "postAJobToFindProDescription": "აღწერე დავალება და მიიღე შეთავაზებები"
+    "postAJobToFindProDescription": "აღწერე დავალება და მიიღე შეთავაზებები",
+    "propertyTypes": {
+      "apartment": "ბინა",
+      "house": "სახლი",
+      "office": "ოფისი",
+      "building": "შენობა"
+    },
+    "deadlineFilters": {
+      "urgent": "სასწრაფო",
+      "week": "ეს კვირა",
+      "month": "ეს თვე",
+      "flexible": "მოქნილი"
+    }
   },
   "job": {
     "title": "სათაური",
@@ -545,6 +558,9 @@
     "subcategory": "ქვეკატეგორია",
     "postJob": "სამუშაოს გამოქვეყნება",
     "editJob": "რედაქტირება",
+    "verificationRequired": "საჭიროა ვერიფიკაცია",
+    "verificationRequiredToSendProposal": "შემოთავაზების გასაგზავნად, გთხოვთ, ჯერ ვერიფიცირდეთ ტელეფონის ნომერი პარამეტრებში.",
+    "verificationRequiredToComment": "კომენტარის დასატოვებლად, გთხოვთ, ჯერ ვერიფიცირდეთ ტელეფონის ნომერი პარამეტრებში.",
     "deleteJob": "წაშლა",
     "viewJob": "ნახვა",
     "applyNow": "გაგზავნე წინადადება",
@@ -756,7 +772,8 @@
     "anonymous": "ანონიმური",
     "sharedProjects": "გაზიარებული პროექტები:",
     "viewFullProfile": "სრული პროფილის ნახვა",
-    "markInteresting": "მონიშნე საინტერესოდ"
+    "markInteresting": "მონიშნე საინტერესოდ",
+    "failedToSubmit": "კომენტარის გაგზავნა ვერ მოხერხდა"
   },
   "jobDetail": {
     "guestCtaTitle": "შემოგვიერთდი — დასაქმდი ასეთ პროექტებზე",
@@ -1366,6 +1383,8 @@
   },
   "reviews": {
     "title": "შეფასებები",
+    "reviewsGiven": "დაწერილი",
+    "reviewsPending": "მოლოდინში",
     "leaveReview": "შეფასების დატოვება",
     "writeReview": "დაწერე შეფასება...",
     "rating": "რეიტინგი",
@@ -1501,6 +1520,7 @@
     "changingYourNumberRequiresVerification": "ნომერის შეცვლილია",
     "chooseHowYouWantTo": "აირჩიე როგორ გსურთ...",
     "city": "ქალაქი",
+    "codeSentToValue": "კოდი გაიგზავნა {value}-ზე",
     "confirmNewPassword": "ახალი პაროლის დადასტურება",
     "connectionError": "კავშირის შეცდომა",
     "construction": "სტრუქტურა",
@@ -2454,6 +2474,7 @@
     "verificationPanel": "ადმინისტრატორის ვერიფიკაციის პანელი",
     "currentStatus": "მიმდინარე სტატუსი",
     "notes": "შენიშვნები",
+    "editProfile": "პროფილის რედაქტირება",
     "updateStatus": "სტატუსის განახლება",
     "updateVerificationStatus": "ვერიფიკაციის სტატუსის განახლება",
     "verificationStatus": "ვერიფიკაციის სტატუსი",
@@ -2658,6 +2679,7 @@
     "useMethod": "შემდეგ შესვლისას გამოიყენე იგივე მეთოდი",
     "continueGoogle": "დააჭირე Google-ით გასაგრძელებლად",
     "projectsCount": "პროექტი",
+    "projectNumber": "პროექტი {count}",
     "servicesCount": "სერვისი",
     "backToClient": "დაბრუნება კლიენტის რეგისტრაციაზე",
     "registerAsPro": "რეგისტრაცია როგორც პროფესიონალი",
@@ -2711,6 +2733,7 @@
     "enterPhoneToVerify": "შეიყვანეთ ტელეფონის ნომერი ვერიფიკაციისთვის",
     "codeSentTo": "კოდი გაგზავნილია",
     "yourProfile": "თქვენი პროფილი",
+    "yourServices": "თქვენი სერვისები",
     "tellUsAboutYourself": "მოგვიყევით თქვენს შესახებ",
     "fullName": "სრული სახელი",
     "enterYourName": "შეიყვანეთ თქვენი სახელი",

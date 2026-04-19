@@ -90,7 +90,7 @@ export default function OptimizedImage({
       <div ref={imgRef} className={`relative ${fill ? "w-full h-full" : ""}`}>
         {/* Blur placeholder */}
         <div
-          className={`absolute inset-0 bg-[var(--hm-n-200)] transition-opacity duration-500 ${
+          className={`absolute inset-0 bg-[var(--hm-bg-tertiary)] transition-opacity duration-500 ${
             isLoaded ? "opacity-0" : "opacity-100"
           }`}
           style={{

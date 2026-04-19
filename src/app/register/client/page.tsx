@@ -10,12 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Smartphone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 function ClientRegisterContent() {
   const reg = useRegistration({ initialUserType: 'client', skipTypeSelection: true });
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
   const router = useRouter();
 
   if (reg.authLoading) {
@@ -47,19 +47,17 @@ function ClientRegisterContent() {
         <main className="flex-1 flex items-center justify-center px-4 pb-8">
           <Card className="w-full max-w-sm p-5 sm:p-6 text-center">
             <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 flex items-center justify-center">
-              <svg className="w-7 h-7 sm:w-8 sm:h-8 text-[var(--hm-brand-500)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
+              <Smartphone className="w-7 h-7 sm:w-8 sm:h-8 text-[var(--hm-brand-500)]" strokeWidth={1.5} />
             </div>
 
             <h2 className="text-lg sm:text-xl font-bold text-[var(--hm-fg-primary)] mb-1">
               {t('register.verification')}
             </h2>
             <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)] mb-5 sm:mb-6">
-              {reg.locale === 'ka'
-                ? `კოდი გამოგზავნილია ${reg.formData.phone}-ზე`
-                : `Code sent to ${reg.formData.phone}`
-              }
+              {pick({
+                en: `Code sent to ${reg.formData.phone}`,
+                ka: `კოდი გამოგზავნილია ${reg.formData.phone}-ზე`,
+              })}
             </p>
 
             {reg.error && (
@@ -78,7 +76,7 @@ function ClientRegisterContent() {
             <div className="mt-4 sm:mt-5 flex items-center justify-center">
               {reg.resendTimer > 0 ? (
                 <span className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">
-                  {reg.locale === 'ka' ? `ხელახლა გაგზავნა ${reg.resendTimer} წმ` : `Resend in ${reg.resendTimer}s`}
+                  {pick({ en: `Resend in ${reg.resendTimer}s`, ka: `ხელახლა გაგზავნა ${reg.resendTimer} წმ` })}
                 </span>
               ) : (
                 <Button

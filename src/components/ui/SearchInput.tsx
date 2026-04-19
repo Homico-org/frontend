@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Search, X } from 'lucide-react';
 
 const searchInputVariants = cva(
-  'flex w-full rounded-xl text-[var(--hm-fg-primary)] transition-all duration-300 placeholder:text-[var(--hm-fg-muted)] disabled:cursor-not-allowed disabled:opacity-50',
+  'flex w-full text-[var(--hm-fg-primary)] transition-all duration-300 placeholder:text-[var(--hm-fg-muted)] disabled:cursor-not-allowed disabled:opacity-50',
   {
     variants: {
       variant: {
@@ -15,7 +15,7 @@ const searchInputVariants = cva(
         filled:
           'bg-[var(--hm-bg-tertiary)] border border-transparent focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15',
         forest:
-          'bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border-subtle)] focus:outline-none focus:border-[#4A7C59] focus:ring-2 focus:ring-[#4A7C59]/15',
+          'bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border-subtle)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15',
       },
       inputSize: {
         sm: 'h-9 px-3 py-2 text-xs',

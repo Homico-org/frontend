@@ -34,7 +34,7 @@ export default function InvitePage() {
   const router = useRouter();
   const { login } = useAuth();
   const { closeLoginModal } = useAuthModal();
-  const { t, locale } = useLanguage();
+  const { t, pick: pickLang } = useLanguage();
   const token = params.token as string;
 
   const [state, setState] = useState<PageState>('loading');
@@ -117,9 +117,9 @@ export default function InvitePage() {
     }
   };
 
-  const pick = (en: string, ka: string) => locale === 'ka' ? ka : en;
-  const cat = locale === 'ka' ? invite?.categoryKa : invite?.category;
-  const sub = locale === 'ka' ? invite?.subcategoryKa : invite?.subcategory;
+  const pick = (en: string, ka: string) => pickLang({ en, ka });
+  const cat = invite ? pickLang({ en: invite.category, ka: invite.categoryKa }) : undefined;
+  const sub = invite ? pickLang({ en: invite.subcategory, ka: invite.subcategoryKa }) : undefined;
 
   if (state === 'loading') {
     return <div className="min-h-[100dvh] flex items-center justify-center" style={{ backgroundColor: 'var(--hm-bg-page)' }}><LoadingSpinner size="lg" color="var(--hm-brand-500)" /></div>;
@@ -129,7 +129,7 @@ export default function InvitePage() {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center px-6" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
         <div className="text-center">
-          <ShieldX className="w-12 h-12 text-[var(--hm-n-300)] mx-auto mb-4" />
+          <ShieldX className="w-12 h-12 text-[var(--hm-fg-muted)] mx-auto mb-4" />
           <h1 className="text-lg font-semibold mb-1" style={{ color: 'var(--hm-fg-primary)' }}>{t('invite.invalidLink')}</h1>
           <p className="text-sm" style={{ color: 'var(--hm-fg-muted)' }}>{t('invite.invalidLinkDesc')}</p>
         </div>

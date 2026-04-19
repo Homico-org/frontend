@@ -43,9 +43,9 @@ export default function RatingBar({
   const getBarColor = () => {
     if (rating >= 4.5) return 'bg-[var(--hm-brand-500)]';
     if (rating >= 4.0) return 'bg-[var(--hm-brand-300)]';
-    if (rating >= 3.5) return 'bg-lime-500';
-    if (rating >= 3.0) return 'bg-yellow-500';
-    if (rating >= 2.0) return 'bg-orange-500';
+    if (rating >= 3.5) return 'bg-[var(--hm-success-400)]';
+    if (rating >= 3.0) return 'bg-[var(--hm-warning-500)]';
+    if (rating >= 2.0) return 'bg-[var(--hm-warning-600)]';
     return 'bg-[var(--hm-error-500)]';
   };
 
@@ -56,9 +56,9 @@ export default function RatingBar({
           {rating.toFixed(1)}
         </span>
       )}
-      <div className={`${bar} rounded-full overflow-hidden bg-neutral-200`}>
+      <div className={`${bar} overflow-hidden bg-[var(--hm-bg-tertiary)]`}>
         <div
-          className={`h-full rounded-full transition-all duration-200 ${getBarColor()}`}
+          className={`h-full transition-all duration-200 ${getBarColor()}`}
           style={{ width: `${percentage}%` }}
         />
       </div>

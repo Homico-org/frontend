@@ -152,7 +152,7 @@ function AnimatedSparkles() {
           }}
         >
           <Sparkles 
-            className="text-amber-400/20" 
+            className="text-[var(--hm-warning-500)]/20" 
             style={{ 
               width: `${8 + Math.random() * 12}px`,
               height: `${8 + Math.random() * 12}px`,
@@ -472,7 +472,7 @@ function TestimonialCard({
         {[...Array(5)].map((_, i) => (
           <Star 
             key={i} 
-            className={`w-4 h-4 ${i < rating ? "fill-amber-400 text-amber-400" : "text-[var(--hm-border)]"}`}
+            className={`w-4 h-4 ${i < rating ? "fill-amber-400 text-[var(--hm-warning-500)]" : "text-[var(--hm-border)]"}`}
           />
         ))}
       </div>

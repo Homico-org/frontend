@@ -294,7 +294,7 @@ function ServiceUnitPricing({
                       variant="ghost"
                       size="icon-sm"
                       onClick={() => removeDiscount(up.unitKey, up.discountTiers, tidx)}
-                      className="ml-auto w-5 h-5 text-[var(--hm-n-300)] hover:text-[var(--hm-error-500)] [&_svg]:size-3"
+                      className="ml-auto w-5 h-5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] [&_svg]:size-3"
                       aria-label={t("common.close")}
                     >
                       <X />

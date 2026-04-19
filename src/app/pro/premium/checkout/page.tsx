@@ -335,7 +335,7 @@ function CheckoutContent() {
                 animationDuration: `${4 + Math.random() * 3}s`,
               }}
             >
-              <Sparkles className="text-amber-400/30" style={{ width: `${12 + Math.random() * 8}px` }} />
+              <Sparkles className="text-[var(--hm-warning-500)]/30" style={{ width: `${12 + Math.random() * 8}px` }} />
             </div>
           ))}
         </div>

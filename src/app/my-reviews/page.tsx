@@ -5,6 +5,7 @@ import Avatar from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { MultiStarDisplay } from '@/components/ui/StarRating';
+import { Tabs } from '@/components/ui/Tabs';
 import { ACCENT_COLOR } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -62,7 +63,7 @@ interface PendingReview extends BaseEntity {
 
 function MyReviewsPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { locale: language } = useLanguage();
+  const { locale: language, t } = useLanguage();
   const router = useRouter();
 
   const [reviews, setReviews] = useState<PageReview[]>([]);
@@ -181,8 +182,8 @@ function MyReviewsPageContent() {
 
             <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--hm-bg-page)', border: '1px solid var(--hm-border)' }}>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-violet-100">
-                  <Clock className="h-5 w-5 text-violet-600" />
+                <div className="p-2 rounded-lg bg-[var(--hm-warning-50)]">
+                  <Clock className="h-5 w-5 text-[var(--hm-warning-500)]" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-[var(--hm-fg-primary)]">{stats.pending}</p>
@@ -193,8 +194,8 @@ function MyReviewsPageContent() {
 
             <div className="p-4 rounded-xl" style={{ backgroundColor: 'var(--hm-bg-page)', border: '1px solid var(--hm-border)' }}>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-sky-100">
-                  <ImageIcon className="h-5 w-5 text-sky-600" />
+                <div className="p-2 rounded-lg bg-[var(--hm-info-50)]">
+                  <ImageIcon className="h-5 w-5 text-[var(--hm-info-500)]" />
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-[var(--hm-fg-primary)]">{stats.withPhotos}</p>
@@ -208,29 +209,16 @@ function MyReviewsPageContent() {
 
       {/* Tabs */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setActiveTab('given')}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-              activeTab === 'given'
-                ? 'bg-[var(--hm-n-700)] text-white shadow-sm'
-                : 'text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]'
-            }`}
-            style={activeTab !== 'given' ? { backgroundColor: 'var(--hm-bg-page)' } : {}}
-          >
-            {language === 'ka' ? 'დაწერილი' : 'Reviews Given'} ({stats.total})
-          </button>
-          <button
-            onClick={() => setActiveTab('pending')}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-              activeTab === 'pending'
-                ? 'bg-[var(--hm-n-700)] text-white shadow-sm'
-                : 'text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]'
-            }`}
-            style={activeTab !== 'pending' ? { backgroundColor: 'var(--hm-bg-page)' } : {}}
-          >
-            {language === 'ka' ? 'მოლოდინში' : 'Pending'} ({stats.pending})
-          </button>
+        <div className="mb-6">
+          <Tabs
+            variant="default"
+            activeTab={activeTab}
+            onChange={(id) => setActiveTab(id as 'given' | 'pending')}
+            tabs={[
+              { id: 'given', label: t('reviews.reviewsGiven'), badge: stats.total },
+              { id: 'pending', label: t('reviews.reviewsPending'), badge: stats.pending },
+            ]}
+          />
         </div>
 
         {/* Reviews List */}
@@ -239,7 +227,7 @@ function MyReviewsPageContent() {
             {reviews.length === 0 ? (
               <div className="rounded-2xl p-12 text-center" style={{ backgroundColor: 'var(--hm-bg-page)', border: '1px solid var(--hm-border)' }}>
                 <div className="w-16 h-16 rounded-2xl bg-[var(--hm-warning-50)]/20 flex items-center justify-center mx-auto mb-4">
-                  <Star className="h-8 w-8 text-amber-400" />
+                  <Star className="h-8 w-8 text-[var(--hm-warning-500)]" />
                 </div>
                 <h3 className="text-lg font-medium text-[var(--hm-fg-primary)] mb-2">
                   {language === 'ka' ? 'შეფასებები ჯერ არ არის' : 'No reviews yet'}
@@ -320,7 +308,7 @@ function MyReviewsPageContent() {
                                       {language === 'ka' ? 'რედაქტირება' : 'Edit Review'}
                                     </button>
                                     <button
-                                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50"
+                                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)]"
                                     >
                                       <Trash2 className="h-4 w-4" />
                                       {language === 'ka' ? 'წაშლა' : 'Delete'}

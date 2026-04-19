@@ -134,7 +134,7 @@ const MyJobCard = React.memo(function MyJobCard({
                 <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="text-[10px] sm:text-xs font-medium">
                   {proposalCount}
-                  <span className="hidden sm:inline"> {locale === 'ka' ? 'შეთავაზება' : 'proposals'}</span>
+                  <span className="hidden sm:inline"> {t('common.proposals')}</span>
                 </span>
               </div>
 

@@ -55,7 +55,7 @@ export default function SearchBar({ onSearch, placeholder }: SearchBarProps) {
 
         <button
           type="submit"
-          className="px-5 py-2.5 m-1.5 bg-[var(--hm-info-500)] hover:bg-blue-600 text-white font-medium rounded-lg transition-all duration-200 ease-out flex items-center gap-2"
+          className="px-5 py-2.5 m-1.5 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white font-medium transition-all duration-200 ease-out flex items-center gap-2"
         >
           <span>{t('common.search')}</span>
           <svg

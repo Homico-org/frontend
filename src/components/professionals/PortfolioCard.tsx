@@ -145,7 +145,7 @@ export default function PortfolioCard({
       />
 
       {/* Card inner container */}
-      <div className="relative bg-[var(--hm-bg-elevated)] rounded-2xl overflow-hidden border border-neutral-100/80 group-hover:border-[var(--hm-brand-500)]/30 transition-all duration-300">
+      <div className="relative bg-[var(--hm-bg-elevated)] rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] group-hover:border-[var(--hm-brand-500)]/30 transition-all duration-300">
 
         {/* Main Image */}
         {currentIsBa && currentBaPair ? (
@@ -217,7 +217,7 @@ export default function PortfolioCard({
 
             {/* View button on hover */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
-              <div className="px-6 py-3 rounded-full bg-white/95 backdrop-blur-sm shadow-2xl transform scale-75 group-hover:scale-100 transition-all duration-400 ease-out flex items-center gap-2.5 hover:bg-[var(--hm-brand-500)] hover:text-white group/btn">
+              <div className="px-6 py-3 rounded-full bg-white/95 backdrop-blur-sm shadow-2xl text-[var(--hm-n-900)] transform scale-75 group-hover:scale-100 transition-all duration-400 ease-out flex items-center gap-2.5 hover:bg-[var(--hm-brand-500)] hover:text-white group/btn">
                 <Eye className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
                 <span className="text-sm font-semibold">
                   {t('common.view')}
@@ -244,7 +244,7 @@ export default function PortfolioCard({
 
         {/* Thumbnail Strip */}
         {allImages.length > 1 && (
-          <div className="flex gap-1.5 p-2.5 bg-gradient-to-b from-neutral-50/80 to-white border-t border-neutral-100/50">
+          <div className="flex gap-1.5 p-2.5 bg-gradient-to-b from-[var(--hm-bg-page)] to-[var(--hm-bg-elevated)] border-t border-[var(--hm-border-subtle)]">
             {allImages.slice(0, 4).map((img, imgIdx) => {
               const isBaPair = imgIdx >= baStartIndex;
               const baIdx = imgIdx - baStartIndex;
@@ -363,7 +363,7 @@ export default function PortfolioCard({
               )}
               {project.rating && project.rating > 0 && (
                 <div className="flex items-center gap-0.5 text-xs">
-                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  <Star className="w-3 h-3 fill-amber-400 text-[var(--hm-warning-500)]" />
                   <span className="font-semibold text-[var(--hm-fg-secondary)]">{project.rating.toFixed(1)}</span>
                 </div>
               )}

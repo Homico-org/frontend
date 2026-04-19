@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Progress } from "@/components/ui/progress";
+import { Stepper } from "@/components/ui/Stepper";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
@@ -24,6 +24,7 @@ import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
 import {
+    AlertTriangle,
     ArrowLeft,
     ArrowRight,
     Camera,
@@ -500,60 +501,15 @@ function PostJobPageContent() {
     <div className="flex flex-col min-h-screen pb-28 lg:pb-14 bg-[var(--hm-bg-page)]">
       {/* Page Title + Progress */}
       <div className="bg-[var(--hm-bg-elevated)] border-b border-[var(--hm-border-subtle)] sticky top-14 z-40">
-        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pt-3 pb-2">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-sm font-bold text-[var(--hm-fg-primary)] flex items-center gap-2">
-              <Plus className="w-4 h-4 text-[var(--hm-brand-500)]" />
-              {isEditMode ? t('job.editJob') : t('browse.postAJob')}
-            </h1>
-            <span className="text-[11px] text-[var(--hm-fg-muted)]">
-              {getCurrentStepIndex() + 1}/{STEP_IDS.length}
-            </span>
-          </div>
-          {/* Step labels */}
-          <div className="flex mb-1.5">
-            {STEP_IDS.map((step, index) => {
-              const currentIndex = getCurrentStepIndex();
-              const isCompleted = index < currentIndex;
-              const isCurrent = index === currentIndex;
-              return (
-                <button
-                  key={step}
-                  type="button"
-                  onClick={() => isCompleted ? goToStep(step) : undefined}
-                  disabled={!isCompleted}
-                  className={`flex-1 text-center text-[10px] sm:text-[11px] font-medium transition-colors bg-transparent border-0 ${
-                    isCurrent
-                      ? 'text-[var(--hm-brand-500)]'
-                      : isCompleted
-                        ? 'text-[var(--hm-fg-secondary)] cursor-pointer hover:text-[var(--hm-brand-500)]'
-                        : 'text-[var(--hm-fg-muted)]'
-                  }`}
-                >
-                  <span className="hidden sm:inline">{getStepLabel(step)}</span>
-                  <span className="sm:hidden">{index + 1}</span>
-                </button>
-              );
-            })}
-          </div>
-          {/* Progress segments */}
-          <div className="flex gap-1">
-            {STEP_IDS.map((step, index) => {
-              const currentIndex = getCurrentStepIndex();
-              return (
-                <div
-                  key={step}
-                  className={`flex-1 h-1 rounded-full transition-colors duration-300 ${
-                    index < currentIndex
-                      ? 'bg-[var(--hm-brand-500)]'
-                      : index === currentIndex
-                        ? 'bg-[var(--hm-brand-500)]/40'
-                        : 'bg-[var(--hm-bg-tertiary)]'
-                  }`}
-                />
-              );
-            })}
-          </div>
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pt-3 pb-3">
+          <Stepper
+            steps={STEP_IDS.map((step) => ({
+              key: step,
+              label: getStepLabel(step),
+            }))}
+            currentIndex={getCurrentStepIndex()}
+            onStepClick={(index) => goToStep(STEP_IDS[index])}
+          />
         </div>
       </div>
 
@@ -892,8 +848,8 @@ function PostJobPageContent() {
                       onClick={() => fileInputRef.current?.click()}
                       className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center flex-shrink-0 p-0 shadow-none [&_svg]:size-6 ${
                         (existingMedia.length + mediaFiles.length) > 0
-                          ? 'border-emerald-300 hover:border-emerald-400 hover:bg-[var(--hm-success-100)]/50 text-[var(--hm-success-500)] hover:text-[var(--hm-success-500)]'
-                          : 'border-amber-300 hover:border-amber-400 hover:bg-[var(--hm-warning-100)]/50 text-[var(--hm-warning-500)] hover:text-[var(--hm-warning-500)]'
+                          ? 'border-[var(--hm-success-500)]/20 hover:border-emerald-400 hover:bg-[var(--hm-success-100)]/50 text-[var(--hm-success-500)] hover:text-[var(--hm-success-500)]'
+                          : 'border-[var(--hm-warning-500)]/20 hover:border-amber-400 hover:bg-[var(--hm-warning-100)]/50 text-[var(--hm-warning-500)] hover:text-[var(--hm-warning-500)]'
                       }`}
                     >
                       <span className="flex flex-col items-center gap-1">
@@ -953,9 +909,7 @@ function PostJobPageContent() {
                   {/* Required validation message */}
                   {(existingMedia.length + mediaFiles.length) === 0 && formData.title.trim() && formData.description.trim() && (
                     <div className="mt-4 flex items-center gap-2 text-sm text-[var(--hm-warning-500)]">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
+                      <AlertTriangle className="w-4 h-4" />
                       <span>
                         {t("postJob.addAtLeastOnePhotoToContinue")}
                       </span>

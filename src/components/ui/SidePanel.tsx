@@ -119,11 +119,11 @@ export default function SidePanel({ isOpen, onClose, title, children }: SidePane
           }`}
         >
           <div className="flex flex-col gap-[3px]">
-            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-neutral-300 group-hover:bg-[var(--hm-brand-500)]"}`} />
-            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-neutral-300 group-hover:bg-[var(--hm-brand-500)]"}`} />
-            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-neutral-300 group-hover:bg-[var(--hm-brand-500)]"}`} />
-            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-neutral-300 group-hover:bg-[var(--hm-brand-500)]"}`} />
-            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-neutral-300 group-hover:bg-[var(--hm-brand-500)]"}`} />
+            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-[var(--hm-border-strong)] group-hover:bg-[var(--hm-brand-500)]"}`} />
+            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-[var(--hm-border-strong)] group-hover:bg-[var(--hm-brand-500)]"}`} />
+            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-[var(--hm-border-strong)] group-hover:bg-[var(--hm-brand-500)]"}`} />
+            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-[var(--hm-border-strong)] group-hover:bg-[var(--hm-brand-500)]"}`} />
+            <span className={`w-[3px] h-[3px] rounded-full transition-colors ${isResizing ? "bg-[var(--hm-brand-500)]" : "bg-[var(--hm-border-strong)] group-hover:bg-[var(--hm-brand-500)]"}`} />
           </div>
         </div>
 

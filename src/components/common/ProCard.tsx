@@ -9,7 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { storage } from "@/services/storage";
 import { ProProfile, ProStatus } from "@/types";
-import { Briefcase, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, Play, Sparkles, Wallet, Zap } from "lucide-react";
+import { Briefcase, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, Play, Sparkles, Star, Wallet, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -31,7 +31,7 @@ export default function ProCard({
   activeCategory,
   activeSubcategories = [],
 }: ProCardProps) {
-  const { t, locale } = useLanguage();
+  const { t, locale, pick } = useLanguage();
   const { getCategoryLabel } = useCategoryLabels();
   const { categories: catalogCategories, getSubcategoriesForCategory } = useCategories();
   const [imageError, setImageError] = useState(false);
@@ -227,16 +227,16 @@ export default function ProCard({
   const catalogLabelMap = useMemo(() => {
     const map = new Map<string, string>();
     for (const cat of catalogCategories) {
-      map.set(cat.key, locale === 'ka' ? cat.nameKa : cat.name);
+      map.set(cat.key, pick({ en: cat.name, ka: cat.nameKa }));
       for (const sub of cat.subcategories) {
-        map.set(sub.key, locale === 'ka' ? sub.nameKa : sub.name);
+        map.set(sub.key, pick({ en: sub.name, ka: sub.nameKa }));
         for (const svc of (sub.services || [])) {
-          map.set(svc.key, locale === 'ka' ? svc.nameKa : svc.name);
+          map.set(svc.key, pick({ en: svc.name, ka: svc.nameKa }));
         }
       }
     }
     return map;
-  }, [catalogCategories, locale]);
+  }, [catalogCategories, pick]);
 
   // All subcategories for display — filtered against current catalog
   const allSubcats = useMemo(() => {
@@ -275,13 +275,13 @@ export default function ProCard({
                 )}
                 {matchedExperience && (
                   <>
-                    <span className="text-[var(--hm-n-300)]">·</span>
+                    <span className="text-[var(--hm-fg-muted)]">·</span>
                     <span>{matchedExperience}</span>
                   </>
                 )}
                 {matchedPricing && (
                   <>
-                    <span className="text-[var(--hm-n-300)]">·</span>
+                    <span className="text-[var(--hm-fg-muted)]">·</span>
                     <span className="text-[var(--hm-brand-500)] font-medium">{matchedPricing.value}</span>
                   </>
                 )}
@@ -392,7 +392,7 @@ export default function ProCard({
         ) : (
           <div className="relative aspect-[4/3] bg-gradient-to-br from-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] flex items-center justify-center">
             <div className="text-center">
-              <Camera className="w-5 h-5 text-[var(--hm-n-300)] mx-auto mb-1" />
+              <Camera className="w-5 h-5 text-[var(--hm-fg-muted)] mx-auto mb-1" />
               <span className="text-[10px] text-[var(--hm-fg-muted)]">{t('professional.noPortfolioItemsYet')}</span>
             </div>
           </div>
@@ -463,7 +463,7 @@ export default function ProCard({
                   <Clock className="w-3 h-3" />
                   {matchedExperience}
                 </span>
-                <span className="text-[var(--hm-n-300)]">·</span>
+                <span className="text-[var(--hm-fg-muted)]">·</span>
               </>
             )}
             <span className="flex items-center gap-1">
@@ -471,7 +471,7 @@ export default function ProCard({
             </span>
             {matchedPricing && (
               <>
-                <span className="text-[var(--hm-n-300)]">·</span>
+                <span className="text-[var(--hm-fg-muted)]">·</span>
                 <span className="flex items-center gap-1 text-[var(--hm-brand-500)] font-semibold">
                   <Wallet className="w-3 h-3" />
                   {matchedPricing.value}
@@ -480,7 +480,7 @@ export default function ProCard({
             )}
             {profile.avgResponseTime != null && profile.avgResponseTime > 0 && profile.avgResponseTime <= 24 && (
               <>
-                <span className="text-[var(--hm-n-300)]">·</span>
+                <span className="text-[var(--hm-fg-muted)]">·</span>
                 <span className="flex items-center gap-1 text-[var(--hm-success-500)] font-medium">
                   <Zap className="w-3 h-3" />
                   {profile.avgResponseTime < 1
@@ -498,13 +498,13 @@ export default function ProCard({
             {displaySubcats.map((key) => (
               <span
                 key={key}
-                className="px-2 py-0.5 text-[10px] font-medium text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] rounded-full"
+                className="px-2 py-0.5 text-[10px] font-medium text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)]"
               >
                 {catalogLabelMap.get(key) || getCategoryLabel(key)}
               </span>
             ))}
             {remainingSubcats > 0 && (
-              <span className="px-2 py-0.5 text-[10px] font-semibold text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 rounded-full">
+              <span className="px-2 py-0.5 text-[10px] font-semibold text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10">
                 +{remainingSubcats}
               </span>
             )}
@@ -515,9 +515,7 @@ export default function ProCard({
         {isPremium && (
           <div className="absolute top-2 right-2 z-10">
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-white">
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 text-white">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-              </svg>
+              <Star className="w-3 h-3 text-white fill-current" />
             </div>
           </div>
         )}

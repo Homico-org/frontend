@@ -6,13 +6,10 @@ import { CountBadge } from "@/components/ui/badge";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
-import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useClickOutside } from "@/hooks/useClickOutside";
-import { Bell, Briefcase, Building2, ChevronRight, ExternalLink, LayoutGrid, LogIn, LogOut, Menu, Plus, Search, Shield, SlidersHorizontal, UserPlus, X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
+import { Bell, Briefcase, ChevronRight, ExternalLink, LayoutGrid, LogIn, LogOut, Menu, Plus, Search, Shield, SlidersHorizontal, UserPlus, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -24,8 +21,7 @@ import ThemeToggle from "./ThemeToggle";
 export default function Header({ fixed = true }: { fixed?: boolean }) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { flatCategories } = useCategories();
-  const { t, pick } = useLanguage();
+  const { t } = useLanguage();
   const { unreadCount } = useNotifications();
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -44,20 +40,6 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
     : user?.role === "pro" || user?.role === "admin"
       ? "/jobs"
       : "/portfolio";
-
-  // Helper to get subcategory name from flat categories
-  const getSubcategoryDisplayName = useCallback(
-    (key: string): string => {
-      const item = flatCategories.find(
-        (c) =>
-          c.key === key &&
-          (c.type === "subcategory" || c.type === "subsubcategory"),
-      );
-      if (!item) return key;
-      return pick({ en: item.name, ka: item.nameKa });
-    },
-    [flatCategories, pick],
-  );
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -181,8 +163,6 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                             <p className="text-xs text-white/80 truncate">
                               {user.email}
                             </p>
-                            {user.selectedSubcategories &&
-                              null /* category badges removed from dropdown */}
                           </div>
                         </div>
                       </Link>
@@ -552,33 +532,6 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
         </div>
       )}
 
-      {/* CSS for animations */}
-      <style jsx>{`
-        @keyframes slideInRight {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.2s ease-out forwards;
-        }
-        .animate-slide-in-right {
-          animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-      `}</style>
     </header>
   );
 }

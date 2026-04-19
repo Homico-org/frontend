@@ -475,8 +475,8 @@ Grand Total: 91,600₾`,
                       className={`
                         w-full p-8 border-2 border-dashed rounded-xl cursor-pointer transition-all
                         ${isDragOver
-                          ? 'border-forest-500 bg-[var(--hm-bg-tertiary)] scale-[1.02]'
-                          : 'border-[var(--hm-border)] hover:border-forest-400 hover:bg-forest-50/50'
+                          ? 'border-[var(--hm-brand-500)] bg-[var(--hm-bg-tertiary)] scale-[1.02]'
+                          : 'border-[var(--hm-border)] hover:border-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-50)]/50'
                         }
                       `}
                     >
@@ -547,7 +547,7 @@ Grand Total: 91,600₾`,
             <div className="flex flex-col items-center justify-center py-20">
               <div className="relative w-24 h-24 mb-8">
                 <div className="absolute inset-0 rounded-full border-4 border-[var(--hm-brand-200)]" />
-                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-terracotta-500 animate-spin" />
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[var(--hm-brand-500)] animate-spin" />
                 <div className="absolute inset-3 rounded-full bg-[var(--hm-brand-50)] flex items-center justify-center">
                   <Scale className="w-8 h-8 text-[var(--hm-brand-500)] animate-pulse" strokeWidth={1.5} />
                 </div>
@@ -571,7 +571,7 @@ Grand Total: 91,600₾`,
               {/* Winner Summary */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Best Price */}
-                <div className="bg-gradient-to-br from-[var(--hm-bg-page)]0 to-forest-600 rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-forest-500/20">
+                <div className="bg-gradient-to-br from-[var(--hm-brand-500)] to-[var(--hm-brand-700)] rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-[var(--hm-brand-500)]/20">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                   <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
                   <div className="absolute top-3 right-3">
@@ -600,7 +600,7 @@ Grand Total: 91,600₾`,
                 </div>
 
                 {/* Best Value */}
-                <div className="bg-gradient-to-br from-terracotta-500 to-terracotta-600 rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-[var(--hm-brand-500)]/20">
+                <div className="bg-gradient-to-br from-[var(--hm-brand-500)] to-[var(--hm-brand-600)] rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-[var(--hm-brand-500)]/20">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                   <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
                   <div className="absolute top-3 right-3">
@@ -654,7 +654,7 @@ Grand Total: 91,600₾`,
                     onClick={() => setShowPercentages(!showPercentages)}
                     className={`rounded-lg ${
                       showPercentages
-                        ? 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-forest-100/50'
+                        ? 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-brand-50)]/50'
                         : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                     }`}
                     aria-label={showPercentages ? t('common.hide') : t('common.show')}
@@ -702,11 +702,11 @@ Grand Total: 91,600₾`,
                             </span>
                           </div>
                         </div>
-                        <div className="h-3 bg-[var(--hm-bg-tertiary)] rounded-full overflow-hidden">
+                        <div className="h-3 bg-[var(--hm-bg-tertiary)] overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all duration-700 ease-out ${
+                            className={`h-full transition-all duration-700 ease-out ${
                               isWinner
-                                ? 'bg-gradient-to-r from-forest-400 to-forest-500'
+                                ? 'bg-gradient-to-r from-[var(--hm-brand-500)] to-[var(--hm-brand-600)]'
                                 : `bg-gradient-to-r ${contractorColors[originalIdx].bg.replace('bg-', 'from-')}/70 ${contractorColors[originalIdx].bg.replace('bg-', 'to-')}`
                             }`}
                             style={{ width: `${barWidth}%` }}
@@ -897,7 +897,7 @@ Grand Total: 91,600₾`,
                         className={`
                           bg-[var(--hm-bg-elevated)] rounded-2xl border-2 overflow-hidden transition-all
                           ${isWinner
-                            ? 'border-forest-500 shadow-lg shadow-forest-500/10'
+                            ? 'border-[var(--hm-brand-500)] shadow-lg shadow-[var(--hm-brand-500)]/10'
                             : isBestValue
                             ? 'border-[var(--hm-brand-500)] shadow-lg shadow-[var(--hm-brand-500)]/10'
                             : 'border-[var(--hm-border)]'
@@ -1091,7 +1091,7 @@ Grand Total: 91,600₾`,
 
               {/* Error Display */}
               {comparisonError && (
-                <div className="p-4 bg-[var(--hm-error-50)]/20 border border-red-200 rounded-xl">
+                <div className="p-4 bg-[var(--hm-error-50)]/20 border border-[var(--hm-error-500)]/20 rounded-xl">
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5 text-[var(--hm-error-500)] flex-shrink-0" />
                     <p className="text-sm text-[var(--hm-error-500)]">{comparisonError}</p>

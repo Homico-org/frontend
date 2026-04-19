@@ -1,32 +1,22 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { JobFilters } from '@/contexts/JobsContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Bookmark, ChevronDown, RotateCcw } from 'lucide-react';
+import { Bookmark, Check, ChevronDown, RotateCcw } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 
 // Re-export JobFilters for convenience
 export type { JobFilters } from '@/contexts/JobsContext';
 
-// Property type options
-const PROPERTY_TYPES = [
-  { key: 'all', label: 'Any', labelKa: 'ყველა' },
-  { key: 'apartment', label: 'Apartment', labelKa: 'ბინა' },
-  { key: 'house', label: 'House', labelKa: 'სახლი' },
-  { key: 'office', label: 'Office', labelKa: 'ოფისი' },
-  { key: 'building', label: 'Building', labelKa: 'შენობა' },
-];
+// Property type filter keys (labels via t('browse.propertyTypes.<key>'))
+const PROPERTY_TYPE_KEYS = ['apartment', 'house', 'office', 'building'] as const;
 
-// Deadline filter options
-const DEADLINE_FILTERS = [
-  { key: 'all', label: 'Any', labelKa: 'ყველა' },
-  { key: 'urgent', label: 'Urgent', labelKa: 'სასწრაფო' },
-  { key: 'week', label: 'This week', labelKa: 'ეს კვირა' },
-  { key: 'month', label: 'This month', labelKa: 'ეს თვე' },
-  { key: 'flexible', label: 'Flexible', labelKa: 'მოქნილი' },
-];
+// Deadline filter keys (labels via t('browse.deadlineFilters.<key>'))
+const DEADLINE_FILTER_KEYS = ['urgent', 'week', 'month', 'flexible'] as const;
 
 interface JobsFiltersSidebarProps {
   filters: JobFilters;
@@ -35,7 +25,7 @@ interface JobsFiltersSidebarProps {
   isAuthenticated?: boolean;
 }
 
-// Custom checkbox component
+// Custom checkbox component (kept local because design-system Checkbox lacks the count-badge slot)
 function Checkbox({
   checked,
   onChange,
@@ -60,21 +50,11 @@ function Checkbox({
           className={`w-4 h-4 rounded border-[1.5px] transition-all duration-200 flex items-center justify-center ${
             checked
               ? 'border-transparent'
-              : 'border-[var(--hm-border-strong)] group-hover:border-neutral-400'
+              : 'border-[var(--hm-border-strong)] group-hover:border-[var(--hm-fg-muted)]'
           }`}
           style={checked ? { backgroundColor: ACCENT } : {}}
         >
-          {checked && (
-            <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 12 12" fill="none">
-              <path
-                d="M2.5 6L5 8.5L9.5 3.5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
+          {checked && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
         </div>
       </div>
       <span className={`text-[13px] transition-colors ${
@@ -169,7 +149,7 @@ function CollapsibleSection({
 }
 
 export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCount = 0, isAuthenticated = true }: JobsFiltersSidebarProps) {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
 
   // Local state for budget inputs (to allow typing without immediate filtering)
   const [minInput, setMinInput] = useState<string>(filters.budgetMin?.toString() || '');
@@ -228,13 +208,15 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
         {/* Clear filters button */}
         {hasActiveFilters && (
           <div className="flex items-center justify-end mb-2">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={clearAllFilters}
-              className="flex items-center gap-1 text-[11px] font-medium text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors"
+              leftIcon={<RotateCcw className="w-3 h-3" />}
+              className="!h-auto !px-2 !py-1 !text-[11px] !font-medium text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
             >
-              <RotateCcw className="w-3 h-3" />
               {t('browse.clearAll')}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -279,8 +261,9 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
         >
           <div className="flex items-center gap-2">
             <div className="flex-1">
-              <input
+              <Input
                 type="number"
+                inputSize="sm"
                 placeholder={t('browse.min')}
                 value={minInput}
                 onChange={(e) => {
@@ -291,15 +274,15 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
                 }}
                 onBlur={handleBudgetChange}
                 onKeyDown={(e) => e.key === 'Enter' && handleBudgetChange()}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-                style={{ '--tw-ring-color': ACCENT, '--tw-ring-opacity': '0.5' } as React.CSSProperties}
-                min="0"
+                className="rounded-lg"
+                min={0}
               />
             </div>
             <span className="text-[var(--hm-fg-muted)] text-sm">-</span>
             <div className="flex-1">
-              <input
+              <Input
                 type="number"
+                inputSize="sm"
                 placeholder={t('browse.max')}
                 value={maxInput}
                 onChange={(e) => {
@@ -310,9 +293,8 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
                 }}
                 onBlur={handleBudgetChange}
                 onKeyDown={(e) => e.key === 'Enter' && handleBudgetChange()}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-                style={{ '--tw-ring-color': ACCENT, '--tw-ring-opacity': '0.5' } as React.CSSProperties}
-                min="0"
+                className="rounded-lg"
+                min={0}
               />
             </div>
           </div>
@@ -329,12 +311,12 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
           title={t('browse.property')}
           activeCount={filters.propertyType !== 'all' ? 1 : 0}
         >
-          {PROPERTY_TYPES.filter(o => o.key !== 'all').map(option => (
+          {PROPERTY_TYPE_KEYS.map(key => (
             <Checkbox
-              key={option.key}
-              checked={filters.propertyType === option.key}
-              onChange={() => updateFilter('propertyType', filters.propertyType === option.key ? 'all' : option.key)}
-              label={locale === 'ka' ? option.labelKa : option.label}
+              key={key}
+              checked={filters.propertyType === key}
+              onChange={() => updateFilter('propertyType', filters.propertyType === key ? 'all' : key)}
+              label={t(`browse.propertyTypes.${key}`)}
             />
           ))}
         </CollapsibleSection>
@@ -347,12 +329,12 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
           title={t('browse.deadline')}
           activeCount={filters.deadline !== 'all' ? 1 : 0}
         >
-          {DEADLINE_FILTERS.filter(o => o.key !== 'all').map(option => (
+          {DEADLINE_FILTER_KEYS.map(key => (
             <Checkbox
-              key={option.key}
-              checked={filters.deadline === option.key}
-              onChange={() => updateFilter('deadline', filters.deadline === option.key ? 'all' : option.key)}
-              label={locale === 'ka' ? option.labelKa : option.label}
+              key={key}
+              checked={filters.deadline === key}
+              onChange={() => updateFilter('deadline', filters.deadline === key ? 'all' : key)}
+              label={t(`browse.deadlineFilters.${key}`)}
             />
           ))}
         </CollapsibleSection>

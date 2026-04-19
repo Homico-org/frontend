@@ -220,7 +220,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading: authLoading, user } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { country, locale } = useLanguage();
+  const { country, locale, pick } = useLanguage();
   const { trackEvent } = useAnalytics();
   const { categories } = useCategories();
 
@@ -423,20 +423,12 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
       if (!file) return;
 
       if (!file.type.startsWith("image/")) {
-        setError(
-          locale === "ka"
-            ? "მხოლოდ სურათები არის დაშვებული"
-            : "Only image files are allowed",
-        );
+        setError(pick({ en: "Only image files are allowed", ka: "მხოლოდ სურათები არის დაშვებული" }));
         return;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        setError(
-          locale === "ka"
-            ? "ფაილი ძალიან დიდია (მაქს. 10MB)"
-            : "File is too large (max 10MB)",
-        );
+        setError(pick({ en: "File is too large (max 10MB)", ka: "ფაილი ძალიან დიდია (მაქს. 10MB)" }));
         return;
       }
 
@@ -445,7 +437,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
       setRawAvatarImage(imageUrl);
       setShowAvatarCropper(true);
     },
-    [locale],
+    [pick],
   );
 
   const handleCroppedAvatar = useCallback(
@@ -483,18 +475,14 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         }
       } catch (err) {
         console.error("Upload error:", err);
-        setError(
-          locale === "ka"
-            ? "სურათის ატვირთვა ვერ მოხერხდა"
-            : "Failed to upload image",
-        );
+        setError(pick({ en: "Failed to upload image", ka: "სურათის ატვირთვა ვერ მოხერხდა" }));
         URL.revokeObjectURL(previewUrl);
         setAvatarPreview(null);
       } finally {
         setAvatarUploading(false);
       }
     },
-    [rawAvatarImage, locale],
+    [rawAvatarImage, pick],
   );
 
   const handleCropCancel = useCallback(() => {
@@ -558,11 +546,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         const code = otpCode || phoneOtp.join("");
 
         if (code.length !== 4) {
-          throw new Error(
-            locale === "ka"
-              ? "შეიყვანეთ 4-ნიშნა კოდი"
-              : "Please enter 4-digit code",
-          );
+          throw new Error(pick({ en: "Please enter 4-digit code", ka: "შეიყვანეთ 4-ნიშნა კოდი" }));
         }
 
         const response = await fetch(
@@ -588,7 +572,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         setIsLoading(false);
       }
     },
-    [phoneCountry, formData.phone, phoneOtp, locale],
+    [phoneCountry, formData.phone, phoneOtp, pick],
   );
 
   // Category handlers
@@ -668,19 +652,11 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
 
       Array.from(files).forEach((file) => {
         if (!allowedTypes.includes(file.type)) {
-          setError(
-            locale === "ka"
-              ? "მხოლოდ JPG, PNG ან WebP ფორმატი"
-              : "Only JPG, PNG or WebP allowed",
-          );
+          setError(pick({ en: "Only JPG, PNG or WebP allowed", ka: "მხოლოდ JPG, PNG ან WebP ფორმატი" }));
           return;
         }
         if (file.size > maxSize) {
-          setError(
-            locale === "ka"
-              ? "ფაილი ძალიან დიდია (მაქს. 5MB)"
-              : "File too large (max 5MB)",
-          );
+          setError(pick({ en: "File too large (max 5MB)", ka: "ფაილი ძალიან დიდია (მაქს. 5MB)" }));
           return;
         }
 
@@ -699,7 +675,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         reader.readAsDataURL(file);
       });
     },
-    [locale],
+    [pick],
   );
 
   const removeProjectImage = useCallback(
@@ -733,19 +709,11 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
 
       Array.from(files).forEach((file) => {
         if (!allowedTypes.includes(file.type)) {
-          setError(
-            locale === "ka"
-              ? "მხოლოდ MP4, WebM ან MOV ფორმატი"
-              : "Only MP4, WebM or MOV allowed",
-          );
+          setError(pick({ en: "Only MP4, WebM or MOV allowed", ka: "მხოლოდ MP4, WebM ან MOV ფორმატი" }));
           return;
         }
         if (file.size > maxSize) {
-          setError(
-            locale === "ka"
-              ? "ვიდეო ძალიან დიდია (მაქს. 100MB)"
-              : "Video too large (max 100MB)",
-          );
+          setError(pick({ en: "Video too large (max 100MB)", ka: "ვიდეო ძალიან დიდია (მაქს. 100MB)" }));
           return;
         }
 
@@ -764,7 +732,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         reader.readAsDataURL(file);
       });
     },
-    [locale],
+    [pick],
   );
 
   const removeProjectVideo = useCallback(
@@ -955,10 +923,10 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
       if (!response.ok) {
         const msg = data.message || "Registration failed";
         if (msg.includes('phone number already exists')) {
-          throw new Error(locale === 'ka' ? 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია' : 'This phone number is already registered');
+          throw new Error(pick({ en: 'This phone number is already registered', ka: 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია' }));
         }
         if (msg.includes('email already exists')) {
-          throw new Error(locale === 'ka' ? 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' : 'This email is already registered');
+          throw new Error(pick({ en: 'This email is already registered', ka: 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' }));
         }
         throw new Error(msg);
       }
@@ -1020,6 +988,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
     login,
     trackEvent,
     router,
+    pick,
   ]);
 
   const handleNext = useCallback(async () => {
@@ -1035,11 +1004,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         ).then((r) => r.json());
 
         if (phoneCheck.exists) {
-          setError(
-            locale === "ka"
-              ? "ეს ტელეფონის ნომერი უკვე რეგისტრირებულია"
-              : "This phone number is already registered",
-          );
+          setError(pick({ en: "This phone number is already registered", ka: "ეს ტელეფონის ნომერი უკვე რეგისტრირებულია" }));
           setIsLoading(false);
           return;
         }
@@ -1064,11 +1029,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         ).then((r) => r.json());
 
         if (phoneCheck.exists) {
-          setError(
-            locale === "ka"
-              ? "ეს ტელეფონის ნომერი უკვე რეგისტრირებულია"
-              : "This phone number is already registered",
-          );
+          setError(pick({ en: "This phone number is already registered", ka: "ეს ტელეფონის ნომერი უკვე რეგისტრირებულია" }));
           setIsLoading(false);
           return;
         }
@@ -1079,11 +1040,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
           ).then((r) => r.json());
 
           if (emailCheck.exists) {
-            setError(
-              locale === "ka"
-                ? "ეს ელ-ფოსტა უკვე რეგისტრირებულია"
-                : "This email is already registered",
-            );
+            setError(pick({ en: "This email is already registered", ka: "ეს ელ-ფოსტა უკვე რეგისტრირებულია" }));
             setIsLoading(false);
             return;
           }
@@ -1109,7 +1066,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
     formData,
     phoneCountry,
     authMethod,
-    locale,
+    pick,
     verificationChannel,
     sendOtp,
     submitRegistration,

@@ -95,19 +95,19 @@ export function getTicketStatusLabel(status: string, locale: Locale = 'en'): str
 export function getJobStatusClasses(status: string): string {
   switch (status) {
     case 'open':
-      return 'bg-[var(--hm-success-50)] text-[var(--hm-success-500)] border-emerald-200';
+      return 'bg-[var(--hm-success-50)] text-[var(--hm-success-500)] border-[var(--hm-success-500)]/20';
     case 'pending':
-      return 'bg-[var(--hm-warning-50)] text-[var(--hm-warning-500)] border-amber-200';
+      return 'bg-[var(--hm-warning-50)] text-[var(--hm-warning-500)] border-[var(--hm-warning-500)]/20';
     case 'assigned':
-      return 'bg-[var(--hm-info-50)] text-blue-700 border-blue-200';
+      return 'bg-[var(--hm-info-50)] text-[var(--hm-info-500)] border-[var(--hm-info-500)]/20';
     case 'in_progress':
-      return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      return 'bg-[var(--hm-info-50)] text-[var(--hm-info-500)] border-[var(--hm-info-500)]/20';
     case 'review':
-      return 'bg-purple-50 text-purple-700 border-purple-200';
+      return 'bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] border-[var(--hm-brand-500)]/20';
     case 'completed':
-      return 'bg-[var(--hm-success-50)] text-[var(--hm-success-500)] border-emerald-200';
+      return 'bg-[var(--hm-success-50)] text-[var(--hm-success-500)] border-[var(--hm-success-500)]/20';
     case 'cancelled':
-      return 'bg-[var(--hm-error-50)] text-[var(--hm-error-500)] border-red-200';
+      return 'bg-[var(--hm-error-50)] text-[var(--hm-error-500)] border-[var(--hm-error-500)]/20';
     case 'closed':
       return 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] border-[var(--hm-border)]';
     default:
@@ -121,11 +121,11 @@ export function getJobStatusClasses(status: string): string {
 export function getProposalStatusClasses(status: string): string {
   switch (status) {
     case 'pending':
-      return 'bg-[var(--hm-warning-50)] text-[var(--hm-warning-500)] border-amber-200';
+      return 'bg-[var(--hm-warning-50)] text-[var(--hm-warning-500)] border-[var(--hm-warning-500)]/20';
     case 'accepted':
-      return 'bg-[var(--hm-success-50)] text-[var(--hm-success-500)] border-emerald-200';
+      return 'bg-[var(--hm-success-50)] text-[var(--hm-success-500)] border-[var(--hm-success-500)]/20';
     case 'rejected':
-      return 'bg-[var(--hm-error-50)] text-[var(--hm-error-500)] border-red-200';
+      return 'bg-[var(--hm-error-50)] text-[var(--hm-error-500)] border-[var(--hm-error-500)]/20';
     case 'withdrawn':
       return 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] border-[var(--hm-border)]';
     default:
@@ -141,13 +141,13 @@ export function getTicketStatusClasses(status: string): string {
     case 'open':
       return 'bg-[var(--hm-warning-50)] text-[var(--hm-warning-500)]';
     case 'in_progress':
-      return 'bg-[var(--hm-info-50)] text-blue-700';
+      return 'bg-[var(--hm-info-50)] text-[var(--hm-info-500)]';
     case 'resolved':
       return 'bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)]';
     case 'closed':
       return 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)]';
     default:
-      return 'bg-[var(--hm-bg-tertiary)] text-neutral-600';
+      return 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)]';
   }
 }
 

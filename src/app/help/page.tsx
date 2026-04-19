@@ -2,6 +2,7 @@
 
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import Select from '@/components/common/Select';
+import { Accordion } from '@/components/ui/Collapsible';
 import { Alert } from '@/components/ui/Alert';
 import { Card } from '@/components/ui/Card';
 import { IconBadge } from '@/components/ui/IconBadge';
@@ -9,11 +10,12 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FormGroup, Input, Label, Textarea } from '@/components/ui/input';
+import { Tabs } from '@/components/ui/Tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatDateShort } from '@/utils/dateUtils';
-import { ChevronDown, ChevronRight, Clock, Mail, MessageCircle, Plus, Send } from 'lucide-react';
+import { ChevronRight, Clock, Mail, MessageCircle, Plus, Send } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
@@ -36,7 +38,6 @@ export default function HelpPage() {
   const { t } = useLanguage();
   const { isAuthenticated, token, user } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [contactForm, setContactForm] = useState({
     type: 'general' as 'account_issue' | 'general' | 'feedback',
@@ -399,52 +400,38 @@ export default function HelpPage() {
 
         {/* FAQ */}
         <section>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
             <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)]">
               {t('help.faq.subtitle')}
             </h2>
-            {/* Category filter */}
-            <div className="flex gap-1">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                    activeCategory === cat.id
-                      ? 'bg-[var(--hm-brand-500)] text-white'
-                      : 'text-[var(--hm-fg-muted)] hover:bg-[var(--hm-bg-tertiary)]'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
+            <Tabs
+              variant="default"
+              size="sm"
+              activeTab={activeCategory}
+              onChange={setActiveCategory}
+              tabs={categories.map((c) => ({ id: c.id, label: c.label }))}
+            />
           </div>
 
-          <div className="rounded-xl border border-[var(--hm-border)] overflow-hidden">
-            {filteredFaqs.map((faq, index) => (
-              <div
-                key={index}
-                className={index !== filteredFaqs.length - 1 ? 'border-b border-[var(--hm-border-subtle)]' : ''}
-              >
-                <button
-                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
-                >
+          <div className="rounded-xl border border-[var(--hm-border)] overflow-hidden bg-[var(--hm-bg-elevated)]">
+            <Accordion
+              className="space-y-0 divide-y divide-[var(--hm-border-subtle)]"
+              items={filteredFaqs.map((faq, index) => ({
+                id: String(index),
+                header: (
                   <span className="text-sm font-medium text-[var(--hm-fg-primary)] pr-4">
                     {faq.question}
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-[var(--hm-fg-muted)] flex-shrink-0 transition-transform duration-200 ${openFaq === index ? 'rotate-180' : ''}`} />
-                </button>
-                <div className={`overflow-hidden transition-all duration-300 ${openFaq === index ? 'max-h-96' : 'max-h-0'}`}>
-                  <div className="px-4 pb-3">
-                    <p className="text-sm text-[var(--hm-fg-secondary)] leading-relaxed">
-                      {faq.answer}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+                ),
+                content: (
+                  <p className="text-sm text-[var(--hm-fg-secondary)] leading-relaxed">
+                    {faq.answer}
+                  </p>
+                ),
+              }))}
+              headerClassName="px-4 py-3 hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
+              contentClassName="px-4 pb-3"
+            />
           </div>
         </section>
 
@@ -480,7 +467,7 @@ export default function HelpPage() {
                             : ''
                         }`}
                       >
-                        <svg className={`w-5 h-5 mb-2 ${contactForm.type === type.value ? 'text-[var(--hm-brand-500)]' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className={`w-5 h-5 mb-2 ${contactForm.type === type.value ? 'text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-muted)]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={type.icon} />
                         </svg>
                         <span className={`text-sm font-medium ${contactForm.type === type.value ? 'text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-secondary)]'}`}>
@@ -541,12 +528,14 @@ export default function HelpPage() {
               <p className="text-xs text-[var(--hm-fg-muted)] mb-1.5">
                 {t('help.signInPrompt')}
               </p>
-              <button
+              <Button
+                variant="link"
+                size="sm"
                 onClick={() => openLoginModal()}
-                className="text-xs font-semibold text-[var(--hm-brand-500)] hover:underline"
+                rightIcon={<span aria-hidden>→</span>}
               >
-                {t('auth.signIn')} →
-              </button>
+                {t('auth.signIn')}
+              </Button>
             </div>
           </section>
         )}

@@ -84,7 +84,7 @@ const TIER_CONFIG: Record<string, {
 };
 
 function SuccessContent() {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { trackEvent } = useAnalytics();
   const searchParams = useSearchParams();
   const tierId = searchParams.get("tier") || 'basic';
@@ -192,7 +192,7 @@ function SuccessContent() {
                 animationDuration: `${3 + Math.random() * 3}s`,
               }}
             >
-              <Sparkles className="text-amber-400/30" style={{ width: `${12 + Math.random() * 8}px` }} />
+              <Sparkles className="text-[var(--hm-warning-500)]/30" style={{ width: `${12 + Math.random() * 8}px` }} />
             </div>
           ))}
         </div>
@@ -260,9 +260,7 @@ function SuccessContent() {
           </h1>
 
           <p className="text-xl text-[var(--hm-fg-secondary)] mb-3">
-            {locale === 'ka'
-              ? `თქვენ წარმატებით გააქტიურეთ`
-              : `You've successfully activated the`}
+            {pick({ en: `You've successfully activated the`, ka: `თქვენ წარმატებით გააქტიურეთ` })}
           </p>
           
           <div 
@@ -273,7 +271,7 @@ function SuccessContent() {
             }}
           >
             <TierIcon className="w-5 h-5" />
-            {tier.name[locale === 'ka' ? 'ka' : 'en']} {t('premium.plan')}
+            {pick({ en: tier.name.en, ka: tier.name.ka })} {t('premium.plan')}
           </div>
 
           {/* Benefits Card */}
@@ -305,7 +303,7 @@ function SuccessContent() {
                     <benefit.icon className="w-6 h-6" style={{ color: tier.color }} />
                   </div>
                   <span className="text-left font-medium text-[var(--hm-fg-secondary)]">
-                    {benefit.text[locale === 'ka' ? 'ka' : 'en']}
+                    {pick({ en: benefit.text.en, ka: benefit.text.ka })}
                   </span>
                   <CheckCircle2 className="w-5 h-5 ml-auto flex-shrink-0 text-[var(--hm-success-500)]" />
                 </div>

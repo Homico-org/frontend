@@ -563,7 +563,7 @@ export default function ProjectsStep({
                     group relative rounded-2xl overflow-hidden border-2 bg-[var(--hm-bg-elevated)] transition-all duration-300
                     ${
                       isHomico
-                        ? "border-emerald-200 bg-gradient-to-r from-emerald-50/50 to-transparent cursor-default"
+                        ? "border-[var(--hm-success-500)]/20 bg-gradient-to-r from-emerald-50/50 to-transparent cursor-default"
                         : "border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/30 cursor-grab active:cursor-grabbing"
                     }
                     ${isDragOver ? "border-[var(--hm-brand-500)] border-dashed bg-[var(--hm-brand-500)]/5 transform scale-[1.02]" : ""}
@@ -758,7 +758,7 @@ export default function ProjectsStep({
                     {/* Review from Homico project */}
                     {isHomico && project.review && (
                       <div className="mt-3 p-3 rounded-xl bg-[var(--hm-success-50)] border border-emerald-100">
-                        <p className="text-xs text-emerald-800 italic">
+                        <p className="text-xs text-[var(--hm-success-500)] italic">
                           {`"${project.review}"`}
                         </p>
                       </div>

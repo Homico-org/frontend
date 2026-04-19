@@ -47,7 +47,7 @@ export default function BudgetSelector({
   locale = 'en',
   className = '',
 }: BudgetSelectorProps) {
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
   const formatNumber = (value: string) => formatNumberWithSpaces(value);
   const parseNumber = (value: string) => parsePriceInput(value);
 
@@ -63,10 +63,10 @@ export default function BudgetSelector({
             className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-4 rounded-lg text-[13px] sm:text-sm font-semibold transition-all ${
               budgetType === type.value
                 ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] shadow-sm'
-                : 'text-[var(--hm-fg-muted)] hover:text-neutral-700'
+                : 'text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]'
             }`}
           >
-            {locale === 'ka' ? type.labelKa : type.labelEn}
+            {pick({ en: type.labelEn, ka: type.labelKa })}
           </button>
         ))}
       </div>

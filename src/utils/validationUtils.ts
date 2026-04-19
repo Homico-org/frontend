@@ -29,7 +29,7 @@ export interface PasswordStrength {
  * @example
  * ```tsx
  * const strength = getPasswordStrength('MyP@ssw0rd', 'en');
- * // { strength: 5, label: 'Strong', color: '#22C55E', colorClass: 'text-green-500', isValid: true }
+ * // { strength: 5, label: 'Strong', color: '#22C55E', colorClass: 'text-[var(--hm-success-500)]', isValid: true }
  * ```
  */
 export function getPasswordStrength(
@@ -69,8 +69,8 @@ export function getPasswordStrength(
     { color: '#EF4444', colorClass: 'text-[var(--hm-error-500)]' },     // 1: weak
     { color: '#F59E0B', colorClass: 'text-[var(--hm-warning-500)]' },   // 2: weak
     { color: '#F59E0B', colorClass: 'text-[var(--hm-warning-500)]' },   // 3: medium
-    { color: '#22C55E', colorClass: 'text-green-500' },   // 4: good
-    { color: '#22C55E', colorClass: 'text-green-500' },   // 5: strong
+    { color: '#22C55E', colorClass: 'text-[var(--hm-success-500)]' },   // 4: good
+    { color: '#22C55E', colorClass: 'text-[var(--hm-success-500)]' },   // 5: strong
   ];
 
   return {

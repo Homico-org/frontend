@@ -205,7 +205,7 @@ export default function AboutStep({
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
-                  className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center shadow-lg hover:bg-[#A85D47] transition-colors"
+                  className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center shadow-lg hover:bg-[var(--hm-brand-600)] transition-colors"
                 >
                   <Camera className="w-4 h-4 text-white" />
                 </button>
@@ -219,7 +219,7 @@ export default function AboutStep({
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--hm-brand-500)] text-white text-sm font-medium hover:bg-[#A85D47] transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--hm-brand-500)] text-white text-sm font-medium hover:bg-[var(--hm-brand-600)] transition-colors"
               >
                 <Camera className="w-4 h-4" />
                 {avatarPreview
@@ -460,7 +460,7 @@ export default function AboutStep({
                 type="button"
                 onClick={addCustomSkill}
                 disabled={!customSkillInput.trim()}
-                className="px-4 py-2 rounded-xl bg-[var(--hm-success-500)] hover:bg-emerald-600 disabled:bg-[var(--hm-n-200)] text-white transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-[var(--hm-success-500)] hover:bg-emerald-600 disabled:bg-[var(--hm-bg-tertiary)] text-white transition-colors flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline text-sm font-medium">{t('common.add')}</span>

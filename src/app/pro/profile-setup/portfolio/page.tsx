@@ -5,7 +5,7 @@ import { useProfileSetup } from '@/contexts/ProfileSetupContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function ProfileSetupPortfolioPage() {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { portfolioProjects, setPortfolioProjects } = useProfileSetup();
 
   return (
@@ -22,13 +22,14 @@ export default function ProfileSetupPortfolioPage() {
               color: 'var(--hm-fg-muted)',
             }}
           >
-            {locale === 'ka' ? 'არასავალდებულო' : 'Optional'}
+            {t('common.optional')}
           </span>
         </div>
         <p className="text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
-          {locale === 'ka'
-            ? 'დაამატე შენი ნამუშევრები. შეგიძლია მოგვიანებითაც დაამატო პროფილიდან.'
-            : 'Add your work samples. You can also add them later from your profile.'}
+          {pick({
+            en: 'Add your work samples. You can also add them later from your profile.',
+            ka: 'დაამატე შენი ნამუშევრები. შეგიძლია მოგვიანებითაც დაამატო პროფილიდან.',
+          })}
         </p>
       </div>
 

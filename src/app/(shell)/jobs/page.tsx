@@ -46,7 +46,7 @@ export default function JobsPage() {
   // User's own posted jobs (only for authenticated users)
   const [myJobs, setMyJobs] = useState<Job[]>([]);
   const [isLoadingMyJobs, setIsLoadingMyJobs] = useState(false);
-  const [showMyJobs, setShowMyJobs] = useState(true);
+  const [showMyJobs, setShowMyJobs] = useState(false);
 
   const displayedJobs = jobs;
 
@@ -233,11 +233,11 @@ export default function JobsPage() {
           className="rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)]"
           style={{ backgroundColor: 'var(--hm-bg-elevated)' }}
         >
-          <div className="aspect-[16/10] sm:aspect-[16/9] bg-[var(--hm-n-200)] animate-pulse" />
+          <div className="aspect-[16/10] sm:aspect-[16/9] bg-[var(--hm-bg-tertiary)] animate-pulse" />
           <div className="p-2.5 sm:p-4">
-            <div className="h-3 sm:h-4 bg-[var(--hm-n-200)] rounded w-1/3 animate-pulse mb-2" />
-            <div className="h-4 sm:h-5 bg-[var(--hm-n-200)] rounded w-full animate-pulse mb-2" />
-            <div className="h-3 bg-[var(--hm-n-200)] rounded w-2/3 animate-pulse" />
+            <div className="h-3 sm:h-4 bg-[var(--hm-bg-tertiary)] rounded w-1/3 animate-pulse mb-2" />
+            <div className="h-4 sm:h-5 bg-[var(--hm-bg-tertiary)] rounded w-full animate-pulse mb-2" />
+            <div className="h-3 bg-[var(--hm-bg-tertiary)] rounded w-2/3 animate-pulse" />
           </div>
         </div>
       ))}
@@ -270,27 +270,6 @@ export default function JobsPage() {
   return (
     <div className="space-y-4 sm:space-y-8">
       <JobsFilterBar />
-
-      {/* Add Job CTA — show for all authenticated users */}
-      {isAuthenticated && (
-        <Link
-          href="/post-job"
-          className="flex items-center gap-3 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-dashed border-[var(--hm-border-strong)] hover:border-[var(--hm-brand-500)]/50 hover:bg-[var(--hm-brand-500)]/5 transition-all group"
-          style={{ backgroundColor: 'var(--hm-bg-elevated)' }}
-        >
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[var(--hm-brand-500)]/10 group-hover:bg-[var(--hm-brand-500)]/20 flex items-center justify-center transition-colors">
-            <Plus className="w-5 h-5 text-[var(--hm-brand-500)]" />
-          </div>
-          <div>
-            <p className="font-semibold text-sm sm:text-base text-[var(--hm-fg-primary)] group-hover:text-[var(--hm-brand-500)] transition-colors">
-              {t("browse.postAJobCta")}
-            </p>
-            <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)]">
-              {t("browse.postAJobCtaDescription")}
-            </p>
-          </div>
-        </Link>
-      )}
 
       {/* User's Own Posted Jobs Section — authenticated users only */}
       {isAuthenticated && !filters.showFavoritesOnly && myJobs.length > 0 && (

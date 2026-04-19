@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Tabs } from "@/components/ui/Tabs";
 import {
   Modal,
   ModalBody,
@@ -259,7 +260,7 @@ export default function ReviewsTab({
         {!isOwner && proId && isAuthenticated && !hasUserReviewed && (
           <Button
             onClick={() => setShowReviewModal(true)}
-            className="w-full sm:w-auto bg-[var(--hm-brand-500)] hover:bg-[#B5654D]"
+            className="w-full sm:w-auto bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)]"
           >
             <MessageCircle className="w-4 h-4 mr-2" />
             {t("reviews.leaveReview")}
@@ -396,7 +397,7 @@ export default function ReviewsTab({
                       size="sm"
                       onClick={sendInvitation}
                       disabled={isSendingInvite || !invitePhone.trim()}
-                      className="shrink-0 bg-[var(--hm-brand-500)] hover:bg-[#B5654D]"
+                      className="shrink-0 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)]"
                     >
                       {isSendingInvite ? (
                         <LoadingSpinner size="sm" color="white" />
@@ -420,63 +421,18 @@ export default function ReviewsTab({
           />
         )}
 
-        {/* Filter Tabs - Modern segmented control */}
+        {/* Filter Tabs */}
         {reviews.length > 0 && (
-          <div className="inline-flex p-1 bg-[var(--hm-bg-tertiary)] rounded-xl gap-1">
-            <button
-              onClick={() => setFilter("all")}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                filter === "all"
-                  ? "bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-sm"
-                  : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
-              }`}
-            >
-              {t("common.all")}
-              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                filter === "all"
-                  ? "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)]"
-                  : "bg-neutral-200/50 text-[var(--hm-fg-muted)]"
-              }`}>
-                {reviews.length}
-              </span>
-            </button>
-            <button
-              onClick={() => setFilter("homico")}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                filter === "homico"
-                  ? "bg-[var(--hm-bg-elevated)] text-[var(--hm-success-500)] shadow-sm"
-                  : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
-              }`}
-            >
-              <ShieldCheck className={`w-3.5 h-3.5 ${filter === "homico" ? "text-[var(--hm-success-500)]" : ""}`} />
-              Homico
-              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                filter === "homico"
-                  ? "bg-[var(--hm-success-100)]/50 text-[var(--hm-success-500)]"
-                  : "bg-neutral-200/50 text-[var(--hm-fg-muted)]"
-              }`}>
-                {homicoCount}
-              </span>
-            </button>
-            <button
-              onClick={() => setFilter("external")}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                filter === "external"
-                  ? "bg-[var(--hm-bg-elevated)] text-[var(--hm-info-500)] shadow-sm"
-                  : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
-              }`}
-            >
-              <Globe className={`w-3.5 h-3.5 ${filter === "external" ? "text-[var(--hm-info-500)]" : ""}`} />
-              {t("reviews.external")}
-              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                filter === "external"
-                  ? "bg-[var(--hm-info-100)]/50 text-[var(--hm-info-500)]"
-                  : "bg-neutral-200/50 text-[var(--hm-fg-muted)]"
-              }`}>
-                {externalCount}
-              </span>
-            </button>
-          </div>
+          <Tabs
+            variant="default"
+            activeTab={filter}
+            onChange={(id) => setFilter(id as ReviewFilter)}
+            tabs={[
+              { id: "all", label: t("common.all"), badge: reviews.length },
+              { id: "homico", label: "Homico", icon: <ShieldCheck className="w-3.5 h-3.5" />, badge: homicoCount },
+              { id: "external", label: t("reviews.external"), icon: <Globe className="w-3.5 h-3.5" />, badge: externalCount },
+            ]}
+          />
         )}
 
         {/* Reviews List */}
@@ -499,7 +455,7 @@ export default function ReviewsTab({
           </div>
         ) : (
           <div className="text-center py-8 bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)]">
-            <Star className="w-10 h-10 text-[var(--hm-n-300)] mx-auto mb-3" />
+            <Star className="w-10 h-10 text-[var(--hm-fg-muted)] mx-auto mb-3" />
             <p className="text-[var(--hm-fg-muted)] text-sm mb-1">
               {t("professional.noReviewsYet")}
             </p>
@@ -566,8 +522,8 @@ export default function ReviewsTab({
                   <Star
                     className={`w-8 h-8 transition-colors ${
                       star <= (reviewHoverRating || reviewRating)
-                        ? "text-amber-400 fill-amber-400"
-                        : "text-[var(--hm-n-300)]"
+                        ? "text-[var(--hm-warning-500)] fill-amber-400"
+                        : "text-[var(--hm-fg-muted)]"
                     }`}
                   />
                 </button>
@@ -622,7 +578,7 @@ export default function ReviewsTab({
           <Button
             onClick={submitReview}
             disabled={isSubmittingReview || reviewRating === 0}
-            className="flex-1 bg-[var(--hm-brand-500)] hover:bg-[#B5654D]"
+            className="flex-1 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)]"
           >
             {isSubmittingReview ? (
               <LoadingSpinner size="sm" color="white" />

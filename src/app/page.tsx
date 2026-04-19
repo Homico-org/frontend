@@ -62,7 +62,7 @@ const FEATURE_FLOWS = [
     descKey: "landing.featureBrowseProsDesc",
     mediaUrl: "/features/browse-pros.png",
     isVideo: false,
-    color: "from-emerald-500/10 to-teal-500/10",
+    color: "from-[var(--hm-success-500)]/10 to-[var(--hm-success-400)]/10",
     iconBg: "bg-[var(--hm-success-500)]/10",
     iconColor: "text-[var(--hm-success-500)]",
   },
@@ -73,7 +73,7 @@ const FEATURE_FLOWS = [
     descKey: "landing.featureGetProposalsDesc",
     mediaUrl: "/features/get-proposals.png",
     isVideo: false,
-    color: "from-amber-500/10 to-orange-500/10",
+    color: "from-[var(--hm-warning-500)]/10 to-[var(--hm-warning-400)]/10",
     iconBg: "bg-[var(--hm-warning-500)]/10",
     iconColor: "text-[var(--hm-warning-500)]",
   },
@@ -84,9 +84,9 @@ const FEATURE_FLOWS = [
     descKey: "landing.featureHireReviewDesc",
     mediaUrl: "/features/hire-review.png",
     isVideo: false,
-    color: "from-purple-500/10 to-pink-500/10",
-    iconBg: "bg-purple-500/10",
-    iconColor: "text-purple-600",
+    color: "from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-400)]/10",
+    iconBg: "bg-[var(--hm-brand-500)]/10",
+    iconColor: "text-[var(--hm-brand-500)]",
   },
 ];
 
@@ -307,7 +307,7 @@ function MobileStickyBar({ t }: { t: (key: string) => string }) {
         <Button
           asChild
           size="sm"
-          className="flex-1 h-10 text-[13px] bg-[var(--hm-brand-500)] hover:bg-[#a85d47] text-white"
+          className="flex-1 h-10 text-[13px] bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white"
         >
           <Link href="/post-job">{t("header.postAJob")}</Link>
         </Button>
@@ -585,7 +585,7 @@ export default function HomePage() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="px-3 py-1.5 text-[13px] font-medium text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] rounded-lg hover:bg-white/50 transition-all"
+                    className="px-3 py-1.5 text-[13px] font-medium text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] hover:bg-white/50 transition-all"
                   >
                     {item.label}
                   </Link>
@@ -603,7 +603,7 @@ export default function HomePage() {
                 </Button>
                 <MagneticButton
                   href="/register"
-                  className="h-8 px-4 text-[13px] font-medium bg-[var(--hm-brand-500)] hover:bg-[#a85d47] text-white rounded-lg shadow-md shadow-[var(--hm-brand-500)]/20 hover:shadow-lg transition-shadow"
+                  className="h-8 px-4 text-[13px] font-medium bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white shadow-md shadow-[var(--hm-brand-500)]/20 hover:shadow-lg transition-shadow"
                 >
                   {t("header.signUp")}
                 </MagneticButton>
@@ -670,7 +670,7 @@ export default function HomePage() {
                 >
                   <MagneticButton
                     href="/post-job"
-                    className="inline-flex items-center justify-center gap-2 h-10 sm:h-11 px-5 text-[13px] sm:text-sm font-medium bg-[var(--hm-brand-500)] hover:bg-[#a85d47] text-white rounded-xl shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-xl transition-all group"
+                    className="inline-flex items-center justify-center gap-2 h-10 sm:h-11 px-5 text-[13px] sm:text-sm font-medium bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-xl transition-all group"
                   >
                     <FileText className="w-4 h-4" />
                     {t("header.postAJob")}
@@ -729,7 +729,7 @@ export default function HomePage() {
               >
                 <div className="absolute -top-8 -right-8 w-56 h-56 bg-[var(--hm-brand-500)]/10 rounded-full blur-3xl animate-pulse-slow" />
                 <div
-                  className="absolute -bottom-8 -left-8 w-40 h-40 bg-amber-300/15 rounded-full blur-2xl animate-pulse-slow"
+                  className="absolute -bottom-8 -left-8 w-40 h-40 bg-[var(--hm-brand-300)]/15 rounded-full blur-2xl animate-pulse-slow"
                   style={{ animationDelay: "1s" }}
                 />
 
@@ -741,9 +741,9 @@ export default function HomePage() {
                       transform: `translateY(${parallaxOffset * 0.5}px)`,
                     }}
                   >
-                    <GlassCard className="rounded-xl px-3 py-2">
+                    <GlassCard className="px-3 py-2">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-[var(--hm-success-500)]/10 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-[var(--hm-success-500)]/10 flex items-center justify-center">
                           <Users className="w-4 h-4 text-[var(--hm-success-500)]" />
                         </div>
                         <div>
@@ -765,9 +765,9 @@ export default function HomePage() {
                       transform: `translateY(${parallaxOffset * 0.3}px)`,
                     }}
                   >
-                    <GlassCard className="rounded-xl px-3 py-2">
+                    <GlassCard className="px-3 py-2">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
                           <Star className="w-4 h-4 text-[var(--hm-brand-500)]" />
                         </div>
                         <div>
@@ -782,7 +782,7 @@ export default function HomePage() {
                     </GlassCard>
                   </div>
 
-                  <div className="relative aspect-[4/3] rounded-xl overflow-hidden">
+                  <div className="relative aspect-[4/3] overflow-hidden">
                     <Image
                       src="https://res.cloudinary.com/dakcvkodo/image/upload/w_800,h_600,c_fill,q_auto,f_auto/homico/avatars/pro-plumber.png"
                       alt=""
@@ -837,7 +837,7 @@ export default function HomePage() {
                           key={feature.id}
                           variant="ghost"
                           onClick={() => setActiveFeature(idx)}
-                          className={`flex items-center gap-1.5 px-3 py-2 h-auto rounded-lg text-[12px] font-medium ${
+                          className={`flex items-center gap-1.5 px-3 py-2 h-auto text-[12px] font-medium ${
                             activeFeature === idx
                               ? "bg-[var(--hm-brand-500)] text-white shadow-md shadow-[var(--hm-brand-500)]/25 scale-105 hover:bg-[var(--hm-brand-600)] hover:text-white"
                               : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]"
@@ -856,7 +856,7 @@ export default function HomePage() {
                     {FEATURE_FLOWS.map((_, idx) => (
                       <div
                         key={idx}
-                        className="h-1 rounded-full transition-all duration-500 bg-[var(--hm-n-200)] overflow-hidden"
+                        className="h-1 rounded-full transition-all duration-500 bg-[var(--hm-bg-tertiary)] overflow-hidden"
                         style={{ width: idx === activeFeature ? 24 : 6 }}
                       >
                         {idx === activeFeature && (
@@ -872,7 +872,7 @@ export default function HomePage() {
                   <div className="grid lg:grid-cols-2 gap-6 lg:gap-10 items-center">
                     <div className="order-2 lg:order-1">
                       <div
-                        className={`relative aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-br ${FEATURE_FLOWS[activeFeature].color} border border-[var(--hm-border-subtle)]/30 transition-all duration-500`}
+                        className={`relative aspect-[4/3] sm:rounded-2xl overflow-hidden bg-gradient-to-br ${FEATURE_FLOWS[activeFeature].color} border border-[var(--hm-border-subtle)]/30 transition-all duration-500`}
                       >
                         {!gifErrors[FEATURE_FLOWS[activeFeature].id] ? (
                           FEATURE_FLOWS[activeFeature].isVideo ? (
@@ -935,7 +935,7 @@ export default function HomePage() {
                         ) : (
                           <div className="absolute inset-0 flex flex-col items-center justify-center text-[var(--hm-fg-muted)]">
                             <div
-                              className={`w-14 h-14 rounded-xl ${FEATURE_FLOWS[activeFeature].iconBg} flex items-center justify-center mb-3`}
+                              className={`w-14 h-14 ${FEATURE_FLOWS[activeFeature].iconBg} flex items-center justify-center mb-3`}
                             >
                               <Play
                                 className={`w-7 h-7 ${FEATURE_FLOWS[activeFeature].iconColor}`}
@@ -952,7 +952,7 @@ export default function HomePage() {
                     <div className="order-1 lg:order-2">
                       <div className="flex items-center gap-2.5 mb-3">
                         <div
-                          className={`w-10 h-10 rounded-xl ${FEATURE_FLOWS[activeFeature].iconBg} flex items-center justify-center transition-all`}
+                          className={`w-10 h-10 ${FEATURE_FLOWS[activeFeature].iconBg} flex items-center justify-center transition-all`}
                         >
                           {(() => {
                             const Icon = FEATURE_FLOWS[activeFeature].icon;
@@ -983,7 +983,7 @@ export default function HomePage() {
                                 ? "/portfolio"
                                 : "/register"
                         }
-                        className="inline-flex items-center gap-1.5 h-9 px-4 text-[13px] font-medium bg-[var(--hm-brand-500)] hover:bg-[#a85d47] text-white rounded-lg group"
+                        className="inline-flex items-center gap-1.5 h-9 px-4 text-[13px] font-medium bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white group"
                       >
                         {t("landing.tryItNow")}
                         <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -1027,8 +1027,8 @@ export default function HomePage() {
                 },
               ].map((step, i) => (
                 <AnimatedSection key={i} stagger index={i}>
-                  <GlassCard className="group relative rounded-xl p-4 sm:p-5 hover:border-[var(--hm-brand-500)]/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                    <div className="w-9 h-9 rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center mb-3 group-hover:bg-[var(--hm-brand-500)] group-hover:scale-110 transition-all">
+                  <GlassCard className="group relative p-4 sm:p-5 hover:border-[var(--hm-brand-500)]/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                    <div className="w-9 h-9 bg-[var(--hm-brand-500)]/10 flex items-center justify-center mb-3 group-hover:bg-[var(--hm-brand-500)] group-hover:scale-110 transition-all">
                       <span className="text-sm font-bold text-[var(--hm-brand-500)] group-hover:text-white">
                         {step.num}
                       </span>
@@ -1060,7 +1060,7 @@ export default function HomePage() {
               </div>
               <Link
                 href="/portfolio"
-                className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--hm-brand-500)] hover:text-[#a85d47] group"
+                className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--hm-brand-500)] hover:text-[var(--hm-brand-600)] group"
               >
                 {t("common.viewAll")}
                 <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -1078,8 +1078,8 @@ export default function HomePage() {
                 return (
                   <AnimatedSection key={cat.slug} stagger index={i}>
                     <Link href={href}>
-                      <GlassCard className="group flex items-center gap-3 rounded-xl p-3 hover:border-[var(--hm-brand-500)]/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
-                        <div className="w-9 h-9 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center group-hover:bg-[var(--hm-brand-500)]/10 transition-colors">
+                      <GlassCard className="group flex items-center gap-3 p-3 hover:border-[var(--hm-brand-500)]/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
+                        <div className="w-9 h-9 bg-[var(--hm-bg-tertiary)] flex items-center justify-center group-hover:bg-[var(--hm-brand-500)]/10 transition-colors">
                           <Icon className="w-4 h-4 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)] transition-colors" />
                         </div>
                         <span className="text-[12px] font-medium text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-brand-500)] transition-colors">
@@ -1095,7 +1095,7 @@ export default function HomePage() {
         </section>
 
         {/* ========== STATS with Animated Counters ========== */}
-        <section className="py-10 sm:py-12 lg:py-14 bg-neutral-900 relative overflow-hidden">
+        <section className="py-10 sm:py-12 lg:py-14 bg-[var(--hm-n-900)] relative overflow-hidden">
           <div
             className="absolute inset-0 opacity-[0.03]"
             style={{
@@ -1166,8 +1166,8 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid md:grid-cols-2 gap-4">
               <AnimatedSection>
-                <GlassCard className="group rounded-xl sm:rounded-2xl p-5 sm:p-6 hover:border-[var(--hm-brand-500)]/30 transition-all duration-500 hover:shadow-xl">
-                  <div className="w-10 h-10 rounded-xl bg-[var(--hm-brand-500)]/10 flex items-center justify-center mb-4">
+                <GlassCard className="group sm:rounded-2xlp-5 sm:p-6 hover:border-[var(--hm-brand-500)]/30 transition-all duration-500 hover:shadow-xl">
+                  <div className="w-10 h-10 bg-[var(--hm-brand-500)]/10 flex items-center justify-center mb-4">
                     <Briefcase className="w-5 h-5 text-[var(--hm-brand-500)]" />
                   </div>
                   <h3 className="text-lg sm:text-xl font-bold text-[var(--hm-fg-primary)]">
@@ -1193,7 +1193,7 @@ export default function HomePage() {
                   </ul>
                   <MagneticButton
                     href="/post-job"
-                    className="mt-5 w-full h-9 text-[12px] font-medium bg-[var(--hm-brand-500)] hover:bg-[#a85d47] text-white rounded-lg flex items-center justify-center gap-1.5 group/btn"
+                    className="mt-5 w-full h-9 text-[12px] font-medium bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white flex items-center justify-center gap-1.5 group/btn"
                   >
                     {t("header.postAJob")}
                     <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" />
@@ -1202,8 +1202,8 @@ export default function HomePage() {
               </AnimatedSection>
 
               <AnimatedSection delay={100}>
-                <div className="group rounded-xl sm:rounded-2xl p-5 sm:p-6 bg-[var(--hm-n-900)] border border-[var(--hm-n-800)] hover:border-[var(--hm-brand-500)]/30 transition-all duration-500 hover:shadow-xl">
-                  <div className="w-10 h-10 rounded-xl bg-[var(--hm-brand-500)]/20 flex items-center justify-center mb-4">
+                <div className="group sm:rounded-2xlp-5 sm:p-6 bg-[var(--hm-n-900)] border border-[var(--hm-n-800)] hover:border-[var(--hm-brand-500)]/30 transition-all duration-500 hover:shadow-xl">
+                  <div className="w-10 h-10 bg-[var(--hm-brand-500)]/20 flex items-center justify-center mb-4">
                     <Users className="w-5 h-5 text-[var(--hm-brand-500)]" />
                   </div>
                   <h3 className="text-lg sm:text-xl font-bold text-white">
@@ -1220,7 +1220,7 @@ export default function HomePage() {
                     ].map((b, i) => (
                       <li
                         key={i}
-                        className="flex items-center gap-2 text-[11px] text-[var(--hm-n-300)]"
+                        className="flex items-center gap-2 text-[11px] text-[var(--hm-fg-muted)]"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5 text-[var(--hm-brand-500)] flex-shrink-0" />
                         {b}
@@ -1229,7 +1229,7 @@ export default function HomePage() {
                   </ul>
                   <MagneticButton
                     href="/register/professional"
-                    className="mt-5 w-full h-9 text-[12px] font-medium border border-[var(--hm-brand-500)] text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)] hover:text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors group/btn"
+                    className="mt-5 w-full h-9 text-[12px] font-medium border border-[var(--hm-brand-500)] text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)] hover:text-white flex items-center justify-center gap-1.5 transition-colors group/btn"
                   >
                     {t("howItWorks.registerAsPro")}
                     <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" />
@@ -1242,7 +1242,7 @@ export default function HomePage() {
 
         {/* ========== FOOTER CTA ========== */}
         <AnimatedSection>
-          <section className="py-10 sm:py-12 bg-gradient-to-r from-[var(--hm-brand-500)] to-[#a85d47] relative overflow-hidden">
+          <section className="py-10 sm:py-12 bg-gradient-to-r from-[var(--hm-brand-500)] to-[var(--hm-brand-600)] relative overflow-hidden">
             <div
               className="absolute inset-0 opacity-10"
               style={{
@@ -1260,7 +1260,7 @@ export default function HomePage() {
               <div className="mt-5 flex flex-col sm:flex-row gap-2.5 justify-center">
                 <MagneticButton
                   href="/register"
-                  className="h-10 sm:h-11 px-6 text-[13px] font-semibold bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] hover:bg-[var(--hm-bg-tertiary)] rounded-xl shadow-lg flex items-center justify-center"
+                  className="h-10 sm:h-11 px-6 text-[13px] font-semibold bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] hover:bg-[var(--hm-bg-tertiary)] shadow-lg flex items-center justify-center"
                 >
                   {t("register.joinHomico")}
                 </MagneticButton>

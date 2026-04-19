@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 export default function ResetPasswordPage() {
   const router = useRouter();
   const { openLoginModal } = useAuthModal();
-  const { t, locale } = useLanguage();
+  const { t, locale, pick } = useLanguage();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -107,7 +107,7 @@ export default function ResetPasswordPage() {
   // Success State
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-neutral-500/50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[var(--hm-bg-page)] flex items-center justify-center p-4">
         <Card variant="glass" size="xl" className="w-full max-w-[440px] shadow-xl">
           {/* Success Icon */}
           <div className="flex justify-center mb-6">
@@ -148,7 +148,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-500/50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--hm-bg-page)] flex items-center justify-center p-4">
       <Card variant="glass" size="xl" className="w-full max-w-[440px] shadow-xl">
         {/* Lock Icon */}
         <div className="flex justify-center mb-6">
@@ -177,7 +177,7 @@ export default function ResetPasswordPage() {
           {/* New Password */}
           <div>
             <PasswordInput
-              label={locale === 'ka' ? 'ახალი პაროლი' : 'New Password'}
+              label={pick({ en: 'New Password', ka: 'ახალი პაროლი' })}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t('forgotPassword.enterNewPassword')}
@@ -220,7 +220,7 @@ export default function ResetPasswordPage() {
               <p className="mt-2 text-xs text-[var(--hm-error-500)]">{t('forgotPassword.passwordsDoNotMatch')}</p>
             )}
             {confirmPassword && password === confirmPassword && password.length > 0 && (
-              <p className="mt-2 text-xs text-green-500 flex items-center gap-1">
+              <p className="mt-2 text-xs text-[var(--hm-success-500)] flex items-center gap-1">
                 <Check className="w-4 h-4" />
                 {t('forgotPassword.passwordsMatch')}
               </p>

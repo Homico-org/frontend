@@ -21,7 +21,7 @@ interface BrowseSearchBarProps {
 }
 
 export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { searchQuery, setSearchQuery } = useBrowseContext();
   const [inputValue, setInputValue] = useState(searchQuery);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -161,18 +161,21 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
               {t('browse.popular')}
             </span>
             <div className="mt-1 space-y-0.5">
-              {SEARCH_SUGGESTIONS.slice(0, 4).map((suggestion) => (
-                <button
-                  key={suggestion.key}
-                  onClick={() => handleSearch(locale === 'ka' ? suggestion.ka : suggestion.en)}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[var(--hm-brand-500)]/10 text-left"
-                >
-                  <Search className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
-                  <span className="text-xs text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)]">
-                    {locale === 'ka' ? suggestion.ka : suggestion.en}
-                  </span>
-                </button>
-              ))}
+              {SEARCH_SUGGESTIONS.slice(0, 4).map((suggestion) => {
+                const label = pick({ en: suggestion.en, ka: suggestion.ka });
+                return (
+                  <button
+                    key={suggestion.key}
+                    onClick={() => handleSearch(label)}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[var(--hm-brand-500)]/10 text-left"
+                  >
+                    <Search className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
+                    <span className="text-xs text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)]">
+                      {label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

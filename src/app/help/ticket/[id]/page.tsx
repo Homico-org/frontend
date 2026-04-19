@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatDateLong, formatMessageTime } from '@/utils/dateUtils';
+import { AlertTriangle, ArrowLeft, Send, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -193,9 +194,7 @@ export default function TicketDetailPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[var(--hm-brand-50)] flex items-center justify-center">
-              <svg className="w-8 h-8 text-[var(--hm-brand-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
+              <AlertTriangle className="w-8 h-8 text-[var(--hm-brand-500)]" strokeWidth={1.5} />
             </div>
             <h2 className="text-xl font-serif font-medium text-[var(--hm-fg-primary)] mb-2">
               {error}
@@ -204,9 +203,7 @@ export default function TicketDetailPage() {
               href="/help"
               className="inline-flex items-center gap-2 mt-4 text-[var(--hm-n-800)] font-medium hover:underline"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
+              <ArrowLeft className="w-4 h-4" />
               {t('help.ticketDetail.backToHelp')}
             </Link>
           </div>
@@ -231,9 +228,7 @@ export default function TicketDetailPage() {
             href="/help"
             className="inline-flex items-center gap-2 text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-n-800)] transition-colors mb-4"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
+            <ArrowLeft className="w-4 h-4" />
             {t('help.ticketDetail.backToHelp')}
           </Link>
 
@@ -244,7 +239,7 @@ export default function TicketDetailPage() {
               </h1>
               <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--hm-fg-muted)]">
                 <span>{getCategoryLabel(ticket.category)}</span>
-                <span className="w-1 h-1 rounded-full bg-neutral-300" />
+                <span className="w-1 h-1 rounded-full bg-[var(--hm-border-strong)]" />
                 <span>{formatDateLong(ticket.createdAt, locale)}</span>
               </div>
             </div>
@@ -280,9 +275,7 @@ export default function TicketDetailPage() {
                         {/* Avatar */}
                         {msg.isAdmin && (
                           <div className="w-8 h-8 rounded-full bg-[var(--hm-n-800)] flex items-center justify-center flex-shrink-0 mb-1">
-                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
+                            <ShieldAlert className="w-4 h-4 text-white" />
                           </div>
                         )}
 
@@ -340,9 +333,7 @@ export default function TicketDetailPage() {
                   {isSending ? (
                     <LoadingSpinner size="md" color="white" />
                   ) : (
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                    </svg>
+                    <Send className="w-5 h-5 text-white" />
                   )}
                 </button>
               </div>

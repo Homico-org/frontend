@@ -1,5 +1,6 @@
 'use client';
 
+import { AlertTriangle } from 'lucide-react';
 import { useEffect } from 'react';
 
 export default function Error({
@@ -9,6 +10,12 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  // Don't swallow Next.js framework signals — let RedirectBoundary / NotFoundBoundary handle them.
+  // The digest field is set by the server when the page calls redirect()/notFound().
+  if (error?.digest?.startsWith('NEXT_REDIRECT') || error?.digest === 'NEXT_NOT_FOUND') {
+    throw error;
+  }
+
   useEffect(() => {
     console.error('App error:', error);
   }, [error]);
@@ -17,9 +24,7 @@ export default function Error({
     <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
       <div className="text-center max-w-md">
         <div className="w-16 h-16 rounded-2xl bg-[var(--hm-error-100)]/20 flex items-center justify-center mx-auto mb-5">
-          <svg className="w-8 h-8 text-[var(--hm-error-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
+          <AlertTriangle className="w-8 h-8 text-[var(--hm-error-500)]" />
         </div>
         <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
           დაფიქსირდა შეცდომა

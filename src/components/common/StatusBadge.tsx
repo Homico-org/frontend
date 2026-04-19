@@ -57,7 +57,7 @@ export default function StatusBadge({
   showLabel = true,
   variant = 'default',
 }: StatusBadgeProps) {
-  const { locale } = useLanguage();
+  const { pick } = useLanguage();
   const config = getStatusConfig(status);
 
   const dotSize = size === 'sm' ? 'w-2 h-2' : 'w-2.5 h-2.5';
@@ -116,7 +116,7 @@ export default function StatusBadge({
           `}
           style={config.textStyle}
         >
-          {locale === 'ka' ? config.labelKa : config.labelEn}
+          {pick({ en: config.labelEn, ka: config.labelKa })}
         </span>
       )}
     </div>

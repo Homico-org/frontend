@@ -398,7 +398,7 @@ export default function Select({
           ${variant === 'minimal'
             ? `bg-transparent hover:bg-[var(--hm-bg-tertiary)] ${isOpen ? 'bg-[var(--hm-bg-tertiary)]' : ''}`
             : `border ${error
-                ? 'border-red-400 focus:ring-2 focus:ring-red-500/20'
+                ? 'border-[var(--hm-error-500)]/40 focus:ring-2 focus:ring-[var(--hm-error-500)]/20'
                 : isOpen
                   ? 'border-[var(--hm-brand-500)] ring-2 ring-[var(--hm-brand-500)]/20'
                   : 'border-[var(--hm-border-subtle)] hover:border-[var(--hm-border)]'

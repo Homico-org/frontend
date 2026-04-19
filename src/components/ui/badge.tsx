@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 /**
@@ -22,7 +23,7 @@ const badgeVariants = cva(
         success:
           "border-[var(--hm-success-500)] text-[var(--hm-success-500)]",
         warning:
-          "border-[#8A6312] text-[#8A6312]",
+          "border-[var(--hm-warning-600)] text-[var(--hm-warning-600)]",
         danger:
           "border-[var(--hm-error-500)] text-[var(--hm-error-500)]",
         info:
@@ -113,9 +114,7 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
             onClick={onRemove}
             className="flex-shrink-0 ml-0.5 -mr-1 h-4 w-4 rounded-full flex items-center justify-center hover:bg-black/10 transition-colors"
           >
-            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="h-3 w-3" />
           </button>
         )}
       </div>

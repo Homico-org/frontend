@@ -18,6 +18,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ConfirmModal, Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { features } from "@/config/features";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
@@ -328,7 +329,7 @@ export default function ProfessionalDetailClient({
 
   // Fetch existing bookings with this pro (for clients)
   useEffect(() => {
-    if (!profile?.id || !user || isOwner) return;
+    if (!profile?.id || !user || isOwner || !features.bookings) return;
     api
       .get("/bookings/my")
       .then((res) => {
@@ -1442,31 +1443,31 @@ export default function ProfessionalDetailClient({
         <div className="max-w-6xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
           <div className="bg-[var(--hm-bg-elevated)] rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-[var(--hm-border-subtle)] shadow-lg shadow-[var(--hm-n-900)]/[0.03]">
             <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl sm:rounded-2xl bg-[var(--hm-n-200)] animate-pulse flex-shrink-0" />
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl sm:rounded-2xl bg-[var(--hm-bg-tertiary)] animate-pulse flex-shrink-0" />
               <div className="flex-1 space-y-3 sm:space-y-4 w-full">
-                <div className="h-7 sm:h-8 w-48 sm:w-56 bg-[var(--hm-n-200)] rounded-lg animate-pulse" />
-                <div className="h-4 sm:h-5 w-32 sm:w-40 bg-[var(--hm-n-200)] rounded animate-pulse" />
+                <div className="h-7 sm:h-8 w-48 sm:w-56 bg-[var(--hm-bg-tertiary)] rounded-lg animate-pulse" />
+                <div className="h-4 sm:h-5 w-32 sm:w-40 bg-[var(--hm-bg-tertiary)] rounded animate-pulse" />
                 <div className="flex flex-wrap gap-2">
-                  <div className="h-8 sm:h-9 w-16 bg-[var(--hm-n-200)] rounded-full animate-pulse" />
-                  <div className="h-8 sm:h-9 w-24 bg-[var(--hm-n-200)] rounded-full animate-pulse" />
-                  <div className="h-8 sm:h-9 w-20 bg-[var(--hm-n-200)] rounded-full animate-pulse" />
+                  <div className="h-8 sm:h-9 w-16 bg-[var(--hm-bg-tertiary)] rounded-full animate-pulse" />
+                  <div className="h-8 sm:h-9 w-24 bg-[var(--hm-bg-tertiary)] rounded-full animate-pulse" />
+                  <div className="h-8 sm:h-9 w-20 bg-[var(--hm-bg-tertiary)] rounded-full animate-pulse" />
                 </div>
                 <div className="flex gap-1.5">
-                  <div className="h-7 w-20 bg-[var(--hm-n-200)] rounded-full animate-pulse" />
-                  <div className="h-7 w-20 bg-[var(--hm-n-200)] rounded-full animate-pulse" />
+                  <div className="h-7 w-20 bg-[var(--hm-bg-tertiary)] rounded-full animate-pulse" />
+                  <div className="h-7 w-20 bg-[var(--hm-bg-tertiary)] rounded-full animate-pulse" />
                 </div>
               </div>
             </div>
           </div>
           {/* Tab skeleton */}
           <div className="flex gap-3 mt-6">
-            <div className="h-10 w-24 bg-[var(--hm-n-200)] rounded-xl animate-pulse" />
-            <div className="h-10 w-24 bg-[var(--hm-n-200)] rounded-xl animate-pulse" />
-            <div className="h-10 w-24 bg-[var(--hm-n-200)] rounded-xl animate-pulse" />
+            <div className="h-10 w-24 bg-[var(--hm-bg-tertiary)] rounded-xl animate-pulse" />
+            <div className="h-10 w-24 bg-[var(--hm-bg-tertiary)] rounded-xl animate-pulse" />
+            <div className="h-10 w-24 bg-[var(--hm-bg-tertiary)] rounded-xl animate-pulse" />
           </div>
           <div className="mt-6 space-y-4">
-            <div className="h-32 bg-[var(--hm-n-200)] rounded-2xl animate-pulse" />
-            <div className="h-24 bg-[var(--hm-n-200)] rounded-2xl animate-pulse" />
+            <div className="h-32 bg-[var(--hm-bg-tertiary)] rounded-2xl animate-pulse" />
+            <div className="h-24 bg-[var(--hm-bg-tertiary)] rounded-2xl animate-pulse" />
           </div>
         </div>
       </div>
@@ -1481,7 +1482,7 @@ export default function ProfessionalDetailClient({
         <HeaderSpacer />
         <div className="py-20 text-center">
           <div className="max-w-md mx-auto px-4">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#F5F0ED] flex items-center justify-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
               <X className="w-8 h-8 text-[var(--hm-fg-muted)]" />
             </div>
             <h2 className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-2">
@@ -1517,7 +1518,7 @@ export default function ProfessionalDetailClient({
 
       {/* Pending Approval Banner - Only visible to the pro owner */}
       {canEdit && profile && profile.verificationStatus !== "verified" && (
-        <div className="bg-[var(--hm-warning-50)]/20 border-b border-amber-200">
+        <div className="bg-[var(--hm-warning-50)]/20 border-b border-[var(--hm-warning-500)]/20">
           <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
             <div className="p-1.5 sm:p-2 rounded-full bg-[var(--hm-warning-100)] flex-shrink-0">
               <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-warning-500)]" strokeWidth={2} />
@@ -1544,7 +1545,7 @@ export default function ProfessionalDetailClient({
 
       {/* Rejected Profile Banner */}
       {canEdit && profile && profile.adminRejectionReason && (
-        <div className="bg-[var(--hm-error-50)]/20 border-b border-red-200">
+        <div className="bg-[var(--hm-error-50)]/20 border-b border-[var(--hm-error-500)]/20">
           <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
             <div className="p-1.5 sm:p-2 rounded-full bg-[var(--hm-error-100)] flex-shrink-0">
               <X className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-error-500)]" />
@@ -1566,7 +1567,7 @@ export default function ProfessionalDetailClient({
                     : "/pro/profile-setup",
                 )
               }
-              className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm flex-shrink-0"
+              className="bg-[var(--hm-error-500)] hover:bg-[var(--hm-error-500)]/90 text-white text-xs sm:text-sm flex-shrink-0"
             >
               {t("professional.editProfile")}
             </Button>
@@ -1576,23 +1577,23 @@ export default function ProfessionalDetailClient({
 
       {/* Admin Verification Panel - Only visible to admins */}
       {isAdmin && profile && (
-        <div className="bg-indigo-50 border-b border-indigo-200">
+        <div className="bg-[var(--hm-info-50)] border-b border-[var(--hm-info-500)]/20">
           <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2 rounded-full bg-indigo-100 flex-shrink-0">
-              <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
+            <div className="p-1.5 sm:p-2 rounded-full bg-[var(--hm-info-500)]/10 flex-shrink-0">
+              <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-info-500)]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-xs sm:text-sm text-indigo-800">
-                {t("admin.verificationPanel") || "Admin Verification Panel"}
+              <p className="font-medium text-xs sm:text-sm text-[var(--hm-fg-primary)]">
+                {t("admin.verificationPanel")}
               </p>
-              <p className="text-[10px] sm:text-sm text-indigo-700 truncate sm:whitespace-normal">
-                {t("admin.currentStatus") || "Current Status"}:{" "}
+              <p className="text-[10px] sm:text-sm text-[var(--hm-fg-secondary)] truncate sm:whitespace-normal">
+                {t("admin.currentStatus")}:{" "}
                 <span className="font-semibold capitalize">
                   {profile.verificationStatus || "pending"}
                 </span>
                 {profile.verificationNotes && (
                   <span className="hidden sm:inline ml-2">
-                    | {t("admin.notes") || "Notes"}: {profile.verificationNotes}
+                    | {t("admin.notes")}: {profile.verificationNotes}
                   </span>
                 )}
               </p>
@@ -1600,20 +1601,21 @@ export default function ProfessionalDetailClient({
             <div className="flex items-center gap-2 flex-shrink-0">
               <Button
                 size="sm"
+                variant="outline"
                 onClick={() =>
                   router.push(`/pro/profile-setup?proId=${profile.id}`)
                 }
-                className="bg-indigo-500 hover:bg-indigo-600 text-white text-xs sm:text-sm"
+                className="text-xs sm:text-sm"
               >
                 <Settings className="w-3.5 h-3.5 mr-1" />
-                {t("admin.editProfile") || "Edit Profile"}
+                {t("admin.editProfile")}
               </Button>
               <Button
                 size="sm"
                 onClick={openAdminVerificationModal}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm"
+                className="bg-[var(--hm-info-500)] hover:bg-[var(--hm-info-500)]/90 text-white text-xs sm:text-sm"
               >
-                {t("admin.updateStatus") || "Update Status"}
+                {t("admin.updateStatus")}
               </Button>
             </div>
           </div>
@@ -1684,7 +1686,7 @@ export default function ProfessionalDetailClient({
                     onClick={handleCopyLink}
                     className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] justify-start h-auto rounded-none"
                   >
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[var(--hm-n-200)] flex items-center justify-center flex-shrink-0">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0">
                       {copySuccess ? (
                         <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-success-500)]" />
                       ) : (
@@ -1914,7 +1916,7 @@ export default function ProfessionalDetailClient({
             {profile.avgRating > 0 && (
               <div className="text-center">
                 <p className="text-base font-bold text-[var(--hm-fg-primary)] flex items-center justify-center gap-1">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-[var(--hm-warning-500)]" />
                   {profile.avgRating.toFixed(1)}
                 </p>
                 <p className="text-[10px] text-[var(--hm-fg-muted)]">
@@ -2128,7 +2130,7 @@ export default function ProfessionalDetailClient({
                   )}
 
                   {/* Schedule button for owner */}
-                  {canEdit && (
+                  {features.bookings && canEdit && (
                     <div className="w-full mb-1">
                       <motion.button
                         whileHover={{ scale: 1.02, y: -1 }}
@@ -2231,10 +2233,10 @@ export default function ProfessionalDetailClient({
                         </motion.button>
                       )}
                       {/* Existing booking indicator */}
-                      {existingBookings.length > 0 && (
+                      {features.bookings && existingBookings.length > 0 && (
                         <Link
                           href="/bookings"
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[var(--hm-success-50)]/20 border border-emerald-200 transition-colors hover:bg-[var(--hm-success-100)]"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[var(--hm-success-50)]/20 border border-[var(--hm-success-500)]/20 transition-colors hover:bg-[var(--hm-success-100)]"
                         >
                           <div className="w-8 h-8 rounded-full bg-[var(--hm-success-100)] flex items-center justify-center shrink-0">
                             <Calendar className="w-4 h-4 text-[var(--hm-success-500)]" />
@@ -2253,10 +2255,10 @@ export default function ProfessionalDetailClient({
                               · {existingBookings[0].startHour}:00
                             </p>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <ChevronRight className="w-4 h-4 text-[var(--hm-success-500)] shrink-0" />
                         </Link>
                       )}
-                      {!canEdit &&
+                      {features.bookings && !canEdit &&
                         (profile?.servicePricing?.filter(
                           (s) => s.isActive && s.price > 0,
                         ).length ?? 0) > 0 && (
@@ -2278,41 +2280,19 @@ export default function ProfessionalDetailClient({
                             {t("booking.requestService")}
                           </motion.button>
                         )}
-                      {/* Message button */}
-                      {!canEdit && user && (
-                        <motion.button
-                          whileHover={{ scale: 1.02, y: -1 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => {
-                            window.location.href = `/chat?proId=${profile?.id || (profile as unknown as Record<string, string>)?._id}`;
-                          }}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[var(--hm-brand-500)] font-medium text-sm bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 transition-colors"
-                        >
-                          <MessageSquare className="w-4 h-4" />
-                          {t("common.message")}
-                        </motion.button>
-                      )}
-                      {!canEdit && (
-                        <Link
-                          href={`/post-job?invitePro=${profile?.id}`}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm border transition-colors"
-                          style={{ borderColor: 'var(--hm-border-subtle)', color: 'var(--hm-fg-secondary)' }}
-                        >
-                          <Briefcase className="w-4 h-4" />
-                          {t("browse.postAJob")}
-                        </Link>
-                      )}
                       {canEdit && (
                         <>
-                          <motion.button
-                            whileHover={{ scale: 1.02, y: -1 }}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => setShowSchedulePanel(true)}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[var(--hm-brand-500)] font-medium text-sm bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 transition-colors"
-                          >
-                            <Calendar className="w-4 h-4" />
-                            {t("settings.availability")}
-                          </motion.button>
+                          {features.bookings && (
+                            <motion.button
+                              whileHover={{ scale: 1.02, y: -1 }}
+                              whileTap={{ scale: 0.97 }}
+                              onClick={() => setShowSchedulePanel(true)}
+                              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[var(--hm-brand-500)] font-medium text-sm bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 transition-colors"
+                            >
+                              <Calendar className="w-4 h-4" />
+                              {t("settings.availability")}
+                            </motion.button>
+                          )}
                           <motion.button
                             whileHover={{ scale: 1.02, y: -1 }}
                             whileTap={{ scale: 0.97 }}
@@ -2678,7 +2658,7 @@ export default function ProfessionalDetailClient({
                         className="text-center p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)]/50 cursor-default"
                       >
                         <p className="text-base font-bold text-[var(--hm-fg-primary)] flex items-center justify-center gap-1">
-                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-[var(--hm-warning-500)]" />
                           <AnimatedCounter
                             value={profile.avgRating}
                             decimals={1}
@@ -3377,7 +3357,7 @@ export default function ProfessionalDetailClient({
       />
 
       {/* ========== BOOKING MODAL ========== */}
-      {profile && (
+      {features.bookings && profile && (
         <BookingModal
           isOpen={showBookingModal}
           onClose={() => setShowBookingModal(false)}
@@ -3387,7 +3367,7 @@ export default function ProfessionalDetailClient({
       )}
 
       {/* ========== SERVICE BOOKING MODAL ========== */}
-      {profile && (
+      {features.bookings && profile && (
         <ServiceBookingModal
           isOpen={showServiceBookingModal}
           onClose={() => setShowServiceBookingModal(false)}
@@ -3401,10 +3381,12 @@ export default function ProfessionalDetailClient({
       )}
 
       {/* ========== SCHEDULE PANEL (owner only) ========== */}
-      <SchedulePanel
-        isOpen={showSchedulePanel}
-        onClose={() => setShowSchedulePanel(false)}
-      />
+      {features.bookings && (
+        <SchedulePanel
+          isOpen={showSchedulePanel}
+          onClose={() => setShowSchedulePanel(false)}
+        />
+      )}
 
       {/* ========== ADD/EDIT PROJECT MODAL ========== */}
       {(showAddProjectModal || editingProject) && (
@@ -4005,7 +3987,7 @@ function ProjectFormModal({
                         className={`absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 w-4 h-4 sm:w-5 sm:h-5 rounded-full text-[9px] sm:text-[10px] font-bold flex items-center justify-center ${
                           isActive
                             ? "bg-[var(--hm-brand-500)] text-white"
-                            : "bg-[var(--hm-n-200)] text-[var(--hm-fg-secondary)]"
+                            : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)]"
                         }`}
                       >
                         {tab.count}
@@ -4250,7 +4232,7 @@ function ProjectFormModal({
 
                 {/* Add new pair */}
                 {pendingBeforeImage ? (
-                  <div className="relative flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300">
+                  <div className="relative flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-[var(--hm-warning-500)]/20">
                     <div className="flex-1 space-y-1.5">
                       <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-warning-500)] bg-[var(--hm-warning-100)] px-2 py-0.5 rounded-full">
                         ✓ {t("common.before")}
@@ -4317,9 +4299,9 @@ function ProjectFormModal({
                           <div className="w-10 h-10 rounded-xl bg-[var(--hm-error-50)]/20 flex items-center justify-center">
                             <ImageIcon className="w-5 h-5 text-[var(--hm-error-500)]" />
                           </div>
-                          <ChevronRight className="w-4 h-4 text-[var(--hm-n-300)] group-hover:text-[var(--hm-brand-500)] transition-colors" />
+                          <ChevronRight className="w-4 h-4 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)] transition-colors" />
                           <div className="w-10 h-10 rounded-xl bg-[var(--hm-success-50)]/20 flex items-center justify-center">
-                            <ImageIcon className="w-5 h-5 text-emerald-400" />
+                            <ImageIcon className="w-5 h-5 text-[var(--hm-success-500)]" />
                           </div>
                         </div>
                         <span className="text-sm font-medium">

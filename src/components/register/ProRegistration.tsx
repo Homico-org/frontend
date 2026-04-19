@@ -4,17 +4,18 @@ import { useProRegistration } from './hooks/useProRegistration';
 import { StepPhone, StepProfile, StepSelectServices, StepComplete } from './steps';
 import AvatarCropper from '@/components/common/AvatarCropper';
 import Header from '@/components/common/Header';
-import StepIndicator from './StepIndicator';
 import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/button';
+import { StepperBars } from '@/components/ui/Stepper';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowLeft } from 'lucide-react';
 
 const STEP_CONFIG = {
-  phone: { index: 0, titleEn: 'Verify Phone', titleKa: 'ტელეფონის ვერიფიკაცია', titleRu: 'Подтверждение телефона' },
-  profile: { index: 1, titleEn: 'Your Profile', titleKa: 'თქვენი პროფილი', titleRu: 'Ваш профиль' },
-  services: { index: 2, titleEn: 'Your Services', titleKa: 'თქვენი სერვისები', titleRu: 'Ваши услуги' },
-  complete: { index: 3, titleEn: 'Complete', titleKa: 'დასრულება', titleRu: 'Завершено' },
-};
+  phone: { index: 0, titleKey: 'register.verifyPhone' },
+  profile: { index: 1, titleKey: 'register.yourProfile' },
+  services: { index: 2, titleKey: 'register.yourServices' },
+  complete: { index: 3, titleKey: 'register.complete' },
+} as const;
 
 interface ProRegistrationProps {
   onSwitchToClient: () => void;
@@ -60,25 +61,21 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
       <div className="sticky top-0 z-40 border-b border-[var(--hm-border-subtle)]" style={{ backgroundColor: 'var(--hm-bg-elevated)' }}>
         <div className="max-w-2xl mx-auto px-3 sm:px-4 py-3 relative flex items-center">
           {reg.currentStep !== 'phone' && (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={reg.handleBack}
-              className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors p-1"
+              leftIcon={<ArrowLeft className="w-4 h-4" />}
+              className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 !h-auto !px-1 !py-1 !text-xs !font-medium text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-xs font-medium">{t('common.back')}</span>
-            </button>
+              {t('common.back')}
+            </Button>
           )}
 
-          <div className="flex-1 flex justify-center">
-            <StepIndicator
-              size="sm"
-              steps={Object.entries(STEP_CONFIG)
-                .filter(([k]) => k !== 'complete')
-                .map(([k, c]) => ({
-                  id: k,
-                  title: locale === 'ka' ? c.titleKa : locale === 'ru' ? c.titleRu : c.titleEn,
-                }))}
-              currentStep={reg.currentStep}
+          <div className="flex-1 max-w-xs mx-auto">
+            <StepperBars
+              total={Object.keys(STEP_CONFIG).length - 1}
+              currentIndex={STEP_CONFIG[reg.currentStep as keyof typeof STEP_CONFIG]?.index ?? 0}
             />
           </div>
         </div>
@@ -151,23 +148,15 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
               />
 
               {/* Continue Button for Services Step */}
-              <button
+              <Button
                 onClick={reg.handleNext}
                 disabled={reg.selectedServices.length === 0 || reg.isLoading}
-                className="w-full py-2.5 sm:py-3 rounded-xl font-medium text-sm sm:text-base text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] active:scale-[0.98]"
+                loading={reg.isLoading}
+                size="lg"
+                className="w-full"
               >
-                {reg.isLoading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    {t('common.loading')}
-                  </span>
-                ) : (
-                  t('common.continue')
-                )}
-              </button>
+                {reg.isLoading ? t('common.loading') : t('common.continue')}
+              </Button>
             </div>
           )}
         </div>
@@ -175,13 +164,15 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
         {/* Footer - Switch to Client */}
         {reg.currentStep === 'phone' && !reg.showOtp && (
           <div className="py-3 sm:py-4 text-center border-t border-[var(--hm-border-subtle)] px-3 sm:px-4">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onSwitchToClient}
-              className="text-xs sm:text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors"
+              className="!h-auto !px-2 !py-1 !text-xs sm:!text-sm !font-normal text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"
             >
               {t('register.lookingForPro')}{' '}
               <span className="font-medium text-[var(--hm-brand-500)]">{t('register.registerAsClient')}</span>
-            </button>
+            </Button>
           </div>
         )}
       </main>

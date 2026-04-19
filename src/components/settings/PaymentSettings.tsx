@@ -146,7 +146,7 @@ export default function PaymentSettings({ onOpenAddCardModal }: PaymentSettingsP
         <div className="flex items-start gap-3">
           <IconBadge icon={Shield} variant="info" size="md" />
           <div>
-            <p className="text-sm font-medium text-blue-700">
+            <p className="text-sm font-medium text-[var(--hm-info-500)]">
               {t('settings.securePayments')}
             </p>
             <p className="text-xs mt-1 text-[var(--hm-info-500)]/70">

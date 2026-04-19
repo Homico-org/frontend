@@ -21,6 +21,7 @@ import {
   Phone,
   User,
 } from "lucide-react";
+import Image from "next/image";
 import { PortfolioProject } from "./ProjectsStep";
 
 const EXP_LABELS: Record<string, { en: string; ka: string }> = {
@@ -68,10 +69,8 @@ export default function ReviewStep({
   portfolioProjects = [],
   selectedSubcategoriesWithPricing = [],
 }: ReviewStepProps) {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { getCategoryByKey } = useCategories();
-
-  const ka = locale === "ka";
 
   const hasBio = formData.bio.trim().length >= 50;
   const hasAvatar = !!avatarPreview;
@@ -123,7 +122,9 @@ export default function ReviewStep({
 
         <div className="flex items-start gap-3">
           {avatarPreview ? (
-            <img src={avatarPreview} alt="" className="w-14 h-14 rounded-xl object-cover" />
+            <div className="relative w-14 h-14 rounded-xl overflow-hidden">
+              <Image src={avatarPreview} alt="" fill sizes="56px" className="object-cover" unoptimized />
+            </div>
           ) : (
             <div className="w-14 h-14 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
               <User className="w-7 h-7 text-[var(--hm-fg-muted)]" />
@@ -170,10 +171,11 @@ export default function ReviewStep({
         {selectedSubcategoriesWithPricing.length > 0 ? (
           <div className="space-y-3">
             {selectedSubcategoriesWithPricing.map((sub) => {
-              const displayName = ka ? sub.nameKa : sub.name;
+              const displayName = pick({ en: sub.name, ka: sub.nameKa });
               const cat = getCategoryByKey(sub.categoryKey);
-              const catName = ka ? cat?.nameKa : cat?.name;
-              const expLabel = EXP_LABELS[sub.experience]?.[ka ? "ka" : "en"] || sub.experience;
+              const catName = cat ? pick({ en: cat.name, ka: cat.nameKa }) : undefined;
+              const expEntry = EXP_LABELS[sub.experience];
+              const expLabel = expEntry ? pick({ en: expEntry.en, ka: expEntry.ka }) : sub.experience;
               const pricedServices = sub.services.filter((s) => s.isActive && s.price > 0);
 
               return (
@@ -248,7 +250,7 @@ export default function ReviewStep({
               return (
                 <div key={project.id || idx} className="relative aspect-square rounded-lg overflow-hidden bg-[var(--hm-bg-tertiary)]">
                   {cover ? (
-                    <img src={cover} alt={project.title} className="w-full h-full object-cover" />
+                    <Image src={cover} alt={project.title} fill sizes="(min-width: 640px) 200px, 33vw" className="object-cover" unoptimized />
                   ) : project.videos?.[0] ? (
                     <video src={project.videos[0]} className="w-full h-full object-cover" muted playsInline />
                   ) : (

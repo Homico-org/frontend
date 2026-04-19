@@ -1,6 +1,7 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Check, ChevronDown, Search, X, Briefcase } from 'lucide-react';
@@ -176,14 +177,14 @@ export default function StepSelectServices({
                   </span>
                   <button
                     onClick={() => setExpandedService(expandedService === service.key ? null : service.key)}
-                    className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs text-[var(--hm-brand-500)] font-medium hover:text-[#A85D47] active:scale-95 transition-all"
+                    className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs text-[var(--hm-brand-500)] font-medium hover:text-[var(--hm-brand-600)] active:scale-95 transition-all"
                   >
                     {getExperienceLabel(service.experience)}
                     <ChevronDown className={`w-2.5 h-2.5 sm:w-3 sm:h-3 transition-transform ${expandedService === service.key ? 'rotate-180' : ''}`} />
                   </button>
                   <button
                     onClick={() => removeService(service.key)}
-                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-[var(--hm-n-200)] hover:bg-[var(--hm-error-100)] active:bg-red-200 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] flex items-center justify-center transition-colors"
+                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-error-100)] active:bg-red-200 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] flex items-center justify-center transition-colors"
                   >
                     <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   </button>
@@ -197,7 +198,7 @@ export default function StepSelectServices({
                         key={opt.value}
                         onClick={() => updateExperience(service.key, opt.value)}
                         className={`w-full px-2.5 sm:px-3 py-2 text-left text-xs sm:text-sm hover:bg-[var(--hm-bg-page)] active:bg-[var(--hm-bg-tertiary)] transition-colors ${
-                          service.experience === opt.value ? 'bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)] font-medium' : 'text-neutral-700'
+                          service.experience === opt.value ? 'bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)] font-medium' : 'text-[var(--hm-fg-secondary)]'
                         }`}
                       >
                         {pick({ en: opt.labelEn, ka: opt.labelKa, ru: opt.labelRu })}
@@ -213,7 +214,7 @@ export default function StepSelectServices({
 
       {/* Debug info - remove later */}
       {process.env.NODE_ENV === 'development' && categories.length === 0 && !categoriesLoading && (
-        <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-yellow-50 border border-yellow-200 rounded-lg sm:rounded-xl text-xs sm:text-sm text-yellow-800">
+        <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-[var(--hm-warning-50)] border border-[var(--hm-warning-500)]/20 rounded-lg sm:rounded-xl text-xs sm:text-sm text-[var(--hm-warning-500)]">
           No categories loaded. Check if /categories API is working.
         </div>
       )}
@@ -233,7 +234,7 @@ export default function StepSelectServices({
       <div className="max-h-[280px] sm:max-h-[350px] overflow-y-auto rounded-xl sm:rounded-2xl border border-[var(--hm-border)] overscroll-contain">
         {categoriesLoading ? (
           <div className="py-6 sm:py-8 text-center">
-            <div className="inline-block w-5 h-5 sm:w-6 sm:h-6 border-2 border-[var(--hm-brand-500)] border-t-transparent rounded-full animate-spin" />
+            <LoadingSpinner size="lg" color="var(--hm-brand-500)" variant="border" className="inline-block" />
             <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)] mt-2">{t('common.loading')}</p>
           </div>
         ) : filteredServices.length === 0 ? (

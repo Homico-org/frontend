@@ -51,7 +51,7 @@ function ProAnalyticsPageContent() {
           </h3>
           <div className="h-48 sm:h-64 flex items-center justify-center border-2 border-dashed border-[var(--hm-border)] rounded-xl">
             <div className="text-center px-4">
-              <BarChart3 className="h-10 sm:h-12 w-10 sm:w-12 text-[var(--hm-n-300)] mx-auto mb-2" />
+              <BarChart3 className="h-10 sm:h-12 w-10 sm:w-12 text-[var(--hm-fg-muted)] mx-auto mb-2" />
               <p className="text-sm sm:text-base text-[var(--hm-fg-muted)]">
                 {t('analytics.chartsWillAppearOnceYou')}
               </p>

@@ -85,10 +85,10 @@ export default function BeforeAfterUpload({
         >
           <div className="flex-1 space-y-1.5">
             <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-error-500)] bg-[var(--hm-error-50)]/20 px-2 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--hm-error-400)]" />
               {t('common.before')}
             </span>
-            <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200">
+            <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-[var(--hm-border)]">
               <Image src={getUrl(pair.before)} alt="" fill className="object-cover" sizes="200px" />
             </div>
           </div>
@@ -99,16 +99,16 @@ export default function BeforeAfterUpload({
           </div>
           <div className="flex-1 space-y-1.5">
             <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-success-500)] bg-[var(--hm-success-50)]/20 px-2 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--hm-success-400)]" />
               {t('common.after')}
             </span>
-            <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200">
+            <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-[var(--hm-border)]">
               <Image src={getUrl(pair.after)} alt="" fill className="object-cover" sizes="200px" />
             </div>
           </div>
           <button
             onClick={() => removePair(idx)}
-            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[var(--hm-error-500)] text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[var(--hm-error-500)] text-white flex items-center justify-center shadow-lg hover:bg-[var(--hm-error-600)] transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -117,7 +117,7 @@ export default function BeforeAfterUpload({
 
       {/* Pending before or add new */}
       {pendingBefore ? (
-        <div className="relative flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300">
+        <div className="relative flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-[var(--hm-warning-500)]/20">
           <div className="flex-1 space-y-1.5">
             <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-warning-500)] bg-[var(--hm-warning-100)] px-2 py-0.5 rounded-full">
               ✓ {t('common.before')}
@@ -138,7 +138,7 @@ export default function BeforeAfterUpload({
             <button
               onClick={() => afterInputRef.current?.click()}
               disabled={uploading === 'after'}
-              className="aspect-[4/3] w-full rounded-lg border-2 border-dashed border-amber-300 flex flex-col items-center justify-center text-[var(--hm-warning-500)] hover:bg-[var(--hm-warning-50)] transition-colors"
+              className="aspect-[4/3] w-full rounded-lg border-2 border-dashed border-[var(--hm-warning-500)]/20 flex flex-col items-center justify-center text-[var(--hm-warning-500)] hover:bg-[var(--hm-warning-50)] transition-colors"
             >
               {uploading === 'after' ? (
                 <LoadingSpinner size="sm" />
@@ -152,7 +152,7 @@ export default function BeforeAfterUpload({
           </div>
           <button
             onClick={() => setPendingBefore(null)}
-            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-neutral-400 text-white flex items-center justify-center shadow-lg hover:bg-neutral-500 transition-colors"
+            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[var(--hm-fg-muted)] text-white flex items-center justify-center shadow-lg hover:bg-[var(--hm-fg-secondary)] transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -176,7 +176,7 @@ export default function BeforeAfterUpload({
           </button>
           <button
             disabled
-            className="flex-1 p-4 rounded-xl border-2 border-dashed border-[var(--hm-border)] flex flex-col items-center justify-center text-[var(--hm-n-300)]"
+            className="flex-1 p-4 rounded-xl border-2 border-dashed border-[var(--hm-border)] flex flex-col items-center justify-center text-[var(--hm-fg-muted)]"
           >
             <Plus className="w-5 h-5" />
             <span className="text-xs mt-1 font-medium">{t('common.after')}</span>

@@ -242,11 +242,11 @@ export default function FeedSection({
           key={i}
           className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)]"
         >
-          <div className="aspect-[4/3] bg-[var(--hm-n-200)] animate-pulse" />
+          <div className="aspect-[4/3] bg-[var(--hm-bg-tertiary)] animate-pulse" />
           <div className="p-2.5 sm:p-4">
-            <div className="h-3 sm:h-4 bg-[var(--hm-n-200)] rounded w-1/3 animate-pulse mb-2" />
-            <div className="h-4 sm:h-5 bg-[var(--hm-n-200)] rounded w-full animate-pulse mb-2" />
-            <div className="h-3 bg-[var(--hm-n-200)] rounded w-2/3 animate-pulse" />
+            <div className="h-3 sm:h-4 bg-[var(--hm-bg-tertiary)] rounded w-1/3 animate-pulse mb-2" />
+            <div className="h-4 sm:h-5 bg-[var(--hm-bg-tertiary)] rounded w-full animate-pulse mb-2" />
+            <div className="h-3 bg-[var(--hm-bg-tertiary)] rounded w-2/3 animate-pulse" />
           </div>
         </div>
       ))}

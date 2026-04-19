@@ -12,9 +12,9 @@ export default function UIShowcase() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4]">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       {/* Header */}
-      <header className="border-b border-[var(--hm-border)] sticky top-0 bg-[#f8f7f4]/95 backdrop-blur-sm z-50">
+      <header className="border-b border-[var(--hm-border)] sticky top-0 bg-[var(--hm-bg-page)]/95 backdrop-blur-sm z-50">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-lg font-semibold text-[var(--hm-fg-primary)]">UI Components</span>

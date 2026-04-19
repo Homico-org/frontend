@@ -54,7 +54,6 @@ interface ProjectStatusBarProps {
 
 export default function ProjectStatusBar({
   currentStage,
-  locale,
   isPro,
   isClient,
   isUpdating,
@@ -66,7 +65,7 @@ export default function ProjectStatusBar({
   onLeaveReview,
   compact = false,
 }: ProjectStatusBarProps) {
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
   const currentIndex = getStageIndex(currentStage);
   const progress = STAGES[currentIndex]?.progress || 0;
   const isProjectCompleted = currentStage === "completed";
@@ -75,16 +74,16 @@ export default function ProjectStatusBar({
   // Compact completed state for hero
   if (isFullyCompleted) {
     return (
-      <div className={`flex items-center gap-3 ${compact ? 'p-3' : 'p-4'} rounded-xl bg-green-50 border border-green-200`}>
-        <div className={`${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-full bg-green-100 flex items-center justify-center flex-shrink-0`}>
-          <CheckCircle2 className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} text-green-600`} />
+      <div className={`flex items-center gap-3 ${compact ? 'p-3' : 'p-4'} rounded-xl bg-[var(--hm-success-50)] border border-[var(--hm-success-500)]/20`}>
+        <div className={`${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-full bg-[var(--hm-success-50)] flex items-center justify-center flex-shrink-0`}>
+          <CheckCircle2 className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} text-[var(--hm-success-500)]`} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`${compact ? 'text-xs' : 'text-sm'} font-semibold text-green-800`}>
+          <p className={`${compact ? 'text-xs' : 'text-sm'} font-semibold text-[var(--hm-success-500)]`}>
             {t('job.projectCompleted')}
           </p>
           {!compact && (
-            <p className="text-xs text-green-600 mt-0.5">
+            <p className="text-xs text-[var(--hm-success-500)] mt-0.5">
               {t('job.thankYouForYourCollaboration')}
             </p>
           )}
@@ -103,7 +102,7 @@ export default function ProjectStatusBar({
           </Button>
         )}
         {isClient && hasSubmittedReview && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-green-600 bg-green-100 flex-shrink-0">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--hm-success-500)] bg-[var(--hm-success-50)] flex-shrink-0">
             <Check className="w-3.5 h-3.5" />
             {t('job.reviewed')}
           </div>
@@ -124,7 +123,7 @@ export default function ProjectStatusBar({
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
             <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-[var(--hm-fg-secondary)]`}>
-              {locale === "ka" ? STAGES[currentIndex]?.labelKa : STAGES[currentIndex]?.label}
+              {pick({ en: STAGES[currentIndex]?.label || "", ka: STAGES[currentIndex]?.labelKa || "" })}
             </span>
             <span className={`${compact ? 'text-xs' : 'text-sm'} font-bold`} style={{ color: ACCENT }}>
               {progress}%
@@ -150,14 +149,14 @@ export default function ProjectStatusBar({
             leftIcon={!isUpdating ? <ChevronRight className="w-3.5 h-3.5" /> : undefined}
             className="flex-shrink-0"
           >
-            {locale === "ka" ? nextStage.labelKa : nextStage.label}
+            {pick({ en: nextStage.label, ka: nextStage.labelKa })}
           </Button>
         )}
       </div>
 
       {/* Client Confirmation Prompt */}
       {isClient && isProjectCompleted && !isClientConfirmed && (
-        <div className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-2 ${compact ? 'p-2' : 'p-3'} rounded-xl bg-[var(--hm-warning-50)]/20 border border-amber-200`}>
+        <div className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-2 ${compact ? 'p-2' : 'p-3'} rounded-xl bg-[var(--hm-warning-50)]/20 border border-[var(--hm-warning-500)]/20`}>
           <p className={`${compact ? 'text-xs' : 'text-sm'} text-[var(--hm-warning-500)] flex-1`}>
             {t('job.pleaseReviewAndConfirm')}
           </p>
@@ -205,7 +204,7 @@ export default function ProjectStatusBar({
                   flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
                   whitespace-nowrap transition-all duration-200 flex-shrink-0
                   ${isStageCompleted
-                    ? "bg-green-50 text-green-600"
+                    ? "bg-[var(--hm-success-50)] text-[var(--hm-success-500)]"
                     : isCurrent
                       ? "text-white shadow-sm"
                       : canAdvance
@@ -225,7 +224,7 @@ export default function ProjectStatusBar({
                 ) : (
                   stage.icon
                 )}
-                <span>{locale === "ka" ? stage.labelKa : stage.label}</span>
+                <span>{pick({ en: stage.label, ka: stage.labelKa })}</span>
                 {canAdvance && (
                   <ChevronRight className="w-3 h-3 ml-0.5" style={{ color: ACCENT }} />
                 )}

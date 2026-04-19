@@ -276,7 +276,7 @@ const FeedCard = React.memo(function FeedCard({
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--hm-bg-tertiary)] to-[var(--hm-border)]">
                       <ImageIcon
-                        className="w-12 h-12 text-[var(--hm-n-300)]"
+                        className="w-12 h-12 text-[var(--hm-fg-muted)]"
                         strokeWidth={1}
                       />
                     </div>
@@ -321,9 +321,9 @@ const FeedCard = React.memo(function FeedCard({
                     <div className="absolute bottom-2 right-2 sm:bottom-3 sm:left-1/2 sm:-translate-x-1/2 sm:right-auto z-20">
                       <div className="flex items-center gap-1.5 px-2 py-1 sm:gap-2 sm:px-2.5 sm:py-1.5 rounded-full bg-black/55 backdrop-blur-md">
                         {/* Progress bar - hidden on mobile */}
-                        <div className="hidden sm:block w-12 h-1 rounded-full bg-white/30 overflow-hidden">
+                        <div className="hidden sm:block w-12 h-1 bg-white/30 overflow-hidden">
                           <motion.div
-                            className="h-full bg-[var(--hm-bg-elevated)] rounded-full"
+                            className="h-full bg-[var(--hm-bg-elevated)]"
                             initial={false}
                             animate={{
                               width: `${((currentImageIndex + 1) / totalImages) * 100}%`,
@@ -374,9 +374,9 @@ const FeedCard = React.memo(function FeedCard({
               </div>
               {item.subcategories && item.subcategories.length > 0 && (
                 <>
-                  <span className="text-[var(--hm-n-300)] text-[10px]">·</span>
+                  <span className="text-[var(--hm-fg-muted)] text-[10px]">·</span>
                   {item.subcategories.slice(0, 2).map((sub) => (
-                    <span key={sub} className="text-[9px] sm:text-[10px] font-medium text-[var(--hm-fg-muted)] bg-[var(--hm-bg-tertiary)] px-1.5 py-0.5 rounded-full">
+                    <span key={sub} className="text-[9px] sm:text-[10px] font-medium text-[var(--hm-fg-muted)] bg-[var(--hm-bg-tertiary)] px-1.5 py-0.5">
                       {getCategoryLabelStatic(sub, locale)}
                     </span>
                   ))}

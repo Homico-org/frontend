@@ -60,7 +60,7 @@ function ProPortfolioPageContent() {
 
         {/* Empty State */}
         <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card p-8 sm:p-12 text-center">
-          <Image className="h-12 sm:h-16 w-12 sm:w-16 text-[var(--hm-n-300)] mx-auto mb-3 sm:mb-4" />
+          <Image className="h-12 sm:h-16 w-12 sm:w-16 text-[var(--hm-fg-muted)] mx-auto mb-3 sm:mb-4" />
           <h3 className="text-base sm:text-lg font-medium text-[var(--hm-fg-primary)] mb-2">No portfolio items yet</h3>
           <p className="text-sm sm:text-base text-[var(--hm-fg-muted)] mb-5 sm:mb-6">Add your best work to showcase your skills and attract more clients</p>
           <button className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 sm:py-3.5 bg-[var(--hm-n-800)] text-white rounded-xl hover:bg-[var(--hm-n-700)] transition-all duration-200 ease-out font-medium touch-manipulation">

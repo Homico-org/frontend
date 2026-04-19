@@ -75,9 +75,9 @@ export function StepRooms({ rooms, onRoomsChange, t }: StepRoomsProps) {
               <button
                 key={type}
                 onClick={() => handleAddRoom(type)}
-                className="p-3 rounded-xl bg-[var(--hm-bg-tertiary)]/50 hover:bg-forest-50 border border-[var(--hm-border)] hover:border-forest-300 transition-all group"
+                className="p-3 rounded-xl bg-[var(--hm-bg-tertiary)]/50 hover:bg-[var(--hm-brand-50)] border border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] transition-all group"
               >
-                <div className="w-8 h-8 mx-auto mb-1.5 rounded-lg bg-[var(--hm-bg-tertiary)] group-hover:bg-forest-100 flex items-center justify-center transition-colors">
+                <div className="w-8 h-8 mx-auto mb-1.5 rounded-lg bg-[var(--hm-bg-tertiary)] group-hover:bg-[var(--hm-bg-tertiary)] flex items-center justify-center transition-colors">
                   <Icon className="w-4 h-4 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
                 </div>
                 <div className="text-xs font-medium text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-n-700)] text-center truncate">

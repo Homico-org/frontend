@@ -186,7 +186,7 @@ function ReviewListRenderer({
                   key={i}
                   className={`w-3.5 h-3.5 ${
                     i < review.rating
-                      ? "text-amber-400 fill-amber-400"
+                      ? "text-[var(--hm-warning-500)] fill-amber-400"
                       : "text-neutral-200"
                   }`}
                 />

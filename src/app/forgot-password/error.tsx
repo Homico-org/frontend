@@ -22,7 +22,7 @@ export default function ForgotPasswordError({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-neutral-500/50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--hm-bg-page)] flex items-center justify-center p-4">
       <Card variant="glass" size="xl" className="w-full max-w-[440px] shadow-xl">
         {/* Error Icon */}
         <div className="flex justify-center mb-6">

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import type { ProProfile } from '@/types/shared';
+import { ChevronLeft, Check, Search, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -182,9 +183,7 @@ export default function QuickHirePage() {
         <div className="container-custom py-16">
           <div className="max-w-md mx-auto text-center">
             <div className="w-16 h-16 bg-[var(--hm-brand-500)]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-8 h-8 text-[var(--hm-brand-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              <Check className="w-8 h-8 text-[var(--hm-brand-500)]" />
             </div>
             <h1 className="text-2xl font-bold text-[var(--hm-fg-primary)] mb-3">Request Sent</h1>
             <p className="text-[var(--hm-fg-secondary)] mb-8">
@@ -215,9 +214,7 @@ export default function QuickHirePage() {
           {/* Header */}
           <div className="mb-6">
             <Link href="/professionals" className="inline-flex items-center gap-2 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] text-sm mb-4">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
+              <ChevronLeft className="w-4 h-4" />
               Back
             </Link>
             <h1 className="text-2xl font-bold text-[var(--hm-fg-primary)]">Quick Hire</h1>
@@ -232,27 +229,23 @@ export default function QuickHirePage() {
                   <div className="flex items-center gap-3 flex-1">
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                        step > s.id
-                          ? 'bg-neutral-900 text-white'
-                          : step === s.id
-                          ? 'bg-neutral-900 text-white'
-                          : 'bg-[var(--hm-n-200)] text-neutral-500'
+                        step >= s.id
+                          ? 'bg-[var(--hm-brand-500)] text-white'
+                          : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                       }`}
                     >
                       {step > s.id ? (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
+                        <Check className="w-4 h-4" />
                       ) : (
                         s.id
                       )}
                     </div>
-                    <span className={`text-sm font-medium hidden sm:block ${step >= s.id ? 'text-[var(--hm-fg-primary)]' : 'text-neutral-400'}`}>
+                    <span className={`text-sm font-medium hidden sm:block ${step >= s.id ? 'text-[var(--hm-fg-primary)]' : 'text-[var(--hm-fg-muted)]'}`}>
                       {s.title}
                     </span>
                   </div>
                   {i < steps.length - 1 && (
-                    <div className={`flex-1 h-0.5 mx-4 ${step > s.id ? 'bg-neutral-900' : 'bg-neutral-200'}`} />
+                    <div className={`flex-1 h-0.5 mx-4 ${step > s.id ? 'bg-[var(--hm-brand-500)]' : 'bg-[var(--hm-border)]'}`} />
                   )}
                 </div>
               ))}
@@ -269,9 +262,7 @@ export default function QuickHirePage() {
 
                 {/* Search */}
                 <div className="relative mb-4">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--hm-fg-muted)] z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--hm-fg-muted)] z-10" />
                   <Input
                     type="text"
                     value={searchQuery}
@@ -289,8 +280,8 @@ export default function QuickHirePage() {
                       onClick={() => setSelectedCategory(cat.key)}
                       className={`p-3 rounded-xl border text-left transition-all ${
                         selectedCategory === cat.key
-                          ? 'border-neutral-900 bg-neutral-900 text-white'
-                          : 'border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] text-neutral-700'
+                          ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)] text-white'
+                          : 'border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] text-[var(--hm-fg-secondary)]'
                       }`}
                     >
                       <span className="text-sm font-medium">{cat.label}</span>
@@ -388,19 +379,17 @@ export default function QuickHirePage() {
                         onClick={() => toggleProSelection(pro.id)}
                         className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                           selectedPros.includes(pro.id)
-                            ? 'border-neutral-900 bg-neutral-50'
-                            : 'border-[var(--hm-border)] hover:border-neutral-300'
+                            ? 'border-[var(--hm-fg-primary)] bg-[var(--hm-bg-tertiary)]'
+                            : 'border-[var(--hm-border)] hover:border-[var(--hm-border-strong)]'
                         }`}
                       >
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                           selectedPros.includes(pro.id)
-                            ? 'border-neutral-900 bg-neutral-900'
-                            : 'border-neutral-300'
+                            ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]'
+                            : 'border-[var(--hm-border-strong)]'
                         }`}>
                           {selectedPros.includes(pro.id) && (
-                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                            </svg>
+                            <Check className="w-3 h-3 text-white" strokeWidth={3} />
                           )}
                         </div>
 
@@ -417,9 +406,7 @@ export default function QuickHirePage() {
 
                         <div className="text-right flex-shrink-0">
                           <div className="flex items-center gap-1 text-sm">
-                            <svg className="w-4 h-4 text-[var(--hm-warning-500)]" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
+                            <Star className="w-4 h-4 text-[var(--hm-warning-500)] fill-current" />
                             <span className="font-medium">{pro.avgRating.toFixed(1)}</span>
                           </div>
                           <div className="text-xs text-[var(--hm-fg-muted)]">{pro.totalReviews} reviews</div>

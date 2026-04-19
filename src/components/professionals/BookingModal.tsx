@@ -107,8 +107,8 @@ export default function BookingModal({
       <ModalBody>
         {success ? (
           <div className="text-center py-6">
-            <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center bg-green-50">
-              <Check size={24} className="text-green-500" />
+            <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center bg-[var(--hm-success-50)]">
+              <Check size={24} className="text-[var(--hm-success-500)]" />
             </div>
             <h3 className="text-base font-semibold text-[var(--hm-fg-primary)] mb-1">
               {t("booking.bookingSuccess")}

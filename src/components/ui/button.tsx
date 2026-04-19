@@ -27,7 +27,7 @@ const buttonVariants = cva(
         ghost:
           "text-[var(--hm-fg-secondary)] bg-transparent hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)] focus-visible:ring-[var(--hm-brand-100)]",
         destructive:
-          "bg-[var(--hm-error-500)] text-white hover:bg-[#A83333] focus-visible:ring-[var(--hm-error-100)]",
+          "bg-[var(--hm-error-500)] text-white hover:bg-[var(--hm-error-600)] focus-visible:ring-[var(--hm-error-100)]",
         link:
           "text-[var(--hm-brand-500)] underline-offset-4 hover:underline focus-visible:ring-[var(--hm-brand-100)] p-0 h-auto",
         premium:

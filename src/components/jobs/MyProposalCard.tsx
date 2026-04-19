@@ -4,6 +4,7 @@ import { formatCurrency } from '@/utils/currencyUtils';
 
 import { useLanguage } from "@/contexts/LanguageContext";
 import { StatusPill } from '@/components/ui/StatusPill';
+import { Send, DollarSign, Clock } from 'lucide-react';
 export interface Proposal {
   id: string;
   coverLetter: string;
@@ -58,9 +59,7 @@ export default function MyProposalCard({
           <div className="flex items-center gap-2 sm:gap-2.5">
             {/* Terracotta icon */}
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center flex-shrink-0">
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-brand-500)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-              </svg>
+              <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-brand-500)]" />
             </div>
             <span className="text-xs sm:text-sm font-semibold text-[var(--hm-fg-primary)]">
               {t('job.yourProposal')}
@@ -81,9 +80,7 @@ export default function MyProposalCard({
             {proposal.proposedPrice && (
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
-                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--hm-fg-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
-                  </svg>
+                  <DollarSign className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--hm-fg-muted)]" />
                 </div>
                 <div>
                   <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-[var(--hm-fg-muted)]">
@@ -97,16 +94,13 @@ export default function MyProposalCard({
             )}
 
             {proposal.proposedPrice && proposal.estimatedDuration && (
-              <div className="hidden sm:block w-px h-8 bg-[var(--hm-n-200)]" />
+              <div className="hidden sm:block w-px h-8 bg-[var(--hm-bg-tertiary)]" />
             )}
 
             {proposal.estimatedDuration && (
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
-                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--hm-fg-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
+                  <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--hm-fg-muted)]" />
                 </div>
                 <div>
                   <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-[var(--hm-fg-muted)]">

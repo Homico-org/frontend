@@ -41,11 +41,11 @@ const thumbPositions = {
 };
 
 const bgColors = {
-  default: { on: 'bg-[var(--hm-brand-500)]', off: 'bg-[var(--hm-n-200)]' },
-  primary: { on: 'bg-[var(--hm-brand-500)]', off: 'bg-[var(--hm-n-200)]' },
-  success: { on: 'bg-[var(--hm-success-500)]', off: 'bg-[var(--hm-n-200)]' },
-  violet: { on: 'bg-violet-500', off: 'bg-[var(--hm-n-200)]' },
-  danger: { on: 'bg-[var(--hm-error-500)]', off: 'bg-[var(--hm-n-200)]' },
+  default: { on: 'bg-[var(--hm-brand-500)]', off: 'bg-[var(--hm-bg-tertiary)]' },
+  primary: { on: 'bg-[var(--hm-brand-500)]', off: 'bg-[var(--hm-bg-tertiary)]' },
+  success: { on: 'bg-[var(--hm-success-500)]', off: 'bg-[var(--hm-bg-tertiary)]' },
+  violet: { on: 'bg-[var(--hm-brand-500)]', off: 'bg-[var(--hm-bg-tertiary)]' },
+  danger: { on: 'bg-[var(--hm-error-500)]', off: 'bg-[var(--hm-bg-tertiary)]' },
 };
 
 export interface ToggleProps

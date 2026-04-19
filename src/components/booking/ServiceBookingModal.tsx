@@ -4,6 +4,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
+import { StepperBars } from '@/components/ui/Stepper';
 import { Textarea } from '@/components/ui/input';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -87,34 +88,6 @@ function getLineTotal(item: SelectedService): number {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function StepIndicator({ current, total }: { current: Step; total: number }) {
-  return (
-    <div className="flex items-center gap-2 justify-center mb-1">
-      {Array.from({ length: total }, (_, i) => i + 1).map((step) => (
-        <div key={step} className="flex items-center gap-2">
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all"
-            style={
-              step < current
-                ? { backgroundColor: 'var(--hm-brand-500)', color: '#fff' }
-                : step === current
-                ? { backgroundColor: 'var(--hm-brand-500)', color: '#fff', boxShadow: '0 0 0 3px rgba(239,78,36,0.25)' }
-                : { backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-secondary)' }
-            }
-          >
-            {step < current ? <Check className="w-3.5 h-3.5" /> : step}
-          </div>
-          {step < total && (
-            <div
-              className="w-8 h-0.5 rounded-full"
-              style={{ backgroundColor: step < current ? 'var(--hm-brand-500)' : 'var(--hm-border)' }}
-            />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -348,7 +321,7 @@ export default function ServiceBookingModal({
 
       {step !== 4 && (
         <ModalBody className="pb-0">
-          <StepIndicator current={step > 3 ? 3 : step} total={3} />
+          <StepperBars total={3} currentIndex={(step > 3 ? 3 : step) - 1} />
         </ModalBody>
       )}
 

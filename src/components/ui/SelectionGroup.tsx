@@ -132,7 +132,7 @@ export function SelectionGroup<T extends string | number = string>({
                 'flex-1 font-medium border-2 transition-all',
                 sizeStyles.button,
                 sizeStyles.text,
-                pill ? 'rounded-full' : 'rounded-xl',
+                'rounded-none',
                 option.icon && 'flex items-center justify-center',
                 option.icon && sizeStyles.gap,
                 option.disabled && 'opacity-50 cursor-not-allowed',

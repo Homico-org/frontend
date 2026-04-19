@@ -6,12 +6,12 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ProfileSetupProvider, STEP_META, STEP_SLUGS, useProfileSetup, type ProfileSetupStepSlug } from '@/contexts/ProfileSetupContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowRight, Check, ChevronLeft, X } from 'lucide-react';
 import HomicoLogo from '@/components/common/HomicoLogo';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { Stepper } from '@/components/ui/Stepper';
 
 function Logo({ className = '' }: { className?: string }) {
   return (
@@ -48,7 +48,7 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
     dismissWelcomeBanner,
   } = useProfileSetup();
 
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
 
   const stepIdx = currentStepIndex(slug);
   const isLastStep = slug === 'review';
@@ -91,58 +91,16 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          {/* Step labels + progress bar */}
+          {/* Step progress */}
           <div className="pb-2">
-            <div className="flex mb-1.5">
-              {STEP_META.map((step, index) => {
-                const isCompleted = index < stepIdx;
-                const isCurrent = index === stepIdx;
-                return (
-                  <button
-                    key={step.slug}
-                    type="button"
-                    onClick={() => isCompleted ? goToStep(step.slug) : undefined}
-                    disabled={!isCompleted}
-                    className={`flex-1 text-center text-[10px] sm:text-[11px] font-medium transition-colors ${
-                      isCurrent
-                        ? 'text-[var(--hm-brand-500)]'
-                        : isCompleted
-                        ? 'cursor-pointer hover:text-[var(--hm-brand-500)]'
-                        : ''
-                    }`}
-                    style={
-                      !isCurrent && !isCompleted
-                        ? { color: 'var(--hm-fg-muted)' }
-                        : !isCurrent && isCompleted
-                        ? { color: 'var(--hm-fg-secondary)' }
-                        : undefined
-                    }
-                  >
-                    <span className="hidden sm:inline">
-                      {step.title[locale === 'ka' ? 'ka' : 'en']}
-                    </span>
-                    <span className="sm:hidden">{index + 1}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex gap-1">
-              {STEP_META.map((step, index) => (
-                <div
-                  key={step.slug}
-                  className="flex-1 h-1 rounded-full transition-colors duration-300"
-                  style={{
-                    backgroundColor:
-                      index < stepIdx
-                        ? 'var(--hm-brand-500)'
-                        : index === stepIdx
-                        ? 'rgba(239,78,36,0.4)'
-                        : 'var(--hm-border-subtle)',
-                  }}
-                />
-              ))}
-            </div>
+            <Stepper
+              steps={STEP_META.map((step) => ({
+                key: step.slug,
+                label: pick({ en: step.title.en, ka: step.title.ka }),
+              }))}
+              currentIndex={stepIdx}
+              onStepClick={(index) => goToStep(STEP_META[index].slug)}
+            />
           </div>
         </div>
       </header>
@@ -242,7 +200,7 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
       <footer
         className="fixed bottom-0 left-0 right-0 backdrop-blur-md border-t shadow-lg shadow-black/5 z-50 safe-area-bottom"
         style={{
-          backgroundColor: 'rgba(250,250,247,0.95)',
+          backgroundColor: 'color-mix(in srgb, var(--hm-bg-page) 95%, transparent)',
           borderColor: 'var(--hm-border-subtle)',
         }}
       >
@@ -258,9 +216,7 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--hm-bg-tertiary)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
+                <ChevronLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">{t('common.back')}</span>
               </button>
             ) : (
@@ -271,9 +227,7 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--hm-bg-tertiary)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <X className="w-4 h-4" />
                 <span className="hidden sm:inline">{t('common.cancel')}</span>
               </button>
             )}
@@ -282,7 +236,7 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
               className="hidden sm:block text-xs font-medium absolute left-1/2 -translate-x-1/2 pointer-events-none"
               style={{ color: 'var(--hm-fg-muted)' }}
             >
-              {STEP_META[stepIdx]?.title[locale === 'ka' ? 'ka' : 'en']}
+              {STEP_META[stepIdx] ? pick({ en: STEP_META[stepIdx].title.en, ka: STEP_META[stepIdx].title.ka }) : ''}
             </span>
 
             <button
@@ -303,16 +257,12 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
               ) : isLastStep ? (
                 <>
                   <span>{isEditMode ? t('common.save') : t('becomePro.complete')}</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Check className="w-4 h-4" />
                 </>
               ) : (
                 <>
                   <span>{t('common.saveAndContinue')}</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>

@@ -357,7 +357,7 @@ export default function InviteProsModal({
             </div>
           ) : pros.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <UserPlus className="w-12 h-12 text-[var(--hm-n-300)] mb-3" />
+              <UserPlus className="w-12 h-12 text-[var(--hm-fg-muted)] mb-3" />
               <p className="text-[var(--hm-fg-muted)]">
                 {t("job.noProsFound")}
               </p>
@@ -375,7 +375,7 @@ export default function InviteProsModal({
                     onClick={() => toggleSelection(pro.id)}
                     className={`relative flex items-start gap-4 p-4 rounded-xl border-2 transition-all ${
                       isAlreadyInvited
-                        ? "border-emerald-300 bg-[var(--hm-success-50)]/10 cursor-default opacity-70"
+                        ? "border-[var(--hm-success-500)]/20 bg-[var(--hm-success-50)]/10 cursor-default opacity-70"
                         : isSelected
                           ? "border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 cursor-pointer"
                           : "border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] cursor-pointer"

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FormGroup, Input, Label } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { features } from '@/config/features';
 import { useAuth } from '@/contexts/AuthContext';
 import { countries, useLanguage } from '@/contexts/LanguageContext';
 import { Camera, Check } from 'lucide-react';
@@ -21,7 +22,7 @@ interface ProfileSettingsProps {
 
 export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, isMobile = false }: ProfileSettingsProps) {
   const { user, updateUser } = useAuth();
-  const { t, locale } = useLanguage();
+  const { t, locale, pick } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -43,10 +44,10 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
   const georgianCities = countries.GE.citiesLocal;
   const englishCities = countries.GE.cities;
   const allValidCities = [...georgianCities, ...englishCities];
-  const cityOptions = georgianCities.map((cityKa, index) => ({
-    value: locale === 'ka' ? cityKa : englishCities[index],
-    label: locale === 'ka' ? cityKa : englishCities[index],
-  }));
+  const cityOptions = georgianCities.map((cityKa, index) => {
+    const label = pick({ en: englishCities[index], ka: cityKa });
+    return { value: label, label };
+  });
 
   useEffect(() => {
     if (user) {
@@ -255,6 +256,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
               />
             </FormGroup>
 
+            {features.email && (
             <FormGroup>
               <Label>{t('common.email')}</Label>
               <Input
@@ -276,6 +278,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                 </Button>
               </div>
             </FormGroup>
+            )}
 
             <FormGroup>
               <Label>{t('common.phone')}</Label>

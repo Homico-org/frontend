@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { StarRating } from '@/components/ui/StarRating';
 import { Badge } from '@/components/ui/badge';
 import Avatar from '@/components/common/Avatar';
-import { Award } from 'lucide-react';
+import { Award, Heart, ImageIcon } from 'lucide-react';
 
 interface ServiceCardProps {
   service: {
@@ -82,9 +82,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
             </>
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-              <svg className="w-12 h-12 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+              <ImageIcon className="w-12 h-12 text-blue-300" strokeWidth={1.5} />
             </div>
           )}
 
@@ -93,9 +91,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
             onClick={(e) => { e.preventDefault(); }}
             className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out"
           >
-            <svg className="w-4 h-4 text-[var(--hm-fg-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
+            <Heart className="w-4 h-4 text-[var(--hm-fg-secondary)]" />
           </button>
 
           {/* Category badge */}

@@ -28,7 +28,6 @@ export interface ReviewStepProps {
 }
 
 export default function StepReview({
-  locale,
   formData,
   categories,
   avatarPreview,
@@ -37,7 +36,7 @@ export default function StepReview({
   phoneCountry,
   goToStep,
 }: ReviewStepProps) {
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
   const validProjects = portfolioProjects.filter(p => 
     p.images.length > 0 || p.videos.length > 0 || p.beforeAfterPairs.length > 0
   );
@@ -75,7 +74,7 @@ export default function StepReview({
                 {avatarPreview ? (
                   <NextImage src={avatarPreview} alt="Avatar" fill className="object-cover" sizes="80px" unoptimized />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-[var(--hm-brand-500)] to-[#A85D47] flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-[var(--hm-brand-500)] to-[var(--hm-brand-600)] flex items-center justify-center">
                     <span className="text-3xl font-bold text-white">
                       {formData.fullName?.charAt(0)?.toUpperCase() || 'P'}
                     </span>
@@ -109,7 +108,7 @@ export default function StepReview({
                       variant="premium"
                       size="sm"
                     >
-                      {locale === 'ka' ? category?.nameKa : category?.name}
+                      {category ? pick({ en: category.name, ka: category.nameKa }) : ''}
                     </Badge>
                   );
                 })}
@@ -270,7 +269,7 @@ export default function StepReview({
                 onClick={() => goToStep('category')}
                 className="text-[var(--hm-brand-500)] text-[10px]"
               >
-                {locale === 'ka' ? 'შეცვლა' : 'Change'}
+                {t('common.change')}
               </Button>
             </div>
             <div className="flex flex-wrap gap-1.5">

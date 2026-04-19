@@ -3,6 +3,7 @@
 import Select from '@/components/common/Select';
 import { Button } from '@/components/ui/button';
 import { Input, Label } from '@/components/ui/input';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
 import { Camera, Lock, MapPin, User, X } from 'lucide-react';
@@ -107,23 +108,25 @@ export default function StepProfile({
 
             {avatarUploading && (
               <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-[var(--hm-brand-500)] border-t-transparent rounded-full animate-spin" />
+                <LoadingSpinner size="lg" color="var(--hm-brand-500)" variant="border" />
               </div>
             )}
           </div>
 
           {avatarPreview && !avatarUploading && (
-            <button
+            <Button
               type="button"
+              variant="destructive"
+              size="icon-sm"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 onAvatarRemove();
               }}
-              className="absolute -top-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[var(--hm-error-500)] text-white flex items-center justify-center shadow-lg hover:bg-red-600 active:scale-95 transition-all z-30"
+              className="absolute -top-1 -right-1 !h-6 !w-6 sm:!h-7 sm:!w-7 rounded-full shadow-lg z-30"
             >
               <X className="w-3 h-3 sm:w-4 sm:h-4" />
-            </button>
+            </Button>
           )}
         </div>
       </div>

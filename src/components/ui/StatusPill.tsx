@@ -84,8 +84,8 @@ const variantConfig: Record<StatusPillVariant, {
     labelKa: 'სასწრაფო',
   },
   applied: {
-    bgClass: 'bg-violet-50',
-    textClass: 'text-violet-600',
+    bgClass: 'bg-[var(--hm-info-50)]',
+    textClass: 'text-[var(--hm-info-600)]',
     icon: CheckCircle,
     labelEn: 'Applied',
     labelKa: 'გაგზავნილი',
@@ -98,8 +98,8 @@ const variantConfig: Record<StatusPillVariant, {
     labelKa: 'პრემიუმ',
   },
   featured: {
-    bgClass: 'bg-purple-50',
-    textClass: 'text-purple-600',
+    bgClass: 'bg-[var(--hm-brand-50)]',
+    textClass: 'text-[var(--hm-brand-600)]',
     icon: Star,
     labelEn: 'Featured',
     labelKa: 'გამორჩეული',

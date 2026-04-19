@@ -1,10 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { notFound } from 'next/navigation';
 import AuthGuard from '@/components/common/AuthGuard';
+import { features } from '@/config/features';
+import Avatar from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ConfirmModal } from '@/components/ui/Modal';
+import { Tabs } from '@/components/ui/Tabs';
 import { Textarea } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -23,9 +27,9 @@ import {
   MapPin,
   Settings2,
   Star,
-  User,
   X,
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 function formatHour(h: number): string {
@@ -102,7 +106,7 @@ function PhotoUploadSection({
             className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0"
             style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}
           >
-            <img src={url} alt="" className="w-full h-full object-cover" />
+            <Image src={url} alt="" fill sizes="64px" className="object-cover" unoptimized />
             <button
               onClick={() => onRemove(url)}
               className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/60 text-white flex items-center justify-center"
@@ -158,10 +162,13 @@ function PhotoThumbs({ photos, label }: { photos: string[]; label: string }) {
               zIndex: 4 - idx,
             }}
           >
-            <img
+            <Image
               src={storage.getOptimizedImageUrl(url, { width: 80, quality: 70 })}
               alt=""
-              className="w-full h-full object-cover"
+              fill
+              sizes="40px"
+              className="object-cover"
+              unoptimized
             />
           </div>
         ))}
@@ -185,6 +192,7 @@ function PhotoThumbs({ photos, label }: { photos: string[]; label: string }) {
 }
 
 export default function BookingsPage() {
+  if (!features.bookings) notFound();
   return (
     <AuthGuard>
       <BookingsContent />
@@ -384,47 +392,28 @@ function BookingsContent() {
     <div className="w-full">
       {/* Tab bar + availability */}
       <div className="flex items-center justify-between mb-6 gap-2">
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide flex-nowrap min-w-0">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium transition-all shrink-0 whitespace-nowrap"
-            style={{
-              backgroundColor:
-                activeTab === tab.id ? 'var(--hm-brand-500)' : 'var(--hm-bg-elevated)',
-              color: activeTab === tab.id ? '#fff' : 'var(--hm-fg-secondary)',
-              border:
-                activeTab === tab.id ? 'none' : '1px solid var(--hm-border-subtle)',
-            }}
-          >
-            {tab.label}
-            {tab.count > 0 && (
-              <span
-                className="text-xs px-1.5 py-0.5 rounded-full font-semibold min-w-[20px] text-center"
-                style={{
-                  backgroundColor:
-                    activeTab === tab.id
-                      ? 'rgba(255,255,255,0.25)'
-                      : 'var(--hm-bg-tertiary)',
-                  color:
-                    activeTab === tab.id ? '#fff' : 'var(--hm-fg-muted)',
-                }}
-              >
-                {tab.count}
-              </span>
-            )}
-          </button>
-        ))}
+        <div className="flex-1 min-w-0 overflow-x-auto scrollbar-hide">
+          <Tabs
+            variant="default"
+            tabs={tabs.map((t) => ({
+              id: t.id,
+              label: t.label,
+              badge: t.count > 0 ? t.count : undefined,
+            }))}
+            activeTab={activeTab}
+            onChange={(id) => setActiveTab(id as typeof activeTab)}
+          />
         </div>
         {user?.role === 'pro' && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setShowSchedule(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 transition-colors"
+            leftIcon={<Settings2 className="w-4 h-4" />}
+            className="text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 hover:text-[var(--hm-brand-500)]"
           >
-            <Settings2 className="w-4 h-4" />
             {t('settings.availability')}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -480,25 +469,12 @@ function BookingsContent() {
                   <div className="flex items-start justify-between gap-3">
                     {/* Avatar + name + meta */}
                     <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-black/5"
-                        style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}
-                      >
-                        {other?.avatar ? (
-                          <img
-                            src={storage.getOptimizedImageUrl(other.avatar, {
-                              width: 80,
-                            })}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <User
-                            size={16}
-                            style={{ color: 'var(--hm-fg-muted)' }}
-                          />
-                        )}
-                      </div>
+                      <Avatar
+                        src={other?.avatar}
+                        name={other?.name || ''}
+                        size="md"
+                        className="ring-2 ring-black/5 shrink-0"
+                      />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <Link

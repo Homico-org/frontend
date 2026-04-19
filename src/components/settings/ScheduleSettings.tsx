@@ -36,7 +36,7 @@ const DEFAULT_SCHEDULE: DaySchedule[] = DAY_KEYS.map((d) => ({
 }));
 
 export default function ScheduleSettings() {
-  const { t, locale } = useLanguage();
+  const { t, locale, pick } = useLanguage();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -88,11 +88,7 @@ export default function ScheduleSettings() {
     }
   };
 
-  const getDayLabel = (d: typeof DAY_KEYS[number]) => {
-    if (locale === "ka") return d.shortKa;
-    if (locale === "ru") return d.shortRu;
-    return d.short;
-  };
+  const getDayLabel = (d: typeof DAY_KEYS[number]) => pick({ en: d.short, ka: d.shortKa, ru: d.shortRu });
 
   if (loading) {
     return (
@@ -124,7 +120,7 @@ export default function ScheduleSettings() {
               <div
                 key={dayInfo.dayOfWeek}
                 className={`flex items-center gap-2 px-3 py-2 ${!isLast ? "border-b border-[var(--hm-border-subtle)]" : ""} ${
-                  day.isAvailable ? "bg-[var(--hm-bg-elevated)]" : "bg-neutral-50/50"
+                  day.isAvailable ? "bg-[var(--hm-bg-elevated)]" : "bg-[var(--hm-bg-tertiary)]/50"
                 }`}
               >
                 {/* Toggle */}
@@ -156,7 +152,7 @@ export default function ScheduleSettings() {
                       onChange={(h) => updateDay(dayInfo.dayOfWeek, { startHour: h })}
                       hours={HOURS}
                     />
-                    <span className="text-[var(--hm-n-300)] text-xs">–</span>
+                    <span className="text-[var(--hm-fg-muted)] text-xs">–</span>
                     <TimePicker
                       value={day.endHour}
                       onChange={(h) => updateDay(dayInfo.dayOfWeek, { endHour: h })}

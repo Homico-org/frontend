@@ -554,7 +554,7 @@ function ProposalCard({
       size="md"
       className={
         isShortlisted
-          ? "ring-2 ring-emerald-500/20 border-emerald-200"
+          ? "ring-2 ring-emerald-500/20 border-[var(--hm-success-500)]/20"
           : ""
       }
     >
@@ -647,7 +647,7 @@ function ProposalCard({
 
           {/* Phone Number (if revealed) */}
           {isShortlisted && proposal.contactRevealed && pro?.phone && (
-            <div className="mb-4 p-3 rounded-xl bg-[var(--hm-success-50)]/20 border border-emerald-200">
+            <div className="mb-4 p-3 rounded-xl bg-[var(--hm-success-50)]/20 border border-[var(--hm-success-500)]/20">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[var(--hm-success-500)]/20 flex items-center justify-center">
                   <Phone className="w-5 h-5 text-[var(--hm-success-500)]" />
@@ -715,7 +715,7 @@ function ProposalCard({
                   variant="outline"
                   size="sm"
                   asChild
-                  className="border-emerald-200 text-[var(--hm-success-500)] hover:bg-[var(--hm-success-50)]"
+                  className="border-[var(--hm-success-500)]/20 text-[var(--hm-success-500)] hover:bg-[var(--hm-success-50)]"
                 >
                   <a href={`tel:${pro.phone}`}>
                     <Phone className="w-4 h-4 mr-1.5" />
@@ -736,7 +736,7 @@ function ProposalCard({
                   variant="outline"
                   size="sm"
                   leftIcon={<Undo2 className="w-4 h-4" />}
-                  className="border-amber-200 text-[var(--hm-warning-500)] hover:bg-[var(--hm-warning-50)]"
+                  className="border-[var(--hm-warning-500)]/20 text-[var(--hm-warning-500)] hover:bg-[var(--hm-warning-50)]"
                 >
                   {t("job.revert")}
                 </Button>

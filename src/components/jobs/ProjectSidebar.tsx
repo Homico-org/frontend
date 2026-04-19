@@ -37,14 +37,13 @@ interface SidebarMenuItem {
 export default function ProjectSidebar({
   activeTab,
   onTabChange,
-  locale,
   unreadChatCount = 0,
   unreadPollsCount = 0,
   unreadResourcesCount = 0,
   isProjectStarted = true,
   isCompleted = false,
 }: ProjectSidebarProps) {
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
   const menuItems: SidebarMenuItem[] = [
     {
       key: "details",
@@ -132,7 +131,7 @@ export default function ProjectSidebar({
 
             {/* Label */}
             <span className="flex-1 text-left">
-              {locale === "ka" ? item.labelKa : item.label}
+              {pick({ en: item.label, ka: item.labelKa })}
             </span>
 
             {/* Badge */}
@@ -163,13 +162,13 @@ export default function ProjectSidebar({
 export function ProjectSidebarMobile({
   activeTab,
   onTabChange,
-  locale,
   unreadChatCount = 0,
   unreadPollsCount = 0,
   unreadResourcesCount = 0,
   isProjectStarted = true,
   isCompleted = false,
 }: ProjectSidebarProps) {
+  const { pick } = useLanguage();
   const menuItems: SidebarMenuItem[] = [
     {
       key: "details",
@@ -234,7 +233,7 @@ export function ProjectSidebarMobile({
             style={isActive && !isDisabled ? { backgroundColor: ACCENT } : {}}
           >
             {item.icon}
-            <span>{locale === "ka" ? item.labelKa : item.label}</span>
+            <span>{pick({ en: item.label, ka: item.labelKa })}</span>
 
             {/* Badge */}
             {item.badge !== undefined && item.badge > 0 && !isDisabled && (

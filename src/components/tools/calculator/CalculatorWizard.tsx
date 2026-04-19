@@ -10,6 +10,8 @@ import { StepSummary } from './StepSummary';
 import { createRoom, createRoomWithParams } from '@/utils/calculator';
 import { aiService, ProjectAnalysisResult } from '@/services/ai';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import * as XLSX from 'xlsx';
 
 interface CalculatorWizardProps {
@@ -356,9 +358,8 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
 
             {isAnalyzing ? (
               <div className="flex flex-col items-center justify-center py-8">
-                <div className="relative w-16 h-16 mb-4">
-                  <div className="absolute inset-0 rounded-full border-4 border-[var(--hm-border)]" />
-                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-forest-500 animate-spin" />
+                <div className="relative w-16 h-16 mb-4 flex items-center justify-center">
+                  <LoadingSpinner size="xl" color="var(--hm-brand-500)" />
                   <div className="absolute inset-2 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
                     <Sparkles className="w-6 h-6 text-[var(--hm-fg-secondary)] animate-pulse" strokeWidth={1.5} />
                   </div>
@@ -373,7 +374,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
             ) : (
               <>
                 {aiError && (
-                  <div className="mb-4 p-3 bg-[var(--hm-error-50)]/20 border border-red-200 rounded-xl">
+                  <div className="mb-4 p-3 bg-[var(--hm-error-50)]/20 border border-[var(--hm-error-500)]/20 rounded-xl">
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 text-[var(--hm-error-500)] flex-shrink-0" />
                       <p className="text-sm text-[var(--hm-error-500)]">{aiError}</p>
@@ -383,9 +384,9 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
 
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-forest-300 rounded-xl p-6 text-center cursor-pointer hover:border-forest-400 hover:bg-forest-50/50 transition-all"
+                  className="border-2 border-dashed border-[var(--hm-border-strong)] rounded-xl p-6 text-center cursor-pointer hover:border-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-50)]/50 transition-all"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-forest-200/30 flex items-center justify-center mx-auto mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-[var(--hm-brand-50)] flex items-center justify-center mx-auto mb-3">
                     <Upload className="w-6 h-6 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
                   </div>
                   <p className="text-sm font-medium text-[var(--hm-n-700)] mb-1">
@@ -404,12 +405,13 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
                   className="hidden"
                 />
 
-                <button
+                <Button
+                  variant="ghost"
                   onClick={skipUpload}
-                  className="w-full mt-4 py-3 text-sm font-medium text-[var(--hm-fg-secondary)] hover:text-[var(--hm-n-700)] transition-colors"
+                  className="w-full mt-4 h-auto py-3 text-sm font-medium text-[var(--hm-fg-secondary)] hover:text-[var(--hm-n-700)]"
                 >
                   {t('tools.calculator.aiUpload.skip')}
-                </button>
+                </Button>
               </>
             )}
           </div>
@@ -434,12 +436,14 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
                 ))}
               </ul>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => setAiNotes([])}
-              className="p-1 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors"
+              className="!h-auto !w-auto p-1 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] hover:bg-transparent"
             >
               <X className="w-4 h-4" strokeWidth={1.5} />
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -491,9 +495,9 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
 
                 {index < STEPS.length - 1 && (
                   <div
-                    className={`w-8 sm:w-12 h-0.5 mx-2 sm:mx-3 rounded-full transition-colors ${
+                    className={`w-8 sm:w-12 h-0.5 mx-2 sm:mx-3 transition-colors ${
                       currentStep > step
-                        ? 'bg-forest-400'
+                        ? 'bg-[var(--hm-brand-500)]'
                         : 'bg-neutral-200'
                     }`}
                   />
@@ -510,23 +514,24 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
       {/* Navigation Buttons */}
       {currentStep < 4 && (
         <div className="flex items-center justify-between gap-4">
-          <button
+          <Button
+            variant="ghost"
             onClick={handlePrev}
             disabled={currentStep === 1}
-            className="flex items-center gap-2 px-5 py-3 text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-border)] rounded-xl font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            leftIcon={<ChevronLeft className="w-5 h-5" strokeWidth={1.5} />}
+            className="h-auto px-5 py-3 bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-border)] rounded-xl font-medium"
           >
-            <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
             {t('tools.calculator.back')}
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={handleNext}
             disabled={!canProceed}
-            className="flex items-center gap-2 px-6 py-3 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white rounded-xl font-semibold shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-[var(--hm-brand-500)]/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+            rightIcon={<ChevronRight className="w-5 h-5" strokeWidth={1.5} />}
+            className="h-auto px-6 py-3 rounded-xl font-semibold"
           >
             {t('tools.calculator.next')}
-            <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
-          </button>
+          </Button>
         </div>
       )}
     </div>

@@ -1,9 +1,20 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Input, Textarea } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Pencil, Plus, Trash2, X } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Image as ImageIcon,
+  LayoutGrid,
+  MapPin,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from 'lucide-react';
 import Image from 'next/image';
 import { useRef, useState } from 'react';
 import AddressPicker from './AddressPicker';
@@ -91,11 +102,14 @@ function BeforeAfterPreview({ beforeImage, afterImage, compact = false }: { befo
       onTouchEnd={handleTouchEnd}
     >
       {/* After Image (Background - full width) */}
-      <img
+      <Image
         src={afterImage}
         alt="After"
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        fill
+        sizes="(max-width: 768px) 100vw, 600px"
+        className="object-cover pointer-events-none"
         draggable={false}
+        unoptimized
       />
 
       {/* Before Image (Clipped using clip-path for proper sizing) */}
@@ -103,11 +117,14 @@ function BeforeAfterPreview({ beforeImage, afterImage, compact = false }: { befo
         className="absolute inset-0 pointer-events-none"
         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
       >
-        <img
+        <Image
           src={beforeImage}
           alt="Before"
-          className="absolute inset-0 w-full h-full object-cover"
+          fill
+          sizes="(max-width: 768px) 100vw, 600px"
+          className="object-cover"
           draggable={false}
+          unoptimized
         />
       </div>
 
@@ -123,12 +140,8 @@ function BeforeAfterPreview({ beforeImage, afterImage, compact = false }: { befo
         {/* Slider Handle */}
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--hm-bg-elevated)] rounded-full shadow-[0_2px_12px_rgba(0,0,0,0.3)] flex items-center justify-center border-2 border-white/80 ${compact ? 'w-6 h-6' : 'w-10 h-10'}`}>
           <div className="flex items-center gap-0.5">
-            <svg className={`text-gray-700 ${compact ? 'w-2 h-2' : 'w-3 h-3'}`} fill="currentColor" viewBox="0 0 24 24">
-              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-            </svg>
-            <svg className={`text-gray-700 ${compact ? 'w-2 h-2' : 'w-3 h-3'}`} fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
-            </svg>
+            <ChevronLeft className={`text-gray-700 ${compact ? 'w-2 h-2' : 'w-3 h-3'}`} strokeWidth={3} />
+            <ChevronRight className={`text-gray-700 ${compact ? 'w-2 h-2' : 'w-3 h-3'}`} strokeWidth={3} />
           </div>
         </div>
       </div>
@@ -330,9 +343,7 @@ export default function PortfolioProjectsInput({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--hm-brand-500)]/20 to-[#F28764]/10 flex items-center justify-center border border-[var(--hm-brand-500)]/20">
-            <svg className="w-4.5 h-4.5 text-[var(--hm-brand-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+            <LayoutGrid className="w-[18px] h-[18px] text-[var(--hm-brand-500)]" strokeWidth={1.5} />
           </div>
           <div>
             <h3 className="font-semibold text-[var(--hm-fg-primary)]">
@@ -374,9 +385,7 @@ export default function PortfolioProjectsInput({
                     </h4>
                     {project.location && (
                       <p className="text-xs text-[var(--hm-fg-muted)] flex items-center gap-1 mt-0.5">
-                        <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        </svg>
+                        <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                         {project.location}
                       </p>
                     )}
@@ -448,9 +457,7 @@ export default function PortfolioProjectsInput({
         >
           <div className="flex flex-col items-center gap-3">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)]/15 to-[#F28764]/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-[var(--hm-brand-500)]/20 border border-[var(--hm-brand-500)]/20">
-              <svg className="w-7 h-7 text-[var(--hm-brand-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-              </svg>
+              <Plus className="w-7 h-7 text-[var(--hm-brand-500)]" strokeWidth={1.5} />
             </div>
             <div className="text-center">
               <p className="font-semibold text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-brand-500)] transition-colors">
@@ -492,13 +499,13 @@ export default function PortfolioProjectsInput({
               <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t('input.projectTitle')} <span className="text-[var(--hm-error-500)]">*</span>
               </label>
-              <input
+              <Input
                 type="text"
                 value={currentProject.title}
                 onChange={(e) => setCurrentProject(prev => ({ ...prev, title: e.target.value }))}
                 placeholder={t('input.egApartmentRenovation')}
-                className="w-full px-4 py-3 rounded-xl border-2 bg-[var(--hm-bg-page)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)]/50 transition-all"
-                style={{ borderColor: 'var(--hm-border)' }}
+                inputSize="lg"
+                className="rounded-xl"
               />
             </div>
 
@@ -518,13 +525,12 @@ export default function PortfolioProjectsInput({
               <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t('input.description')}
               </label>
-              <textarea
+              <Textarea
                 value={currentProject.description}
                 onChange={(e) => setCurrentProject(prev => ({ ...prev, description: e.target.value }))}
                 placeholder={t('input.brieflyDescribeWhatYouDid')}
                 rows={2}
-                className="w-full px-4 py-3 rounded-xl border-2 bg-[var(--hm-bg-page)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)]/50 transition-all resize-none"
-                style={{ borderColor: 'var(--hm-border)' }}
+                className="rounded-xl"
               />
             </div>
 
@@ -560,9 +566,7 @@ export default function PortfolioProjectsInput({
                         onClick={() => handleRemoveBeforeAfterPair(pair.id)}
                         className="absolute top-1 right-1 p-1 bg-[var(--hm-error-500)] rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                       >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <X className="w-3 h-3" />
                       </button>
                     </div>
                   ))}
@@ -575,9 +579,7 @@ export default function PortfolioProjectsInput({
                         onClick={() => handleRemoveGalleryImage(idx)}
                         className="absolute top-1 right-1 p-1 bg-[var(--hm-error-500)] rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                       >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <X className="w-3 h-3" />
                       </button>
                       {idx === 0 && currentProject.beforeAfterPairs.length === 0 && (
                         <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-[var(--hm-brand-500)] rounded text-[8px] font-bold text-white">
@@ -615,9 +617,7 @@ export default function PortfolioProjectsInput({
                     ) : (
                       <>
                         <div className="w-10 h-10 rounded-xl bg-[var(--hm-brand-500)]/10 group-hover:bg-[var(--hm-brand-500)]/20 flex items-center justify-center transition-colors">
-                          <svg className="w-5 h-5 text-[var(--hm-brand-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
+                          <ImageIcon className="w-5 h-5 text-[var(--hm-brand-500)]" />
                         </div>
                         <span className="text-sm font-medium">{t('input.photos')}</span>
                         <span className="text-[10px] text-[var(--hm-fg-muted)]">{t('input.multiplePhotos')}</span>
@@ -650,9 +650,7 @@ export default function PortfolioProjectsInput({
                     ) : (
                       <>
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 group-hover:from-amber-500/20 group-hover:to-orange-500/20 flex items-center justify-center transition-colors">
-                          <svg className="w-5 h-5 text-[var(--hm-warning-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-                          </svg>
+                          <LayoutGrid className="w-5 h-5 text-[var(--hm-warning-500)]" />
                         </div>
                         <span className="text-sm font-medium">{t('input.beforeafter')}</span>
                         <span className="text-[10px] text-[var(--hm-fg-muted)]">{t('input.selectExactly2Images')}</span>

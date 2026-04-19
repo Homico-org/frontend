@@ -1,7 +1,8 @@
 'use client';
 
-import { Hammer, PaintBucket, Sparkles, HardHat, Wrench } from 'lucide-react';
+import { Hammer, PaintBucket, Sparkles, HardHat, Wrench, Check } from 'lucide-react';
 import { ReactNode } from 'react';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type PropertyCondition = 'shell' | 'black-frame' | 'needs-renovation' | 'partial-renovation' | 'good';
 
@@ -78,10 +79,10 @@ const getConditionsForCategory = (category?: string): ConditionOption[] => {
 export default function ConditionSelector({
   value,
   onChange,
-  locale = 'en',
   className = '',
   category,
 }: ConditionSelectorProps) {
+  const { pick } = useLanguage();
   const conditions = getConditionsForCategory(category);
 
   return (
@@ -94,14 +95,14 @@ export default function ConditionSelector({
           className={`w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 transition-all text-left ${
             value === condition.value
               ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 shadow-sm'
-              : 'border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] hover:bg-neutral-50'
+              : 'border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] hover:bg-[var(--hm-bg-tertiary)]'
           }`}
         >
           <div
             className={`flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${
               value === condition.value
                 ? 'bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]'
-                : 'bg-[var(--hm-bg-tertiary)] text-neutral-500'
+                : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
             }`}
           >
             {condition.icon}
@@ -114,10 +115,10 @@ export default function ConditionSelector({
                   : 'text-[var(--hm-fg-primary)]'
               }`}
             >
-              {locale === 'ka' ? condition.labelKa : condition.labelEn}
+              {pick({ en: condition.labelEn, ka: condition.labelKa })}
             </p>
             <p className="text-sm text-[var(--hm-fg-muted)] mt-0.5">
-              {locale === 'ka' ? condition.descKa : condition.descEn}
+              {pick({ en: condition.descEn, ka: condition.descKa })}
             </p>
           </div>
           <div
@@ -128,9 +129,7 @@ export default function ConditionSelector({
             }`}
           >
             {value === condition.value && (
-              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
+              <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
             )}
           </div>
         </button>

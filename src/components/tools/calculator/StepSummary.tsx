@@ -22,6 +22,8 @@ import { calculateFullBreakdown } from '@/utils/calculator';
 import { categoryIconMap } from '@/components/tools/prices/categoryIcons';
 import { type PriceCategory } from '@/data/priceDatabase';
 import { Toggle } from '@/components/ui/Toggle';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { aiService, RenovationCalculatorResult } from '@/services/ai';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -128,7 +130,7 @@ export function StepSummary({
               },
               forest: {
                 bg: 'bg-[var(--hm-bg-tertiary)]',
-                ring: 'ring-forest-500',
+                ring: 'ring-[var(--hm-brand-500)]',
                 icon: 'text-[var(--hm-fg-secondary)]',
               },
               terracotta: {
@@ -210,28 +212,30 @@ export function StepSummary({
 
       {/* Breakdown View Toggle */}
       <div className="flex gap-2 p-1 bg-[var(--hm-bg-tertiary)] rounded-xl">
-        <button
+        <Button
+          variant="ghost"
           onClick={() => setBreakdownView('category')}
-          className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+          leftIcon={<Layers className="w-4 h-4" strokeWidth={1.5} />}
+          className={`flex-1 h-auto py-2.5 px-4 rounded-lg text-sm font-medium ${
             breakdownView === 'category'
-              ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-sm'
+              ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-sm hover:bg-[var(--hm-bg-elevated)]'
               : 'text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]'
           }`}
         >
-          <Layers className="w-4 h-4" strokeWidth={1.5} />
           {t('tools.calculator.byCategory')}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           onClick={() => setBreakdownView('room')}
-          className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+          leftIcon={<LayoutGrid className="w-4 h-4" strokeWidth={1.5} />}
+          className={`flex-1 h-auto py-2.5 px-4 rounded-lg text-sm font-medium ${
             breakdownView === 'room'
-              ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-sm'
+              ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-sm hover:bg-[var(--hm-bg-elevated)]'
               : 'text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]'
           }`}
         >
-          <LayoutGrid className="w-4 h-4" strokeWidth={1.5} />
           {t('tools.calculator.byRoom')}
-        </button>
+        </Button>
       </div>
 
       {/* Breakdown */}
@@ -330,32 +334,35 @@ export function StepSummary({
               {t('tools.calculator.aiTips')}
             </h3>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={fetchAITips}
             disabled={isLoadingAI}
-            className="p-2 rounded-lg bg-forest-200/30 hover:bg-forest-200 transition-colors disabled:opacity-50"
+            className="bg-[var(--hm-brand-50)] hover:bg-[var(--hm-brand-100)] rounded-lg"
           >
             <RefreshCw className={`w-4 h-4 text-[var(--hm-fg-secondary)] ${isLoadingAI ? 'animate-spin' : ''}`} strokeWidth={1.5} />
-          </button>
+          </Button>
         </div>
 
         <div className="p-4">
           {isLoadingAI ? (
             <div className="flex items-center justify-center py-8">
               <div className="flex items-center gap-3 text-[var(--hm-fg-secondary)]">
-                <RefreshCw className="w-5 h-5 animate-spin" strokeWidth={1.5} />
+                <LoadingSpinner size="md" color="var(--hm-fg-secondary)" />
                 <span className="text-sm">{t('tools.calculator.loadingAI')}</span>
               </div>
             </div>
           ) : aiError ? (
             <div className="text-center py-6">
               <p className="text-sm text-[var(--hm-fg-secondary)]">{aiError}</p>
-              <button
+              <Button
+                variant="link"
                 onClick={fetchAITips}
                 className="mt-3 text-sm font-medium text-[var(--hm-n-700)] hover:underline"
               >
                 {t('tools.calculator.tryAgain')}
-              </button>
+              </Button>
             </div>
           ) : aiTips ? (
             <div className="space-y-4">

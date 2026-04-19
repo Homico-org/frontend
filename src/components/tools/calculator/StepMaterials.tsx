@@ -135,7 +135,7 @@ export function StepMaterials({
         {/* Apply to All Button */}
         <button
           onClick={handleApplyToAll}
-          className="w-full mt-4 py-2.5 px-4 text-sm font-medium text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] hover:bg-forest-100 rounded-xl transition-colors flex items-center justify-center gap-2"
+          className="w-full mt-4 py-2.5 px-4 text-sm font-medium text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-bg-tertiary)] rounded-xl transition-colors flex items-center justify-center gap-2"
         >
           <Copy className="w-4 h-4" strokeWidth={1.5} />
           {t('tools.calculator.materials.applyToAll')}
@@ -167,7 +167,7 @@ export function StepMaterials({
               >
                 <Icon
                   className={`w-6 h-6 mx-auto mb-2 ${
-                    isSelected ? 'text-[var(--hm-warning-500)]' : 'text-neutral-500'
+                    isSelected ? 'text-[var(--hm-warning-500)]' : 'text-[var(--hm-fg-muted)]'
                   }`}
                   strokeWidth={1.5}
                 />
@@ -205,7 +205,7 @@ export function StepMaterials({
               >
                 <Icon
                   className={`w-6 h-6 mx-auto mb-2 ${
-                    isSelected ? 'text-[var(--hm-brand-600)]' : 'text-neutral-500'
+                    isSelected ? 'text-[var(--hm-brand-600)]' : 'text-[var(--hm-fg-muted)]'
                   }`}
                   strokeWidth={1.5}
                 />
@@ -243,11 +243,11 @@ export function StepMaterials({
               >
                 <Icon
                   className={`w-6 h-6 mx-auto mb-2 ${
-                    isSelected ? 'text-[var(--hm-info-500)]' : 'text-neutral-500'
+                    isSelected ? 'text-[var(--hm-info-500)]' : 'text-[var(--hm-fg-muted)]'
                   }`}
                   strokeWidth={1.5}
                 />
-                <div className={`text-sm font-medium ${isSelected ? 'text-blue-700' : 'text-[var(--hm-fg-secondary)]'}`}>
+                <div className={`text-sm font-medium ${isSelected ? 'text-[var(--hm-info-500)]' : 'text-[var(--hm-fg-secondary)]'}`}>
                   {t(`tools.calculator.materials.ceilingTypes.${type}`)}
                 </div>
               </button>

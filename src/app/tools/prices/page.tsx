@@ -35,7 +35,7 @@ const CATEGORIES: PriceCategory[] = [
 ];
 
 export default function PricesPage() {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<PriceCategory | 'all'>(
     'all',
@@ -63,7 +63,7 @@ export default function PricesPage() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       items = items.filter((item) => {
-        const name = locale === 'ka' ? item.nameKa : item.nameEn;
+        const name = pick({ en: item.nameEn, ka: item.nameKa });
         return (
           name.toLowerCase().includes(query) ||
           item.workType.toLowerCase().includes(query)
@@ -72,7 +72,7 @@ export default function PricesPage() {
     }
 
     return items;
-  }, [selectedCategory, searchQuery, locale]);
+  }, [selectedCategory, searchQuery, pick]);
 
   // Group items by category for display
   const groupedItems = useMemo(() => {
@@ -158,7 +158,7 @@ export default function PricesPage() {
             {(selectedCategory !== 'all' || searchQuery) && (
               <button
                 onClick={handleClearFilters}
-                className="text-sm text-[#4A7C59] hover:underline"
+                className="text-sm text-[var(--hm-brand-500)] hover:underline"
               >
                 {t('tools.prices.clearFilter')}
               </button>
@@ -179,7 +179,7 @@ export default function PricesPage() {
                     {/* Category Header - Only show when viewing all categories */}
                     {selectedCategory === 'all' && (
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-8 h-8 rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
                           <CategoryIcon
                             className="w-4 h-4 text-[var(--hm-brand-500)]"
                             strokeWidth={1.5}
@@ -222,9 +222,9 @@ export default function PricesPage() {
           )}
 
           {/* Footer Note */}
-          <div className="mt-8 p-4 bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)]">
+          <div className="mt-8 p-4 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)]">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0">
+              <div className="w-9 h-9 bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0">
                 <Info className="w-4 h-4 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
               </div>
               <div>

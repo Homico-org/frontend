@@ -85,7 +85,7 @@ export default function ReviewItem({
               </p>
               {/* Source badge */}
               {isExternal ? (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[var(--hm-info-100)] text-blue-700/30 shrink-0">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[var(--hm-info-100)] text-[var(--hm-info-500)]/30 shrink-0">
                   <Globe className="w-2.5 h-2.5" />
                   {review.externalVerifiedAt ? t('reviews.verified') : t('reviews.external')}
                 </span>

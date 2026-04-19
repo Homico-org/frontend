@@ -2,6 +2,7 @@
 
 import { Building, Building2, Factory, HelpCircle, Home } from 'lucide-react';
 import { ReactNode } from 'react';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type PropertyType = 'apartment' | 'office' | 'building' | 'house' | 'other';
 
@@ -32,9 +33,9 @@ const propertyTypes: {
 export default function PropertyTypeSelector({
   value,
   onChange,
-  locale = 'en',
   className = '',
 }: PropertyTypeSelectorProps) {
+  const { pick } = useLanguage();
   return (
     <div className={`grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 ${className}`}>
       {propertyTypes.map((type) => (
@@ -50,7 +51,7 @@ export default function PropertyTypeSelector({
         >
           {type.icon}
           <span className="text-xs sm:text-sm font-medium leading-tight text-center">
-            {locale === 'ka' ? type.labelKa : type.labelEn}
+            {pick({ en: type.labelEn, ka: type.labelKa })}
           </span>
         </button>
       ))}

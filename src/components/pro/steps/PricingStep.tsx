@@ -110,7 +110,7 @@ export default function PricingStep({
   onFormChange,
   validation,
 }: PricingStepProps) {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
 
   const pricingOptions = [
     {
@@ -192,7 +192,7 @@ export default function PricingStep({
               <span
                 className={`font-medium block ${formData.pricingModel === option.key ? "text-[var(--hm-brand-500)]" : "text-[var(--hm-fg-primary)]"}`}
               >
-                {locale === "ka" ? option.labelKa : option.label}
+                {pick({ en: option.label, ka: option.labelKa })}
               </span>
               <span className="text-xs text-[var(--hm-fg-muted)]">
                 {option.suffix}

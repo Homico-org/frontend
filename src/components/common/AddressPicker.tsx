@@ -538,7 +538,7 @@ export default function AddressPicker({
 
         {/* Selected Address Display Below Map */}
         {selectedAddress ? (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--hm-success-50)] border border-emerald-200">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--hm-success-50)] border border-[var(--hm-success-500)]/20">
             <div className="w-8 h-8 rounded-full bg-[var(--hm-success-500)] flex items-center justify-center flex-shrink-0">
               <MapPin className="w-4 h-4 text-white" />
             </div>
@@ -601,7 +601,7 @@ export default function AddressPicker({
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
                 onFocus={() => searchQuery && setShowSearchResults(true)}
-                placeholder={locale === 'ka' ? 'მოძებნე მისამართი...' : 'Search address...'}
+                placeholder={t('common.searchAddress')}
                 className="w-full pl-12 pr-12 py-4 rounded-2xl text-base bg-[var(--hm-bg-elevated)] border-0 outline-none placeholder:text-[var(--hm-fg-muted)] text-[var(--hm-fg-primary)]"
               />
               {searchQuery && (
@@ -701,7 +701,7 @@ export default function AddressPicker({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-[var(--hm-brand-500)] uppercase tracking-wide mb-1">
-                    {locale === 'ka' ? 'არჩეული მისამართი' : 'Selected Address'}
+                    {t('common.selectedAddress')}
                   </p>
                   <p className="text-base font-medium text-[var(--hm-fg-primary)] truncate">
                     {selectedAddress}

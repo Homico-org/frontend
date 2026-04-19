@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import SchedulePanel from "@/components/settings/SchedulePanel";
 import SidePanel from "@/components/ui/SidePanel";
+import { features } from "@/config/features";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
@@ -43,6 +45,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, ReactNode } from "react";
@@ -137,7 +140,7 @@ function EmptyBlock({ icon: Icon, text, subtext }: { icon: typeof Calendar; text
       variants={cardVariants}
       className="rounded-xl py-8 text-center bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)]"
     >
-      <Icon className="w-6 h-6 mx-auto mb-2 text-[var(--hm-n-300)]" />
+      <Icon className="w-6 h-6 mx-auto mb-2 text-[var(--hm-fg-muted)]" />
       <p className="text-xs font-medium" style={{ color: "var(--hm-fg-muted)" }}>{text}</p>
       {subtext && <p className="text-[11px] mt-0.5 text-neutral-400/70">{subtext}</p>}
     </motion.div>
@@ -250,8 +253,9 @@ function ProfileCompletionCard({
 
 function MySpaceContent() {
   const { user } = useAuth();
-  const { t, locale } = useLanguage();
+  const { t, locale, pick } = useLanguage();
   const { getCategoryLabel } = useCategoryLabels();
+  const { savedJobIds, handleSaveJob, appliedJobIds } = useJobsContext();
   const toast = useToast();
   const router = useRouter();
 
@@ -403,7 +407,7 @@ function MySpaceContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="w-6 h-6 border-2 border-[var(--hm-border)] rounded-full animate-spin" style={{ borderTopColor: ACCENT_COLOR }} />
+        <LoadingSpinner size="lg" color={ACCENT_COLOR} variant="border" />
       </div>
     );
   }
@@ -514,8 +518,8 @@ function MySpaceContent() {
         >
           <div className="w-1 flex-shrink-0" style={{ backgroundColor: stageConfig?.color || ACCENT_COLOR }} />
           {firstImage && (
-            <div className="hidden sm:block w-20 lg:w-28 flex-shrink-0 bg-[var(--hm-bg-tertiary)]">
-              <img src={storage.getFileUrl(firstImage)} alt="" className="w-full h-full object-cover" />
+            <div className="relative hidden sm:block w-20 lg:w-28 flex-shrink-0 bg-[var(--hm-bg-tertiary)]">
+              <Image src={storage.getFileUrl(firstImage)} alt="" fill sizes="(min-width: 1024px) 112px, 80px" className="object-cover" />
             </div>
           )}
           <div className="flex-1 min-w-0 p-2.5 sm:p-3">
@@ -523,7 +527,7 @@ function MySpaceContent() {
               <div className="flex items-center gap-1.5 min-w-0">
                 <Avatar src={job.clientId?.avatar} name={job.clientId?.name || t("common.client")} size="xs" className="w-5 h-5 flex-shrink-0" />
                 <span className="text-[11px] truncate" style={{ color: "var(--hm-fg-muted)" }}>{job.clientId?.name}</span>
-                {stageConfig && <Badge variant="info" size="sm">{locale === "ka" ? stageConfig.ka : stageConfig.en}</Badge>}
+                {stageConfig && <Badge variant="info" size="sm">{pick({ en: stageConfig.en, ka: stageConfig.ka })}</Badge>}
               </div>
               <span className="text-xs font-bold whitespace-nowrap" style={{ color: "var(--hm-fg-primary)" }}>
                 {agreedPrice ? `${agreedPrice.toLocaleString()}₾` : formatBudget(job, t)}
@@ -579,14 +583,16 @@ function MySpaceContent() {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setShowSchedule(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: `${ACCENT_COLOR}15`, color: ACCENT_COLOR }}
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            {t("settings.availability")}
-          </button>
+          {features.bookings && (
+            <button
+              onClick={() => setShowSchedule(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: `${ACCENT_COLOR}15`, color: ACCENT_COLOR }}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              {t("settings.availability")}
+            </button>
+          )}
           <Link
             href="/pro/profile-setup"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white hover:opacity-90 transition-opacity"
@@ -676,7 +682,7 @@ function MySpaceContent() {
                   <p className="text-[10px] text-[var(--hm-fg-muted)] truncate">{s.label}</p>
                   <p className="text-sm font-bold leading-tight" style={{ color: "var(--hm-fg-primary)" }}>{s.value}</p>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-[var(--hm-n-300)] group-hover:text-[var(--hm-fg-muted)] transition-colors flex-shrink-0" />
+                <ArrowRight className="w-3.5 h-3.5 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-fg-muted)] transition-colors flex-shrink-0" />
               </button>
             </motion.div>
           );
@@ -735,8 +741,8 @@ function MySpaceContent() {
                       className="group flex rounded-xl overflow-hidden bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] transition-shadow hover:shadow-md"
                     >
                       {firstImage && (
-                        <div className="w-20 sm:w-28 flex-shrink-0 bg-[var(--hm-bg-tertiary)]">
-                          <img src={storage.getFileUrl(firstImage)} alt="" className="w-full h-full object-cover" />
+                        <div className="relative w-20 sm:w-28 flex-shrink-0 bg-[var(--hm-bg-tertiary)]">
+                          <Image src={storage.getFileUrl(firstImage)} alt="" fill sizes="(min-width: 640px) 112px, 80px" className="object-cover" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0 p-2.5 sm:p-3 flex flex-col justify-center">
@@ -782,7 +788,12 @@ function MySpaceContent() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: i * 0.05 }}
               >
-                <JobCard job={job} />
+                <JobCard
+                  job={job}
+                  onSave={handleSaveJob}
+                  isSaved={savedJobIds.has(job.id)}
+                  hasApplied={appliedJobIds.has(job.id)}
+                />
               </motion.div>
             ))}
           </div>
@@ -822,7 +833,7 @@ function MySpaceContent() {
                   onClick={copyLink}
                   className="shrink-0 h-9 w-9 p-0"
                 >
-                  {isCopied ? <CheckCircle className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                  {isCopied ? <CheckCircle className="w-3.5 h-3.5 text-[var(--hm-success-500)]" /> : <Copy className="w-3.5 h-3.5" />}
                 </Button>
                 <Button
                   variant="outline"
@@ -884,14 +895,16 @@ function MySpaceContent() {
             </div>
           ) : (
             <div className="py-8 text-center">
-              <Star className="w-6 h-6 mx-auto mb-2 text-[var(--hm-n-300)]" />
+              <Star className="w-6 h-6 mx-auto mb-2 text-[var(--hm-fg-muted)]" />
               <p className="text-xs font-medium" style={{ color: "var(--hm-fg-muted)" }}>{t("mySpace.noReviewsYet")}</p>
             </div>
           )}
         </div>
       </SidePanel>
 
-      <SchedulePanel isOpen={showSchedule} onClose={() => setShowSchedule(false)} />
+      {features.bookings && (
+        <SchedulePanel isOpen={showSchedule} onClose={() => setShowSchedule(false)} />
+      )}
     </motion.div>
   );
 }

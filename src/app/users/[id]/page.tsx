@@ -12,6 +12,7 @@ import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import type { Job, PublicUserProfile } from '@/types/shared';
+import { Briefcase, Frown, MapPin, MessageCircle, Send, Share2, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -20,7 +21,7 @@ export default function UserProfilePage() {
   const router = useRouter();
   const { user } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const toast = useToast();
 
   const [profile, setProfile] = useState<PublicUserProfile | null>(null);
@@ -176,15 +177,13 @@ export default function UserProfilePage() {
         <div className="py-16 text-center">
           <div className="max-w-md mx-auto">
             <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-[var(--hm-bg-page)] flex items-center justify-center">
-              <svg className="w-10 h-10 text-[var(--hm-fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Frown className="w-10 h-10 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
             </div>
             <h2 className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-2">
               {t('users.userNotFound')}
             </h2>
             <p className="text-[var(--hm-fg-muted)] mb-6">
-              {locale === 'ka' ? 'სამწუხაროდ, ეს გვერდი არ არსებობს' : 'Sorry, this page doesn\'t exist'}
+              {pick({ en: "Sorry, this page doesn't exist", ka: 'სამწუხაროდ, ეს გვერდი არ არსებობს' })}
             </p>
             <button onClick={() => router.push('/portfolio')} className="px-6 py-3 text-sm font-semibold rounded-xl bg-[var(--hm-brand-500)] text-white hover:opacity-90 transition-opacity">
               {t('common.goBack')}
@@ -315,10 +314,7 @@ export default function UserProfilePage() {
                 {/* Location */}
                 {profile.city && (
                   <p className="text-sm text-[var(--hm-fg-muted)] flex items-center justify-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                    </svg>
+                    <MapPin className="w-3.5 h-3.5 opacity-60" strokeWidth={1.5} />
                     {profile.city}
                   </p>
                 )}
@@ -349,9 +345,7 @@ export default function UserProfilePage() {
                   onClick={handleContact}
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--hm-brand-500)] text-white text-sm font-semibold hover:opacity-90 transition-all hover:-translate-y-0.5"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-                  </svg>
+                  <MessageCircle className="w-4 h-4" strokeWidth={1.5} />
                   {t('common.message')}
                 </button>
 
@@ -359,9 +353,7 @@ export default function UserProfilePage() {
                   onClick={handleShare}
                   className="flex items-center gap-2 px-4 py-3 rounded-xl border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] text-sm font-medium hover:border-[var(--hm-border-strong)] hover:text-[var(--hm-fg-primary)] transition-all"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-                  </svg>
+                  <Share2 className="w-4 h-4" strokeWidth={1.5} />
                   {t('common.share')}
                 </button>
               </div>
@@ -373,10 +365,7 @@ export default function UserProfilePage() {
             <div className="max-w-4xl mx-auto px-4 pb-12">
               <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <h2 className="font-display text-lg font-semibold text-[var(--hm-fg-primary)] mb-4 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-[var(--hm-brand-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                    <rect x="2" y="7" width="20" height="14" rx="2" />
-                    <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
-                  </svg>
+                  <Briefcase className="w-5 h-5 text-[var(--hm-brand-500)]" strokeWidth={1.5} />
                   {t('users.activeJobs')}
                 </h2>
 
@@ -400,10 +389,7 @@ export default function UserProfilePage() {
             <div className="max-w-2xl mx-auto px-4 pb-12">
               <div className="text-center py-12 border border-dashed border-[var(--hm-border)] rounded-2xl">
                 <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-[var(--hm-bg-page)] flex items-center justify-center">
-                  <svg className="w-6 h-6 text-[var(--hm-fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                    <rect x="2" y="7" width="20" height="14" rx="2" />
-                    <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
-                  </svg>
+                  <Briefcase className="w-6 h-6 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
                 </div>
                 <p className="text-sm text-[var(--hm-fg-muted)]">
                   {t('users.noActiveJobPostingsYet')}
@@ -426,9 +412,7 @@ export default function UserProfilePage() {
               onClick={() => setShowContactModal(false)}
               className="absolute top-4 right-4 p-2 rounded-full hover:bg-[var(--hm-bg-page)] transition-colors"
             >
-              <svg className="w-5 h-5 text-[var(--hm-fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="w-5 h-5 text-[var(--hm-fg-muted)]" />
             </button>
 
             <div className="flex items-center gap-3 mb-5">
@@ -462,9 +446,7 @@ export default function UserProfilePage() {
                 <LoadingSpinner size="md" color="white" />
               ) : (
                 <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                  </svg>
+                  <Send className="w-4 h-4" />
                   {t('common.send')}
                 </>
               )}

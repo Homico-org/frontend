@@ -23,7 +23,7 @@ export default function StepComplete({
   onGoToProfile,
   onGoToDashboard,
 }: StepCompleteProps) {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
 
   return (
     <div className="w-full max-w-md mx-auto text-center px-1">
@@ -91,7 +91,7 @@ export default function StepComplete({
               key={service.key}
               className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] text-[10px] sm:text-xs font-medium"
             >
-              {locale === 'ka' ? service.nameKa : service.name}
+              {pick({ en: service.name, ka: service.nameKa })}
             </span>
           ))}
           {selectedServices.length > 4 && (

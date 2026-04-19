@@ -21,8 +21,8 @@ const inputVariants = cva(
       },
       variant: {
         default: 'border focus:ring-[var(--hm-brand-500)]/50 focus:border-[var(--hm-brand-500)]',
-        error: 'border border-red-300 focus:ring-red-500/50 focus:border-[var(--hm-error-500)]',
-        success: 'border border-green-300 focus:ring-green-500/50 focus:border-green-500',
+        error: 'border border-[var(--hm-error-500)]/20 focus:ring-[var(--hm-error-500)]/50 focus:border-[var(--hm-error-500)]',
+        success: 'border border-[var(--hm-success-500)]/20 focus:ring-[var(--hm-success-500)]/50 focus:border-[var(--hm-success-500)]',
       },
     },
     defaultVariants: {

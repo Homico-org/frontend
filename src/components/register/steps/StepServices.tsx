@@ -185,7 +185,7 @@ function ProjectCard({
           type="text"
           value={project.title}
           onChange={(e) => onUpdate('title', e.target.value)}
-          placeholder={locale === 'ka' ? `პროექტი ${index + 1}` : `Project ${index + 1}`}
+          placeholder={t('register.projectNumber', { count: index + 1 })}
           className="flex-1 text-xs"
         />
         <Button
@@ -268,7 +268,7 @@ function ProjectCard({
         <div className="flex flex-wrap gap-2 mb-2">
           {project.beforeAfterPairs.map((pair) => (
             <div key={pair.id} className="relative group">
-              <div className="w-24 h-12 rounded-lg border border-emerald-300 overflow-hidden flex">
+              <div className="w-24 h-12 rounded-lg border border-[var(--hm-success-500)]/20 overflow-hidden flex">
                 <div className="w-1/2 h-full relative">
                   <NextImage src={pair.beforeImage} alt="Before" fill className="object-cover" sizes="100px" unoptimized />
                   <span className="absolute bottom-0 left-0 text-[8px] bg-black/60 text-white px-1">
@@ -324,7 +324,7 @@ function ProjectCard({
           size="sm"
           onClick={() => beforeInputRef.current?.click()}
           leftIcon={<ArrowLeftRight className="w-3 h-3" />}
-          className="text-[var(--hm-success-500)] border-emerald-300 hover:bg-[var(--hm-success-50)]"
+          className="text-[var(--hm-success-500)] border-[var(--hm-success-500)]/20 hover:bg-[var(--hm-success-50)]"
         >
           {t('register.beforeafter')}
         </Button>

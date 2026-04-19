@@ -1,5 +1,6 @@
 'use client';
 
+import { Home, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -127,11 +128,11 @@ export default function NotFound() {
             style={{ animationDelay: '0s' }}
           />
           <div
-            className="absolute -bottom-2 -left-8 w-10 h-10 rounded-xl bg-[var(--hm-brand-400)]/10 backdrop-blur-sm border border-terracotta-400/20 animate-float"
+            className="absolute -bottom-2 -left-8 w-10 h-10 rounded-xl bg-[var(--hm-brand-400)]/10 backdrop-blur-sm border border-[var(--hm-brand-500)]/20 animate-float"
             style={{ animationDelay: '1s' }}
           />
           <div
-            className="absolute top-1/2 -left-12 w-6 h-6 rounded-lg bg-terracotta-300/20 animate-float"
+            className="absolute top-1/2 -left-12 w-6 h-6 rounded-lg bg-[var(--hm-brand-500)]/20 animate-float"
             style={{ animationDelay: '2s' }}
           />
         </div>
@@ -170,9 +171,7 @@ export default function NotFound() {
               />
             </div>
             <span className="relative flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
+              <Home className="w-5 h-5" />
               მთავარ გვერდზე
             </span>
           </Link>
@@ -182,9 +181,7 @@ export default function NotFound() {
             className="group px-8 py-4 bg-transparent text-[var(--hm-brand-600)] font-semibold rounded-2xl border-2 border-[var(--hm-brand-200)] hover:border-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-50)] transition-all duration-300"
           >
             <span className="flex items-center gap-2">
-              <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              <Search className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               სპეციალისტების ძებნა
             </span>
           </Link>
@@ -209,7 +206,7 @@ export default function NotFound() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-4 py-2 text-sm text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-600)] bg-neutral-100/50 hover:bg-[var(--hm-brand-50)] rounded-xl transition-all duration-200"
+                className="px-4 py-2 text-sm text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-600)] bg-[var(--hm-bg-tertiary)]/50 hover:bg-[var(--hm-brand-50)] transition-all duration-200"
               >
                 {link.label}
               </Link>

@@ -73,7 +73,7 @@ export default function ProfileHero({
   const heroRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
 
   useEffect(() => {
     setIsVisible(true);
@@ -246,7 +246,7 @@ export default function ProfileHero({
                   <span>•</span>
                   <span>
                     {t("common.member")} {memberSince}
-                    {locale === "ka" ? "-დან" : ""}
+                    {pick({ en: "", ka: "-დან" })}
                   </span>
                 </div>
               )}

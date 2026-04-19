@@ -5,9 +5,11 @@ import AvatarCropper from '@/components/common/AvatarCropper';
 import Select from '@/components/common/Select';
 import { AccountSettings, EmailChangeModal, NotificationSettings, PasswordChangeForm, PaymentSettings, PhoneChangeModal, ProfileSettings } from '@/components/settings';
 import PaymentMethodCard, { type PaymentMethod } from '@/components/settings/PaymentMethodCard';
+import { features } from '@/config/features';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Toggle } from '@/components/ui/Toggle';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +21,7 @@ import Checkbox from '@/components/ui/Checkbox';
 import { AlertTriangle, Bell, BriefcaseBusiness, Calendar, CreditCard, EyeOff, Lock, Mail, MessageCircle, RefreshCw, Shield, Smartphone, Trash2, User, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 // Types for notification preferences
 interface NotificationPreferences {
@@ -52,7 +55,7 @@ interface NotificationSettingsData {
 
 function SectionHeader({ icon: Icon, label }: { icon: typeof User; label: string }) {
   return (
-    <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--hm-border-subtle)] bg-neutral-50/30">
+    <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)]/30">
       <Icon className="w-4 h-4 text-[var(--hm-brand-500)]" />
       <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)]">{label}</h2>
     </div>
@@ -795,8 +798,8 @@ function SettingsPageContent() {
     { id: 'profile', label: t('common.profile'), icon: User },
     { id: 'notifications', label: t('common.notifications'), icon: Bell },
     { id: 'security', label: t('common.password'), icon: Lock },
-    // Payments tab - only visible in development
-    ...(process.env.NODE_ENV === 'development' ? [{ id: 'payments', label: t("settings.payments"), icon: CreditCard }] : []),
+    // Payments tab - only visible when payments feature is enabled
+    ...(features.payments ? [{ id: 'payments', label: t("settings.payments"), icon: CreditCard }] : []),
     { id: 'account', label: t('settings.account'), icon: Shield },
   ];
 
@@ -868,8 +871,8 @@ function SettingsPageContent() {
           </div>
         </section>
 
-        {/* Payments — dev only */}
-        {process.env.NODE_ENV === 'development' && (
+        {/* Payments — gated by features.payments */}
+        {features.payments && (
           <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
             <SectionHeader icon={CreditCard} label={t('settings.payments')} />
             <div className="p-4">
@@ -891,7 +894,7 @@ function SettingsPageContent() {
       </div>
 
       {/* Delete Account Confirmation Modal */}
-      {showDeleteModal && (
+      {showDeleteModal && createPortal(
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
           {/* Backdrop with blur */}
           <div
@@ -966,18 +969,13 @@ function SettingsPageContent() {
                 <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
                   {t('settings.typeDeleteToConfirm')}
                 </label>
-                <input
+                <Input
                   type="text"
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
                   placeholder={t('settings.deleteConfirmWord')}
                   disabled={isDeletingAccount}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-red-500/50 font-mono text-center tracking-widest text-sm sm:text-base"
-                  style={{
-                    backgroundColor: 'var(--hm-bg-elevated)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    color: 'var(--hm-fg-primary)',
-                  }}
+                  className="font-mono text-center tracking-widest border-[var(--hm-error-500)]/30 focus:border-[var(--hm-error-500)] focus:ring-red-500/15"
                 />
               </div>
 
@@ -1017,11 +1015,12 @@ function SettingsPageContent() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Deactivate Profile Modal */}
-      {showDeactivateModal && (
+      {showDeactivateModal && createPortal(
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
           {/* Backdrop */}
           <div
@@ -1054,10 +1053,10 @@ function SettingsPageContent() {
                 borderBottom: '1px solid rgba(234, 179, 8, 0.15)',
               }}
             >
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <BriefcaseBusiness className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[var(--hm-warning-50)] flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <BriefcaseBusiness className="w-6 h-6 sm:w-8 sm:h-8 text-[var(--hm-warning-500)]" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-yellow-600">
+              <h3 className="text-lg sm:text-xl font-bold text-[var(--hm-warning-500)]">
                 {t('settings.pauseProfile')}
               </h3>
               <p className="text-xs sm:text-sm mt-1.5 sm:mt-2" style={{ color: 'var(--hm-fg-secondary)' }}>
@@ -1102,32 +1101,32 @@ function SettingsPageContent() {
               </div>
 
               {/* Info */}
-              <div className="p-3 sm:p-4 rounded-xl bg-yellow-50 border border-yellow-200">
-                <p className="font-medium text-yellow-700 text-xs sm:text-sm mb-2 sm:mb-3">
+              <div className="p-3 sm:p-4 rounded-xl bg-[var(--hm-warning-50)] border border-[var(--hm-warning-500)]/20">
+                <p className="font-medium text-[var(--hm-warning-500)] text-xs sm:text-sm mb-2 sm:mb-3">
                   {t('settings.whatHappens')}
                 </p>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
-                      <EyeOff className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600" />
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[var(--hm-warning-50)] flex items-center justify-center flex-shrink-0">
+                      <EyeOff className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--hm-warning-500)]" />
                     </div>
-                    <span className="text-xs sm:text-sm text-yellow-700/90">
+                    <span className="text-xs sm:text-sm text-[var(--hm-warning-500)]/90">
                       {t('settings.clientsWontSeeYourProfile')}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
-                      <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600" />
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[var(--hm-warning-50)] flex items-center justify-center flex-shrink-0">
+                      <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--hm-warning-500)]" />
                     </div>
-                    <span className="text-xs sm:text-sm text-yellow-700/90">
+                    <span className="text-xs sm:text-sm text-[var(--hm-warning-500)]/90">
                       {t('settings.existingMessagesWillBePreserved')}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
-                      <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-600" />
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[var(--hm-warning-50)] flex items-center justify-center flex-shrink-0">
+                      <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--hm-warning-500)]" />
                     </div>
-                    <span className="text-xs sm:text-sm text-yellow-700/90">
+                    <span className="text-xs sm:text-sm text-[var(--hm-warning-500)]/90">
                       {t('settings.youCanReactivateAnytime')}
                     </span>
                   </div>
@@ -1170,10 +1169,12 @@ function SettingsPageContent() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Add Email Modal */}
+      {/* Add Email Modal — gated by features.email */}
+      {features.email && (
       <EmailChangeModal
         isOpen={showAddEmailModal}
         onClose={() => setShowAddEmailModal(false)}
@@ -1190,9 +1191,10 @@ function SettingsPageContent() {
           } : null);
         }}
       />
+      )}
 
       {/* Add Card Modal */}
-      {showAddCardModal && (
+      {showAddCardModal && createPortal(
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
           {/* Backdrop */}
           <div
@@ -1249,7 +1251,7 @@ function SettingsPageContent() {
                 <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--hm-fg-secondary)' }}>
                   {t('settings.cardNumber')}
                 </label>
-                <input
+                <Input
                   type="text"
                   inputMode="numeric"
                   value={cardFormData.cardNumber}
@@ -1259,12 +1261,6 @@ function SettingsPageContent() {
                   }))}
                   placeholder="0000 0000 0000 0000"
                   maxLength={19}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] text-sm sm:text-base"
-                  style={{
-                    backgroundColor: 'var(--hm-bg-elevated)',
-                    border: '1px solid var(--hm-border)',
-                    color: 'var(--hm-fg-primary)',
-                  }}
                 />
               </div>
 
@@ -1274,7 +1270,7 @@ function SettingsPageContent() {
                   <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--hm-fg-secondary)' }}>
                     {t('settings.expiry')}
                   </label>
-                  <input
+                  <Input
                     type="text"
                     inputMode="numeric"
                     value={cardFormData.cardExpiry}
@@ -1284,29 +1280,17 @@ function SettingsPageContent() {
                     }))}
                     placeholder="MM/YY"
                     maxLength={5}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] text-sm sm:text-base"
-                    style={{
-                      backgroundColor: 'var(--hm-bg-elevated)',
-                      border: '1px solid var(--hm-border)',
-                      color: 'var(--hm-fg-primary)',
-                    }}
                   />
                 </div>
                 <div>
                   <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--hm-fg-secondary)' }}>
                     {t('settings.cvv')}
                   </label>
-                  <input
+                  <Input
                     type="text"
                     inputMode="numeric"
                     placeholder="***"
                     maxLength={4}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] text-sm sm:text-base"
-                    style={{
-                      backgroundColor: 'var(--hm-bg-elevated)',
-                      border: '1px solid var(--hm-border)',
-                      color: 'var(--hm-fg-primary)',
-                    }}
                   />
                 </div>
               </div>
@@ -1316,7 +1300,7 @@ function SettingsPageContent() {
                 <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-1.5" style={{ color: 'var(--hm-fg-secondary)' }}>
                   {t('settings.cardholderName')}
                 </label>
-                <input
+                <Input
                   type="text"
                   value={cardFormData.cardholderName}
                   onChange={(e) => setCardFormData(prev => ({
@@ -1324,12 +1308,7 @@ function SettingsPageContent() {
                     cardholderName: e.target.value.toUpperCase()
                   }))}
                   placeholder="JOHN DOE"
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)] uppercase text-sm sm:text-base"
-                  style={{
-                    backgroundColor: 'var(--hm-bg-elevated)',
-                    border: '1px solid var(--hm-border)',
-                    color: 'var(--hm-fg-primary)',
-                  }}
+                  className="uppercase"
                 />
               </div>
 
@@ -1364,7 +1343,8 @@ function SettingsPageContent() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Phone Change Modal */}

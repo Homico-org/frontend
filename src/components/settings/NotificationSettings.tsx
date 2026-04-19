@@ -6,6 +6,7 @@ import { Alert } from '@/components/ui/Alert';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Badge } from '@/components/ui/badge';
 
+import { features } from '@/config/features';
 import { useLanguage } from "@/contexts/LanguageContext";
 // Types for notification preferences
 interface NotificationPreferences {
@@ -197,7 +198,8 @@ export default function NotificationSettings({
         </div>
       ) : notificationData ? (
         <div className="space-y-6">
-          {/* Email Notifications Section */}
+          {/* Email Notifications Section — gated behind features.email */}
+          {features.email && (
           <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--hm-border)' }}>
             <NotificationSectionHeader
               icon={Mail}
@@ -275,6 +277,7 @@ export default function NotificationSettings({
               </div>
             )}
           </div>
+          )}
 
           {/* Push Notifications Section */}
           <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--hm-border)' }}>
@@ -322,7 +325,7 @@ export default function NotificationSettings({
               icon={Smartphone}
               title={texts.sms}
               iconBgColor="rgba(34, 197, 94, 0.1)"
-              iconColor="text-green-500"
+              iconColor="text-[var(--hm-success-500)]"
               subtitle={
                 notificationData.phone ? (
                   <div className="flex items-center gap-2">
@@ -373,7 +376,7 @@ export default function NotificationSettings({
           <div className="p-4 rounded-xl flex items-start gap-3" style={{ backgroundColor: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
             <Shield className="w-5 h-5 text-[var(--hm-info-500)] flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-blue-700">
+              <p className="text-sm font-medium text-[var(--hm-info-500)]">
                 {texts.dataProtected}
               </p>
               <p className="text-xs mt-1 text-[var(--hm-info-500)]/70">

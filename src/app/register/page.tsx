@@ -12,14 +12,13 @@ import { ArrowRight, Briefcase, Search, Shield, Star, Users } from 'lucide-react
 import { useRouter } from 'next/navigation';
 
 function RegisterContent() {
-  const { t, locale } = useLanguage();
+  const { t, pick: pickLang } = useLanguage();
   const { openLoginModal } = useAuthModal();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
 
-  const isKa = locale === 'ka';
-  const pick = (en: string, ka: string) => isKa ? ka : en;
+  const pick = (en: string, ka: string) => pickLang({ en, ka });
 
   useEffect(() => { setIsVisible(true); }, []);
 

@@ -20,7 +20,7 @@ const tools = [
     icon: Database,
     accentColor: "forest",
     featured: false,
-    gradient: "from-[#2D5A47] via-[#3D6A57] to-[#1D4A37]",
+    gradient: "from-[var(--hm-brand-500)] via-[var(--hm-brand-400)] to-[var(--hm-brand-600)]",
   },
   {
     id: "calculator",
@@ -36,7 +36,7 @@ const tools = [
     icon: Scale,
     accentColor: "forest",
     featured: false,
-    gradient: "from-[#2D5A47] via-[#3D6A57] to-[#1D4A37]",
+    gradient: "from-[var(--hm-brand-500)] via-[var(--hm-brand-400)] to-[var(--hm-brand-600)]",
   },
 ];
 
@@ -81,7 +81,7 @@ export default function ToolsPage() {
 
               <div
                 className={`
-                  relative overflow-hidden rounded-2xl sm:rounded-3xl
+                  relative overflow-hidden
                   bg-gradient-to-br ${tool.gradient}
                   transition-all duration-500 ease-out
                   shadow-lg shadow-[var(--hm-brand-500)]/20
@@ -118,7 +118,7 @@ export default function ToolsPage() {
                     {/* Icon with glassmorphism */}
                     <div
                       className={`
-                        w-14 h-14 sm:w-[88px] sm:h-[88px] rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0
+                        w-14 h-14 sm:w-[88px] sm:h-[88px] flex items-center justify-center flex-shrink-0
                         bg-white/15 backdrop-blur-md border border-white/20
                         shadow-inner shadow-white/10
                         transition-all duration-500
@@ -149,7 +149,7 @@ export default function ToolsPage() {
                       {/* CTA Button */}
                       <div
                         className={`
-                          inline-flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl
+                          inline-flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-5 sm:py-2.5
                           bg-white/20 backdrop-blur-sm border border-white/20
                           text-white text-sm sm:text-base font-semibold
                           transition-all duration-300
@@ -185,8 +185,7 @@ export default function ToolsPage() {
             };
             const isHovered = hoveredTool === tool.id;
             const Icon = tool.icon;
-            const isTerracotta = tool.accentColor === "terracotta";
-            const accentColor = isTerracotta ? "var(--hm-brand-500)" : "#2D5A47";
+            const accentColor = "var(--hm-brand-500)";
 
             return (
               <Link
@@ -208,7 +207,7 @@ export default function ToolsPage() {
 
                 <div
                   className={`
-                    relative overflow-hidden rounded-xl sm:rounded-2xl h-full
+                    relative overflow-hidden h-full
                     bg-[var(--hm-bg-elevated)]
                     border border-neutral-200/60
                     transition-all duration-500 ease-out
@@ -243,20 +242,14 @@ export default function ToolsPage() {
                     {/* Icon */}
                     <div
                       className={`
-                        w-10 h-10 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl flex items-center justify-center mb-2 sm:mb-4
+                        w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center mb-2 sm:mb-4
                         transition-all duration-500 border
-                        ${
-                          isTerracotta
-                            ? "bg-gradient-to-br from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border-[var(--hm-brand-500)]/20"
-                            : "bg-gradient-to-br from-[#2D5A47]/10 to-[#2D5A47]/5 border-[#2D5A47]/20"
-                        }
+                        bg-gradient-to-br from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border-[var(--hm-brand-500)]/20
                         ${isHovered ? "sm:scale-110 sm:rotate-6" : ""}
                       `}
                     >
                       <Icon
-                        className={`w-5 h-5 sm:w-7 sm:h-7 ${
-                          isTerracotta ? "text-[var(--hm-brand-500)]" : "text-[#2D5A47]"
-                        }`}
+                        className="w-5 h-5 sm:w-7 sm:h-7 text-[var(--hm-brand-500)]"
                         strokeWidth={1.5}
                       />
                     </div>
@@ -264,11 +257,7 @@ export default function ToolsPage() {
                     {/* Title */}
                     <h2
                       className={`text-[11px] sm:text-xl font-bold text-[var(--hm-fg-primary)] mb-0 sm:mb-2.5 transition-colors duration-300 leading-tight ${
-                        isHovered
-                          ? isTerracotta
-                            ? "sm:text-[var(--hm-brand-500)]"
-                            : "sm:text-[#2D5A47]"
-                          : ""
+                        isHovered ? "sm:text-[var(--hm-brand-500)]" : ""
                       }`}
                     >
                       {toolT.title}
@@ -283,11 +272,7 @@ export default function ToolsPage() {
                     <span
                       className={`
                         hidden sm:inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300
-                        ${
-                          isTerracotta
-                            ? "bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]"
-                            : "bg-[#2D5A47]/10 text-[#2D5A47]"
-                        }
+                        bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]
                       `}
                     >
                       {toolT.tag}

@@ -33,10 +33,10 @@ const headerVariants = cva('p-4 sm:p-6 text-center', {
   variants: {
     variant: {
       default: '',
-      danger: 'bg-gradient-to-br from-red-500/10 to-red-500/5 border-b border-[var(--hm-error-500)]/15',
-      warning: 'bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border-b border-yellow-500/15',
-      success: 'bg-gradient-to-br from-green-500/10 to-green-500/5 border-b border-green-500/15',
-      info: 'bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-b border-blue-500/15',
+      danger: 'bg-gradient-to-br from-[var(--hm-error-500)]/10 to-[var(--hm-error-500)]/5 border-b border-[var(--hm-error-500)]/15',
+      warning: 'bg-gradient-to-br from-[var(--hm-warning-500)]/10 to-[var(--hm-warning-500)]/5 border-b border-[var(--hm-warning-500)]/15',
+      success: 'bg-gradient-to-br from-[var(--hm-success-500)]/10 to-[var(--hm-success-500)]/5 border-b border-[var(--hm-success-500)]/15',
+      info: 'bg-gradient-to-br from-[var(--hm-info-500)]/10 to-[var(--hm-info-500)]/5 border-b border-[var(--hm-info-500)]/15',
       accent: 'border-b', // Background handled via inline style for theme consistency
     },
   },
@@ -53,8 +53,8 @@ const iconContainerVariants = cva(
       variant: {
         default: 'bg-[var(--hm-bg-tertiary)]',
         danger: 'bg-[var(--hm-error-100)]/30',
-        warning: 'bg-yellow-100',
-        success: 'bg-green-100',
+        warning: 'bg-[var(--hm-warning-100)]/30',
+        success: 'bg-[var(--hm-success-100)]/30',
         info: 'bg-[var(--hm-info-100)]/30',
         accent: '', // Background handled via inline style for theme consistency
       },
@@ -71,8 +71,8 @@ const titleVariants = cva('text-xl font-bold', {
     variant: {
       default: 'text-[var(--hm-fg-primary)]',
       danger: 'text-[var(--hm-error-500)]',
-      warning: 'text-yellow-600',
-      success: 'text-green-600',
+      warning: 'text-[var(--hm-warning-500)]',
+      success: 'text-[var(--hm-success-500)]',
       info: 'text-[var(--hm-info-500)]',
       accent: '', // Color handled via inline style for theme consistency
     },
@@ -165,13 +165,13 @@ export function Modal({
       >
         {/* Drag handle for mobile */}
         <div className="sm:hidden flex justify-center pt-3 pb-1 sticky top-0 z-20" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
-          <div className="w-12 h-1.5 rounded-full bg-neutral-300" />
+          <div className="w-12 h-1.5 rounded-full bg-[var(--hm-border-strong)]" />
         </div>
 
         {showCloseButton && !preventClose && (
           <button
             onClick={handleClose}
-            className="absolute top-4 sm:top-4 right-4 p-2.5 sm:p-2 rounded-full hover:bg-[var(--hm-bg-tertiary)] active:bg-[var(--hm-n-200)] transition-colors z-10"
+            className="absolute top-4 sm:top-4 right-4 p-2.5 sm:p-2 hover:bg-[var(--hm-bg-tertiary)] active:bg-[var(--hm-bg-tertiary)] transition-colors z-10"
           >
             <X className="w-5 h-5 text-[var(--hm-fg-muted)]" />
           </button>
@@ -294,11 +294,11 @@ export function ModalActions({
   className,
 }: ModalActionsProps) {
   const buttonColors: Record<ModalVariant, string> = {
-    default: 'bg-neutral-800 hover:bg-neutral-900 disabled:bg-neutral-400',
-    danger: 'bg-[var(--hm-error-500)] hover:bg-red-600 disabled:bg-red-300',
-    warning: 'bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300',
-    success: 'bg-green-500 hover:bg-green-600 disabled:bg-green-300',
-    info: 'bg-[var(--hm-info-500)] hover:bg-blue-600 disabled:bg-blue-300',
+    default: 'bg-[var(--hm-n-800)] hover:bg-[var(--hm-n-900)] disabled:opacity-50',
+    danger: 'bg-[var(--hm-error-500)] hover:bg-[var(--hm-error-600)] disabled:opacity-50',
+    warning: 'bg-[var(--hm-warning-500)] hover:bg-[var(--hm-warning-600)] disabled:opacity-50',
+    success: 'bg-[var(--hm-success-500)] hover:bg-[var(--hm-success-600)] disabled:opacity-50',
+    info: 'bg-[var(--hm-info-500)] hover:bg-[var(--hm-info-600)] disabled:opacity-50',
     accent: '', // Handled via inline style for theme consistency
   };
 
@@ -316,7 +316,7 @@ export function ModalActions({
       <button
         onClick={onCancel}
         disabled={isLoading}
-        className="flex-1 py-3.5 sm:py-3 rounded-xl font-medium text-base sm:text-sm transition-all hover:bg-[var(--hm-bg-tertiary)] active:bg-[var(--hm-n-200)] disabled:opacity-50"
+        className="flex-1 py-3.5 sm:py-3 rounded-xl font-medium text-base sm:text-sm transition-all hover:bg-[var(--hm-bg-tertiary)] active:bg-[var(--hm-bg-tertiary)] disabled:opacity-50"
         style={{
           border: '1px solid var(--hm-border)',
           color: 'var(--hm-fg-primary)',

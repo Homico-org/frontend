@@ -260,7 +260,7 @@ export default function HiringChoiceModal({
               </div>
 
               {/* Temporary free notice */}
-              <div className="mb-3 flex items-center gap-2 rounded-lg bg-[var(--hm-success-50)]/20 px-3 py-2 border border-emerald-200/50">
+              <div className="mb-3 flex items-center gap-2 rounded-lg bg-[var(--hm-success-50)]/20 px-3 py-2 border border-[var(--hm-success-500)]/20/50">
                 <Sparkles className="h-4 w-4 text-[var(--hm-success-500)] flex-shrink-0" />
                 <p className="text-xs text-[var(--hm-success-500)]">
                   {t('proposal.tempFreeNotice')}

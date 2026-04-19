@@ -11,16 +11,17 @@ import {
 import Avatar from "@/components/common/Avatar";
 import Link from "next/link";
 import { ProfessionalCardData } from "./types";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MiniProCardProps {
   professional: ProfessionalCardData;
-  locale: string;
+  locale?: string;
 }
 
 export default function MiniProCard({
   professional,
-  locale,
 }: MiniProCardProps) {
+  const { t, pick } = useLanguage();
   const {
     name,
     avatar,
@@ -37,8 +38,9 @@ export default function MiniProCard({
     profileUrl,
   } = professional;
 
-  const categoryName =
-    locale === "ka" && primaryCategoryKa ? primaryCategoryKa : primaryCategory;
+  const categoryName = primaryCategoryKa
+    ? pick({ en: primaryCategory, ka: primaryCategoryKa })
+    : primaryCategory;
 
   const formatPrice = (price?: number) => {
     if (!price) return null;
@@ -49,7 +51,7 @@ export default function MiniProCard({
     if (!priceRange) return null;
 
     if (priceRange.model === "byAgreement") {
-      return locale === "ka" ? "შეთანხმებით" : "By Agreement";
+      return t("common.negotiable");
     }
 
     if (priceRange.model === "per_sqm") {
@@ -103,7 +105,7 @@ export default function MiniProCard({
         <div className="flex items-center gap-3 mt-1.5">
           {/* Rating */}
           <div className="flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+            <Star className="w-3.5 h-3.5 text-[var(--hm-warning-500)] fill-amber-400" />
             <span className="text-xs font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
               {avgRating.toFixed(1)}
             </span>

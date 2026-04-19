@@ -3,11 +3,13 @@
 import CategoryIcon from '@/components/categories/CategoryIcon';
 import { Modal, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import Checkbox from '@/components/ui/Checkbox';
 import { useCategories } from '@/contexts/CategoriesContext';
 import type { Category, CatalogServiceItem, Subcategory } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAiServiceSearch } from '@/hooks/useAiServiceSearch';
-import { Search, Sparkles, X, ChevronDown } from 'lucide-react';
+import { Search, Sparkles, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 interface CategoryPickerModalProps {
@@ -76,7 +78,7 @@ export default function CategoryPickerModal({
   onApply,
   activeCategory,
 }: CategoryPickerModalProps) {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { categories } = useCategories();
 
   const [draft, setDraft] = useState<Set<string>>(new Set());
@@ -84,8 +86,6 @@ export default function CategoryPickerModal({
   const [expandedSubs, setExpandedSubs] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
   const { aiResults, aiLoading, search: aiSearch, clear: aiClear } = useAiServiceSearch();
-
-  const pick = (en: string, ka: string) => (locale === 'ka' ? ka : en);
 
   useEffect(() => {
     if (isOpen) {
@@ -221,17 +221,18 @@ export default function CategoryPickerModal({
             value={search}
             onChange={e => handleSearchChange(e.target.value)}
             placeholder={t('browse.searchServices')}
-            className="w-full pl-9 pr-9 py-2 text-sm bg-transparent focus:outline-none"
-            style={{ color: 'var(--hm-fg-primary)' }}
+            className="w-full pl-9 pr-9 py-2 text-sm bg-transparent focus:outline-none text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)]"
           />
           {search && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => { setSearch(''); aiClear(); }}
-              className="absolute right-2.5 p-0.5 rounded"
-              aria-label="Clear search"
+              className="absolute right-1.5 h-6 w-6 rounded text-[var(--hm-fg-muted)]"
+              aria-label={t('common.clear')}
             >
-              <X className="w-3.5 h-3.5" style={{ color: 'var(--hm-fg-muted)' }} />
-            </button>
+              <X className="w-3.5 h-3.5" />
+            </Button>
           )}
         </div>
       </div>
@@ -274,8 +275,10 @@ export default function CategoryPickerModal({
                             {t('browse.aiSuggested')}
                           </span>
                         </div>
-                        <button
+                        <Button
                           type="button"
+                          variant="link"
+                          size="sm"
                           onClick={() => {
                             setDraft(prev => {
                               const next = new Set(prev);
@@ -287,10 +290,10 @@ export default function CategoryPickerModal({
                               return next;
                             });
                           }}
-                          className="text-xs font-medium text-[var(--hm-brand-500)] hover:underline"
+                          className="text-xs font-medium text-[var(--hm-brand-500)]"
                         >
                           {allSelected ? t('browse.deselectAll') : t('browse.selectAll')}
-                        </button>
+                        </Button>
                       </div>
                     )}
 
@@ -299,22 +302,21 @@ export default function CategoryPickerModal({
                       return (
                         <div key={subKey}>
                           <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--hm-fg-secondary)' }}>
-                            {pick(category.name, category.nameKa)} › {pick(subcategory.name, subcategory.nameKa)}
+                            {pick({ en: category.name, ka: category.nameKa })} › {pick({ en: subcategory.name, ka: subcategory.nameKa })}
                           </p>
                       <div className="space-y-1">
                         {results.map(({ service }) => (
-                          <label key={service.key} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-[var(--hm-bg-tertiary)]">
-                            <input
-                              type="checkbox"
+                          <div key={service.key} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-[var(--hm-bg-tertiary)]">
+                            <Checkbox
+                              size="sm"
                               checked={draft.has(service.key)}
                               onChange={() => toggleService(service.key)}
-                              className="w-4 h-4 rounded flex-shrink-0"
-                              style={{ accentColor: 'var(--hm-brand-500)' }}
-                            />
-                            <span className="text-sm" style={{ color: 'var(--hm-fg-primary)' }}>
-                              {pick(service.name, service.nameKa)}
-                            </span>
-                          </label>
+                            >
+                              <span className="text-sm text-[var(--hm-fg-primary)]">
+                                {pick({ en: service.name, ka: service.nameKa })}
+                              </span>
+                            </Checkbox>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -335,8 +337,11 @@ export default function CategoryPickerModal({
             >
               {categories.map(cat => {
                 const isActive = cat.key === activeCatKey;
-                const catServices: string[] = cat.subcategories.flatMap(s => (s.services ?? []).map(sv => sv.key));
-                const hasSelected = catServices.some(k => draft.has(k));
+                const selectedCount = cat.subcategories.reduce((acc, sub) => {
+                  const serviceKeys = (sub.services ?? []).map(sv => sv.key);
+                  const isSubSelected = draft.has(sub.key) || serviceKeys.some(k => draft.has(k));
+                  return acc + (isSubSelected ? 1 : 0);
+                }, 0);
                 return (
                   <button
                     key={cat.key}
@@ -349,12 +354,14 @@ export default function CategoryPickerModal({
                     }
                   >
                     <CategoryIcon type={cat.icon || cat.key} className="w-4 h-4 flex-shrink-0" />
-                    <span className="flex-1 truncate text-[13px]">{pick(cat.name, cat.nameKa)}</span>
-                    {hasSelected && !isActive && (
+                    <span className="flex-1 truncate text-[13px]">{pick({ en: cat.name, ka: cat.nameKa })}</span>
+                    {selectedCount > 0 && (
                       <span
-                        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                        style={{ background: 'var(--hm-brand-500)' }}
-                      />
+                        className="min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+                        style={{ background: 'var(--hm-brand-500)', color: '#fff' }}
+                      >
+                        {selectedCount}
+                      </span>
                     )}
                   </button>
                 );
@@ -370,13 +377,13 @@ export default function CategoryPickerModal({
                 const isSelected = draft.has(sub.key) || serviceKeys.some(k => draft.has(k));
 
                 return (
-                  <label
+                  <div
                     key={sub.key}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors hover:bg-[var(--hm-bg-tertiary)]"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-[var(--hm-bg-tertiary)]"
                     style={isSelected ? { backgroundColor: 'rgba(239,78,36,0.06)' } : undefined}
                   >
-                    <input
-                      type="checkbox"
+                    <Checkbox
+                      size="sm"
                       checked={isSelected}
                       onChange={() => {
                         setDraft(prev => {
@@ -391,16 +398,15 @@ export default function CategoryPickerModal({
                           return next;
                         });
                       }}
-                      className="w-4 h-4 rounded flex-shrink-0"
-                      style={{ accentColor: 'var(--hm-brand-500)' }}
-                    />
-                    <span
-                      className="text-sm font-medium"
-                      style={{ color: isSelected ? 'var(--hm-brand-500)' : 'var(--hm-fg-primary)' }}
                     >
-                      {pick(sub.name, sub.nameKa)}
-                    </span>
-                  </label>
+                      <span
+                        className="text-sm font-medium"
+                        style={{ color: isSelected ? 'var(--hm-brand-500)' : 'var(--hm-fg-primary)' }}
+                      >
+                        {pick({ en: sub.name, ka: sub.nameKa })}
+                      </span>
+                    </Checkbox>
+                  </div>
                 );
               })}
             </div>
@@ -415,8 +421,11 @@ export default function CategoryPickerModal({
               <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
                 {categories.map(cat => {
                   const isActive = cat.key === activeCatKey;
-                  const catServices = cat.subcategories.flatMap(s => (s.services ?? []).map(sv => sv.key));
-                  const hasSelected = catServices.some(k => draft.has(k));
+                  const selectedCount = cat.subcategories.reduce((acc, sub) => {
+                    const serviceKeys = (sub.services ?? []).map(sv => sv.key);
+                    const isSubSelected = draft.has(sub.key) || serviceKeys.some(k => draft.has(k));
+                    return acc + (isSubSelected ? 1 : 0);
+                  }, 0);
                   return (
                     <button
                       key={cat.key}
@@ -429,9 +438,14 @@ export default function CategoryPickerModal({
                       }
                     >
                       <CategoryIcon type={cat.icon || cat.key} className="w-3.5 h-3.5 flex-shrink-0" />
-                      {pick(cat.name, cat.nameKa)}
-                      {hasSelected && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--hm-brand-500)] shrink-0" />
+                      {pick({ en: cat.name, ka: cat.nameKa })}
+                      {selectedCount > 0 && (
+                        <span
+                          className="min-w-[16px] h-[16px] px-1 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+                          style={{ background: 'var(--hm-brand-500)', color: '#fff' }}
+                        >
+                          {selectedCount}
+                        </span>
                       )}
                     </button>
                   );
@@ -443,7 +457,7 @@ export default function CategoryPickerModal({
             {activeCat && (
               <div className="px-4 pb-2">
                 <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--hm-fg-muted)' }}>
-                  {pick(activeCat.name, activeCat.nameKa)} — {t('browse.selectServices')}
+                  {pick({ en: activeCat.name, ka: activeCat.nameKa })} — {t('browse.selectServices')}
                 </p>
               </div>
             )}
@@ -455,16 +469,16 @@ export default function CategoryPickerModal({
                 const serviceKeys = services.map(s => s.key);
                 const isSelected = draft.has(sub.key) || serviceKeys.some(k => draft.has(k));
                 return (
-                  <label
+                  <div
                     key={sub.key}
-                    className="flex items-center gap-3 px-3.5 py-3 rounded-xl cursor-pointer transition-all"
+                    className="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all"
                     style={{
                       border: `1px solid ${isSelected ? 'rgba(239,78,36,0.3)' : 'var(--hm-border-subtle)'}`,
                       background: isSelected ? 'rgba(239,78,36,0.04)' : 'var(--hm-bg-elevated)',
                     }}
                   >
-                    <input
-                      type="checkbox"
+                    <Checkbox
+                      size="sm"
                       checked={isSelected}
                       onChange={() => {
                         setDraft(prev => {
@@ -478,16 +492,15 @@ export default function CategoryPickerModal({
                           return next;
                         });
                       }}
-                      className="w-4 h-4 rounded flex-shrink-0"
-                      style={{ accentColor: 'var(--hm-brand-500)' }}
-                    />
-                    <span
-                      className="text-sm font-medium"
-                      style={{ color: isSelected ? 'var(--hm-brand-500)' : 'var(--hm-fg-primary)' }}
                     >
-                      {pick(sub.name, sub.nameKa)}
-                    </span>
-                  </label>
+                      <span
+                        className="text-sm font-medium"
+                        style={{ color: isSelected ? 'var(--hm-brand-500)' : 'var(--hm-fg-primary)' }}
+                      >
+                        {pick({ en: sub.name, ka: sub.nameKa })}
+                      </span>
+                    </Checkbox>
+                  </div>
                 );
               })}
             </div>
@@ -497,14 +510,15 @@ export default function CategoryPickerModal({
 
       <ModalFooter className="border-t border-[var(--hm-border-subtle)]">
         {activeCount > 0 && (
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="sm"
             onClick={handleClear}
-            className="text-sm font-medium hover:underline"
-            style={{ color: 'var(--hm-fg-secondary)' }}
+            className="text-sm font-medium text-[var(--hm-fg-secondary)]"
           >
             {t('browse.clearFilter')}
-          </button>
+          </Button>
         )}
         <div className="flex-1" />
         <Button
@@ -514,12 +528,11 @@ export default function CategoryPickerModal({
         >
           {t('common.cancel')}
         </Button>
-        <button
+        <Button
+          variant="default"
+          size="sm"
           onClick={handleApply}
-          className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors flex items-center gap-2"
-          style={{ background: 'var(--hm-brand-500)' }}
-          onMouseEnter={e => (e.currentTarget.style.background = '#D13C14')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'var(--hm-brand-500)')}
+          className="rounded-lg"
         >
           {t('browse.showResults')}
           {activeCount > 0 && (
@@ -527,7 +540,7 @@ export default function CategoryPickerModal({
               {activeCount}
             </span>
           )}
-        </button>
+        </Button>
       </ModalFooter>
     </Modal>
   );

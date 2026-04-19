@@ -2,6 +2,7 @@
 
 import { Zap, Calendar, Clock, CalendarRange } from 'lucide-react';
 import { ReactNode } from 'react';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type Timing = 'asap' | 'this_week' | 'this_month' | 'flexible';
 
@@ -31,9 +32,9 @@ const timingOptions: {
 export default function TimingSelector({
   value,
   onChange,
-  locale = 'en',
   className = '',
 }: TimingSelectorProps) {
+  const { pick } = useLanguage();
   return (
     <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 ${className}`}>
       {timingOptions.map((option) => (
@@ -48,7 +49,7 @@ export default function TimingSelector({
           }`}
         >
           {option.icon}
-          <span>{locale === 'ka' ? option.labelKa : option.labelEn}</span>
+          <span>{pick({ en: option.labelEn, ka: option.labelKa })}</span>
         </button>
       ))}
     </div>

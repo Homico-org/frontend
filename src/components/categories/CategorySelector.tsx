@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Search, X } from 'lucide-react';
+import { Check, Search, X } from 'lucide-react';
 import { useState } from 'react';
 import CategoryIcon from './CategoryIcon';
 
@@ -191,12 +191,12 @@ export default function CategorySelector({
               }`}
             >
               <div className={`w-10 h-10 mx-auto rounded-lg flex items-center justify-center mb-2 transition-colors ${
-                isSelected ? 'bg-[var(--hm-brand-500)] text-white' : 'bg-[var(--hm-bg-tertiary)] text-neutral-500'
+                isSelected ? 'bg-[var(--hm-brand-500)] text-white' : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
               }`}>
                 <CategoryIcon type={category.icon || category.key} className="w-5 h-5" />
               </div>
               <h3 className={`text-xs font-medium transition-colors ${
-                isSelected ? 'text-[var(--hm-brand-500)]' : 'text-neutral-700'
+                isSelected ? 'text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-secondary)]'
               }`}>
                 {pick({ en: category.name, ka: category.nameKa })}
               </h3>
@@ -204,9 +204,7 @@ export default function CategorySelector({
               {/* Selection indicator for multi mode */}
               {mode === 'multi' && isSelected && (
                 <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center">
-                  <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
                 </div>
               )}
             </button>

@@ -5,7 +5,7 @@ import { StatCard, FeatureCard } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
-import { Mail, HelpCircle, Shield, Star, Users, Lightbulb } from 'lucide-react';
+import { Home, Mail, HelpCircle, Shield, Star, Users, Lightbulb } from 'lucide-react';
 
 // Note: For SEO, metadata is defined in layout.tsx for this route
 
@@ -68,9 +68,7 @@ export default function AboutPage() {
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="text-center">
             <span className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white/90 text-sm font-medium mb-6">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-              </svg>
+              <Home className="w-4 h-4" strokeWidth={1.5} />
               {t('about.aboutUs')}
             </span>
 

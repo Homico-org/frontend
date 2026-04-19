@@ -90,7 +90,7 @@ export default function ReviewModal({
 
       {/* Mandatory Note for Completion Flow */}
       {isCompletionFlow && (
-        <div className="mx-5 mt-4 px-4 py-3 rounded-xl bg-[var(--hm-warning-50)]/20 border border-amber-200">
+        <div className="mx-5 mt-4 px-4 py-3 rounded-xl bg-[var(--hm-warning-50)]/20 border border-[var(--hm-warning-500)]/20">
           <p className="text-sm text-[var(--hm-warning-500)]">
             {texts.mandatoryNote}
           </p>

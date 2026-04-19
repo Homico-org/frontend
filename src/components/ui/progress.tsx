@@ -6,13 +6,13 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const progressVariants = cva(
-  "relative w-full overflow-hidden rounded-full",
+  "relative w-full overflow-hidden",
   {
     variants: {
       variant: {
-        default: "bg-[var(--hm-n-100)]",
+        default: "bg-[var(--hm-bg-tertiary)]",
         terracotta: "bg-[var(--hm-brand-50)]",
-        gradient: "bg-[var(--hm-n-100)]",
+        gradient: "bg-[var(--hm-bg-tertiary)]",
       },
       size: {
         sm: "h-1.5",
@@ -81,7 +81,7 @@ const Progress = React.forwardRef<
       {...props}
     >
       <ProgressPrimitive.Indicator
-        className={cn(indicatorVariants({ indicatorVariant }), "rounded-full")}
+        className={cn(indicatorVariants({ indicatorVariant }))}
         style={{ width: `${value || 0}%` }}
       />
     </ProgressPrimitive.Root>
@@ -174,85 +174,4 @@ const CircleProgress = React.forwardRef<HTMLDivElement, CircleProgressProps>(
 )
 CircleProgress.displayName = "CircleProgress"
 
-// ============================================================================
-// Step Progress - for multi-step forms
-// ============================================================================
-
-interface Step {
-  label: string;
-  description?: string;
-  icon?: React.ReactNode;
-}
-
-interface StepProgressProps {
-  steps: Step[];
-  currentStep: number;
-  className?: string;
-}
-
-const StepProgress = React.forwardRef<HTMLDivElement, StepProgressProps>(
-  ({ steps, currentStep, className }, ref) => {
-    return (
-      <div ref={ref} className={cn("w-full", className)}>
-        <div className="flex items-center justify-between">
-          {steps.map((step, index) => {
-            const isCompleted = index < currentStep;
-            const isCurrent = index === currentStep;
-            const isLast = index === steps.length - 1;
-
-            return (
-              <React.Fragment key={index}>
-                <div className="flex flex-col items-center">
-                  <div
-                    className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm transition-all duration-300",
-                      isCompleted && "bg-gradient-to-br from-[var(--hm-brand-500)] to-[#D13C14] text-white shadow-lg shadow-[var(--hm-brand-500)]/25",
-                      isCurrent && "bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] border-2 border-[var(--hm-brand-500)]",
-                      !isCompleted && !isCurrent && "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] border border-[var(--hm-border)]"
-                    )}
-                  >
-                    {isCompleted ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : step.icon ? (
-                      step.icon
-                    ) : (
-                      index + 1
-                    )}
-                  </div>
-                  <div className="mt-2 text-center">
-                    <p className={cn(
-                      "text-xs font-medium",
-                      (isCompleted || isCurrent) ? "text-[var(--hm-fg-primary)]" : "text-[var(--hm-fg-muted)]"
-                    )}>
-                      {step.label}
-                    </p>
-                    {step.description && (
-                      <p className="text-[10px] text-[var(--hm-fg-muted)] mt-0.5 max-w-[80px]">
-                        {step.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                {!isLast && (
-                  <div className="flex-1 h-0.5 mx-2 mt-[-2rem]">
-                    <div
-                      className={cn(
-                        "h-full rounded-full transition-all duration-500",
-                        isCompleted ? "bg-gradient-to-r from-[var(--hm-brand-500)] to-[#F28764]" : "bg-[var(--hm-border)]"
-                      )}
-                    />
-                  </div>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
-)
-StepProgress.displayName = "StepProgress"
-
-export { Progress, CircleProgress, StepProgress, progressVariants, indicatorVariants }
+export { Progress, CircleProgress, progressVariants, indicatorVariants }

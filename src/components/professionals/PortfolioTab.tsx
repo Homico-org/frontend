@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Edit3, Plus, Trash2 } from 'lucide-react';
+import { Check, Edit3, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useLanguage } from "@/contexts/LanguageContext";
 import PortfolioCard, { EmptyPortfolio, PortfolioProject } from './PortfolioCard';
@@ -75,7 +75,7 @@ export default function PortfolioTab({
             size="sm"
             leftIcon={<Plus className="w-4 h-4" />}
           >
-            {locale === 'ka' ? 'პროექტის დამატება' : 'Add Project'}
+            {t('professional.addProject')}
           </Button>
         </div>
       )}
@@ -145,9 +145,7 @@ export default function PortfolioTab({
             {isOwner && project.isEditable === false && (
               <div className="absolute top-3 right-3 z-50">
                 <div className="px-2.5 py-1 rounded-full bg-[var(--hm-success-500)]/90 backdrop-blur-sm text-white text-[10px] font-semibold uppercase tracking-wide shadow-lg flex items-center gap-1">
-                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                  </svg>
+                  <Check className="w-3 h-3" strokeWidth={3} />
                   Homico
                 </div>
               </div>

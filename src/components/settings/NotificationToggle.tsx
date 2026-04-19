@@ -128,7 +128,7 @@ export function NotificationGroup({
   const iconColors = {
     primary: 'text-[var(--hm-brand-500)]',
     violet: 'text-violet-500',
-    success: 'text-green-500',
+    success: 'text-[var(--hm-success-500)]',
   };
 
   const iconBgColors = {

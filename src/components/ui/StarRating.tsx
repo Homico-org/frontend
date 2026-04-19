@@ -66,7 +66,7 @@ export function StarRating({
   return (
     <div className={cn('inline-flex items-center', config.gap, className)}>
       <Star
-        className={cn(config.star, 'fill-amber-400 text-amber-400')}
+        className={cn(config.star, 'fill-amber-400 text-[var(--hm-warning-500)]')}
         style={starColor ? { fill: starColor, color: starColor } : undefined}
       />
       {showValue && (
@@ -132,7 +132,7 @@ export function StarRatingInput({
             className={cn(
               config.star,
               starValue <= value
-                ? 'fill-amber-400 text-amber-400'
+                ? 'fill-amber-400 text-[var(--hm-warning-500)]'
                 : 'fill-neutral-200 text-neutral-200'
             )}
           />
@@ -175,9 +175,9 @@ export function MultiStarDisplay({
           className={cn(
             config.star,
             i < Math.floor(rating)
-              ? 'fill-amber-400 text-amber-400'
+              ? 'fill-amber-400 text-[var(--hm-warning-500)]'
               : i < rating
-              ? 'fill-amber-400/50 text-amber-400/50'
+              ? 'fill-amber-400/50 text-[var(--hm-warning-500)]/50'
               : 'fill-neutral-200 text-neutral-200'
           )}
         />

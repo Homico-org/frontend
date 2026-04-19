@@ -281,14 +281,14 @@ export default function PWAInstallPrompt() {
             <div className="space-y-4">
               {/* Step 1: Animated arrow pointing to Safari share button */}
               <div className="relative">
-                <div className="bg-gradient-to-b from-blue-50 to-blue-100 rounded-2xl p-4 border-2 border-blue-200">
+                <div className="bg-gradient-to-b from-blue-50 to-blue-100 rounded-2xl p-4 border-2 border-[var(--hm-info-500)]/20">
                   <div className="text-center mb-3">
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--hm-info-500)] text-white text-xs font-bold mb-2">1</span>
                     <p className="text-sm font-semibold text-[var(--hm-fg-primary)]">{t.iosStep1}</p>
                   </div>
 
                   {/* Visual representation of Safari bottom bar */}
-                  <div className="relative bg-[var(--hm-n-200)] rounded-xl p-2 mx-auto max-w-[280px]">
+                  <div className="relative bg-[var(--hm-bg-tertiary)] rounded-xl p-2 mx-auto max-w-[280px]">
                     {/* Mock Safari toolbar */}
                     <div className="flex items-center justify-around py-2">
                       <div className="w-6 h-6 rounded bg-neutral-300" />
@@ -327,7 +327,7 @@ export default function PWAInstallPrompt() {
                 <div className="bg-[var(--hm-bg-elevated)] rounded-xl overflow-hidden max-w-[240px] mx-auto shadow-sm">
                   {/* Fake other options */}
                   <div className="px-4 py-3 border-b border-[var(--hm-border-subtle)] flex items-center gap-3 opacity-50">
-                    <div className="w-8 h-8 rounded bg-[var(--hm-n-200)]" />
+                    <div className="w-8 h-8 rounded bg-[var(--hm-bg-tertiary)]" />
                     <span className="text-sm text-[var(--hm-fg-muted)]">Copy</span>
                   </div>
 
@@ -345,7 +345,7 @@ export default function PWAInstallPrompt() {
 
                   {/* Fake other option */}
                   <div className="px-4 py-3 border-t border-[var(--hm-border-subtle)] flex items-center gap-3 opacity-50">
-                    <div className="w-8 h-8 rounded bg-[var(--hm-n-200)]" />
+                    <div className="w-8 h-8 rounded bg-[var(--hm-bg-tertiary)]" />
                     <span className="text-sm text-[var(--hm-fg-muted)]">Add Bookmark</span>
                   </div>
                 </div>
@@ -354,7 +354,7 @@ export default function PWAInstallPrompt() {
               </div>
 
               {/* Step 3: Confirm */}
-              <div className="bg-[var(--hm-success-50)]/20 rounded-2xl p-4 border border-emerald-200">
+              <div className="bg-[var(--hm-success-50)]/20 rounded-2xl p-4 border border-[var(--hm-success-500)]/20">
                 <div className="text-center">
                   <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--hm-success-500)] text-white text-xs font-bold mb-2">3</span>
                   <p className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-3">{t.iosStep3}</p>

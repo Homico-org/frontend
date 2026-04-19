@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-500/50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--hm-bg-page)] flex items-center justify-center p-4">
       {/* Modal Card */}
       <Card variant="glass" size="xl" className="w-full max-w-[440px] shadow-xl">
         {/* Key Icon */}
@@ -126,9 +126,9 @@ export default function ForgotPasswordPage() {
 
         {/* OR Divider */}
         <div className="flex items-center my-6">
-          <div className="flex-1 h-px bg-[var(--hm-n-200)]" />
+          <div className="flex-1 h-px bg-[var(--hm-bg-tertiary)]" />
           <span className="px-4 text-sm text-[var(--hm-fg-muted)]">OR</span>
-          <div className="flex-1 h-px bg-[var(--hm-n-200)]" />
+          <div className="flex-1 h-px bg-[var(--hm-bg-tertiary)]" />
         </div>
 
         {/* Back to Login Link */}

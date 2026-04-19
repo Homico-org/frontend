@@ -80,19 +80,19 @@ const activeColors = {
     border: 'border-[var(--hm-brand-500)]',
   },
   forest: {
-    bg: 'bg-[#4A7C59]',
+    bg: 'bg-[var(--hm-brand-500)]',
     text: 'text-white',
-    border: 'border-[#4A7C59]',
+    border: 'border-[var(--hm-brand-500)]',
   },
   neutral: {
-    bg: 'bg-neutral-900',
+    bg: 'bg-[var(--hm-n-900)]',
     text: 'text-white',
-    border: 'border-neutral-900',
+    border: 'border-[var(--hm-n-900)]',
   },
 };
 
 const inactiveStyles =
-  'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] border-[var(--hm-border)] hover:bg-neutral-50/50 hover:border-neutral-300';
+  'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] border-[var(--hm-border)] hover:bg-[var(--hm-bg-tertiary)]/50 hover:border-[var(--hm-border-strong)]';
 
 /**
  * Horizontal scrollable filter pills for category/filter selection.

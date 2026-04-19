@@ -28,9 +28,9 @@ export function PriceCard({
   onToggle,
   className,
 }: PriceCardProps) {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
 
-  const itemName = locale === 'ka' ? item.nameKa : item.nameEn;
+  const itemName = pick({ en: item.nameEn, ka: item.nameKa });
   const categoryName = t(`tools.categories.${item.category}`);
   const unitLabel = t(`tools.units.${item.unit}`);
   const perUnit = t('tools.prices.perUnit');
@@ -40,7 +40,7 @@ export function PriceCard({
   return (
     <div
       className={cn(
-        'bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden transition-all',
+        'bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] overflow-hidden transition-all',
         expanded && 'ring-1 ring-[var(--hm-brand-500)]/30',
         className
       )}
@@ -52,7 +52,7 @@ export function PriceCard({
         className="w-full p-4 flex items-center gap-4 text-left hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
       >
         {/* Category Icon */}
-        <div className="w-10 h-10 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0">
           <CategoryIcon className="w-5 h-5 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
         </div>
 
@@ -76,7 +76,7 @@ export function PriceCard({
         {/* Prices - Desktop */}
         <div className="hidden sm:flex items-baseline gap-4">
           <div className="text-sm text-[var(--hm-fg-muted)] tabular-nums">{item.priceLow}₾</div>
-          <div className="text-lg font-semibold text-[#4A7C59] tabular-nums">
+          <div className="text-lg font-semibold text-[var(--hm-brand-500)] tabular-nums">
             {item.priceMid}₾
           </div>
           <div className="text-sm text-[var(--hm-fg-muted)] tabular-nums">{item.priceHigh}₾</div>
@@ -84,7 +84,7 @@ export function PriceCard({
 
         {/* Price - Mobile */}
         <div className="sm:hidden text-right">
-          <div className="text-lg font-semibold text-[#4A7C59] tabular-nums">
+          <div className="text-lg font-semibold text-[var(--hm-brand-500)] tabular-nums">
             {item.priceMid}₾
           </div>
         </div>
@@ -104,7 +104,7 @@ export function PriceCard({
         <div className="px-4 pb-4 pt-2 border-t border-[var(--hm-border-subtle)]">
           <div className="grid grid-cols-3 gap-3">
             {/* Economy */}
-            <div className="bg-[var(--hm-bg-tertiary)]/50 rounded-lg p-3 text-center">
+            <div className="bg-[var(--hm-bg-tertiary)]/50 p-3 text-center">
               <div className="text-xs text-[var(--hm-fg-muted)] mb-1">
                 {t('tools.prices.economy')}
               </div>
@@ -117,20 +117,20 @@ export function PriceCard({
             </div>
 
             {/* Standard */}
-            <div className="bg-[#4A7C59]/10 rounded-lg p-3 text-center border border-[#4A7C59]/20">
-              <div className="text-xs text-[#4A7C59] font-medium mb-1">
+            <div className="bg-[var(--hm-brand-500)]/10 p-3 text-center border border-[var(--hm-brand-500)]/20">
+              <div className="text-xs text-[var(--hm-brand-500)] font-medium mb-1">
                 {t('tools.prices.standard')}
               </div>
-              <div className="text-xl font-bold text-[#4A7C59] tabular-nums">
+              <div className="text-xl font-bold text-[var(--hm-brand-500)] tabular-nums">
                 {item.priceMid}₾
               </div>
-              <div className="text-xs text-[#4A7C59]/70">
+              <div className="text-xs text-[var(--hm-brand-500)]/70">
                 {perUnit} {unitLabel}
               </div>
             </div>
 
             {/* Premium */}
-            <div className="bg-[var(--hm-brand-500)]/10 rounded-lg p-3 text-center">
+            <div className="bg-[var(--hm-brand-500)]/10 p-3 text-center">
               <div className="text-xs text-[var(--hm-brand-500)] mb-1">
                 {t('tools.prices.premium')}
               </div>
