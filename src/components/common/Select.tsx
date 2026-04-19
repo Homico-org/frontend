@@ -232,18 +232,18 @@ export default function Select({
         <div
           className="overflow-hidden rounded-2xl border"
           style={{
-            backgroundColor: 'var(--color-bg-elevated)',
-            borderColor: 'var(--color-border-subtle)',
+            backgroundColor: 'var(--hm-bg-elevated)',
+            borderColor: 'var(--hm-border-subtle)',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0,0,0,0.05)',
           }}
         >
           {/* Search input */}
           {searchable && (
-            <div className="p-3 border-b" style={{ borderColor: 'var(--color-border-subtle)' }}>
+            <div className="p-3 border-b" style={{ borderColor: 'var(--hm-border-subtle)' }}>
               <div className="relative">
                 <svg
                   className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
-                  style={{ color: 'var(--color-text-muted)' }}
+                  style={{ color: 'var(--hm-fg-muted)' }}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -259,9 +259,9 @@ export default function Select({
                   placeholder="Search..."
                   className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 transition-all"
                   style={{
-                    backgroundColor: 'var(--color-bg-secondary)',
-                    borderColor: 'var(--color-border-subtle)',
-                    color: 'var(--color-text-primary)',
+                    backgroundColor: 'var(--hm-bg-page)',
+                    borderColor: 'var(--hm-border-subtle)',
+                    color: 'var(--hm-fg-primary)',
                   }}
                 />
               </div>
@@ -275,7 +275,7 @@ export default function Select({
             className="max-h-[260px] overflow-y-auto p-2 scrollbar-thin"
           >
             {filteredOptions.length === 0 ? (
-              <li className="px-4 py-3 text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>
+              <li className="px-4 py-3 text-sm text-center" style={{ color: 'var(--hm-fg-muted)' }}>
                 No options found
               </li>
             ) : (
@@ -298,9 +298,9 @@ export default function Select({
                     `}
                     style={{
                       backgroundColor: isSelected
-                        ? 'var(--color-accent-soft)'
+                        ? 'rgba(239,78,36,0.1)'
                         : isHighlighted
-                          ? 'var(--color-bg-tertiary)'
+                          ? 'var(--hm-bg-tertiary)'
                           : 'transparent',
                     }}
                   >
@@ -312,8 +312,8 @@ export default function Select({
                           transition-all duration-150
                         `}
                         style={{
-                          backgroundColor: isSelected ? 'var(--color-accent)' : 'var(--color-bg-muted)',
-                          color: isSelected ? 'white' : 'var(--color-text-secondary)',
+                          backgroundColor: isSelected ? 'var(--hm-brand-500)' : 'var(--hm-n-200)',
+                          color: isSelected ? 'white' : 'var(--hm-fg-secondary)',
                         }}
                       >
                         {option.icon}
@@ -325,7 +325,7 @@ export default function Select({
                       <div
                         className="font-medium truncate transition-colors duration-150"
                         style={{
-                          color: isSelected ? 'var(--color-accent)' : 'var(--color-text-primary)',
+                          color: isSelected ? 'var(--hm-brand-500)' : 'var(--hm-fg-primary)',
                         }}
                       >
                         {option.label}
@@ -333,7 +333,7 @@ export default function Select({
                       {option.description && (
                         <div
                           className="text-xs truncate mt-0.5"
-                          style={{ color: 'var(--color-text-tertiary)' }}
+                          style={{ color: 'var(--hm-fg-muted)' }}
                         >
                           {option.description}
                         </div>
@@ -347,7 +347,7 @@ export default function Select({
                         transition-all duration-150
                         ${isSelected ? 'scale-100' : 'scale-0'}
                       `}
-                      style={{ backgroundColor: 'var(--color-accent)' }}
+                      style={{ backgroundColor: 'var(--hm-brand-500)' }}
                     >
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -396,19 +396,19 @@ export default function Select({
           transition-all duration-200 ease-out
           ${sizeClasses[size]}
           ${variant === 'minimal'
-            ? `bg-transparent hover:bg-[var(--color-bg-tertiary)] ${isOpen ? 'bg-[var(--color-bg-tertiary)]' : ''}`
+            ? `bg-transparent hover:bg-[var(--hm-bg-tertiary)] ${isOpen ? 'bg-[var(--hm-bg-tertiary)]' : ''}`
             : `border ${error
                 ? 'border-red-400 focus:ring-2 focus:ring-red-500/20'
                 : isOpen
-                  ? 'border-[var(--color-accent)] ring-2 ring-[var(--color-accent)]/20'
-                  : 'border-[var(--color-border-subtle)] hover:border-[var(--color-border)]'
+                  ? 'border-[var(--hm-brand-500)] ring-2 ring-[var(--hm-brand-500)]/20'
+                  : 'border-[var(--hm-border-subtle)] hover:border-[var(--hm-border)]'
               }`
           }
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           focus:outline-none
         `}
         style={{
-          backgroundColor: variant === 'minimal' ? 'transparent' : 'var(--color-bg-secondary)',
+          backgroundColor: variant === 'minimal' ? 'transparent' : 'var(--hm-bg-page)',
         }}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -416,14 +416,14 @@ export default function Select({
         <span
           className="block truncate"
           style={{
-            color: selectedOption ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+            color: selectedOption ? 'var(--hm-fg-primary)' : 'var(--hm-fg-muted)',
           }}
         >
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <svg
           className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-          style={{ color: 'var(--color-text-tertiary)' }}
+          style={{ color: 'var(--hm-fg-muted)' }}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

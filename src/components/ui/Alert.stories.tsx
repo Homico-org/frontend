@@ -132,7 +132,7 @@ export const Dismissible: Story = {
         <div className="w-96">
           <button
             onClick={() => setVisible(true)}
-            className="px-4 py-2 bg-[#C4735B] text-white rounded-lg"
+            className="px-4 py-2 bg-[#EF4E24] text-white rounded-lg"
           >
             Show Alert
           </button>

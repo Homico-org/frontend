@@ -51,11 +51,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 // Status color strip mapping
 function getStatusColor(job: Job) {
   const hasShortlisted = (job.shortlistedCount || 0) > 0;
-  if (job.status === "open" && hasShortlisted) return "bg-blue-500";
-  if (job.status === "open") return "bg-emerald-500";
-  if (job.status === "in_progress") return "bg-[#C4735B]";
-  if (job.status === "expired") return "bg-amber-500";
-  return "bg-neutral-300 dark:bg-neutral-600";
+  if (job.status === "open" && hasShortlisted) return "bg-[var(--hm-info-500)]";
+  if (job.status === "open") return "bg-[var(--hm-success-500)]";
+  if (job.status === "in_progress") return "bg-[var(--hm-brand-500)]";
+  if (job.status === "expired") return "bg-[var(--hm-warning-500)]";
+  return "bg-neutral-300";
 }
 
 // Status badge component
@@ -313,7 +313,7 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
         bodyContentClassName={isEmbedded ? undefined : "mx-auto max-w-6xl"}
         rightContent={
           <div className="hidden sm:flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-xs font-semibold">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] text-xs font-semibold">
               {visibleJobs.length}
             </span>
           </div>
@@ -348,7 +348,7 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
         bodyContentClassName={isEmbedded ? undefined : "mx-auto max-w-6xl"}
         rightContent={
           <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-xs font-semibold">
+            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] text-xs font-semibold">
               {visibleJobs.length}
             </span>
             <Button
@@ -371,7 +371,7 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
               value={searchQuery}
               onValueChange={setSearchQuery}
               inputSize="default"
-              className="bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
+              className="bg-[var(--hm-bg-elevated)] border-[var(--hm-border)]"
             />
           </div>
         )}
@@ -414,14 +414,14 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                 <div
                   key={job.id}
                   onClick={() => router.push(`/jobs/${job.id}`)}
-                  className="group relative bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/80 dark:border-neutral-800 hover:border-[#C4735B]/30 dark:hover:border-[#C4735B]/30 transition-colors duration-150 cursor-pointer hover:shadow-md flex"
+                  className="group relative bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/30 transition-colors duration-150 cursor-pointer hover:shadow-md flex"
                 >
                   {/* Status color strip */}
                   <div className={`w-1 sm:w-1.5 flex-shrink-0 ${getStatusColor(job)}`} />
 
                   {/* Optional thumbnail - desktop only */}
                   {firstImage && (
-                    <div className="hidden sm:block w-28 lg:w-36 flex-shrink-0 overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                    <div className="hidden sm:block w-28 lg:w-36 flex-shrink-0 overflow-hidden bg-[var(--hm-bg-tertiary)]">
                       <img
                         src={storage.getFileUrl(firstImage)}
                         alt=""
@@ -436,15 +436,15 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                     <div className="flex items-start justify-between gap-3 mb-1.5 sm:mb-2">
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
                         <JobStatusBadge job={job} t={t} />
-                        <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#C4735B]">
+                        <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-[var(--hm-brand-500)]/10 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[var(--hm-brand-500)]">
                           {getCategoryLabel(job.category)}
                         </span>
-                        <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-neutral-400">
+                        <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-[var(--hm-fg-muted)]">
                           <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                           {formatTimeAgo(job.createdAt, t)}
                         </span>
                         {job.location && (
-                          <span className="hidden sm:flex items-center gap-1 text-[11px] text-neutral-400 truncate">
+                          <span className="hidden sm:flex items-center gap-1 text-[11px] text-[var(--hm-fg-muted)] truncate">
                             <MapPin className="w-3 h-3 flex-shrink-0" />
                             <span className="truncate">{job.location}</span>
                           </span>
@@ -454,7 +454,7 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                       {/* Budget + Actions */}
                       <div className="flex items-center gap-1.5 flex-shrink-0">
                         <div className="text-right">
-                          <p className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white tabular-nums whitespace-nowrap">
+                          <p className="text-sm sm:text-base font-bold text-[var(--hm-fg-primary)] tabular-nums whitespace-nowrap">
                             {budget}
                           </p>
                         </div>
@@ -481,7 +481,7 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                                   setDeleteModalJob(job);
                                 }}
                                 disabled={deletingJobId === job.id}
-                                className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)]"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </Button>
@@ -497,7 +497,7 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                               }}
                               disabled={renewingJobId === job.id}
                               loading={renewingJobId === job.id}
-                              className="w-8 h-8 text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                              className="w-8 h-8 text-[var(--hm-warning-500)] hover:text-[var(--hm-warning-500)] hover:bg-[var(--hm-warning-50)]"
                               title={t("job.renew")}
                             >
                               <RefreshCw className="w-3.5 h-3.5" />
@@ -508,25 +508,25 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                     </div>
 
                     {/* Title + mobile location */}
-                    <h3 className="text-[13px] sm:text-base font-semibold text-neutral-900 dark:text-white line-clamp-1 sm:line-clamp-2 group-hover:text-[#C4735B] transition-colors duration-150 mb-0.5">
+                    <h3 className="text-[13px] sm:text-base font-semibold text-[var(--hm-fg-primary)] line-clamp-1 sm:line-clamp-2 group-hover:text-[var(--hm-brand-500)] transition-colors duration-150 mb-0.5">
                       {job.title}
                     </h3>
 
                     {/* Mobile location */}
                     {job.location && (
-                      <span className="sm:hidden flex items-center gap-1 text-[10px] text-neutral-400 mb-1">
+                      <span className="sm:hidden flex items-center gap-1 text-[10px] text-[var(--hm-fg-muted)] mb-1">
                         <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
                         <span className="truncate">{job.location}</span>
                       </span>
                     )}
 
                     {/* Description - desktop only */}
-                    <p className="hidden sm:block text-[13px] text-neutral-500 dark:text-neutral-400 line-clamp-1 leading-relaxed">
+                    <p className="hidden sm:block text-[13px] text-[var(--hm-fg-muted)] line-clamp-1 leading-relaxed">
                       {job.description}
                     </p>
 
                     {/* Footer: proposals / hired pro / actions */}
-                    <div className="flex items-center justify-between mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-neutral-100 dark:border-neutral-800 gap-2">
+                    <div className="flex items-center justify-between mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-[var(--hm-border-subtle)] gap-2">
                       {/* Left: status-specific content */}
                       <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         {isOpen && job.proposalCount > 0 && (
@@ -539,13 +539,13 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                                 return (
                                   <div
                                     key={i}
-                                    className="relative w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 border-2 border-white dark:border-neutral-900 overflow-hidden"
+                                    className="relative w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[var(--hm-n-200)] border-2 border-white overflow-hidden"
                                     style={{ zIndex: 3 - i }}
                                   >
                                     {proposal?.proId?.avatar ? (
                                       <img src={storage.getFileUrl(proposal.proId.avatar)} alt={proName} className="w-full h-full object-cover" />
                                     ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-[9px] sm:text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-600 dark:to-neutral-700">
+                                      <div className="w-full h-full flex items-center justify-center text-[9px] sm:text-[11px] font-semibold text-[var(--hm-fg-muted)] bg-gradient-to-br from-[var(--hm-bg-tertiary)] to-[var(--hm-border)]">
                                         {initial || <Users className="w-2.5 h-2.5" />}
                                       </div>
                                     )}
@@ -553,17 +553,17 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                                 );
                               })}
                               {job.proposalCount > 3 && (
-                                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#C4735B]/10 border-2 border-white dark:border-neutral-900 flex items-center justify-center text-[9px] sm:text-[11px] font-bold text-[#C4735B]">
+                                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[var(--hm-brand-500)]/10 border-2 border-white flex items-center justify-center text-[9px] sm:text-[11px] font-bold text-[var(--hm-brand-500)]">
                                   +{job.proposalCount - 3}
                                 </div>
                               )}
                             </div>
                             <div className="min-w-0">
-                              <span className="text-[12px] sm:text-[13px] font-semibold text-[#C4735B]">
+                              <span className="text-[12px] sm:text-[13px] font-semibold text-[var(--hm-brand-500)]">
                                 {job.proposalCount} {t("job.proposals")}
                               </span>
                               {job.proposalCount === 1 && job.recentProposals?.[0]?.proId?.name && (
-                                <span className="block text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
+                                <span className="block text-[10px] sm:text-[11px] text-[var(--hm-fg-muted)] truncate">
                                   {t("job.from")} {job.recentProposals[0].proId.name}
                                 </span>
                               )}
@@ -571,12 +571,12 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                           </>
                         )}
                         {isOpen && job.proposalCount === 0 && (
-                          <div className="flex items-center gap-2 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-100/80 dark:border-amber-800/30">
+                          <div className="flex items-center gap-2 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg bg-[var(--hm-warning-50)]/20 border border-amber-100/80">
                             <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                              <span className="relative inline-flex rounded-full h-full w-full bg-amber-500" />
+                              <span className="relative inline-flex rounded-full h-full w-full bg-[var(--hm-warning-500)]" />
                             </span>
-                            <span className="text-[10px] sm:text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                            <span className="text-[10px] sm:text-[11px] font-medium text-[var(--hm-warning-500)]">
                               {t("job.awaitingProposals")}
                             </span>
                           </div>
@@ -588,32 +588,32 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                                 src={job.hiredPro.avatar || job.hiredPro.userId?.avatar}
                                 name={job.hiredPro.name || job.hiredPro.userId?.name || "Pro"}
                                 size="sm"
-                                className="w-7 h-7 sm:w-8 sm:h-8 ring-2 ring-[#C4735B]/20"
+                                className="w-7 h-7 sm:w-8 sm:h-8 ring-2 ring-[var(--hm-brand-500)]/20"
                               />
-                              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-green-500 border-2 border-white dark:border-neutral-900 flex items-center justify-center">
+                              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-green-500 border-2 border-white flex items-center justify-center">
                                 <Check className="w-1.5 h-1.5 sm:w-2 sm:h-2 text-white" />
                               </div>
                             </div>
                             <div className="min-w-0">
-                              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#C4735B] block">
+                              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[var(--hm-brand-500)] block">
                                 {t("common.hired")}
                               </span>
-                              <span className="text-[12px] sm:text-[13px] font-semibold text-neutral-900 dark:text-white truncate block">
+                              <span className="text-[12px] sm:text-[13px] font-semibold text-[var(--hm-fg-primary)] truncate block">
                                 {job.hiredPro.name || job.hiredPro.userId?.name || "Professional"}
                               </span>
                             </div>
                           </div>
                         )}
                         {isExpired && (
-                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-50 dark:bg-amber-900/20">
-                            <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-600" />
-                            <span className="text-[10px] sm:text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[var(--hm-warning-50)]/20">
+                            <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--hm-warning-500)]" />
+                            <span className="text-[10px] sm:text-[11px] font-medium text-[var(--hm-warning-500)]">
                               {t("job.expired")}
                             </span>
                           </div>
                         )}
                         {/* Stats: views */}
-                        <div className="hidden sm:flex items-center gap-1 text-[11px] text-neutral-400 ml-auto mr-2">
+                        <div className="hidden sm:flex items-center gap-1 text-[11px] text-[var(--hm-fg-muted)] ml-auto mr-2">
                           <Eye className="w-3 h-3" />
                           {job.viewCount || 0}
                         </div>
@@ -632,7 +632,7 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                                 variant="ghost" size="icon"
                                 onClick={(e) => { e.stopPropagation(); setDeleteModalJob(job); }}
                                 disabled={deletingJobId === job.id}
-                                className="w-7 h-7 text-neutral-400 hover:text-red-500"
+                                className="w-7 h-7 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)]"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </Button>
@@ -644,7 +644,7 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                               onClick={(e) => { e.stopPropagation(); handleRenewJob(job.id); }}
                               disabled={renewingJobId === job.id}
                               loading={renewingJobId === job.id}
-                              className="w-7 h-7 text-amber-600"
+                              className="w-7 h-7 text-[var(--hm-warning-500)]"
                             >
                               <RefreshCw className="w-3 h-3" />
                             </Button>
@@ -695,7 +695,7 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
         onConfirm={handleDeleteJob}
         title={t("job.deleteJob")}
         description={t("job.areYouSureYouWant")}
-        icon={<AlertTriangle className="w-6 h-6 text-red-500" />}
+        icon={<AlertTriangle className="w-6 h-6 text-[var(--hm-error-500)]" />}
         variant="danger"
         cancelLabel={t("common.cancel")}
         confirmLabel={t("common.delete")}
@@ -705,11 +705,11 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
       >
         {/* Job preview */}
         {deleteModalJob && (
-          <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-3 sm:p-4 mb-4">
-            <p className="font-medium text-neutral-900 dark:text-white text-sm">
+          <div className="bg-[var(--hm-bg-tertiary)]/50 rounded-xl p-3 sm:p-4 mb-4">
+            <p className="font-medium text-[var(--hm-fg-primary)] text-sm">
               {deleteModalJob.title}
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
+            <p className="text-xs text-[var(--hm-fg-muted)] mt-1 line-clamp-2">
               {deleteModalJob.description}
             </p>
           </div>
@@ -740,8 +740,8 @@ export default function MyJobsPage() {
           <div
             className={
               embedded
-                ? "py-20 flex items-center justify-center bg-white dark:bg-neutral-950"
-                : "min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950"
+                ? "py-20 flex items-center justify-center bg-[var(--hm-bg-elevated)]"
+                : "min-h-screen flex items-center justify-center bg-[var(--hm-bg-elevated)]"
             }
           >
             <LoadingSpinner size="lg" color={ACCENT_COLOR} />

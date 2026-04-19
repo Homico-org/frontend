@@ -4,11 +4,16 @@ import { ReactNode, useState, useRef, useEffect } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
+/**
+ * Homico Design System — Tabs
+ * Underline: 2px bottom border brand-500 on active
+ * Pills: brand-50 bg / brand-700 text on active
+ */
 const tabsContainerVariants = cva('relative flex', {
   variants: {
     variant: {
-      default: 'border-b border-neutral-200 dark:border-neutral-800',
-      pills: 'gap-2 p-1 bg-neutral-100 dark:bg-neutral-800 rounded-xl',
+      default: 'border-b border-[var(--hm-border)]',
+      pills: 'gap-[2px] p-1 bg-[var(--hm-bg-tertiary)] rounded-full',
       underline: 'gap-1',
     },
     size: {
@@ -28,9 +33,9 @@ const tabVariants = cva(
   {
     variants: {
       variant: {
-        default: 'px-4 py-3 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white',
-        pills: 'px-4 py-2 rounded-lg text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white',
-        underline: 'px-4 py-3 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white',
+        default: 'px-4 py-3 text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]',
+        pills: 'px-4 py-2 rounded-full text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]',
+        underline: 'px-4 py-3 text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]',
       },
       size: {
         sm: 'text-xs',
@@ -46,17 +51,17 @@ const tabVariants = cva(
       {
         variant: 'default',
         active: true,
-        className: 'text-[#C4735B]',
+        className: 'text-[var(--hm-brand-500)]',
       },
       {
         variant: 'pills',
         active: true,
-        className: 'bg-white dark:bg-neutral-900 text-[#C4735B] shadow-sm',
+        className: 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[var(--hm-shadow-xs)]',
       },
       {
         variant: 'underline',
         active: true,
-        className: 'text-[#C4735B]',
+        className: 'text-[var(--hm-brand-500)]',
       },
     ],
     defaultVariants: {
@@ -155,8 +160,8 @@ export function Tabs({
               className={cn(
                 'flex-shrink-0 px-1.5 py-0.5 rounded-full text-xs font-semibold',
                 activeTab === tab.id
-                  ? 'bg-[#C4735B] text-white'
-                  : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'
+                  ? 'bg-[var(--hm-brand-500)] text-white'
+                  : 'bg-[var(--hm-n-200)] text-[var(--hm-fg-secondary)]'
               )}
             >
               {tab.badge}
@@ -168,7 +173,7 @@ export function Tabs({
       {/* Animated underline indicator for default variant */}
       {variant === 'default' && (
         <div
-          className="absolute bottom-0 h-0.5 bg-[#C4735B] transition-all duration-300 ease-out"
+          className="absolute bottom-0 h-0.5 bg-[var(--hm-brand-500)] transition-all duration-300 ease-out"
           style={{
             left: indicatorStyle.left,
             width: indicatorStyle.width,

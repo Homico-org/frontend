@@ -1,5 +1,6 @@
 "use client";
 
+import HomicoLogo from "@/components/common/HomicoLogo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
@@ -51,8 +52,8 @@ const FEATURE_FLOWS = [
     mediaUrl: "/features/post-job.mov",
     isVideo: true,
     color: "from-blue-500/10 to-indigo-500/10",
-    iconBg: "bg-blue-500/10",
-    iconColor: "text-blue-600",
+    iconBg: "bg-[var(--hm-info-500)]/10",
+    iconColor: "text-[var(--hm-info-500)]",
   },
   {
     id: "browse-pros",
@@ -62,8 +63,8 @@ const FEATURE_FLOWS = [
     mediaUrl: "/features/browse-pros.png",
     isVideo: false,
     color: "from-emerald-500/10 to-teal-500/10",
-    iconBg: "bg-emerald-500/10",
-    iconColor: "text-emerald-600",
+    iconBg: "bg-[var(--hm-success-500)]/10",
+    iconColor: "text-[var(--hm-success-500)]",
   },
   {
     id: "get-proposals",
@@ -73,8 +74,8 @@ const FEATURE_FLOWS = [
     mediaUrl: "/features/get-proposals.png",
     isVideo: false,
     color: "from-amber-500/10 to-orange-500/10",
-    iconBg: "bg-amber-500/10",
-    iconColor: "text-amber-600",
+    iconBg: "bg-[var(--hm-warning-500)]/10",
+    iconColor: "text-[var(--hm-warning-500)]",
   },
   {
     id: "hire-review",
@@ -277,11 +278,11 @@ function LiveActivityFeed({ t }: { t: (key: string) => string }) {
     <div
       className={`fixed bottom-20 sm:bottom-6 left-4 z-40 transition-all duration-500 ${visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-full"}`}
     >
-      <div className="flex items-center gap-2 px-3 py-2 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-xl rounded-full shadow-lg border border-neutral-200/50 dark:border-neutral-700/50">
-        <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
+      <div className="flex items-center gap-2 px-3 py-2 bg-[var(--hm-bg-elevated)]/90 backdrop-blur-xl rounded-full shadow-lg border border-[var(--hm-border-subtle)]/50">
+        <div className="w-6 h-6 rounded-full bg-[var(--hm-success-500)] flex items-center justify-center">
           <CheckCircle2 className="w-3.5 h-3.5 text-white" />
         </div>
-        <p className="text-[11px] text-neutral-700 dark:text-neutral-300">
+        <p className="text-[11px] text-[var(--hm-fg-secondary)]">
           <span className="font-semibold">{activity.name}</span>{" "}
           {activity.action}
         </p>
@@ -302,11 +303,11 @@ function MobileStickyBar({ t }: { t: (key: string) => string }) {
     <div
       className={`fixed bottom-0 left-0 right-0 z-50 sm:hidden transition-all duration-300 ${show ? "translate-y-0" : "translate-y-full"}`}
     >
-      <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border-t border-neutral-200 dark:border-neutral-800 px-4 py-3 flex gap-2">
+      <div className="bg-white/95 backdrop-blur-xl border-t border-[var(--hm-border)] px-4 py-3 flex gap-2">
         <Button
           asChild
           size="sm"
-          className="flex-1 h-10 text-[13px] bg-[#C4735B] hover:bg-[#a85d47] text-white"
+          className="flex-1 h-10 text-[13px] bg-[var(--hm-brand-500)] hover:bg-[#a85d47] text-white"
         >
           <Link href="/post-job">{t("header.postAJob")}</Link>
         </Button>
@@ -332,7 +333,7 @@ function GlassCard({
 }) {
   return (
     <div
-      className={`bg-white/70 dark:bg-neutral-800/70 backdrop-blur-xl border border-white/20 dark:border-neutral-700/30 shadow-xl ${className}`}
+      className={`bg-white/70 backdrop-blur-xl border border-white/30 shadow-xl ${className}`}
     >
       {children}
     </div>
@@ -378,7 +379,9 @@ function StatCounter({
         {count.toLocaleString()}
         {suffix}
       </p>
-      <p className="mt-1 text-[11px] sm:text-xs text-neutral-400">{label}</p>
+      <p className="mt-1 text-[11px] sm:text-xs text-[var(--hm-fg-muted)]">
+        {label}
+      </p>
     </div>
   );
 }
@@ -542,12 +545,12 @@ export default function HomePage() {
   if (!showLandingPage) return null;
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] dark:bg-neutral-950 overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--hm-bg-page)] overflow-x-hidden">
       {/* Animated gradient background */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#FAFAF8] via-[#FAFAF8] to-amber-50/50 dark:from-neutral-950 dark:via-neutral-950 dark:to-neutral-900 animate-gradient" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--hm-bg-page)] via-[var(--hm-bg-page)] to-[var(--hm-brand-50)]/50 animate-gradient" />
         <div
-          className="absolute top-0 right-0 w-[800px] h-[800px] bg-[radial-gradient(circle,rgba(196,115,91,0.06),transparent_60%)] animate-pulse-slow"
+          className="absolute top-0 right-0 w-[800px] h-[800px] bg-[radial-gradient(circle,rgba(239,78,36,0.06),transparent_60%)] animate-pulse-slow"
           style={{ transform: `translateY(${parallaxOffsetSlow}px)` }}
         />
         <div
@@ -561,19 +564,15 @@ export default function HomePage() {
 
       {/* ========== HEADER - Glassmorphism ========== */}
       <header className="sticky top-0 z-50">
-        <div className="bg-white/70 dark:bg-neutral-900/70 backdrop-blur-2xl border-b border-white/20 dark:border-neutral-800/30">
+        <div className="bg-white/70 backdrop-blur-2xl border-b border-white/30">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5">
             <nav className="flex items-center justify-between">
               <Link href="/" className="flex items-center gap-2 group">
-                <Image
-                  src="/favicon.png"
-                  alt="Homico"
-                  width={28}
-                  height={28}
-                  className="h-7 w-7 rounded-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-6"
-                  priority
+                <HomicoLogo
+                  size={28}
+                  className="h-7 w-7 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6"
                 />
-                <span className="text-base font-bold tracking-tight text-neutral-900 dark:text-white">
+                <span className="text-base font-bold tracking-tight text-[var(--hm-fg-primary)]">
                   Homico
                 </span>
               </Link>
@@ -586,7 +585,7 @@ export default function HomePage() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="px-3 py-1.5 text-[13px] font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-lg hover:bg-white/50 dark:hover:bg-neutral-800/50 transition-all"
+                    className="px-3 py-1.5 text-[13px] font-medium text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] rounded-lg hover:bg-white/50 transition-all"
                   >
                     {item.label}
                   </Link>
@@ -604,7 +603,7 @@ export default function HomePage() {
                 </Button>
                 <MagneticButton
                   href="/register"
-                  className="h-8 px-4 text-[13px] font-medium bg-[#C4735B] hover:bg-[#a85d47] text-white rounded-lg shadow-md shadow-[#C4735B]/20 hover:shadow-lg transition-shadow"
+                  className="h-8 px-4 text-[13px] font-medium bg-[var(--hm-brand-500)] hover:bg-[#a85d47] text-white rounded-lg shadow-md shadow-[var(--hm-brand-500)]/20 hover:shadow-lg transition-shadow"
                 >
                   {t("header.signUp")}
                 </MagneticButton>
@@ -629,20 +628,20 @@ export default function HomePage() {
                 }}
               >
                 {/* Badge */}
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C4735B]/10 border border-[#C4735B]/20 mb-4 backdrop-blur-sm">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--hm-brand-500)]/10 border border-[var(--hm-brand-500)]/20 mb-4 backdrop-blur-sm">
                   <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C4735B] opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#C4735B]" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--hm-brand-500)] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--hm-brand-500)]" />
                   </span>
-                  <span className="text-[10px] font-semibold text-[#C4735B] uppercase tracking-wider">
+                  <span className="text-[10px] font-semibold text-[var(--hm-brand-500)] uppercase tracking-wider">
                     {t("landing.heroTag")}
                   </span>
                 </div>
 
                 {/* Headline with text reveal */}
-                <h1 className="text-[28px] sm:text-4xl lg:text-[44px] font-bold tracking-tight text-neutral-900 dark:text-white leading-[1.15]">
+                <h1 className="text-[28px] sm:text-4xl lg:text-[44px] font-bold tracking-tight text-[var(--hm-fg-primary)] leading-[1.15]">
                   <TextReveal text={t("landing.heroTitle")} delay={200} />
-                  <span className="block text-[#C4735B] mt-0.5">
+                  <span className="block text-[var(--hm-brand-500)] mt-0.5">
                     <TextReveal
                       text={t("landing.heroTitleAccent")}
                       delay={400}
@@ -651,7 +650,7 @@ export default function HomePage() {
                 </h1>
 
                 <p
-                  className="mt-3 sm:mt-4 text-[13px] sm:text-[15px] text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-md"
+                  className="mt-3 sm:mt-4 text-[13px] sm:text-[15px] text-[var(--hm-fg-secondary)] leading-relaxed max-w-md"
                   style={{
                     opacity: mounted ? 1 : 0,
                     transition: "opacity 0.8s ease-out 0.6s",
@@ -671,7 +670,7 @@ export default function HomePage() {
                 >
                   <MagneticButton
                     href="/post-job"
-                    className="inline-flex items-center justify-center gap-2 h-10 sm:h-11 px-5 text-[13px] sm:text-sm font-medium bg-[#C4735B] hover:bg-[#a85d47] text-white rounded-xl shadow-lg shadow-[#C4735B]/25 hover:shadow-xl transition-all group"
+                    className="inline-flex items-center justify-center gap-2 h-10 sm:h-11 px-5 text-[13px] sm:text-sm font-medium bg-[var(--hm-brand-500)] hover:bg-[#a85d47] text-white rounded-xl shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-xl transition-all group"
                   >
                     <FileText className="w-4 h-4" />
                     {t("header.postAJob")}
@@ -681,7 +680,7 @@ export default function HomePage() {
                     size="lg"
                     variant="outline"
                     asChild
-                    className="h-10 sm:h-11 px-5 text-[13px] sm:text-sm border-neutral-200/50 dark:border-neutral-700/50 hover:border-[#C4735B]/40 hover:bg-[#C4735B]/5 backdrop-blur-sm"
+                    className="h-10 sm:h-11 px-5 text-[13px] sm:text-sm border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/40 hover:bg-[var(--hm-brand-500)]/5 backdrop-blur-sm"
                   >
                     <Link
                       href="/professionals"
@@ -708,9 +707,9 @@ export default function HomePage() {
                   ].map((item, i) => (
                     <div
                       key={i}
-                      className="flex items-center gap-1.5 text-[11px] text-neutral-500"
+                      className="flex items-center gap-1.5 text-[11px] text-[var(--hm-fg-muted)]"
                     >
-                      <item.icon className="w-3.5 h-3.5 text-emerald-500" />
+                      <item.icon className="w-3.5 h-3.5 text-[var(--hm-success-500)]" />
                       <span>{item.text}</span>
                     </div>
                   ))}
@@ -728,7 +727,7 @@ export default function HomePage() {
                   transition: "opacity 1s ease-out 0.3s",
                 }}
               >
-                <div className="absolute -top-8 -right-8 w-56 h-56 bg-[#C4735B]/10 rounded-full blur-3xl animate-pulse-slow" />
+                <div className="absolute -top-8 -right-8 w-56 h-56 bg-[var(--hm-brand-500)]/10 rounded-full blur-3xl animate-pulse-slow" />
                 <div
                   className="absolute -bottom-8 -left-8 w-40 h-40 bg-amber-300/15 rounded-full blur-2xl animate-pulse-slow"
                   style={{ animationDelay: "1s" }}
@@ -744,14 +743,14 @@ export default function HomePage() {
                   >
                     <GlassCard className="rounded-xl px-3 py-2">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                          <Users className="w-4 h-4 text-emerald-600" />
+                        <div className="w-8 h-8 rounded-lg bg-[var(--hm-success-500)]/10 flex items-center justify-center">
+                          <Users className="w-4 h-4 text-[var(--hm-success-500)]" />
                         </div>
                         <div>
-                          <p className="text-lg font-bold text-neutral-900 dark:text-white">
+                          <p className="text-lg font-bold text-[var(--hm-fg-primary)]">
                             2,500+
                           </p>
-                          <p className="text-[10px] text-neutral-500 -mt-0.5">
+                          <p className="text-[10px] text-[var(--hm-fg-muted)] -mt-0.5">
                             {t("landing.statsPros")}
                           </p>
                         </div>
@@ -768,14 +767,14 @@ export default function HomePage() {
                   >
                     <GlassCard className="rounded-xl px-3 py-2">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
-                          <Star className="w-4 h-4 text-[#C4735B]" />
+                        <div className="w-8 h-8 rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
+                          <Star className="w-4 h-4 text-[var(--hm-brand-500)]" />
                         </div>
                         <div>
-                          <p className="text-lg font-bold text-neutral-900 dark:text-white">
+                          <p className="text-lg font-bold text-[var(--hm-fg-primary)]">
                             4.8
                           </p>
-                          <p className="text-[10px] text-neutral-500 -mt-0.5">
+                          <p className="text-[10px] text-[var(--hm-fg-muted)] -mt-0.5">
                             {t("landing.statsRating")}
                           </p>
                         </div>
@@ -798,30 +797,32 @@ export default function HomePage() {
             </div>
 
             {/* Scroll indicator */}
-            <button
+            <Button
+              variant="ghost"
               onClick={scrollToContent}
-              className="absolute bottom-4 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-1 text-neutral-400 hover:text-[#C4735B] transition-colors cursor-pointer animate-bounce-slow"
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-1 h-auto text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-transparent cursor-pointer animate-bounce-slow"
+              aria-label={t("home.scrollToContent") || "Scroll"}
             >
               <MousePointer className="w-4 h-4" />
               <ChevronDown className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </section>
 
         {/* ========== FEATURES ========== */}
         <section className="py-10 sm:py-14 lg:py-16 relative">
           <div className="mx-4 sm:mx-6 lg:mx-auto max-w-6xl">
-            <GlassCard className="rounded-2xl sm:rounded-3xl border-neutral-200/30 dark:border-neutral-700/30">
+            <GlassCard className="rounded-2xl sm:rounded-3xl border-[var(--hm-border-subtle)]">
               <div
                 className="p-5 sm:p-8 lg:p-10"
                 onMouseEnter={() => setFeatureSliderPaused(true)}
                 onMouseLeave={() => setFeatureSliderPaused(false)}
               >
                 <AnimatedSection className="text-center max-w-lg mx-auto mb-8">
-                  <h2 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-neutral-900 dark:text-white">
+                  <h2 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-[var(--hm-fg-primary)]">
                     {t("landing.featuresTitle")}
                   </h2>
-                  <p className="mt-2 text-[13px] text-neutral-500">
+                  <p className="mt-2 text-[13px] text-[var(--hm-fg-muted)]">
                     {t("landing.featuresSubtitle")}
                   </p>
                 </AnimatedSection>
@@ -832,20 +833,21 @@ export default function HomePage() {
                     {FEATURE_FLOWS.map((feature, idx) => {
                       const Icon = feature.icon;
                       return (
-                        <button
+                        <Button
                           key={feature.id}
+                          variant="ghost"
                           onClick={() => setActiveFeature(idx)}
-                          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium transition-all duration-300 ${
+                          className={`flex items-center gap-1.5 px-3 py-2 h-auto rounded-lg text-[12px] font-medium ${
                             activeFeature === idx
-                              ? "bg-[#C4735B] text-white shadow-md shadow-[#C4735B]/25 scale-105"
-                              : "bg-neutral-100/80 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200/80"
+                              ? "bg-[var(--hm-brand-500)] text-white shadow-md shadow-[var(--hm-brand-500)]/25 scale-105 hover:bg-[var(--hm-brand-600)] hover:text-white"
+                              : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]"
                           }`}
                         >
                           <Icon className="w-3.5 h-3.5" />
                           <span className="hidden sm:inline">
                             {t(feature.titleKey)}
                           </span>
-                        </button>
+                        </Button>
                       );
                     })}
                   </div>
@@ -854,11 +856,11 @@ export default function HomePage() {
                     {FEATURE_FLOWS.map((_, idx) => (
                       <div
                         key={idx}
-                        className="h-1 rounded-full transition-all duration-500 bg-neutral-200 dark:bg-neutral-700 overflow-hidden"
+                        className="h-1 rounded-full transition-all duration-500 bg-[var(--hm-n-200)] overflow-hidden"
                         style={{ width: idx === activeFeature ? 24 : 6 }}
                       >
                         {idx === activeFeature && (
-                          <div className="h-full bg-[#C4735B] animate-progress" />
+                          <div className="h-full bg-[var(--hm-brand-500)] animate-progress" />
                         )}
                       </div>
                     ))}
@@ -870,7 +872,7 @@ export default function HomePage() {
                   <div className="grid lg:grid-cols-2 gap-6 lg:gap-10 items-center">
                     <div className="order-2 lg:order-1">
                       <div
-                        className={`relative aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-br ${FEATURE_FLOWS[activeFeature].color} border border-neutral-200/30 transition-all duration-500`}
+                        className={`relative aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-br ${FEATURE_FLOWS[activeFeature].color} border border-[var(--hm-border-subtle)]/30 transition-all duration-500`}
                       >
                         {!gifErrors[FEATURE_FLOWS[activeFeature].id] ? (
                           FEATURE_FLOWS[activeFeature].isVideo ? (
@@ -891,17 +893,21 @@ export default function HomePage() {
                               />
                               {/* Watch Demo overlay */}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-center justify-center">
-                                <button
+                                <Button
+                                  variant="ghost"
                                   onClick={handleVideoFullscreen}
                                   disabled={videoLoading}
-                                  className="group flex flex-col items-center gap-3 transition-transform hover:scale-105 disabled:opacity-90"
+                                  className="group flex flex-col items-center gap-3 h-auto p-0 hover:bg-transparent transition-transform hover:scale-105 disabled:opacity-90"
+                                  aria-label={
+                                    t("home.watchDemo") || "Watch demo"
+                                  }
                                 >
                                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/95 shadow-2xl flex items-center justify-center group-hover:bg-white transition-all">
                                     {videoLoading ? (
-                                      <Loader2 className="w-7 h-7 sm:w-8 sm:h-8 text-[#C4735B] animate-spin" />
+                                      <Loader2 className="w-7 h-7 sm:w-8 sm:h-8 text-[var(--hm-brand-500)] animate-spin" />
                                     ) : (
                                       <Play
-                                        className="w-7 h-7 sm:w-8 sm:h-8 text-[#C4735B] ml-1"
+                                        className="w-7 h-7 sm:w-8 sm:h-8 text-[var(--hm-brand-500)] ml-1"
                                         fill="currentColor"
                                       />
                                     )}
@@ -911,7 +917,7 @@ export default function HomePage() {
                                       ? t("landing.loading")
                                       : t("landing.watchDemo")}
                                   </span>
-                                </button>
+                                </Button>
                               </div>
                             </>
                           ) : (
@@ -927,7 +933,7 @@ export default function HomePage() {
                             />
                           )
                         ) : (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center text-neutral-400">
+                          <div className="absolute inset-0 flex flex-col items-center justify-center text-[var(--hm-fg-muted)]">
                             <div
                               className={`w-14 h-14 rounded-xl ${FEATURE_FLOWS[activeFeature].iconBg} flex items-center justify-center mb-3`}
                             >
@@ -957,14 +963,14 @@ export default function HomePage() {
                             );
                           })()}
                         </div>
-                        <span className="text-[11px] font-semibold text-[#C4735B] uppercase tracking-wider">
+                        <span className="text-[11px] font-semibold text-[var(--hm-brand-500)] uppercase tracking-wider">
                           {t("landing.featureStep")} {activeFeature + 1}
                         </span>
                       </div>
-                      <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white mb-2">
+                      <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-[var(--hm-fg-primary)] mb-2">
                         {t(FEATURE_FLOWS[activeFeature].titleKey)}
                       </h3>
-                      <p className="text-[13px] text-neutral-600 dark:text-neutral-400 leading-relaxed mb-5">
+                      <p className="text-[13px] text-[var(--hm-fg-secondary)] leading-relaxed mb-5">
                         {t(FEATURE_FLOWS[activeFeature].descKey)}
                       </p>
                       <MagneticButton
@@ -977,7 +983,7 @@ export default function HomePage() {
                                 ? "/portfolio"
                                 : "/register"
                         }
-                        className="inline-flex items-center gap-1.5 h-9 px-4 text-[13px] font-medium bg-[#C4735B] hover:bg-[#a85d47] text-white rounded-lg group"
+                        className="inline-flex items-center gap-1.5 h-9 px-4 text-[13px] font-medium bg-[var(--hm-brand-500)] hover:bg-[#a85d47] text-white rounded-lg group"
                       >
                         {t("landing.tryItNow")}
                         <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -994,10 +1000,10 @@ export default function HomePage() {
         <section className="py-10 sm:py-14 lg:py-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <AnimatedSection className="max-w-lg mb-8">
-              <h2 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-[var(--hm-fg-primary)]">
                 {t("howItWorks.title")}
               </h2>
-              <p className="mt-1.5 text-[13px] text-neutral-500">
+              <p className="mt-1.5 text-[13px] text-[var(--hm-fg-muted)]">
                 {t("howItWorks.subtitle")}
               </p>
             </AnimatedSection>
@@ -1021,16 +1027,16 @@ export default function HomePage() {
                 },
               ].map((step, i) => (
                 <AnimatedSection key={i} stagger index={i}>
-                  <GlassCard className="group relative rounded-xl p-4 sm:p-5 hover:border-[#C4735B]/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                    <div className="w-9 h-9 rounded-lg bg-[#C4735B]/10 flex items-center justify-center mb-3 group-hover:bg-[#C4735B] group-hover:scale-110 transition-all">
-                      <span className="text-sm font-bold text-[#C4735B] group-hover:text-white">
+                  <GlassCard className="group relative rounded-xl p-4 sm:p-5 hover:border-[var(--hm-brand-500)]/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                    <div className="w-9 h-9 rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center mb-3 group-hover:bg-[var(--hm-brand-500)] group-hover:scale-110 transition-all">
+                      <span className="text-sm font-bold text-[var(--hm-brand-500)] group-hover:text-white">
                         {step.num}
                       </span>
                     </div>
-                    <h3 className="text-[15px] font-semibold text-neutral-900 dark:text-white mb-1.5">
+                    <h3 className="text-[15px] font-semibold text-[var(--hm-fg-primary)] mb-1.5">
                       {step.title}
                     </h3>
-                    <p className="text-[12px] text-neutral-500 leading-relaxed">
+                    <p className="text-[12px] text-[var(--hm-fg-muted)] leading-relaxed">
                       {step.desc}
                     </p>
                   </GlassCard>
@@ -1045,16 +1051,16 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <AnimatedSection className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-6">
               <div>
-                <h2 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-neutral-900 dark:text-white">
+                <h2 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-[var(--hm-fg-primary)]">
                   {t("landing.categoriesTitle")}
                 </h2>
-                <p className="mt-1 text-[13px] text-neutral-500">
+                <p className="mt-1 text-[13px] text-[var(--hm-fg-muted)]">
                   {t("landing.categoriesSubtitle")}
                 </p>
               </div>
               <Link
                 href="/portfolio"
-                className="inline-flex items-center gap-1 text-[12px] font-medium text-[#C4735B] hover:text-[#a85d47] group"
+                className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--hm-brand-500)] hover:text-[#a85d47] group"
               >
                 {t("common.viewAll")}
                 <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -1072,11 +1078,11 @@ export default function HomePage() {
                 return (
                   <AnimatedSection key={cat.slug} stagger index={i}>
                     <Link href={href}>
-                      <GlassCard className="group flex items-center gap-3 rounded-xl p-3 hover:border-[#C4735B]/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
-                        <div className="w-9 h-9 rounded-lg bg-neutral-100/80 dark:bg-neutral-700/50 flex items-center justify-center group-hover:bg-[#C4735B]/10 transition-colors">
-                          <Icon className="w-4 h-4 text-neutral-500 group-hover:text-[#C4735B] transition-colors" />
+                      <GlassCard className="group flex items-center gap-3 rounded-xl p-3 hover:border-[var(--hm-brand-500)]/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
+                        <div className="w-9 h-9 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center group-hover:bg-[var(--hm-brand-500)]/10 transition-colors">
+                          <Icon className="w-4 h-4 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)] transition-colors" />
                         </div>
-                        <span className="text-[12px] font-medium text-neutral-700 dark:text-neutral-300 group-hover:text-[#C4735B] transition-colors">
+                        <span className="text-[12px] font-medium text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-brand-500)] transition-colors">
                           {t(cat.label)}
                         </span>
                       </GlassCard>
@@ -1089,7 +1095,7 @@ export default function HomePage() {
         </section>
 
         {/* ========== STATS with Animated Counters ========== */}
-        <section className="py-10 sm:py-12 lg:py-14 bg-neutral-900 dark:bg-neutral-950 relative overflow-hidden">
+        <section className="py-10 sm:py-12 lg:py-14 bg-neutral-900 relative overflow-hidden">
           <div
             className="absolute inset-0 opacity-[0.03]"
             style={{
@@ -1111,10 +1117,10 @@ export default function HomePage() {
                   label={t("landing.statsProjectsCompleted")}
                 />
                 <div className="text-center">
-                  <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#C4735B]">
+                  <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--hm-brand-500)]">
                     {stats.avgRating || 4.8}
                   </p>
-                  <p className="mt-1 text-[11px] sm:text-xs text-neutral-400">
+                  <p className="mt-1 text-[11px] sm:text-xs text-[var(--hm-fg-muted)]">
                     {t("landing.statsAvgRating")}
                   </p>
                 </div>
@@ -1122,7 +1128,7 @@ export default function HomePage() {
                   <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
                     {stats.avgResponseTime || "<1"}h
                   </p>
-                  <p className="mt-1 text-[11px] sm:text-xs text-neutral-400">
+                  <p className="mt-1 text-[11px] sm:text-xs text-[var(--hm-fg-muted)]">
                     {t("landing.statsAvgResponse")}
                   </p>
                 </div>
@@ -1137,14 +1143,16 @@ export default function HomePage() {
                 &ldquo;{t("landing.testimonialQuote")}&rdquo;
               </blockquote>
               <div className="mt-4 flex items-center justify-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-[#C4735B]/20 flex items-center justify-center">
-                  <span className="text-sm font-bold text-[#C4735B]">N</span>
+                <div className="w-9 h-9 rounded-full bg-[var(--hm-brand-500)]/20 flex items-center justify-center">
+                  <span className="text-sm font-bold text-[var(--hm-brand-500)]">
+                    N
+                  </span>
                 </div>
                 <div className="text-left">
                   <p className="text-[13px] font-medium text-white">
                     {t("landing.testimonialName")}
                   </p>
-                  <p className="text-[11px] text-neutral-400">
+                  <p className="text-[11px] text-[var(--hm-fg-muted)]">
                     {t("landing.testimonialRole")}
                   </p>
                 </div>
@@ -1158,14 +1166,14 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid md:grid-cols-2 gap-4">
               <AnimatedSection>
-                <GlassCard className="group rounded-xl sm:rounded-2xl p-5 sm:p-6 hover:border-[#C4735B]/30 transition-all duration-500 hover:shadow-xl">
-                  <div className="w-10 h-10 rounded-xl bg-[#C4735B]/10 flex items-center justify-center mb-4">
-                    <Briefcase className="w-5 h-5 text-[#C4735B]" />
+                <GlassCard className="group rounded-xl sm:rounded-2xl p-5 sm:p-6 hover:border-[var(--hm-brand-500)]/30 transition-all duration-500 hover:shadow-xl">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--hm-brand-500)]/10 flex items-center justify-center mb-4">
+                    <Briefcase className="w-5 h-5 text-[var(--hm-brand-500)]" />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white">
+                  <h3 className="text-lg sm:text-xl font-bold text-[var(--hm-fg-primary)]">
                     {t("howItWorks.forClients")}
                   </h3>
-                  <p className="mt-1.5 text-[12px] text-neutral-500 leading-relaxed">
+                  <p className="mt-1.5 text-[12px] text-[var(--hm-fg-muted)] leading-relaxed">
                     {t("landing.clientsDesc")}
                   </p>
                   <ul className="mt-4 space-y-2">
@@ -1176,16 +1184,16 @@ export default function HomePage() {
                     ].map((b, i) => (
                       <li
                         key={i}
-                        className="flex items-center gap-2 text-[11px] text-neutral-600 dark:text-neutral-300"
+                        className="flex items-center gap-2 text-[11px] text-[var(--hm-fg-secondary)]"
                       >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[var(--hm-success-500)] flex-shrink-0" />
                         {b}
                       </li>
                     ))}
                   </ul>
                   <MagneticButton
                     href="/post-job"
-                    className="mt-5 w-full h-9 text-[12px] font-medium bg-[#C4735B] hover:bg-[#a85d47] text-white rounded-lg flex items-center justify-center gap-1.5 group/btn"
+                    className="mt-5 w-full h-9 text-[12px] font-medium bg-[var(--hm-brand-500)] hover:bg-[#a85d47] text-white rounded-lg flex items-center justify-center gap-1.5 group/btn"
                   >
                     {t("header.postAJob")}
                     <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" />
@@ -1194,14 +1202,14 @@ export default function HomePage() {
               </AnimatedSection>
 
               <AnimatedSection delay={100}>
-                <div className="group rounded-xl sm:rounded-2xl p-5 sm:p-6 bg-neutral-900 dark:bg-neutral-800 border border-neutral-800 dark:border-neutral-700 hover:border-[#C4735B]/30 transition-all duration-500 hover:shadow-xl">
-                  <div className="w-10 h-10 rounded-xl bg-[#C4735B]/20 flex items-center justify-center mb-4">
-                    <Users className="w-5 h-5 text-[#C4735B]" />
+                <div className="group rounded-xl sm:rounded-2xl p-5 sm:p-6 bg-[var(--hm-n-900)] border border-[var(--hm-n-800)] hover:border-[var(--hm-brand-500)]/30 transition-all duration-500 hover:shadow-xl">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--hm-brand-500)]/20 flex items-center justify-center mb-4">
+                    <Users className="w-5 h-5 text-[var(--hm-brand-500)]" />
                   </div>
                   <h3 className="text-lg sm:text-xl font-bold text-white">
                     {t("howItWorks.forProfessionals")}
                   </h3>
-                  <p className="mt-1.5 text-[12px] text-neutral-400 leading-relaxed">
+                  <p className="mt-1.5 text-[12px] text-[var(--hm-fg-muted)] leading-relaxed">
                     {t("landing.prosDesc")}
                   </p>
                   <ul className="mt-4 space-y-2">
@@ -1212,16 +1220,16 @@ export default function HomePage() {
                     ].map((b, i) => (
                       <li
                         key={i}
-                        className="flex items-center gap-2 text-[11px] text-neutral-300"
+                        className="flex items-center gap-2 text-[11px] text-[var(--hm-n-300)]"
                       >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#C4735B] flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[var(--hm-brand-500)] flex-shrink-0" />
                         {b}
                       </li>
                     ))}
                   </ul>
                   <MagneticButton
                     href="/register/professional"
-                    className="mt-5 w-full h-9 text-[12px] font-medium border border-[#C4735B] text-[#C4735B] hover:bg-[#C4735B] hover:text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors group/btn"
+                    className="mt-5 w-full h-9 text-[12px] font-medium border border-[var(--hm-brand-500)] text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)] hover:text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors group/btn"
                   >
                     {t("howItWorks.registerAsPro")}
                     <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" />
@@ -1234,7 +1242,7 @@ export default function HomePage() {
 
         {/* ========== FOOTER CTA ========== */}
         <AnimatedSection>
-          <section className="py-10 sm:py-12 bg-gradient-to-r from-[#C4735B] to-[#a85d47] relative overflow-hidden">
+          <section className="py-10 sm:py-12 bg-gradient-to-r from-[var(--hm-brand-500)] to-[#a85d47] relative overflow-hidden">
             <div
               className="absolute inset-0 opacity-10"
               style={{
@@ -1252,7 +1260,7 @@ export default function HomePage() {
               <div className="mt-5 flex flex-col sm:flex-row gap-2.5 justify-center">
                 <MagneticButton
                   href="/register"
-                  className="h-10 sm:h-11 px-6 text-[13px] font-semibold bg-white text-[#C4735B] hover:bg-neutral-100 rounded-xl shadow-lg flex items-center justify-center"
+                  className="h-10 sm:h-11 px-6 text-[13px] font-semibold bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] hover:bg-[var(--hm-bg-tertiary)] rounded-xl shadow-lg flex items-center justify-center"
                 >
                   {t("register.joinHomico")}
                 </MagneticButton>
@@ -1271,20 +1279,14 @@ export default function HomePage() {
       </main>
 
       {/* ========== FOOTER ========== */}
-      <footer className="bg-neutral-900 dark:bg-neutral-950 py-6 sm:py-8 border-t border-neutral-800">
+      <footer className="bg-[var(--hm-n-900)] py-6 sm:py-8 border-t border-[var(--hm-n-800)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-2">
-              <Image
-                src="/favicon.png"
-                alt="Homico"
-                width={24}
-                height={24}
-                className="h-6 w-6 rounded-md"
-              />
+              <HomicoLogo variant="reverse" size={24} className="h-6 w-6" />
               <span className="text-sm font-bold text-white">Homico</span>
             </Link>
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-neutral-400">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-[var(--hm-fg-muted)]">
               <Link
                 href="/about"
                 className="hover:text-white transition-colors"
@@ -1307,7 +1309,7 @@ export default function HomePage() {
                 {t("footer.terms")}
               </Link>
             </div>
-            <p className="text-[11px] text-neutral-500">
+            <p className="text-[11px] text-[var(--hm-fg-muted)]">
               © {new Date().getFullYear()} {t("landing.footerCopyright")}.{" "}
               {t("landing.footerAllRights")}
             </p>

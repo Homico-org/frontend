@@ -90,7 +90,7 @@ export default function OptimizedImage({
       <div ref={imgRef} className={`relative ${fill ? "w-full h-full" : ""}`}>
         {/* Blur placeholder */}
         <div
-          className={`absolute inset-0 bg-neutral-200 dark:bg-neutral-700 transition-opacity duration-500 ${
+          className={`absolute inset-0 bg-[var(--hm-n-200)] transition-opacity duration-500 ${
             isLoaded ? "opacity-0" : "opacity-100"
           }`}
           style={{
@@ -125,7 +125,7 @@ export default function OptimizedImage({
     <div ref={imgRef} className={`relative ${fill ? "w-full h-full" : ""}`}>
       {/* Animated shimmer placeholder */}
       <div
-        className={`absolute inset-0 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 dark:from-neutral-700 dark:via-neutral-600 dark:to-neutral-700 animate-shimmer bg-[length:200%_100%] transition-opacity duration-500 ${
+        className={`absolute inset-0 bg-gradient-to-r from-[var(--hm-border)] via-[var(--hm-bg-tertiary)] to-[var(--hm-border)] animate-shimmer bg-[length:200%_100%] transition-opacity duration-500 ${
           isLoaded ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
       />

@@ -40,7 +40,7 @@ export default function EmptyState({
 
   const ActionButton = () => {
     if (!displayActionLabel) return null;
-    const cls = "inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-[#C4735B] hover:bg-[#B5624A] transition-colors";
+    const cls = "inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] transition-colors";
     if (actionHref) return <Link href={actionHref} className={cls}>{displayActionLabel}</Link>;
     if (onAction) return <button onClick={onAction} className={cls}>{displayActionLabel}</button>;
     return null;
@@ -48,13 +48,13 @@ export default function EmptyState({
 
   return (
     <div className={`flex flex-col items-center justify-center ${py} px-4 text-center`}>
-      <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
-        <Icon className="w-5 h-5 text-neutral-400 dark:text-neutral-500" />
+      <div className="w-10 h-10 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center mb-3">
+        <Icon className="w-5 h-5 text-[var(--hm-fg-muted)]" />
       </div>
-      <h3 className={`${size === "sm" ? "text-sm" : "text-base"} font-semibold text-neutral-900 dark:text-white mb-1`}>
+      <h3 className={`${size === "sm" ? "text-sm" : "text-base"} font-semibold text-[var(--hm-fg-primary)] mb-1`}>
         {displayTitle}
       </h3>
-      <p className={`${size === "sm" ? "text-xs" : "text-sm"} text-neutral-500 dark:text-neutral-400 max-w-xs mb-4`}>
+      <p className={`${size === "sm" ? "text-xs" : "text-sm"} text-[var(--hm-fg-muted)] max-w-xs mb-4`}>
         {displayDescription}
       </p>
       <ActionButton />

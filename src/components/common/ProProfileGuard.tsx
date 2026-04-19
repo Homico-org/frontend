@@ -66,8 +66,8 @@ export default function ProProfileGuard({ children }: ProProfileGuardProps) {
     const isComplete = user?.isProfileCompleted === true || user?.verificationStatus === 'verified';
     if (user?.role === 'pro' && !isComplete) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)]">
-          <LoadingSpinner size="xl" color="#E07B4F" />
+        <div className="min-h-screen flex items-center justify-center bg-[var(--hm-bg-page)]">
+          <LoadingSpinner size="xl" color="var(--hm-brand-500)" />
         </div>
       );
     }

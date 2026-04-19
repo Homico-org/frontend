@@ -29,27 +29,27 @@ export default function StepComplete({
     <div className="w-full max-w-md mx-auto text-center px-1">
       {/* Success Animation */}
       <div className="relative mb-5 sm:mb-8">
-        <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-emerald-100 flex items-center justify-center mx-auto animate-bounce-slow">
-          <CheckCircle2 className="w-8 h-8 sm:w-12 sm:h-12 text-emerald-500" />
+        <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-[var(--hm-success-100)] flex items-center justify-center mx-auto animate-bounce-slow">
+          <CheckCircle2 className="w-8 h-8 sm:w-12 sm:h-12 text-[var(--hm-success-500)]" />
         </div>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 sm:-translate-y-2">
-          <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-[#C4735B] animate-pulse" />
+          <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-[var(--hm-brand-500)] animate-pulse" />
         </div>
       </div>
 
       {/* Header */}
-      <h1 className="text-lg sm:text-2xl font-bold text-neutral-900 mb-1 sm:mb-2">
+      <h1 className="text-lg sm:text-2xl font-bold text-[var(--hm-fg-primary)] mb-1 sm:mb-2">
         {t('register.congratulations')}
       </h1>
-      <p className="text-xs sm:text-base text-neutral-500 mb-5 sm:mb-8">
+      <p className="text-xs sm:text-base text-[var(--hm-fg-muted)] mb-5 sm:mb-8">
         {t('register.youAreNowAPro')}
       </p>
 
       {/* Profile Preview Card */}
-      <div className="bg-white rounded-xl sm:rounded-2xl border border-neutral-200 p-4 sm:p-6 mb-5 sm:mb-8 text-left">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border)] p-4 sm:p-6 mb-5 sm:mb-8 text-left">
         <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
           {/* Avatar */}
-          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-neutral-100 flex-shrink-0">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] flex-shrink-0">
             {avatarPreview ? (
               <Image
                 src={avatarPreview}
@@ -59,7 +59,7 @@ export default function StepComplete({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-neutral-400 text-lg sm:text-xl font-bold">
+              <div className="w-full h-full flex items-center justify-center text-[var(--hm-fg-muted)] text-lg sm:text-xl font-bold">
                 {fullName.charAt(0).toUpperCase()}
               </div>
             )}
@@ -67,17 +67,17 @@ export default function StepComplete({
 
           {/* Name & Location */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm sm:text-base font-bold text-neutral-900 truncate">
+            <h3 className="text-sm sm:text-base font-bold text-[var(--hm-fg-primary)] truncate">
               {fullName}
             </h3>
-            <p className="text-xs sm:text-sm text-neutral-500">
+            <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">
               {city}
             </p>
           </div>
 
           {/* Pro Badge */}
           <div className="flex-shrink-0">
-            <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-[10px] sm:text-xs font-bold">
+            <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] text-[10px] sm:text-xs font-bold">
               <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               PRO
             </span>
@@ -89,13 +89,13 @@ export default function StepComplete({
           {selectedServices.slice(0, 4).map(service => (
             <span
               key={service.key}
-              className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-neutral-100 text-neutral-700 text-[10px] sm:text-xs font-medium"
+              className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] text-[10px] sm:text-xs font-medium"
             >
               {locale === 'ka' ? service.nameKa : service.name}
             </span>
           ))}
           {selectedServices.length > 4 && (
-            <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-neutral-100 text-neutral-500 text-[10px] sm:text-xs">
+            <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] text-[10px] sm:text-xs">
               +{selectedServices.length - 4}
             </span>
           )}
@@ -103,21 +103,21 @@ export default function StepComplete({
       </div>
 
       {/* What's Next */}
-      <div className="bg-[#C4735B]/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-5 sm:mb-8">
-        <h4 className="text-sm sm:text-base font-semibold text-neutral-900 mb-1.5 sm:mb-2">
+      <div className="bg-[var(--hm-brand-500)]/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-5 sm:mb-8">
+        <h4 className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] mb-1.5 sm:mb-2">
           {t('register.whatsNext')}
         </h4>
-        <ul className="text-xs sm:text-sm text-neutral-600 space-y-1 sm:space-y-1.5 text-left">
+        <ul className="text-xs sm:text-sm text-[var(--hm-fg-secondary)] space-y-1 sm:space-y-1.5 text-left">
           <li className="flex items-start sm:items-center gap-1.5 sm:gap-2">
-            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 mt-0.5 sm:mt-0" />
+            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-success-500)] flex-shrink-0 mt-0.5 sm:mt-0" />
             <span>{t('register.completeProfileLater')}</span>
           </li>
           <li className="flex items-start sm:items-center gap-1.5 sm:gap-2">
-            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 mt-0.5 sm:mt-0" />
+            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-success-500)] flex-shrink-0 mt-0.5 sm:mt-0" />
             <span>{t('register.addPortfolioLater')}</span>
           </li>
           <li className="flex items-start sm:items-center gap-1.5 sm:gap-2">
-            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 mt-0.5 sm:mt-0" />
+            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-success-500)] flex-shrink-0 mt-0.5 sm:mt-0" />
             <span>{t('register.startReceivingJobs')}</span>
           </li>
         </ul>

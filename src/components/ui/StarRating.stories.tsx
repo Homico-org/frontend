@@ -84,7 +84,7 @@ export const NewProfessional: Story = {
 export const CustomColor: Story = {
   args: {
     rating: 4.5,
-    starColor: '#E07B4F',
+    starColor: '#F06B43',
   },
 };
 

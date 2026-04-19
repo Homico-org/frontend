@@ -239,10 +239,10 @@ function PanelContent({
         >
           <Send className="w-6 h-6" />
         </div>
-        <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
+        <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
           {t('feedback.submitted')}
         </h3>
-        <p className="text-sm text-[var(--color-text-secondary)] text-center">
+        <p className="text-sm text-[var(--hm-fg-secondary)] text-center">
           {t('feedback.submittedMessage')}
         </p>
       </div>
@@ -255,7 +255,7 @@ function PanelContent({
       <div className="flex-1 overflow-y-auto space-y-5">
         {/* Type selector */}
         <div>
-          <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+          <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
             {t('feedback.selectType')}
           </label>
           <SelectionGroup
@@ -279,7 +279,7 @@ function PanelContent({
             className="min-h-[120px]"
           />
           {message.length > 0 && message.trim().length < 10 && (
-            <p className="text-xs text-red-500 mt-1">
+            <p className="text-xs text-[var(--hm-error-500)] mt-1">
               {t('feedback.messageTooShort')}
             </p>
           )}
@@ -300,7 +300,7 @@ function PanelContent({
       </div>
 
       {/* Footer */}
-      <div className="pt-4 border-t border-[var(--color-border-subtle)]">
+      <div className="pt-4 border-t border-[var(--hm-border-subtle)]">
         <Button
           onClick={onSubmit}
           disabled={message.trim().length < 10}

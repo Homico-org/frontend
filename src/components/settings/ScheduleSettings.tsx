@@ -97,24 +97,24 @@ export default function ScheduleSettings() {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <LoadingSpinner size="lg" color="#C4735B" />
+        <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
       </div>
     );
   }
 
   return (
     <div className="space-y-5">
-      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+      <p className="text-xs text-[var(--hm-fg-muted)]">
         {t("settings.scheduleDescription")}
       </p>
 
       {/* Weekly Schedule */}
       <div className="space-y-1">
-        <h3 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">
+        <h3 className="text-xs font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider mb-2">
           {t("settings.availability")}
         </h3>
 
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+        <div className="rounded-lg border border-[var(--hm-border)] overflow-hidden">
           {DAY_KEYS.map(( dayInfo, idx) => {
             const day = schedule.find((d) => d.dayOfWeek === dayInfo.dayOfWeek);
             if (!day) return null;
@@ -123,19 +123,19 @@ export default function ScheduleSettings() {
             return (
               <div
                 key={dayInfo.dayOfWeek}
-                className={`flex items-center gap-2 px-3 py-2 ${!isLast ? "border-b border-neutral-100 dark:border-neutral-800" : ""} ${
-                  day.isAvailable ? "bg-white dark:bg-neutral-900" : "bg-neutral-50 dark:bg-neutral-900/50"
+                className={`flex items-center gap-2 px-3 py-2 ${!isLast ? "border-b border-[var(--hm-border-subtle)]" : ""} ${
+                  day.isAvailable ? "bg-[var(--hm-bg-elevated)]" : "bg-neutral-50/50"
                 }`}
               >
                 {/* Toggle */}
                 <button
                   onClick={() => updateDay(dayInfo.dayOfWeek, { isAvailable: !day.isAvailable })}
                   className={`w-8 h-[18px] rounded-full relative transition-colors flex-shrink-0 ${
-                    day.isAvailable ? "bg-[#C4735B]" : "bg-neutral-300 dark:bg-neutral-600"
+                    day.isAvailable ? "bg-[var(--hm-brand-500)]" : "bg-neutral-300"
                   }`}
                 >
                   <span
-                    className={`absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white shadow-sm transition-transform ${
+                    className={`absolute top-[2px] w-[14px] h-[14px] rounded-full bg-[var(--hm-bg-elevated)] shadow-sm transition-transform ${
                       day.isAvailable ? "left-[17px]" : "left-[2px]"
                     }`}
                   />
@@ -143,7 +143,7 @@ export default function ScheduleSettings() {
 
                 {/* Day name */}
                 <span className={`w-10 text-xs font-semibold flex-shrink-0 ${
-                  day.isAvailable ? "text-neutral-900 dark:text-white" : "text-neutral-400 dark:text-neutral-500"
+                  day.isAvailable ? "text-[var(--hm-fg-primary)]" : "text-[var(--hm-fg-muted)]"
                 }`}>
                   {getDayLabel(dayInfo)}
                 </span>
@@ -156,7 +156,7 @@ export default function ScheduleSettings() {
                       onChange={(h) => updateDay(dayInfo.dayOfWeek, { startHour: h })}
                       hours={HOURS}
                     />
-                    <span className="text-neutral-300 text-xs">–</span>
+                    <span className="text-[var(--hm-n-300)] text-xs">–</span>
                     <TimePicker
                       value={day.endHour}
                       onChange={(h) => updateDay(dayInfo.dayOfWeek, { endHour: h })}
@@ -164,7 +164,7 @@ export default function ScheduleSettings() {
                     />
                   </div>
                 ) : (
-                  <span className="text-[11px] text-neutral-400 dark:text-neutral-500 italic ml-auto">
+                  <span className="text-[11px] text-[var(--hm-fg-muted)] italic ml-auto">
                     {t("booking.closed")}
                   </span>
                 )}
@@ -176,7 +176,7 @@ export default function ScheduleSettings() {
 
       {/* Date Overrides */}
       <div className="space-y-2">
-        <h3 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+        <h3 className="text-xs font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider">
           {t("settings.dateOverrides")}
         </h3>
 
@@ -185,10 +185,10 @@ export default function ScheduleSettings() {
             {overrides.map((o) => (
               <div
                 key={o.date}
-                className="flex items-center justify-between rounded-lg px-3 py-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
+                className="flex items-center justify-between rounded-lg px-3 py-2 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)]"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-neutral-900 dark:text-white">
+                  <span className="text-xs font-medium text-[var(--hm-fg-primary)]">
                     {o.date}
                   </span>
                   <span
@@ -203,7 +203,7 @@ export default function ScheduleSettings() {
                 </div>
                 <button
                   onClick={() => removeOverride(o.date)}
-                  className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-neutral-400 hover:text-red-500 transition-colors"
+                  className="p-1 rounded hover:bg-[var(--hm-error-50)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] transition-colors"
                 >
                   <Trash2 className="w-3 h-3" />
                 </button>
@@ -230,7 +230,7 @@ export default function ScheduleSettings() {
           <button
             onClick={addOverride}
             disabled={!newOverrideDate}
-            className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#C4735B] text-white disabled:opacity-40 hover:bg-[#B5624A] transition-colors flex-shrink-0"
+            className="w-7 h-7 rounded-lg flex items-center justify-center bg-[var(--hm-brand-500)] text-white disabled:opacity-40 hover:bg-[var(--hm-brand-600)] transition-colors flex-shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
@@ -238,7 +238,7 @@ export default function ScheduleSettings() {
       </div>
 
       {/* Save */}
-      <div className="pt-2 border-t border-neutral-200 dark:border-neutral-800">
+      <div className="pt-2 border-t border-[var(--hm-border)]">
         <Button onClick={handleSave} disabled={saving} className="w-full">
           {saving ? <LoadingSpinner size="xs" className="mr-2" /> : null}
           {t("common.save")}

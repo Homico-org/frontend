@@ -262,7 +262,7 @@ function ProposalsPageContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-neutral-950">
+      <div className="min-h-screen bg-[var(--hm-bg-elevated)]">
         <Header />
         <HeaderSpacer />
         <div className="max-w-4xl mx-auto px-6 py-8">
@@ -287,7 +287,7 @@ function ProposalsPageContent() {
   );
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col">
+    <div className="min-h-screen bg-[var(--hm-bg-page)] flex flex-col">
       <Header />
       <HeaderSpacer />
 
@@ -299,13 +299,13 @@ function ProposalsPageContent() {
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white mb-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-[var(--hm-fg-primary)] mb-1">
                 {t("job.proposals")}
               </h1>
               {job && (
                 <Link
                   href={`/jobs/${job.id}`}
-                  className="inline-flex items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400 hover:text-[#C4735B] transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors"
                 >
                   {job.title}
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -323,40 +323,40 @@ function ProposalsPageContent() {
           <div className="grid grid-cols-3 gap-3">
             <Card variant="default" size="sm" className="text-center">
               <div className="flex items-center justify-center gap-2 mb-1">
-                <div className="w-6 h-6 rounded-lg bg-[#C4735B]/10 flex items-center justify-center">
-                  <Users className="w-3.5 h-3.5 text-[#C4735B]" />
+                <div className="w-6 h-6 rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
+                  <Users className="w-3.5 h-3.5 text-[var(--hm-brand-500)]" />
                 </div>
-                <span className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white">
+                <span className="text-lg sm:text-xl font-bold text-[var(--hm-fg-primary)]">
                   {pendingProposals.length}
                 </span>
               </div>
-              <p className="text-[10px] sm:text-xs text-neutral-500">
+              <p className="text-[10px] sm:text-xs text-[var(--hm-fg-muted)]">
                 {t("common.new")}
               </p>
             </Card>
             <Card variant="default" size="sm" className="text-center">
               <div className="flex items-center justify-center gap-2 mb-1">
-                <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                  <Star className="w-3.5 h-3.5 text-emerald-500" />
+                <div className="w-6 h-6 rounded-lg bg-[var(--hm-success-500)]/10 flex items-center justify-center">
+                  <Star className="w-3.5 h-3.5 text-[var(--hm-success-500)]" />
                 </div>
-                <span className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white">
+                <span className="text-lg sm:text-xl font-bold text-[var(--hm-fg-primary)]">
                   {shortlistedProposals.length}
                 </span>
               </div>
-              <p className="text-[10px] sm:text-xs text-neutral-500">
+              <p className="text-[10px] sm:text-xs text-[var(--hm-fg-muted)]">
                 {t("job.shortlisted")}
               </p>
             </Card>
             <Card variant="default" size="sm" className="text-center">
               <div className="flex items-center justify-center gap-2 mb-1">
-                <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                  <X className="w-3.5 h-3.5 text-neutral-400" />
+                <div className="w-6 h-6 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                  <X className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
                 </div>
-                <span className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white">
+                <span className="text-lg sm:text-xl font-bold text-[var(--hm-fg-primary)]">
                   {rejectedProposals.length}
                 </span>
               </div>
-              <p className="text-[10px] sm:text-xs text-neutral-500">
+              <p className="text-[10px] sm:text-xs text-[var(--hm-fg-muted)]">
                 {t("common.rejected")}
               </p>
             </Card>
@@ -378,13 +378,13 @@ function ProposalsPageContent() {
         {/* Proposals List */}
         {proposals.length === 0 ? (
           <Card variant="default" size="lg" className="text-center">
-            <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-neutral-400" />
+            <div className="w-16 h-16 rounded-2xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-8 h-8 text-[var(--hm-fg-muted)]" />
             </div>
-            <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-2">
+            <h3 className="text-base font-semibold text-[var(--hm-fg-primary)] mb-2">
               {t("job.noProposalsYet")}
             </h3>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-xs mx-auto">
+            <p className="text-sm text-[var(--hm-fg-muted)] max-w-xs mx-auto">
               {t("job.whenProfessionalsSendProposalsThey")}
             </p>
           </Card>
@@ -394,11 +394,11 @@ function ProposalsPageContent() {
             {pendingProposals.length > 0 && (
               <section>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-[#C4735B]/10">
-                    <FileText className="w-4 h-4 text-[#C4735B]" />
+                  <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-[var(--hm-brand-500)]/10">
+                    <FileText className="w-4 h-4 text-[var(--hm-brand-500)]" />
                   </div>
                   <div className="flex-1">
-                    <h2 className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white">
+                    <h2 className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)]">
                       {t("job.newProposals")}
                     </h2>
                   </div>
@@ -425,14 +425,14 @@ function ProposalsPageContent() {
             {shortlistedProposals.length > 0 && (
               <section>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-500/10">
-                    <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-[var(--hm-success-500)]/10">
+                    <Check className="w-4 h-4 text-[var(--hm-success-500)]" />
                   </div>
                   <div className="flex-1">
-                    <h2 className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white">
+                    <h2 className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)]">
                       {t("job.shortlisted")}
                     </h2>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    <p className="text-xs text-[var(--hm-fg-muted)]">
                       {t("job.selectOneToStartThe")}
                     </p>
                   </div>
@@ -461,11 +461,11 @@ function ProposalsPageContent() {
             {rejectedProposals.length > 0 && (
               <section>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800">
-                    <X className="w-4 h-4 text-neutral-400 dark:text-neutral-500" />
+                  <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-[var(--hm-bg-tertiary)]">
+                    <X className="w-4 h-4 text-[var(--hm-fg-muted)]" />
                   </div>
                   <div className="flex-1">
-                    <h2 className="text-sm sm:text-base font-semibold text-neutral-500 dark:text-neutral-400">
+                    <h2 className="text-sm sm:text-base font-semibold text-[var(--hm-fg-muted)]">
                       {t("common.rejected")}
                     </h2>
                   </div>
@@ -511,7 +511,7 @@ function ProposalsPageContent() {
         onConfirm={() => showRejectConfirm && handleReject(showRejectConfirm)}
         title={t("job.rejectProposal")}
         description={t("job.thisActionCannotBeUndone")}
-        icon={<X className="w-6 h-6 text-red-500" />}
+        icon={<X className="w-6 h-6 text-[var(--hm-error-500)]" />}
         variant="danger"
         cancelLabel={t("common.cancel")}
         confirmLabel={t("job.reject")}
@@ -554,7 +554,7 @@ function ProposalCard({
       size="md"
       className={
         isShortlisted
-          ? "ring-2 ring-emerald-500/20 border-emerald-200 dark:border-emerald-800"
+          ? "ring-2 ring-emerald-500/20 border-emerald-200"
           : ""
       }
     >
@@ -565,7 +565,7 @@ function ProposalCard({
             src={pro?.avatar}
             name={pro?.name || "Pro"}
             size="lg"
-            className="w-12 h-12 sm:w-14 sm:h-14 ring-2 ring-white dark:ring-neutral-800 shadow-sm"
+            className="w-12 h-12 sm:w-14 sm:h-14 ring-2 ring-white shadow-sm"
           />
         </Link>
 
@@ -576,13 +576,13 @@ function ProposalCard({
             <div className="min-w-0">
               <Link
                 href={`/professionals/${pro?.id}`}
-                className="text-sm sm:text-base font-semibold text-neutral-900 dark:text-white hover:text-[#C4735B] transition-colors block truncate"
+                className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] hover:text-[var(--hm-brand-500)] transition-colors block truncate"
               >
                 {pro?.name || "Professional"}
               </Link>
               <div className="flex items-center gap-2 mt-0.5">
-                <Clock className="w-3 h-3 text-neutral-400 flex-shrink-0" />
-                <span className="text-xs text-neutral-400">
+                <Clock className="w-3 h-3 text-[var(--hm-fg-muted)] flex-shrink-0" />
+                <span className="text-xs text-[var(--hm-fg-muted)]">
                   {formatTimeAgoCompact(
                     proposal.createdAt,
                     locale as "en" | "ka" | "ru"
@@ -617,14 +617,14 @@ function ProposalCard({
           {/* Price & Duration - More prominent */}
           <div className="flex items-center flex-wrap gap-3 mb-3">
             {proposal.proposedPrice && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#C4735B]/10">
-                <span className="text-base sm:text-lg font-bold text-[#C4735B]">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--hm-brand-500)]/10">
+                <span className="text-base sm:text-lg font-bold text-[var(--hm-brand-500)]">
                   ₾{proposal.proposedPrice.toLocaleString()}
                 </span>
               </div>
             )}
             {proposal.estimatedDuration && (
-              <div className="flex items-center gap-1.5 text-sm text-neutral-500">
+              <div className="flex items-center gap-1.5 text-sm text-[var(--hm-fg-muted)]">
                 <Clock className="w-3.5 h-3.5" />
                 <span>
                   {proposal.estimatedDuration}{" "}
@@ -640,25 +640,25 @@ function ProposalCard({
 
           {/* Cover Letter */}
           {proposal.coverLetter && (
-            <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-4 line-clamp-2 sm:line-clamp-3">
+            <p className="text-sm text-[var(--hm-fg-secondary)] mb-4 line-clamp-2 sm:line-clamp-3">
               {proposal.coverLetter}
             </p>
           )}
 
           {/* Phone Number (if revealed) */}
           {isShortlisted && proposal.contactRevealed && pro?.phone && (
-            <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+            <div className="mb-4 p-3 rounded-xl bg-[var(--hm-success-50)]/20 border border-emerald-200">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                  <Phone className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <div className="w-10 h-10 rounded-xl bg-[var(--hm-success-500)]/20 flex items-center justify-center">
+                  <Phone className="w-5 h-5 text-[var(--hm-success-500)]" />
                 </div>
                 <div>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-0.5">
+                  <p className="text-xs text-[var(--hm-success-500)] font-medium mb-0.5">
                     {t("common.phone")}
                   </p>
                   <a
                     href={`tel:${pro.phone}`}
-                    className="text-lg font-semibold text-emerald-700 dark:text-emerald-300 hover:underline"
+                    className="text-lg font-semibold text-[var(--hm-success-500)] hover:underline"
                   >
                     {pro.phone}
                   </a>
@@ -715,7 +715,7 @@ function ProposalCard({
                   variant="outline"
                   size="sm"
                   asChild
-                  className="border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+                  className="border-emerald-200 text-[var(--hm-success-500)] hover:bg-[var(--hm-success-50)]"
                 >
                   <a href={`tel:${pro.phone}`}>
                     <Phone className="w-4 h-4 mr-1.5" />
@@ -736,7 +736,7 @@ function ProposalCard({
                   variant="outline"
                   size="sm"
                   leftIcon={<Undo2 className="w-4 h-4" />}
-                  className="border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30"
+                  className="border-amber-200 text-[var(--hm-warning-500)] hover:bg-[var(--hm-warning-50)]"
                 >
                   {t("job.revert")}
                 </Button>
@@ -754,7 +754,7 @@ export default function ProposalsPage() {
     <AuthGuard allowedRoles={["client", "pro", "admin"]}>
       <Suspense
         fallback={
-          <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
+          <div className="min-h-screen flex items-center justify-center bg-[var(--hm-bg-elevated)]">
             <LoadingSpinner size="lg" color={ACCENT_COLOR} />
           </div>
         }

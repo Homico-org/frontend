@@ -239,7 +239,7 @@ export const InForm: Story = {
       </div>
       <button
         type="button"
-        className="w-full py-2.5 px-4 bg-[#C4735B] text-white font-medium rounded-xl hover:bg-[#B5664E] transition-colors"
+        className="w-full py-2.5 px-4 bg-[#EF4E24] text-white font-medium rounded-xl hover:bg-[#D13C14] transition-colors"
       >
         Submit
       </button>

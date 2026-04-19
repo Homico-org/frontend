@@ -14,7 +14,7 @@ export default function CountdownTimer({ total, remaining, size = 56 }: Countdow
   const dashOffset = circumference * (1 - progress);
 
   const isUrgent = remaining <= 10;
-  const strokeColor = isUrgent ? '#EF4444' : '#C4735B';
+  const strokeColor = isUrgent ? '#EF4444' : 'var(--hm-brand-500)';
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -46,7 +46,7 @@ export default function CountdownTimer({ total, remaining, size = 56 }: Countdow
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className={`text-sm font-bold ${isUrgent ? 'text-red-400' : 'text-white'}`}>
+        <span className={`text-sm font-bold ${isUrgent ? 'text-[var(--hm-error-500)]' : 'text-white'}`}>
           {remaining}
         </span>
       </div>

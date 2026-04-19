@@ -1,4 +1,5 @@
 "use client";
+import { ACCENT_COLOR } from "@/constants/theme";
 
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -29,7 +30,7 @@ const PricingIcons = {
       className={className}
       viewBox="0 0 24 24"
       fill="none"
-      stroke={isActive ? "#C4735B" : "currentColor"}
+      stroke={isActive ? ACCENT_COLOR : "currentColor"}
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -49,7 +50,7 @@ const PricingIcons = {
       className={className}
       viewBox="0 0 24 24"
       fill="none"
-      stroke={isActive ? "#C4735B" : "currentColor"}
+      stroke={isActive ? ACCENT_COLOR : "currentColor"}
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -70,7 +71,7 @@ const PricingIcons = {
       className={className}
       viewBox="0 0 24 24"
       fill="none"
-      stroke={isActive ? "#C4735B" : "currentColor"}
+      stroke={isActive ? ACCENT_COLOR : "currentColor"}
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -91,7 +92,7 @@ const PricingIcons = {
       className={className}
       viewBox="0 0 24 24"
       fill="none"
-      stroke={isActive ? "#C4735B" : "currentColor"}
+      stroke={isActive ? ACCENT_COLOR : "currentColor"}
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -141,8 +142,8 @@ export default function PricingStep({
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
       {/* Pricing Type Selection */}
-      <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm">
-        <h3 className="font-semibold text-[var(--color-text-primary)] mb-4">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)] p-6 shadow-sm">
+        <h3 className="font-semibold text-[var(--hm-fg-primary)] mb-4">
           {t("common.pricingType")}
         </h3>
 
@@ -160,13 +161,13 @@ export default function PricingStep({
                 group relative p-4 rounded-xl border-2 text-left transition-all duration-200
                 ${
                   formData.pricingModel === option.key
-                    ? "border-[#E07B4F] bg-[#E07B4F]/5"
-                    : "border-[var(--color-border-subtle)] hover:border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)]"
+                    ? "border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5"
+                    : "border-[var(--hm-border-subtle)] hover:border-[var(--hm-border)] hover:bg-[var(--hm-bg-tertiary)]"
                 }
               `}
             >
               {formData.pricingModel === option.key && (
-                <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#E07B4F] flex items-center justify-center">
+                <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center">
                   <svg
                     className="w-3 h-3 text-white"
                     fill="none"
@@ -189,11 +190,11 @@ export default function PricingStep({
                 />
               </div>
               <span
-                className={`font-medium block ${formData.pricingModel === option.key ? "text-[#E07B4F]" : "text-[var(--color-text-primary)]"}`}
+                className={`font-medium block ${formData.pricingModel === option.key ? "text-[var(--hm-brand-500)]" : "text-[var(--hm-fg-primary)]"}`}
               >
                 {locale === "ka" ? option.labelKa : option.label}
               </span>
-              <span className="text-xs text-[var(--color-text-tertiary)]">
+              <span className="text-xs text-[var(--hm-fg-muted)]">
                 {option.suffix}
               </span>
             </button>
@@ -202,9 +203,9 @@ export default function PricingStep({
       </div>
 
       {/* Price */}
-      <div className="bg-[var(--color-bg-elevated)] rounded-2xl border border-[var(--color-border-subtle)] p-6 shadow-sm">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)] p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-[var(--color-text-primary)]">
+          <h3 className="font-semibold text-[var(--hm-fg-primary)]">
             {t("common.priceRange")}
           </h3>
           {validation.pricing && (
@@ -222,13 +223,13 @@ export default function PricingStep({
           <div className="flex items-center gap-4">
             {/* Min Price */}
             <div className="flex-1">
-              <label className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2 block">
+              <label className="text-xs font-medium text-[var(--hm-fg-muted)] uppercase tracking-wider mb-2 block">
                 {formData.pricingModel === "range"
                   ? t("common.startingPrice")
                   : t("common.price")}
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#E07B4F] font-semibold">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--hm-brand-500)] font-semibold">
                   ₾
                 </span>
                 <input
@@ -243,14 +244,14 @@ export default function PricingStep({
                   }}
                   className={`
                   w-full pl-10 pr-4 py-3.5 rounded-xl text-lg font-semibold
-                  bg-[var(--color-bg-tertiary)] border-2
-                  text-[var(--color-text-primary)]
-                  placeholder-[var(--color-text-muted)]
+                  bg-[var(--hm-bg-tertiary)] border-2
+                  text-[var(--hm-fg-primary)]
+                  placeholder-[var(--hm-fg-muted)]
                   focus:outline-none transition-all duration-200
                   ${
                     validation.pricing
-                      ? "border-emerald-500/30 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10"
-                      : "border-transparent focus:border-[#E07B4F]/50 focus:ring-4 focus:ring-[#E07B4F]/10"
+                      ? "border-[var(--hm-success-500)]/30 focus:border-[var(--hm-success-500)]/50 focus:ring-4 focus:ring-emerald-500/10"
+                      : "border-transparent focus:border-[var(--hm-brand-500)]/50 focus:ring-4 focus:ring-[var(--hm-brand-500)]/10"
                   }
                 `}
                   placeholder="100"
@@ -261,7 +262,7 @@ export default function PricingStep({
             {/* Divider */}
             {formData.pricingModel === "range" && (
               <div className="pt-6">
-                <span className="text-[var(--color-text-muted)] text-xl">
+                <span className="text-[var(--hm-fg-muted)] text-xl">
                   —
                 </span>
               </div>
@@ -270,11 +271,11 @@ export default function PricingStep({
             {/* Max Price */}
             {formData.pricingModel === "range" && (
               <div className="flex-1">
-                <label className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2 block">
+                <label className="text-xs font-medium text-[var(--hm-fg-muted)] uppercase tracking-wider mb-2 block">
                   {t("common.maximumPrice")}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] font-semibold">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--hm-fg-muted)] font-semibold">
                     ₾
                   </span>
                   <input
@@ -289,10 +290,10 @@ export default function PricingStep({
                     }}
                     className="
                     w-full pl-10 pr-4 py-3.5 rounded-xl text-lg font-semibold
-                    bg-[var(--color-bg-tertiary)] border-2 border-transparent
-                    text-[var(--color-text-primary)]
-                    placeholder-[var(--color-text-muted)]
-                    focus:outline-none focus:border-[var(--color-border)] focus:ring-4 focus:ring-[var(--color-bg-muted)]
+                    bg-[var(--hm-bg-tertiary)] border-2 border-transparent
+                    text-[var(--hm-fg-primary)]
+                    placeholder-[var(--hm-fg-muted)]
+                    focus:outline-none focus:border-[var(--hm-border)] focus:ring-4 focus:ring-[var(--hm-n-200)]
                     transition-all duration-200
                   "
                     placeholder="300"
@@ -305,11 +306,11 @@ export default function PricingStep({
 
         {/* Preview */}
         {formData.basePrice && (
-          <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-[#E07B4F]/5 to-[#E8956A]/5 border border-[#E07B4F]/10">
-            <p className="text-sm text-[var(--color-text-secondary)]">
+          <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-[var(--hm-brand-500)]/5 to-[#F28764]/5 border border-[var(--hm-brand-500)]/10">
+            <p className="text-sm text-[var(--hm-fg-secondary)]">
               {t("common.clientsWillSee")}
             </p>
-            <p className="text-xl font-bold text-[#E07B4F] mt-1">
+            <p className="text-xl font-bold text-[var(--hm-brand-500)] mt-1">
               {formData.pricingModel === "byAgreement"
                 ? t("common.negotiable")
                 : `${formData.basePrice}${formData.pricingModel === "range" && formData.maxPrice ? ` - ${formData.maxPrice}` : ""} ${suffix}`}

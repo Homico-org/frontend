@@ -50,13 +50,13 @@ export default function ServiceCard({ service }: ServiceCardProps) {
   return (
     <Link href={`/services/${service.id}`} className="group block">
       <div
-        className="bg-white dark:bg-dark-card rounded-xl overflow-hidden border border-neutral-200 dark:border-dark-border hover:border-neutral-300 dark:hover:border-dark-border-subtle hover:shadow-lg dark:hover:shadow-none transition-all duration-200 ease-out"
+        className="bg-[var(--hm-bg-elevated)] rounded-xl overflow-hidden border border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] hover:shadow-lg transition-all duration-200 ease-out"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => { setIsHovered(false); setImageIndex(0); }}
       >
         {/* Image Gallery */}
         <div
-          className="relative aspect-[4/3] overflow-hidden bg-neutral-100 dark:bg-dark-bg"
+          className="relative aspect-[4/3] overflow-hidden bg-[var(--hm-bg-tertiary)]"
           onMouseMove={handleMouseMove}
         >
           {images.length > 0 ? (
@@ -73,7 +73,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
                     <div
                       key={i}
                       className={`h-1 rounded-full transition-all ${
-                        i === imageIndex ? 'w-4 bg-white' : 'w-1 bg-white/60'
+                        i === imageIndex ? 'w-4 bg-[var(--hm-bg-elevated)]' : 'w-1 bg-white/60'
                       }`}
                     />
                   ))}
@@ -91,9 +91,9 @@ export default function ServiceCard({ service }: ServiceCardProps) {
           {/* Save button */}
           <button
             onClick={(e) => { e.preventDefault(); }}
-            className="absolute top-3 right-3 w-8 h-8 bg-white/90 dark:bg-dark-card/90 hover:bg-white dark:hover:bg-dark-card rounded-full flex items-center justify-center shadow-sm dark:shadow-none opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out"
+            className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out"
           >
-            <svg className="w-4 h-4 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-[var(--hm-fg-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
           </button>
@@ -114,14 +114,14 @@ export default function ServiceCard({ service }: ServiceCardProps) {
               src={proUser?.avatar}
               name={proUser?.name || 'P'}
               size="sm"
-              className="border border-neutral-200 dark:border-dark-border"
+              className="border border-[var(--hm-border)]"
             />
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-sm font-medium text-neutral-900 dark:text-neutral-50 truncate">
+              <span className="text-sm font-medium text-[var(--hm-fg-primary)] truncate">
                 {proUser?.name || 'Pro'}
               </span>
               {pro.isAvailable && (
-                <span className="w-2 h-2 bg-[#E07B4F] rounded-full flex-shrink-0" title="Available" />
+                <span className="w-2 h-2 bg-[var(--hm-brand-500)] rounded-full flex-shrink-0" title="Available" />
               )}
             </div>
             {pro.avgRating >= 4.8 && (
@@ -132,7 +132,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
           </div>
 
           {/* Title */}
-          <h3 className="text-sm text-neutral-700 dark:text-neutral-300 leading-snug mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-primary-400 transition-all duration-200 ease-out">
+          <h3 className="text-sm text-[var(--hm-fg-secondary)] leading-snug mb-3 line-clamp-2 group-hover:text-[var(--hm-info-500)] transition-all duration-200 ease-out">
             {service.title}
           </h3>
 
@@ -145,14 +145,14 @@ export default function ServiceCard({ service }: ServiceCardProps) {
               size="sm"
             />
             {service.totalOrders > 0 && (
-              <span className="text-xs text-neutral-400 ml-1">• {service.totalOrders} orders</span>
+              <span className="text-xs text-[var(--hm-fg-muted)] ml-1">• {service.totalOrders} orders</span>
             )}
           </div>
 
           {/* Price */}
-          <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-dark-border">
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">{t('professional.from')}</span>
-            <span className="text-lg font-bold text-neutral-900 dark:text-neutral-50">₾{startingPrice}</span>
+          <div className="flex items-center justify-between pt-3 border-t border-[var(--hm-border-subtle)]">
+            <span className="text-xs text-[var(--hm-fg-muted)]">{t('professional.from')}</span>
+            <span className="text-lg font-bold text-[var(--hm-fg-primary)]">₾{startingPrice}</span>
           </div>
         </div>
       </div>

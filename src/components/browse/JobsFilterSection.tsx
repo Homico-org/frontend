@@ -28,7 +28,7 @@ export default function JobsFilterSection({
     <div className="w-full">
       {/* Budget Filter - compact styling */}
       <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-0.5 -mx-1 px-1 sm:mx-0 sm:px-0 sm:flex-wrap">
-        <span className="text-[11px] text-[var(--color-text-muted)] mr-1 flex-shrink-0 font-medium">
+        <span className="text-[11px] text-[var(--hm-fg-muted)] mr-1 flex-shrink-0 font-medium">
           {t('common.budget')}
         </span>
         {BUDGET_FILTERS.map((budget) => (
@@ -38,8 +38,8 @@ export default function JobsFilterSection({
             className={`
               px-2 py-1.5 rounded text-[11px] font-medium transition-all duration-150 flex-shrink-0
               ${selectedBudget === budget.key
-                ? 'bg-[#E07B4F]/15 text-[#E07B4F]'
-                : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[#E07B4F]/5'
+                ? 'bg-[var(--hm-brand-500)]/15 text-[var(--hm-brand-500)]'
+                : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-brand-500)]/5'
               }
             `}
           >

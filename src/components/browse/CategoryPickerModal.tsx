@@ -42,7 +42,7 @@ function TriCheckbox({ state, onChange }: { state: TriState; onChange: () => voi
       type="checkbox"
       onChange={onChange}
       className="w-4 h-4 rounded cursor-pointer flex-shrink-0"
-      style={{ accentColor: '#C4735B' }}
+      style={{ accentColor: 'var(--hm-brand-500)' }}
     />
   );
 }
@@ -195,9 +195,9 @@ export default function CategoryPickerModal({
       {/* Header */}
       <div
         className="px-5 pt-5 pb-3 border-b"
-        style={{ borderColor: 'var(--color-border-subtle)' }}
+        style={{ borderColor: 'var(--hm-border-subtle)' }}
       >
-        <h2 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+        <h2 className="text-base font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>
           {t('browse.selectCategory')}
         </h2>
       </div>
@@ -205,16 +205,16 @@ export default function CategoryPickerModal({
       {/* Search bar */}
       <div
         className="px-5 py-3 border-b"
-        style={{ borderColor: 'var(--color-border-subtle)' }}
+        style={{ borderColor: 'var(--hm-border-subtle)' }}
       >
         <div
           className="relative flex items-center rounded-lg border"
-          style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-bg-tertiary)' }}
+          style={{ borderColor: 'var(--hm-border-subtle)', background: 'var(--hm-bg-tertiary)' }}
         >
           {aiLoading ? (
-            <Sparkles className="absolute left-3 w-4 h-4 animate-pulse" style={{ color: '#C4735B' }} />
+            <Sparkles className="absolute left-3 w-4 h-4 animate-pulse" style={{ color: 'var(--hm-brand-500)' }} />
           ) : (
-            <Search className="absolute left-3 w-4 h-4" style={{ color: 'var(--color-text-tertiary)' }} />
+            <Search className="absolute left-3 w-4 h-4" style={{ color: 'var(--hm-fg-muted)' }} />
           )}
           <input
             type="text"
@@ -222,7 +222,7 @@ export default function CategoryPickerModal({
             onChange={e => handleSearchChange(e.target.value)}
             placeholder={t('browse.searchServices')}
             className="w-full pl-9 pr-9 py-2 text-sm bg-transparent focus:outline-none"
-            style={{ color: 'var(--color-text-primary)' }}
+            style={{ color: 'var(--hm-fg-primary)' }}
           />
           {search && (
             <button
@@ -230,7 +230,7 @@ export default function CategoryPickerModal({
               className="absolute right-2.5 p-0.5 rounded"
               aria-label="Clear search"
             >
-              <X className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
+              <X className="w-3.5 h-3.5" style={{ color: 'var(--hm-fg-muted)' }} />
             </button>
           )}
         </div>
@@ -241,13 +241,13 @@ export default function CategoryPickerModal({
         {searchResults !== null ? (
           <div className="overflow-y-auto max-h-[50vh] px-5 py-3 space-y-4">
             {searchResults.length === 0 && !aiLoading ? (
-              <p className="text-sm text-center py-8" style={{ color: 'var(--color-text-secondary)' }}>
+              <p className="text-sm text-center py-8" style={{ color: 'var(--hm-fg-secondary)' }}>
                 {t('browse.noResults')}
               </p>
             ) : searchResults.length === 0 && aiLoading ? (
               <div className="flex items-center justify-center gap-2 py-8">
-                <Sparkles className="w-4 h-4 animate-pulse text-[#C4735B]" />
-                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                <Sparkles className="w-4 h-4 animate-pulse text-[var(--hm-brand-500)]" />
+                <p className="text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
                   {t('browse.searchingAI')}
                 </p>
               </div>
@@ -267,10 +267,10 @@ export default function CategoryPickerModal({
                   <>
                     {/* AI suggestion header */}
                     {aiResults && aiResults.length > 0 && (
-                      <div className="flex items-center justify-between pb-2 border-b" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                      <div className="flex items-center justify-between pb-2 border-b" style={{ borderColor: 'var(--hm-border-subtle)' }}>
                         <div className="flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-[#C4735B]" />
-                          <span className="text-xs font-semibold text-[#C4735B]">
+                          <Sparkles className="w-3.5 h-3.5 text-[var(--hm-brand-500)]" />
+                          <span className="text-xs font-semibold text-[var(--hm-brand-500)]">
                             {t('browse.aiSuggested')}
                           </span>
                         </div>
@@ -287,7 +287,7 @@ export default function CategoryPickerModal({
                               return next;
                             });
                           }}
-                          className="text-xs font-medium text-[#C4735B] hover:underline"
+                          className="text-xs font-medium text-[var(--hm-brand-500)] hover:underline"
                         >
                           {allSelected ? t('browse.deselectAll') : t('browse.selectAll')}
                         </button>
@@ -298,20 +298,20 @@ export default function CategoryPickerModal({
                       const { subcategory, category } = results[0];
                       return (
                         <div key={subKey}>
-                          <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                          <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--hm-fg-secondary)' }}>
                             {pick(category.name, category.nameKa)} › {pick(subcategory.name, subcategory.nameKa)}
                           </p>
                       <div className="space-y-1">
                         {results.map(({ service }) => (
-                          <label key={service.key} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-[var(--color-bg-tertiary)]">
+                          <label key={service.key} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-[var(--hm-bg-tertiary)]">
                             <input
                               type="checkbox"
                               checked={draft.has(service.key)}
                               onChange={() => toggleService(service.key)}
                               className="w-4 h-4 rounded flex-shrink-0"
-                              style={{ accentColor: '#C4735B' }}
+                              style={{ accentColor: 'var(--hm-brand-500)' }}
                             />
-                            <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                            <span className="text-sm" style={{ color: 'var(--hm-fg-primary)' }}>
                               {pick(service.name, service.nameKa)}
                             </span>
                           </label>
@@ -331,7 +331,7 @@ export default function CategoryPickerModal({
             {/* Left panel: categories */}
             <div
               className="w-[200px] flex-shrink-0 border-r overflow-y-auto"
-              style={{ borderColor: 'var(--color-border-subtle)' }}
+              style={{ borderColor: 'var(--hm-border-subtle)' }}
             >
               {categories.map(cat => {
                 const isActive = cat.key === activeCatKey;
@@ -344,8 +344,8 @@ export default function CategoryPickerModal({
                     className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors"
                     style={
                       isActive
-                        ? { background: 'rgba(196,115,91,0.10)', color: '#C4735B', fontWeight: 600 }
-                        : { color: 'var(--color-text-secondary)' }
+                        ? { background: 'rgba(239,78,36,0.10)', color: 'var(--hm-brand-500)', fontWeight: 600 }
+                        : { color: 'var(--hm-fg-secondary)' }
                     }
                   >
                     <CategoryIcon type={cat.icon || cat.key} className="w-4 h-4 flex-shrink-0" />
@@ -353,7 +353,7 @@ export default function CategoryPickerModal({
                     {hasSelected && !isActive && (
                       <span
                         className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                        style={{ background: '#C4735B' }}
+                        style={{ background: 'var(--hm-brand-500)' }}
                       />
                     )}
                   </button>
@@ -361,53 +361,46 @@ export default function CategoryPickerModal({
               })}
             </div>
 
-            {/* Right panel: subcategories + services */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+            {/* Right panel: subcategories as flat checkboxes */}
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
               {activeCat?.subcategories.map(sub => {
                 const services = sub.services ?? [];
-                const triState = getTriState(sub.key, services, draft);
-                const isExpanded = expandedSubs.has(sub.key) || services.some(s => draft.has(s.key));
+                // For browse: select subcategory key OR its single service key
+                const serviceKeys = services.map(s => s.key);
+                const isSelected = draft.has(sub.key) || serviceKeys.some(k => draft.has(k));
+
                 return (
-                  <div key={sub.key}>
-                    <div className="flex items-center gap-2 py-1.5">
-                      <TriCheckbox state={triState} onChange={() => toggleSubcategory(sub)} />
-                      <button
-                        className="flex-1 flex items-center gap-1.5 text-left min-w-0"
-                        onClick={() => services.length > 0 && toggleExpandSub(sub.key)}
-                      >
-                        <span
-                          className="text-sm font-medium truncate"
-                          style={{ color: 'var(--color-text-primary)' }}
-                        >
-                          {pick(sub.name, sub.nameKa)}
-                        </span>
-                        {services.length > 0 && (
-                          <ChevronDown
-                            className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                            style={{ color: 'var(--color-text-tertiary)' }}
-                          />
-                        )}
-                      </button>
-                    </div>
-                    {isExpanded && services.length > 0 && (
-                      <div className="ml-6 space-y-0.5 pb-1">
-                        {services.map(svc => (
-                          <label key={svc.key} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-[var(--color-bg-tertiary)]">
-                            <input
-                              type="checkbox"
-                              checked={draft.has(svc.key)}
-                              onChange={() => toggleService(svc.key)}
-                              className="w-3.5 h-3.5 rounded flex-shrink-0"
-                              style={{ accentColor: '#C4735B' }}
-                            />
-                            <span className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
-                              {pick(svc.name, svc.nameKa)}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <label
+                    key={sub.key}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors hover:bg-[var(--hm-bg-tertiary)]"
+                    style={isSelected ? { backgroundColor: 'rgba(239,78,36,0.06)' } : undefined}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => {
+                        setDraft(prev => {
+                          const next = new Set(prev);
+                          if (isSelected) {
+                            next.delete(sub.key);
+                            serviceKeys.forEach(k => next.delete(k));
+                          } else {
+                            // Add subcategory key for browse filtering
+                            next.add(sub.key);
+                          }
+                          return next;
+                        });
+                      }}
+                      className="w-4 h-4 rounded flex-shrink-0"
+                      style={{ accentColor: 'var(--hm-brand-500)' }}
+                    />
+                    <span
+                      className="text-sm font-medium"
+                      style={{ color: isSelected ? 'var(--hm-brand-500)' : 'var(--hm-fg-primary)' }}
+                    >
+                      {pick(sub.name, sub.nameKa)}
+                    </span>
+                  </label>
                 );
               })}
             </div>
@@ -431,14 +424,14 @@ export default function CategoryPickerModal({
                       className="flex items-center gap-1.5 px-3 py-2 rounded-full text-[13px] font-medium border transition-all shrink-0 whitespace-nowrap"
                       style={
                         isActive
-                          ? { borderColor: '#C4735B', background: 'rgba(196,115,91,0.12)', color: '#C4735B' }
-                          : { borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-secondary)' }
+                          ? { borderColor: 'var(--hm-brand-500)', background: 'rgba(239,78,36,0.12)', color: 'var(--hm-brand-500)' }
+                          : { borderColor: 'var(--hm-border-subtle)', color: 'var(--hm-fg-secondary)' }
                       }
                     >
                       <CategoryIcon type={cat.icon || cat.key} className="w-3.5 h-3.5 flex-shrink-0" />
                       {pick(cat.name, cat.nameKa)}
                       {hasSelected && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#C4735B] shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--hm-brand-500)] shrink-0" />
                       )}
                     </button>
                   );
@@ -449,66 +442,52 @@ export default function CategoryPickerModal({
             {/* Separator + section label */}
             {activeCat && (
               <div className="px-4 pb-2">
-                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>
+                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--hm-fg-muted)' }}>
                   {pick(activeCat.name, activeCat.nameKa)} — {t('browse.selectServices')}
                 </p>
               </div>
             )}
 
-            {/* Active category subcategories */}
+            {/* Active category subcategories — flat checkboxes */}
             <div className="px-4 pb-4 space-y-1.5">
               {activeCat?.subcategories.map(sub => {
                 const services = sub.services ?? [];
-                const triState = getTriState(sub.key, services, draft);
-                const isExpanded = expandedSubs.has(sub.key) || services.some(s => draft.has(s.key));
+                const serviceKeys = services.map(s => s.key);
+                const isSelected = draft.has(sub.key) || serviceKeys.some(k => draft.has(k));
                 return (
-                  <div
+                  <label
                     key={sub.key}
-                    className="rounded-xl overflow-hidden transition-all"
+                    className="flex items-center gap-3 px-3.5 py-3 rounded-xl cursor-pointer transition-all"
                     style={{
-                      border: `1px solid ${triState !== 'none' ? 'rgba(196,115,91,0.3)' : 'var(--color-border-subtle)'}`,
-                      background: triState !== 'none' ? 'rgba(196,115,91,0.04)' : 'var(--color-bg-elevated)',
+                      border: `1px solid ${isSelected ? 'rgba(239,78,36,0.3)' : 'var(--hm-border-subtle)'}`,
+                      background: isSelected ? 'rgba(239,78,36,0.04)' : 'var(--hm-bg-elevated)',
                     }}
                   >
-                    <div className="flex items-center gap-2.5 px-3.5 py-3">
-                      <TriCheckbox state={triState} onChange={() => toggleSubcategory(sub)} />
-                      <button
-                        className="flex-1 flex items-center gap-1.5 text-left"
-                        onClick={() => services.length > 0 && toggleExpandSub(sub.key)}
-                      >
-                        <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                          {pick(sub.name, sub.nameKa)}
-                        </span>
-                        {services.length > 0 && (
-                          <ChevronDown
-                            className={`w-3.5 h-3.5 ml-auto flex-shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                            style={{ color: 'var(--color-text-tertiary)' }}
-                          />
-                        )}
-                      </button>
-                    </div>
-                    {isExpanded && services.length > 0 && (
-                      <div
-                        className="px-3.5 pb-3 pt-1 space-y-0.5 border-t ml-8"
-                        style={{ borderColor: 'var(--color-border-subtle)' }}
-                      >
-                        {services.map(svc => (
-                          <label key={svc.key} className="flex items-center gap-2.5 py-1.5 cursor-pointer rounded-lg px-1 hover:bg-black/[0.02]">
-                            <input
-                              type="checkbox"
-                              checked={draft.has(svc.key)}
-                              onChange={() => toggleService(svc.key)}
-                              className="w-4 h-4 rounded flex-shrink-0"
-                              style={{ accentColor: '#C4735B' }}
-                            />
-                            <span className="text-[13px]" style={{ color: draft.has(svc.key) ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}>
-                              {pick(svc.name, svc.nameKa)}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => {
+                        setDraft(prev => {
+                          const next = new Set(prev);
+                          if (isSelected) {
+                            next.delete(sub.key);
+                            serviceKeys.forEach(k => next.delete(k));
+                          } else {
+                            next.add(sub.key);
+                          }
+                          return next;
+                        });
+                      }}
+                      className="w-4 h-4 rounded flex-shrink-0"
+                      style={{ accentColor: 'var(--hm-brand-500)' }}
+                    />
+                    <span
+                      className="text-sm font-medium"
+                      style={{ color: isSelected ? 'var(--hm-brand-500)' : 'var(--hm-fg-primary)' }}
+                    >
+                      {pick(sub.name, sub.nameKa)}
+                    </span>
+                  </label>
                 );
               })}
             </div>
@@ -516,13 +495,13 @@ export default function CategoryPickerModal({
         )}
       </ModalBody>
 
-      <ModalFooter className="border-t border-[var(--color-border-subtle)]">
+      <ModalFooter className="border-t border-[var(--hm-border-subtle)]">
         {activeCount > 0 && (
           <button
             type="button"
             onClick={handleClear}
             className="text-sm font-medium hover:underline"
-            style={{ color: 'var(--color-text-secondary)' }}
+            style={{ color: 'var(--hm-fg-secondary)' }}
           >
             {t('browse.clearFilter')}
           </button>
@@ -538,9 +517,9 @@ export default function CategoryPickerModal({
         <button
           onClick={handleApply}
           className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors flex items-center gap-2"
-          style={{ background: '#C4735B' }}
-          onMouseEnter={e => (e.currentTarget.style.background = '#B5624A')}
-          onMouseLeave={e => (e.currentTarget.style.background = '#C4735B')}
+          style={{ background: 'var(--hm-brand-500)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = '#D13C14')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'var(--hm-brand-500)')}
         >
           {t('browse.showResults')}
           {activeCount > 0 && (

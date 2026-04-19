@@ -26,7 +26,7 @@ const getStatusConfig = (status: string) => {
       textStyle: { color: ACCENT_COLOR },
     },
     busy: {
-      colorClass: 'bg-amber-500',
+      colorClass: 'bg-[var(--hm-warning-500)]',
       colorStyle: undefined,
       ring: 'ring-2 ring-amber-400/30',
       ringStyle: undefined,
@@ -83,9 +83,9 @@ export default function StatusBadge({
     <div
       className={`
         inline-flex items-center gap-1.5 ${padding} rounded-full
-        bg-white/90 dark:bg-zinc-800/90 backdrop-blur-sm
+        bg-white/90 backdrop-blur-sm
         ${config.glow}
-        border border-white/20 dark:border-zinc-700/50
+        border border-white/20
       `}
       style={config.glowStyle}
     >
@@ -111,8 +111,8 @@ export default function StatusBadge({
         <span
           className={`
             ${textSize} font-semibold
-            ${status === 'busy' ? 'text-amber-700 dark:text-amber-400' : ''}
-            ${status === 'away' ? 'text-zinc-500 dark:text-zinc-400' : ''}
+            ${status === 'busy' ? 'text-[var(--hm-warning-500)]' : ''}
+            ${status === 'away' ? 'text-zinc-500' : ''}
           `}
           style={config.textStyle}
         >

@@ -208,12 +208,12 @@ export default function HelpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream-50 dark:bg-dark-bg">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       <Header />
       <HeaderSpacer />
 
       {/* Compact Hero */}
-      <div className="bg-gradient-to-r from-[#C4735B] to-[#A85A45] px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <div className="bg-gradient-to-r from-[var(--hm-brand-500)] to-[#A92B08] px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-xl sm:text-2xl font-bold text-white mb-1.5">
             {t('help.title')}
@@ -230,7 +230,7 @@ export default function HelpPage() {
         {isAuthenticated && (
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
+              <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)]">
                 {t('help.categories.support')}
               </h2>
               <Button
@@ -250,7 +250,7 @@ export default function HelpPage() {
             {/* New Ticket Form */}
             {showTicketForm && (
               <Card ref={formRef} variant="elevated" size="lg" className="mb-6 animate-fade-in">
-                <h3 className="text-lg font-medium text-neutral-900 dark:text-neutral-50 mb-4">
+                <h3 className="text-lg font-medium text-[var(--hm-fg-primary)] mb-4">
                   {t("help.tickets.createTicket")}
                 </h3>
                 <form onSubmit={handleTicketSubmit} className="space-y-4">
@@ -339,16 +339,16 @@ export default function HelpPage() {
             {/* Tickets List */}
             {loadingTickets ? (
               <Card variant="default" size="lg" className="flex items-center justify-center">
-                <LoadingSpinner size="xl" variant="border" color="#C4735B" />
+                <LoadingSpinner size="xl" variant="border" color="var(--hm-brand-500)" />
               </Card>
             ) : myTickets.length > 0 ? (
               <Card variant="elevated" size="sm" className="overflow-hidden">
-                <div className="divide-y divide-neutral-100 dark:divide-dark-border -m-3 sm:-m-4">
+                <div className="divide-y divide-[var(--hm-border-subtle)] -m-3 sm:-m-4">
                   {myTickets.map((ticket) => (
                     <Link
                       key={ticket._id}
                       href={`/help/ticket/${ticket._id}`}
-                      className="flex items-center justify-between p-4 hover:bg-cream-50 dark:hover:bg-dark-elevated transition-colors group"
+                      className="flex items-center justify-between p-4 hover:bg-[var(--hm-bg-page)] transition-colors group"
                     >
                       <div className="flex items-center gap-4 min-w-0">
                         <IconBadge
@@ -363,14 +363,14 @@ export default function HelpPage() {
                         />
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <p className="font-medium text-neutral-900 dark:text-neutral-50 truncate">
+                            <p className="font-medium text-[var(--hm-fg-primary)] truncate">
                               {ticket.subject}
                             </p>
                             {ticket.hasUnreadAdminMessages && (
-                              <span className="w-2 h-2 bg-terracotta-500 rounded-full flex-shrink-0" />
+                              <span className="w-2 h-2 bg-[var(--hm-brand-500)] rounded-full flex-shrink-0" />
                             )}
                           </div>
-                          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                          <p className="text-sm text-[var(--hm-fg-muted)]">
                             {formatDateShort(ticket.createdAt)}
                           </p>
                         </div>
@@ -379,7 +379,7 @@ export default function HelpPage() {
                         <Badge variant={getStatusVariant(ticket.status)} size="sm">
                           {t(`helpPage.status.${ticket.status}`)}
                         </Badge>
-                        <ChevronRight className="w-5 h-5 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors" />
+                        <ChevronRight className="w-5 h-5 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-fg-secondary)] transition-colors" />
                       </div>
                     </Link>
                   ))}
@@ -390,8 +390,8 @@ export default function HelpPage() {
                 <div className="flex justify-center mb-4">
                   <IconBadge icon={MessageCircle} variant="accent" size="lg" />
                 </div>
-                <p className="text-neutral-600 dark:text-neutral-400 mb-1">{t("help.tickets.noTickets")}</p>
-                <p className="text-sm text-neutral-400 dark:text-neutral-500">{t("help.tickets.noTicketsDesc")}</p>
+                <p className="text-[var(--hm-fg-secondary)] mb-1">{t("help.tickets.noTickets")}</p>
+                <p className="text-sm text-[var(--hm-fg-muted)]">{t("help.tickets.noTicketsDesc")}</p>
               </Card>
             )}
           </section>
@@ -400,7 +400,7 @@ export default function HelpPage() {
         {/* FAQ */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
+            <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)]">
               {t('help.faq.subtitle')}
             </h2>
             {/* Category filter */}
@@ -411,8 +411,8 @@ export default function HelpPage() {
                   onClick={() => setActiveCategory(cat.id)}
                   className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
                     activeCategory === cat.id
-                      ? 'bg-[#C4735B] text-white'
-                      : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                      ? 'bg-[var(--hm-brand-500)] text-white'
+                      : 'text-[var(--hm-fg-muted)] hover:bg-[var(--hm-bg-tertiary)]'
                   }`}
                 >
                   {cat.label}
@@ -421,24 +421,24 @@ export default function HelpPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+          <div className="rounded-xl border border-[var(--hm-border)] overflow-hidden">
             {filteredFaqs.map((faq, index) => (
               <div
                 key={index}
-                className={index !== filteredFaqs.length - 1 ? 'border-b border-neutral-100 dark:border-neutral-800' : ''}
+                className={index !== filteredFaqs.length - 1 ? 'border-b border-[var(--hm-border-subtle)]' : ''}
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
                 >
-                  <span className="text-sm font-medium text-neutral-900 dark:text-white pr-4">
+                  <span className="text-sm font-medium text-[var(--hm-fg-primary)] pr-4">
                     {faq.question}
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-neutral-400 flex-shrink-0 transition-transform duration-200 ${openFaq === index ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-[var(--hm-fg-muted)] flex-shrink-0 transition-transform duration-200 ${openFaq === index ? 'rotate-180' : ''}`} />
                 </button>
                 <div className={`overflow-hidden transition-all duration-300 ${openFaq === index ? 'max-h-96' : 'max-h-0'}`}>
                   <div className="px-4 pb-3">
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                    <p className="text-sm text-[var(--hm-fg-secondary)] leading-relaxed">
                       {faq.answer}
                     </p>
                   </div>
@@ -451,16 +451,16 @@ export default function HelpPage() {
         {/* Contact Form - For non-authenticated users */}
         {!isAuthenticated && (
           <section>
-            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
-              <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
-                <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
+            <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
+              <div className="px-4 py-3 border-b border-[var(--hm-border-subtle)]">
+                <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)]">
                   {t('help.contact.subtitle')}
                 </h2>
               </div>
 
               <form onSubmit={handleContactSubmit} className="p-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                     {t('common.type')}
                   </label>
                   <div className="grid grid-cols-3 gap-3">
@@ -476,14 +476,14 @@ export default function HelpPage() {
                         onClick={() => setContactForm({ ...contactForm, type: type.value as 'general' | 'account_issue' | 'feedback' })}
                         className={`p-4 h-auto flex-col ${
                           contactForm.type === type.value
-                            ? 'border-[#C4735B] dark:border-[#E8956A] bg-[#C4735B]/5 dark:bg-[#E8956A]/10'
+                            ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5'
                             : ''
                         }`}
                       >
-                        <svg className={`w-5 h-5 mb-2 ${contactForm.type === type.value ? 'text-[#C4735B] dark:text-[#E8956A]' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className={`w-5 h-5 mb-2 ${contactForm.type === type.value ? 'text-[var(--hm-brand-500)]' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={type.icon} />
                         </svg>
-                        <span className={`text-sm font-medium ${contactForm.type === type.value ? 'text-[#C4735B] dark:text-[#E8956A]' : 'text-neutral-600 dark:text-neutral-400'}`}>
+                        <span className={`text-sm font-medium ${contactForm.type === type.value ? 'text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-secondary)]'}`}>
                           {type.label}
                         </span>
                       </Button>
@@ -537,13 +537,13 @@ export default function HelpPage() {
             </div>
 
             {/* Sign in prompt */}
-            <div className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg text-center">
-              <p className="text-xs text-neutral-500 mb-1.5">
+            <div className="mt-4 p-3 bg-[var(--hm-bg-tertiary)]/50 rounded-lg text-center">
+              <p className="text-xs text-[var(--hm-fg-muted)] mb-1.5">
                 {t('help.signInPrompt')}
               </p>
               <button
                 onClick={() => openLoginModal()}
-                className="text-xs font-semibold text-[#C4735B] hover:underline"
+                className="text-xs font-semibold text-[var(--hm-brand-500)] hover:underline"
               >
                 {t('auth.signIn')} →
               </button>
@@ -556,23 +556,23 @@ export default function HelpPage() {
           <div className="grid sm:grid-cols-2 gap-3">
             <a
               href="mailto:info@homico.ge"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-[#C4735B]/30 transition-colors group"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-500)]/30 transition-colors group"
             >
-              <div className="w-9 h-9 rounded-lg bg-[#C4735B]/10 flex items-center justify-center flex-shrink-0">
-                <Mail className="w-4 h-4 text-[#C4735B]" />
+              <div className="w-9 h-9 rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center flex-shrink-0">
+                <Mail className="w-4 h-4 text-[var(--hm-brand-500)]" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs text-neutral-500">Email</p>
-                <p className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-[#C4735B] transition-colors">info@homico.ge</p>
+                <p className="text-xs text-[var(--hm-fg-muted)]">Email</p>
+                <p className="text-sm font-medium text-[var(--hm-fg-primary)] group-hover:text-[var(--hm-brand-500)] transition-colors">info@homico.ge</p>
               </div>
             </a>
-            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-              <div className="w-9 h-9 rounded-lg bg-[#C4735B]/10 flex items-center justify-center flex-shrink-0">
-                <Clock className="w-4 h-4 text-[#C4735B]" />
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)]">
+              <div className="w-9 h-9 rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-4 h-4 text-[var(--hm-brand-500)]" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs text-neutral-500">{t('help.categories.support')}</p>
-                <p className="text-sm font-medium text-neutral-900 dark:text-white">09:00 – 18:00</p>
+                <p className="text-xs text-[var(--hm-fg-muted)]">{t('help.categories.support')}</p>
+                <p className="text-sm font-medium text-[var(--hm-fg-primary)]">09:00 – 18:00</p>
               </div>
             </div>
           </div>

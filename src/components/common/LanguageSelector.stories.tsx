@@ -42,7 +42,7 @@ export const InHeader: Story = {
   render: () => (
     <div className="flex items-center justify-between w-[600px] px-4 py-3 bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-700">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-[#C4735B] flex items-center justify-center text-white font-bold text-sm">
+        <div className="w-8 h-8 rounded-lg bg-[#EF4E24] flex items-center justify-center text-white font-bold text-sm">
           H
         </div>
         <span className="font-semibold text-neutral-900 dark:text-white">Homi</span>
@@ -82,7 +82,7 @@ export const InSettings: Story = {
             <p className="font-medium text-neutral-900 dark:text-white">Notifications</p>
             <p className="text-sm text-neutral-500">Manage notification preferences</p>
           </div>
-          <button className="text-sm text-[#C4735B] font-medium">Configure</button>
+          <button className="text-sm text-[#EF4E24] font-medium">Configure</button>
         </div>
       </div>
     </div>

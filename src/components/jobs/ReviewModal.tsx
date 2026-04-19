@@ -75,14 +75,14 @@ export default function ReviewModal({
       preventClose={isSubmitting || isCompletionFlow}
     >
       {/* Modal Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--hm-border-subtle)]">
         <div className="flex items-center gap-2">
           {isCompletionFlow && (
-            <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-              <BadgeCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <div className="w-8 h-8 rounded-full bg-[var(--hm-success-100)]/30 flex items-center justify-center">
+              <BadgeCheck className="w-4 h-4 text-[var(--hm-success-500)]" />
             </div>
           )}
-          <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
             {title}
           </h3>
         </div>
@@ -90,8 +90,8 @@ export default function ReviewModal({
 
       {/* Mandatory Note for Completion Flow */}
       {isCompletionFlow && (
-        <div className="mx-5 mt-4 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-          <p className="text-sm text-amber-700 dark:text-amber-300">
+        <div className="mx-5 mt-4 px-4 py-3 rounded-xl bg-[var(--hm-warning-50)]/20 border border-amber-200">
+          <p className="text-sm text-[var(--hm-warning-500)]">
             {texts.mandatoryNote}
           </p>
         </div>
@@ -107,16 +107,16 @@ export default function ReviewModal({
             size="lg"
           />
           <div>
-            <p className="font-semibold text-neutral-900 dark:text-white">{pro.userId?.name || pro.name || 'Professional'}</p>
+            <p className="font-semibold text-[var(--hm-fg-primary)]">{pro.userId?.name || pro.name || 'Professional'}</p>
             {pro.title && (
-              <p className="text-sm text-neutral-500">{pro.title}</p>
+              <p className="text-sm text-[var(--hm-fg-muted)]">{pro.title}</p>
             )}
           </div>
         </div>
 
         {/* Star Rating */}
         <div className="space-y-2">
-          <Label>{texts.ratingLabel} <span className="text-red-500">*</span></Label>
+          <Label>{texts.ratingLabel} <span className="text-[var(--hm-error-500)]">*</span></Label>
           <StarRatingInput
             value={rating}
             onChange={onRatingChange}
@@ -138,7 +138,7 @@ export default function ReviewModal({
       </div>
 
       {/* Modal Footer */}
-      <div className="flex items-center gap-3 px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
+      <div className="flex items-center gap-3 px-5 py-4 border-t border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)]/50">
         {!isCompletionFlow && (
           <Button
             variant="secondary"

@@ -60,7 +60,7 @@ function Checkbox({
           className={`w-4 h-4 rounded border-[1.5px] transition-all duration-200 flex items-center justify-center ${
             checked
               ? 'border-transparent'
-              : 'border-neutral-300 dark:border-neutral-600 group-hover:border-neutral-400 dark:group-hover:border-neutral-500'
+              : 'border-[var(--hm-border-strong)] group-hover:border-neutral-400'
           }`}
           style={checked ? { backgroundColor: ACCENT } : {}}
         >
@@ -79,8 +79,8 @@ function Checkbox({
       </div>
       <span className={`text-[13px] transition-colors ${
         checked
-          ? 'text-neutral-900 dark:text-white font-medium'
-          : 'text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-300'
+          ? 'text-[var(--hm-fg-primary)] font-medium'
+          : 'text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-fg-primary)]'
       }`}>
         {label}
       </span>
@@ -134,10 +134,10 @@ function CollapsibleSection({
     <div className="py-1">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-2.5 px-1 group transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50 rounded-lg -mx-1"
+        className="w-full flex items-center justify-between py-2.5 px-1 group transition-colors hover:bg-[var(--hm-bg-tertiary)]/50 rounded-lg -mx-1"
       >
         <div className="flex items-center gap-2">
-          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-700 dark:group-hover:text-neutral-300 transition-colors">
+          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-fg-secondary)] transition-colors">
             {title}
           </h4>
           {activeCount > 0 && (
@@ -147,7 +147,7 @@ function CollapsibleSection({
           )}
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+          className={`w-4 h-4 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-fg-secondary)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
             isOpen ? 'rotate-180' : 'rotate-0'
           }`}
         />
@@ -230,7 +230,7 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
           <div className="flex items-center justify-end mb-2">
             <button
               onClick={clearAllFilters}
-              className="flex items-center gap-1 text-[11px] font-medium text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+              className="flex items-center gap-1 text-[11px] font-medium text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors"
             >
               <RotateCcw className="w-3 h-3" />
               {t('browse.clearAll')}
@@ -244,7 +244,7 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
             className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition-all mb-3 ${
               filters.showFavoritesOnly
                 ? 'text-white'
-                : 'bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                : 'bg-[var(--hm-bg-tertiary)]/50 hover:bg-[var(--hm-bg-tertiary)]'
             }`}
             style={filters.showFavoritesOnly ? { backgroundColor: ACCENT } : {}}
           >
@@ -291,12 +291,12 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
                 }}
                 onBlur={handleBudgetChange}
                 onKeyDown={(e) => e.key === 'Enter' && handleBudgetChange()}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:border-transparent transition-all"
                 style={{ '--tw-ring-color': ACCENT, '--tw-ring-opacity': '0.5' } as React.CSSProperties}
                 min="0"
               />
             </div>
-            <span className="text-neutral-400 text-sm">-</span>
+            <span className="text-[var(--hm-fg-muted)] text-sm">-</span>
             <div className="flex-1">
               <input
                 type="number"
@@ -310,19 +310,19 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
                 }}
                 onBlur={handleBudgetChange}
                 onKeyDown={(e) => e.key === 'Enter' && handleBudgetChange()}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:ring-2 focus:border-transparent transition-all"
                 style={{ '--tw-ring-color': ACCENT, '--tw-ring-opacity': '0.5' } as React.CSSProperties}
                 min="0"
               />
             </div>
           </div>
-          <p className="text-[10px] text-neutral-400 mt-1.5 px-1">
+          <p className="text-[10px] text-[var(--hm-fg-muted)] mt-1.5 px-1">
             {t('browse.inGel')}
           </p>
         </CollapsibleSection>
 
         {/* Divider */}
-        <div className="h-px bg-neutral-100 dark:bg-neutral-800" />
+        <div className="h-px bg-[var(--hm-bg-tertiary)]" />
 
         {/* Property Type Section */}
         <CollapsibleSection
@@ -340,7 +340,7 @@ export default function JobsFiltersSidebar({ filters, onFiltersChange, savedCoun
         </CollapsibleSection>
 
         {/* Divider */}
-        <div className="h-px bg-neutral-100 dark:bg-neutral-800" />
+        <div className="h-px bg-[var(--hm-bg-tertiary)]" />
 
         {/* Deadline Section */}
         <CollapsibleSection

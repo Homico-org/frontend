@@ -79,7 +79,7 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-[var(--hm-fg-muted)]">
         {t('settings.manageYourAccountSettings')}
       </p>
 
@@ -88,8 +88,8 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
         <div
           className="rounded-xl p-4"
           style={{
-            backgroundColor: isProfileDeactivated ? 'rgba(234, 179, 8, 0.06)' : 'var(--color-bg-tertiary)',
-            border: `1px solid ${isProfileDeactivated ? 'rgba(234, 179, 8, 0.2)' : 'var(--color-border-subtle)'}`,
+            backgroundColor: isProfileDeactivated ? 'rgba(234, 179, 8, 0.06)' : 'var(--hm-bg-tertiary)',
+            border: `1px solid ${isProfileDeactivated ? 'rgba(234, 179, 8, 0.2)' : 'var(--hm-border-subtle)'}`,
           }}
         >
           {isProfileDeactivated ? (
@@ -97,10 +97,10 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
               <div className="flex items-start gap-2">
                 <EyeOff className="w-4 h-4 text-yellow-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-yellow-700 dark:text-yellow-500">
+                  <p className="text-sm font-medium text-yellow-700">
                     {t('settings.profileIsDeactivated')}
                   </p>
-                  <p className="text-xs text-neutral-500 mt-0.5">
+                  <p className="text-xs text-[var(--hm-fg-muted)] mt-0.5">
                     {t('settings.yourProfileIsHiddenFrom')}
                   </p>
                 </div>
@@ -118,10 +118,10 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
           ) : (
             <div className="space-y-3">
               <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                <p className="text-sm font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
                   {t('settings.temporarilyPause')}
                 </p>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--hm-fg-secondary)' }}>
                   {t('settings.temporarilyHideYourProfileFrom')}
                 </p>
               </div>
@@ -139,11 +139,11 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
       )}
 
       {/* Danger Zone */}
-      <Card className="overflow-hidden border-red-500/30 bg-gradient-to-br from-red-500/5 to-red-500/10">
-        <div className="px-4 py-3 border-b border-red-500/15">
+      <Card className="overflow-hidden border-[var(--hm-error-500)]/30 bg-gradient-to-br from-red-500/5 to-red-500/10">
+        <div className="px-4 py-3 border-b border-[var(--hm-error-500)]/15">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
-            <h3 className="text-sm font-semibold text-red-600 dark:text-red-400">
+            <AlertTriangle className="w-4 h-4 text-[var(--hm-error-500)] shrink-0" />
+            <h3 className="text-sm font-semibold text-[var(--hm-error-500)]">
               {t('settings.dangerZone')}
             </h3>
           </div>
@@ -152,10 +152,10 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
         <div className="p-4">
           <div className="space-y-3">
             <div>
-              <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
+              <h4 className="text-sm font-medium text-[var(--hm-fg-primary)]">
                 {t('settings.deleteAccount')}
               </h4>
-              <p className="text-sm mt-1 text-neutral-500">
+              <p className="text-sm mt-1 text-[var(--hm-fg-muted)]">
                 {t('settings.permanentlyDeleteYourAccountAnd')}
               </p>
             </div>
@@ -176,13 +176,13 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
         <div className="flex items-start gap-3">
           <IconBadge icon={User} variant="neutral" size="md" />
           <div>
-            <p className="text-sm font-medium text-neutral-900 dark:text-white">
+            <p className="text-sm font-medium text-[var(--hm-fg-primary)]">
               {user?.name}
             </p>
-            <p className="text-xs mt-0.5 text-neutral-500">
+            <p className="text-xs mt-0.5 text-[var(--hm-fg-muted)]">
               {user?.email || user?.phone}
             </p>
-            <p className="text-xs mt-1 text-neutral-400">
+            <p className="text-xs mt-1 text-[var(--hm-fg-muted)]">
               {t('settings.accountId')} #{user?.uid || 'N/A'}
             </p>
           </div>

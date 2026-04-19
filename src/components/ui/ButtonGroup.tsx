@@ -103,8 +103,8 @@ export default function ButtonGroup({
       ${fullWidth ? 'flex-1' : ''}
       ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
       ${isActive
-        ? 'text-terracotta-600 dark:text-terracotta-400'
-        : 'text-neutral-500 dark:text-neutral-400 hover:text-terracotta-500 dark:hover:text-terracotta-400'
+        ? 'text-[var(--hm-brand-600)]'
+        : 'text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)]'
       }
       touch-manipulation whitespace-nowrap
     `;
@@ -167,9 +167,9 @@ export default function ButtonGroup({
       className={`
         relative inline-flex items-center
         ${styles.container}
-        bg-terracotta-50/60 dark:bg-terracotta-950/40
+        bg-[var(--hm-brand-50)]/60
         backdrop-blur-sm
-        border border-terracotta-200/50 dark:border-terracotta-700/30
+        border border-[var(--hm-brand-200)]/50
         shadow-[0_2px_12px_rgba(201,109,77,0.08)]
         ${fullWidth ? 'w-full' : ''}
         ${className}
@@ -178,7 +178,7 @@ export default function ButtonGroup({
       {/* Sliding underline indicator with terracotta */}
       <div
         className={`
-          absolute z-0 bottom-0 h-[3px] rounded-full bg-terracotta-500
+          absolute z-0 bottom-0 h-[3px] rounded-full bg-[var(--hm-brand-500)]
           ${mounted ? 'transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]' : ''}
         `}
         style={{

@@ -117,7 +117,7 @@ export default function JobDetailHero({
       ) : (
         <>
           {/* Elegant pattern background when no media */}
-          <div className="absolute inset-0 bg-gradient-to-br from-neutral-100 via-neutral-50 to-white dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--hm-bg-tertiary)] via-[var(--hm-bg-page)] to-[var(--hm-bg-elevated)]">
             {/* Geometric pattern */}
             <div className="absolute inset-0 opacity-[0.03]" style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -215,9 +215,9 @@ export default function JobDetailHero({
           }`}
         >
           {isOpen && (
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 shadow-lg">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--hm-success-500)]/20 backdrop-blur-md border border-[var(--hm-success-500)]/30 shadow-lg">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-emerald-300 text-xs font-semibold uppercase tracking-wider">
+              <span className="text-[var(--hm-success-500)] text-xs font-semibold uppercase tracking-wider">
                 {t('heroes.active')}
               </span>
             </span>
@@ -251,7 +251,7 @@ export default function JobDetailHero({
               onClick={() => setActiveIndex(idx)}
               className={`h-1 rounded-full transition-all duration-300 ${
                 idx === activeIndex
-                  ? "w-6 bg-white"
+                  ? "w-6 bg-[var(--hm-bg-elevated)]"
                   : "w-1.5 bg-white/40 hover:bg-white/60"
               }`}
             />

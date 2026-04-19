@@ -8,6 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
+import HomicoLogo from '@/components/common/HomicoLogo';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
@@ -16,14 +17,8 @@ function Logo({ className = '' }: { className?: string }) {
   return (
     <Link href="/" className={`flex items-center ${className}`}>
       <span className="flex items-center gap-2">
-        <Image
-          src="/favicon.png"
-          alt="Homico"
-          width={28}
-          height={28}
-          className="h-7 w-7 rounded-[8px]"
-        />
-        <span className="text-[18px] font-semibold tracking-wide text-neutral-900 dark:text-white">
+        <HomicoLogo size={28} className="h-7 w-7" />
+        <span className="text-[18px] font-semibold tracking-wide text-[var(--hm-fg-primary)]">
           Homico
         </span>
       </span>
@@ -60,8 +55,8 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
 
   if (profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-page)' }}>
-        <LoadingSpinner size="xl" variant="border" color="#C4735B" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
+        <LoadingSpinner size="xl" variant="border" color="var(--hm-brand-500)" />
       </div>
     );
   }
@@ -69,27 +64,27 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
   return (
     <div
       className="min-h-screen flex flex-col pb-24 sm:pb-20"
-      style={{ backgroundColor: 'var(--color-bg-page, #FAFAF9)' }}
+      style={{ backgroundColor: 'var(--hm-bg-page)' }}
     >
       {/* Header */}
       <header
         className="sticky top-0 z-50 border-b"
         style={{
-          backgroundColor: 'var(--color-bg-elevated)',
-          borderColor: 'var(--color-border-subtle)',
+          backgroundColor: 'var(--hm-bg-elevated)',
+          borderColor: 'var(--hm-border-subtle)',
         }}
       >
         <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="h-12 flex items-center justify-between">
             <Logo />
             <div className="flex items-center gap-3">
-              <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
+              <span className="text-xs font-medium" style={{ color: 'var(--hm-fg-muted)' }}>
                 {stepIdx + 1}/{STEP_SLUGS.length}
               </span>
               <Link
                 href="/help"
                 className="text-xs transition-colors"
-                style={{ color: 'var(--color-text-secondary)' }}
+                style={{ color: 'var(--hm-fg-secondary)' }}
               >
                 {t('common.help')}
               </Link>
@@ -110,16 +105,16 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
                     disabled={!isCompleted}
                     className={`flex-1 text-center text-[10px] sm:text-[11px] font-medium transition-colors ${
                       isCurrent
-                        ? 'text-[#C4735B]'
+                        ? 'text-[var(--hm-brand-500)]'
                         : isCompleted
-                        ? 'cursor-pointer hover:text-[#C4735B]'
+                        ? 'cursor-pointer hover:text-[var(--hm-brand-500)]'
                         : ''
                     }`}
                     style={
                       !isCurrent && !isCompleted
-                        ? { color: 'var(--color-text-disabled, #d1d5db)' }
+                        ? { color: 'var(--hm-fg-muted)' }
                         : !isCurrent && isCompleted
-                        ? { color: 'var(--color-text-secondary)' }
+                        ? { color: 'var(--hm-fg-secondary)' }
                         : undefined
                     }
                   >
@@ -140,10 +135,10 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
                   style={{
                     backgroundColor:
                       index < stepIdx
-                        ? '#C4735B'
+                        ? 'var(--hm-brand-500)'
                         : index === stepIdx
-                        ? 'rgba(196,115,91,0.4)'
-                        : 'var(--color-border-subtle)',
+                        ? 'rgba(239,78,36,0.4)'
+                        : 'var(--hm-border-subtle)',
                   }}
                 />
               ))}
@@ -166,21 +161,21 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
                   transition={{ duration: 0.3 }}
                   className="mb-4 rounded-xl border overflow-hidden"
                   style={{
-                    borderColor: '#C4735B30',
-                    background: 'linear-gradient(135deg, #C4735B0D 0%, #C4735B06 100%)',
+                    borderColor: 'rgba(239,78,36,0.19)',
+                    background: 'linear-gradient(135deg, rgba(239,78,36,0.05) 0%, rgba(239,78,36,0.025) 100%)',
                   }}
                 >
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-3 mb-3">
-                      <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>
                         {t('register.welcomeBanner')}
                       </p>
                       <button
                         onClick={dismissWelcomeBanner}
-                        className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+                        className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors hover:bg-black/5"
                         aria-label="Dismiss"
                       >
-                        <Check className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
+                        <Check className="w-3.5 h-3.5" style={{ color: 'var(--hm-fg-muted)' }} />
                       </button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
@@ -192,14 +187,14 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
                         <div
                           key={i}
                           className="flex items-start gap-2 px-3 py-2 rounded-lg"
-                          style={{ background: '#C4735B08', border: '1px solid #C4735B18' }}
+                          style={{ background: 'rgba(239,78,36,0.03)', border: '1px solid rgba(239,78,36,0.09)' }}
                         >
                           <span className="text-base leading-none mt-0.5 flex-shrink-0">
                             {b.icon}
                           </span>
                           <span
                             className="text-[11px] leading-snug"
-                            style={{ color: 'var(--color-text-secondary)' }}
+                            style={{ color: 'var(--hm-fg-secondary)' }}
                           >
                             {b.text}
                           </span>
@@ -209,7 +204,7 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
                     <button
                       onClick={dismissWelcomeBanner}
                       className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
-                      style={{ backgroundColor: '#C4735B' }}
+                      style={{ backgroundColor: 'var(--hm-brand-500)' }}
                     >
                       {t('register.getStarted')}
                     </button>
@@ -247,8 +242,8 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
       <footer
         className="fixed bottom-0 left-0 right-0 backdrop-blur-md border-t shadow-lg shadow-black/5 z-50 safe-area-bottom"
         style={{
-          backgroundColor: 'var(--color-bg-elevated-translucent, rgba(255,255,255,0.95))',
-          borderColor: 'var(--color-border-subtle)',
+          backgroundColor: 'rgba(250,250,247,0.95)',
+          borderColor: 'var(--hm-border-subtle)',
         }}
       >
         <div className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
@@ -258,9 +253,9 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
                 onClick={() => goBack(slug)}
                 className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 min-h-[44px] rounded-xl text-sm font-medium transition-all active:scale-[0.98]"
                 style={{
-                  color: 'var(--color-text-secondary)',
+                  color: 'var(--hm-fg-secondary)',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-bg-tertiary)')}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--hm-bg-tertiary)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -272,8 +267,8 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
               <button
                 onClick={() => goBack(slug)}
                 className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 min-h-[44px] rounded-xl text-sm font-medium transition-all active:scale-[0.98]"
-                style={{ color: 'var(--color-text-muted)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-bg-tertiary)')}
+                style={{ color: 'var(--hm-fg-muted)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--hm-bg-tertiary)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -285,7 +280,7 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
 
             <span
               className="hidden sm:block text-xs font-medium absolute left-1/2 -translate-x-1/2 pointer-events-none"
-              style={{ color: 'var(--color-text-muted)' }}
+              style={{ color: 'var(--hm-fg-muted)' }}
             >
               {STEP_META[stepIdx]?.title[locale === 'ka' ? 'ka' : 'en']}
             </span>
@@ -295,9 +290,9 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
               disabled={isLoading || isSaving || !canProceedFromStep(slug)}
               className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 min-h-[44px] rounded-xl text-sm font-semibold transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
               style={{
-                backgroundColor: '#C4735B',
+                backgroundColor: 'var(--hm-brand-500)',
                 color: 'white',
-                boxShadow: canProceedFromStep(slug) ? '0 4px 14px rgba(196,115,91,0.25)' : 'none',
+                boxShadow: canProceedFromStep(slug) ? '0 4px 14px rgba(239,78,36,0.25)' : 'none',
               }}
             >
               {isLoading || isSaving ? (

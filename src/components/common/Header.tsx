@@ -2,6 +2,7 @@
 
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/button";
+import { CountBadge } from "@/components/ui/badge";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
@@ -9,15 +10,17 @@ import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useClickOutside } from "@/hooks/useClickOutside";
-import { Building2, ExternalLink, LogIn, Menu, Plus, UserPlus, X } from "lucide-react";
+import { Bell, Building2, ExternalLink, LogIn, Menu, Plus, UserPlus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import HomicoLogo from "./HomicoLogo";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { trackEvent } from "@/hooks/useTracker";
 import Avatar from "./Avatar";
 import LanguageSelector from "./LanguageSelector";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Header({ fixed = true }: { fixed?: boolean }) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -87,20 +90,13 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   }, [showDropdown, showMobileMenu, handleEscKey]);
 
   return (
-    <header className={`${fixed ? "fixed top-0 left-0 right-0" : "relative"} z-50 h-14 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]`}>
+    <header className={`${fixed ? "fixed top-0 left-0 right-0" : "relative"} z-50 h-14`} style={{ borderBottom: '1px solid var(--hm-border)', backgroundColor: 'var(--hm-bg-elevated)' }}>
       <div className="h-full max-w-[1800px] mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Logo */}
         <Link href={homeHref} className="flex items-center flex-shrink-0">
           <span className="flex items-center gap-2">
-            <Image
-              src="/favicon.png"
-              alt="Homico"
-              width={28}
-              height={28}
-              className="h-7 w-7 rounded-[8px]"
-              priority
-            />
-            <span className="hidden sm:inline text-[18px] font-semibold tracking-wide text-neutral-900 dark:text-white">
+            <HomicoLogo size={28} className="h-7 w-7" />
+            <span className="hidden sm:inline text-[22px] font-semibold tracking-[-0.02em]" style={{ fontFamily: 'var(--hm-font-display)', color: 'var(--hm-fg-primary)' }}>
               Homico
             </span>
           </span>
@@ -108,8 +104,9 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
 
         {/* Right side - Actions + Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 min-w-0">
-          {/* Language Selector - hidden on mobile when logged out (shown in burger menu) */}
-          <div className={!isAuthenticated ? "hidden sm:block" : ""}>
+          {/* Theme + Language - hidden on mobile when logged out (shown in burger menu) */}
+          <div className={!isAuthenticated ? "hidden sm:flex items-center gap-1.5 sm:gap-2" : "flex items-center gap-1.5 sm:gap-2"}>
+            <ThemeToggle />
             <LanguageSelector variant="icon" />
           </div>
 
@@ -121,44 +118,14 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
               <Link
                 href="/notifications"
                 onClick={() => trackEvent('nav_click', 'notifications')}
-                className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 ${
-                  isNotificationsActive
-                    ? "bg-neutral-200 dark:bg-neutral-700 ring-2 ring-offset-1"
-                    : "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-                }`}
-                style={
-                  isNotificationsActive
-                    ? ({
-                        "--tw-ring-color": ACCENT_COLOR,
-                      } as React.CSSProperties)
-                    : {}
-                }
+                className="relative flex items-center justify-center w-9 h-9 transition-colors hover:bg-[var(--hm-bg-tertiary)]"
+                style={isNotificationsActive ? { color: 'var(--hm-brand-500)' } : { color: 'var(--hm-fg-secondary)' }}
               >
-                <svg
-                  className={`w-4 h-4 ${isNotificationsActive ? "" : "text-neutral-600 dark:text-neutral-400"}`}
-                  style={isNotificationsActive ? { color: ACCENT_COLOR } : {}}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M18 8A6 6 0 106 8c0 7-3 9-3 9h18s-3-2-3-9"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M13.73 21a2 2 0 01-3.46 0"
-                  />
-                </svg>
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full ring-2 ring-white dark:ring-neutral-900">
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                )}
+                <Bell className="w-[18px] h-[18px]" strokeWidth={1.5} />
+                <CountBadge
+                  count={unreadCount}
+                  className="absolute -top-1.5 -right-1.5 ring-2 ring-[var(--hm-bg-elevated)]"
+                />
               </Link>
 
               {/* Profile Dropdown */}
@@ -174,7 +141,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                     name={user.name}
                     size="sm"
                     rounded="xl"
-                    className="w-9 h-9 ring-2 ring-neutral-200 dark:ring-neutral-700 hover:ring-neutral-300 dark:hover:ring-neutral-600 transition-all duration-300"
+                    className="w-9 h-9 ring-2 ring-[var(--hm-border)] hover:ring-[var(--hm-border-strong)] transition-all duration-300"
                   />
                 </Button>
 
@@ -182,12 +149,9 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                   <div
                     className="absolute right-0 top-full mt-2 w-72 rounded-xl overflow-hidden z-[70] animate-scale-in"
                     style={{
-                      background:
-                        "linear-gradient(145deg, rgba(255, 253, 250, 0.98) 0%, rgba(255, 250, 245, 0.98) 100%)",
-                      backdropFilter: "blur(20px)",
-                      border: "1px solid rgba(200, 114, 89, 0.15)",
-                      boxShadow:
-                        "0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 16px -8px rgba(0, 0, 0, 0.1)",
+                      backgroundColor: 'var(--hm-bg-elevated)',
+                      border: '1px solid var(--hm-border)',
+                      boxShadow: 'var(--hm-shadow-lg)',
                     }}
                   >
                     {/* User Info Header */}
@@ -196,7 +160,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                         href={`/professionals/${user.id}`}
                         className="block px-4 py-3 relative overflow-hidden hover:opacity-90 transition-opacity"
                         style={{
-                          background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B86349 100%)`,
+                          background: 'linear-gradient(135deg, var(--hm-brand-500) 0%, var(--hm-brand-700) 100%)',
                         }}
                         onClick={() => setShowDropdown(false)}
                       >
@@ -230,7 +194,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                       <div
                         className="px-4 py-3 relative overflow-hidden"
                         style={{
-                          background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B86349 100%)`,
+                          background: 'linear-gradient(135deg, var(--hm-brand-500) 0%, var(--hm-brand-700) 100%)',
                         }}
                       >
                         <div className="flex items-center gap-3 relative z-10">
@@ -275,7 +239,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                               <div
                                 className="w-8 h-8 rounded-lg flex items-center justify-center"
                                 style={{
-                                  background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #B8654D 100%)`,
+                                  background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #D13C14 100%)`,
                                 }}
                               >
                                 <svg
@@ -366,7 +330,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                             >
                               {t("header.becomePro")}
                             </span>
-                            <span className="text-[10px] text-neutral-500">
+                            <span className="text-[10px] text-[var(--hm-fg-muted)]">
                               {t("header.startEarning")}
                             </span>
                           </div>
@@ -377,10 +341,10 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                       {user.role === "admin" && (
                         <Link
                           href="/admin"
-                          className="group flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
+                          className="group flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] transition-all duration-200"
                           onClick={() => setShowDropdown(false)}
                         >
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
                             <svg
                               className="w-4 h-4"
                               style={{ color: ACCENT_COLOR }}
@@ -429,10 +393,10 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                       {/* Settings */}
                       <Link
                         href="/settings"
-                        className="group flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 transition-all duration-200"
+                        className="group flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] transition-all duration-200"
                         onClick={() => { setShowDropdown(false); trackEvent('nav_click', 'settings'); }}
                       >
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
                           <svg
                             className="w-4 h-4"
                             style={{ color: ACCENT_COLOR }}
@@ -453,7 +417,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                         <span>{t("common.settings")}</span>
                       </Link>
 
-                      <div className="my-2 mx-4 h-px bg-neutral-200 dark:bg-neutral-700" />
+                      <div className="my-2 mx-4 h-px bg-[var(--hm-border-subtle)]" />
 
                       {/* Logout */}
                       <Button
@@ -462,9 +426,9 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                           setShowDropdown(false);
                           logout();
                         }}
-                        className="group flex items-center gap-3 w-full px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 justify-start h-auto rounded-none"
+                        className="group flex items-center gap-3 w-full px-4 py-2.5 text-sm text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] justify-start h-auto rounded-none"
                       >
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-neutral-100">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
                           <svg
                             className="w-4 h-4"
                             style={{ color: ACCENT_COLOR }}
@@ -539,7 +503,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                 className="sm:hidden"
                 aria-label="Open menu"
               >
-                <Menu className="w-5 h-5 text-neutral-700 dark:text-neutral-300" />
+                <Menu className="w-5 h-5 text-[var(--hm-fg-secondary)]" />
               </Button>
             </>
           )}
@@ -551,29 +515,25 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
         <div className="fixed inset-0 z-[100] sm:hidden">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+            className="absolute inset-0 animate-fade-in"
+            style={{ backgroundColor: 'rgba(21,17,12,0.55)' }}
             onClick={() => setShowMobileMenu(false)}
           />
 
           {/* Slide-in Panel */}
           <div
             ref={mobileMenuRef}
-            className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[320px] bg-white dark:bg-neutral-900 shadow-2xl animate-slide-in-right"
+            className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[320px] shadow-2xl animate-slide-in-right"
             style={{
-              animation:
-                "slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+              backgroundColor: 'var(--hm-bg-elevated)',
+              animation: "slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
             }}
           >
             {/* Menu Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--hm-border-subtle)' }}>
               <div className="flex items-center gap-3">
-                <Image
-                  src="/favicon.png"
-                  alt="Homico"
-                  width={28}
-                  height={28}
-                  className="h-7 w-7 rounded-[8px]"
-                />
+                <HomicoLogo size={28} className="h-7 w-7" />
+                <ThemeToggle />
                 <LanguageSelector variant="icon" />
               </div>
               <Button
@@ -590,10 +550,10 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
             <div className="flex flex-col p-5 gap-3">
               {/* Welcome text */}
               <div className="mb-4">
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                <p className="text-sm text-[var(--hm-fg-muted)]">
                   {t("header.welcomeToHomico")}
                 </p>
-                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+                <p className="text-xs text-[var(--hm-fg-muted)] mt-1">
                   {t("header.signInOrCreateAn")}
                 </p>
               </div>
@@ -614,15 +574,15 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                   <LogIn className="w-5 h-5" style={{ color: ACCENT_COLOR }} />
                 </div>
                 <div className="flex-1 text-left">
-                  <span className="block font-medium text-neutral-900 dark:text-white">
+                  <span className="block font-medium text-[var(--hm-fg-primary)]">
                     {t("common.login")}
                   </span>
-                  <span className="block text-xs text-neutral-500 dark:text-neutral-400">
+                  <span className="block text-xs text-[var(--hm-fg-muted)]">
                     {t("header.alreadyHaveAnAccount")}
                   </span>
                 </div>
                 <svg
-                  className="w-5 h-5 text-neutral-400"
+                  className="w-5 h-5 text-[var(--hm-fg-muted)]"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -674,11 +634,11 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
 
               {/* Divider */}
               <div className="flex items-center gap-3 my-4">
-                <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
-                <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                <div className="flex-1 h-px bg-[var(--hm-border-subtle)]" />
+                <span className="text-xs text-[var(--hm-fg-muted)]">
                   {t("header.or")}
                 </span>
-                <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+                <div className="flex-1 h-px bg-[var(--hm-border-subtle)]" />
               </div>
 
               {/* Post a Job as Guest - opens login modal */}
@@ -687,16 +647,16 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                   setShowMobileMenu(false);
                   openLoginModal();
                 }}
-                className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 transition-all active:scale-[0.98]"
+                className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl border-2 border-dashed border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] transition-all active:scale-[0.98]"
               >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
-                  <Plus className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
+                  <Plus className="w-5 h-5 text-[var(--hm-fg-secondary)]" />
                 </div>
                 <div className="flex-1 text-left">
-                  <span className="block font-medium text-neutral-700 dark:text-neutral-300 text-left">
+                  <span className="block font-medium text-[var(--hm-fg-secondary)] text-left">
                     {t("header.postAJob")}
                   </span>
-                  <span className="block text-xs text-neutral-500 dark:text-neutral-500 text-left">
+                  <span className="block text-xs text-[var(--hm-fg-muted)]0 text-left">
                     {t("header.findProfessionals")}
                   </span>
                 </div>
@@ -706,10 +666,10 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
               <Link
                 href={homeHref}
                 onClick={() => { setShowMobileMenu(false); trackEvent('nav_click', 'browse'); }}
-                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-all"
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-[var(--hm-bg-tertiary)]/50 transition-all"
               >
                 <svg
-                  className="w-5 h-5 text-neutral-500"
+                  className="w-5 h-5 text-[var(--hm-fg-muted)]"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -721,7 +681,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
                 </svg>
-                <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                <span className="text-sm text-[var(--hm-fg-secondary)]">
                   {t("header.browseProfessionals")}
                 </span>
               </Link>
@@ -729,8 +689,8 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
             </div>
 
             {/* Footer */}
-            <div className="absolute bottom-0 left-0 right-0 px-5 py-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50">
-              <p className="text-xs text-neutral-400 dark:text-neutral-500 text-center">
+            <div className="absolute bottom-0 left-0 right-0 px-5 py-4 border-t border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)]/50">
+              <p className="text-xs text-[var(--hm-fg-muted)] text-center">
                 {t("header.findTheBestProfessionalsIn")}
               </p>
             </div>
@@ -771,5 +731,5 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
 
 // Spacer component to prevent content from going under fixed header
 export function HeaderSpacer() {
-  return <div className="h-14 flex-shrink-0 bg-white dark:bg-[#0a0a0a]" />;
+  return <div className="h-14 flex-shrink-0" style={{ backgroundColor: 'var(--hm-bg-elevated)' }} />;
 }

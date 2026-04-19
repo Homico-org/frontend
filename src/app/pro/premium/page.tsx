@@ -1,4 +1,5 @@
 "use client";
+import { ACCENT_COLOR } from "@/constants/theme";
 
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import { Badge } from "@/components/ui/badge";
@@ -34,9 +35,9 @@ const COLORS = {
   gold: "#D4AF37",
   goldLight: "#E8C547",
   goldDark: "#B8962F",
-  terracotta: "#C4735B",
-  terracottaLight: "#D4897A",
-  terracottaDark: "#A85D4A",
+  terracotta: ACCENT_COLOR,
+  terracottaLight: "#F06B43",
+  terracottaDark: "#A92B08",
   cream: "#FFFBF5",
   champagne: "#F7E7CE",
   charcoal: "#1A1A1A",
@@ -95,7 +96,7 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
     accentColor: COLORS.terracotta,
     gradientFrom: COLORS.terracotta,
     gradientTo: COLORS.terracottaDark,
-    glowColor: "rgba(196, 115, 91, 0.35)",
+    glowColor: "rgba(239, 78, 36, 0.35)",
     highlightKey: "premium.mostPopular",
     features: [
       { icon: BadgeCheck, text: { en: "Everything in Premium", ka: "ყველაფერი პრემიუმიდან" }, included: true },
@@ -215,15 +216,15 @@ function PremiumCard({
         }`}
         style={{ background: `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})` }}
       >
-        <div className="w-full h-full rounded-3xl bg-white dark:bg-neutral-950" />
+        <div className="w-full h-full rounded-3xl bg-[var(--hm-bg-elevated)]" />
       </div>
 
       {/* Card Content */}
       <div
         className={`relative rounded-3xl p-8 h-full overflow-hidden ${
-          isSelected ? "" : "border border-neutral-200/50 dark:border-neutral-800"
+          isSelected ? "" : "border border-[var(--hm-border-subtle)]"
         }`}
-        style={{ background: "white" }}
+        style={{ background: "var(--hm-bg-elevated)" }}
       >
         {/* Shine Effect */}
         <div
@@ -286,12 +287,12 @@ function PremiumCard({
             <TierIcon className="w-7 h-7" style={{ color: tier.accentColor }} />
           </div>
           <h3 
-            className="text-2xl font-bold text-neutral-900 mb-2"
+            className="text-2xl font-bold text-[var(--hm-fg-primary)] mb-2"
             style={{ fontFamily: "var(--font-sans)" }}
           >
             {tier.name[locale === "ka" ? "ka" : "en"]}
           </h3>
-          <p className="text-neutral-500 text-sm">
+          <p className="text-[var(--hm-fg-muted)] text-sm">
             {tier.tagline[locale === "ka" ? "ka" : "en"]}
           </p>
         </div>
@@ -312,7 +313,7 @@ function PremiumCard({
             >
               {tier.currency}{price}
             </span>
-            <span className="text-neutral-400 text-lg">
+            <span className="text-[var(--hm-fg-muted)] text-lg">
               /{billingPeriod === "monthly" ? (t('premium.mo')) : (t('premium.yr'))}
             </span>
           </div>
@@ -345,12 +346,12 @@ function PremiumCard({
                   }}
                 >
                   {feature.included ? (
-                    <Check className="w-3.5 h-3.5 text-neutral-400" />
+                    <Check className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
                   ) : (
                     <FeatureIcon className="w-3.5 h-3.5" style={{ color: tier.accentColor }} />
                   )}
                 </div>
-                <span className={`text-sm ${feature.included ? "text-neutral-400" : "text-neutral-700"}`}>
+                <span className={`text-sm ${feature.included ? "text-[var(--hm-fg-muted)]" : "text-[var(--hm-fg-secondary)]"}`}>
                   {feature.text[locale === "ka" ? "ka" : "en"]}
                 </span>
               </li>
@@ -369,10 +370,10 @@ function PremiumCard({
             relative w-full py-4 rounded-xl font-bold text-sm transition-all duration-300 
             flex items-center justify-center gap-2 overflow-hidden group/btn
             ${isCurrent
-              ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+              ? "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] cursor-not-allowed"
               : isSelected
                 ? "text-white shadow-xl hover:shadow-2xl"
-                : "text-neutral-700 hover:shadow-lg"
+                : "text-[var(--hm-fg-secondary)] hover:shadow-lg"
             }
           `}
           style={{
@@ -437,7 +438,7 @@ function TestimonialCard({
 
   return (
     <div 
-      className="relative bg-white rounded-2xl p-6 border border-neutral-100 shadow-sm hover:shadow-xl transition-all duration-500 group"
+      className="relative bg-[var(--hm-bg-elevated)] rounded-2xl p-6 border border-[var(--hm-border-subtle)] shadow-sm hover:shadow-xl transition-all duration-500 group"
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* Quote mark */}
@@ -456,8 +457,8 @@ function TestimonialCard({
           {avatar}
         </div>
         <div>
-          <h4 className="font-semibold text-neutral-900">{name}</h4>
-          <p className="text-sm text-neutral-500">{role}</p>
+          <h4 className="font-semibold text-[var(--hm-fg-primary)]">{name}</h4>
+          <p className="text-sm text-[var(--hm-fg-muted)]">{role}</p>
         </div>
         <div 
           className="ml-auto px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
@@ -467,7 +468,7 @@ function TestimonialCard({
         </div>
       </div>
 
-      <p className="text-neutral-600 text-sm leading-relaxed mb-4">{text}</p>
+      <p className="text-[var(--hm-fg-secondary)] text-sm leading-relaxed mb-4">{text}</p>
 
       <div className="flex items-center gap-0.5">
         {[...Array(5)].map((_, i) => (
@@ -502,12 +503,12 @@ function FAQItem({
   onToggle: () => void;
 }) {
   return (
-    <div className="border-b border-neutral-100 last:border-0">
+    <div className="border-b border-[var(--hm-border-subtle)] last:border-0">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between gap-4 py-6 text-left group"
       >
-        <span className="font-medium text-neutral-800 group-hover:text-neutral-600 transition-colors">
+        <span className="font-medium text-[var(--hm-fg-primary)] group-hover:text-[var(--hm-fg-secondary)] transition-colors">
           {question}
         </span>
         <div 
@@ -523,7 +524,7 @@ function FAQItem({
         </div>
       </button>
       <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-48 pb-6" : "max-h-0"}`}>
-        <p className="text-neutral-500 leading-relaxed">{answer}</p>
+        <p className="text-[var(--hm-fg-muted)] leading-relaxed">{answer}</p>
       </div>
     </div>
   );
@@ -626,7 +627,7 @@ export default function PremiumPlansPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50/50 to-white dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       {/* Custom Styles */}
       <style jsx global>{`
         @keyframes float {
@@ -680,7 +681,7 @@ export default function PremiumPlansPage() {
             
             {/* Trust Badge */}
             <div className="flex justify-center mb-10">
-              <div className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-sm border border-neutral-200/50 shadow-lg">
+              <div className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-sm border border-[var(--hm-border-subtle)] shadow-lg">
                 <div className="flex -space-x-2">
                   {["NM", "GT", "DK", "LS"].map((initials, i) => (
                     <div
@@ -698,8 +699,8 @@ export default function PremiumPlansPage() {
                   ))}
                 </div>
                 <div className="text-sm">
-                  <span className="font-bold text-neutral-900">500+</span>{" "}
-                  <span className="text-neutral-500">{t('premium.professionalsTrustUs')}</span>
+                  <span className="font-bold text-[var(--hm-fg-primary)]">500+</span>{" "}
+                  <span className="text-[var(--hm-fg-muted)]">{t('premium.professionalsTrustUs')}</span>
                 </div>
               </div>
             </div>
@@ -707,7 +708,7 @@ export default function PremiumPlansPage() {
             {/* Main Headline */}
             <div className="text-center max-w-4xl mx-auto mb-16">
               <h1
-                className="text-5xl sm:text-6xl lg:text-7xl font-bold text-neutral-900 mb-6 leading-[1.1]"
+                className="text-5xl sm:text-6xl lg:text-7xl font-bold text-[var(--hm-fg-primary)] mb-6 leading-[1.1]"
                 style={{ fontFamily: "var(--font-sans)" }}
               >
                 {locale === "ka" ? (
@@ -750,18 +751,18 @@ export default function PremiumPlansPage() {
                   </>
                 )}
               </h1>
-              <p className="text-lg sm:text-xl text-neutral-500 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl text-[var(--hm-fg-muted)] max-w-2xl mx-auto leading-relaxed">
                 {t('premium.joinEliteProfessionalsAndUnlock')}
               </p>
             </div>
 
             {/* Billing Toggle */}
             <div className="flex items-center justify-center mb-14">
-              <div className="relative flex items-center gap-1 p-1.5 rounded-full bg-white border border-neutral-200 shadow-lg">
+              <div className="relative flex items-center gap-1 p-1.5 rounded-full bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] shadow-lg">
                 <button
                   onClick={() => setBillingPeriod("monthly")}
                   className={`relative px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
-                    billingPeriod === "monthly" ? "text-white" : "text-neutral-500 hover:text-neutral-700"
+                    billingPeriod === "monthly" ? "text-white" : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
                   }`}
                 >
                   {billingPeriod === "monthly" && (
@@ -775,7 +776,7 @@ export default function PremiumPlansPage() {
                 <button
                   onClick={() => setBillingPeriod("yearly")}
                   className={`relative px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
-                    billingPeriod === "yearly" ? "text-white" : "text-neutral-500 hover:text-neutral-700"
+                    billingPeriod === "yearly" ? "text-white" : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
                   }`}
                 >
                   {billingPeriod === "yearly" && (
@@ -817,9 +818,9 @@ export default function PremiumPlansPage() {
 
             {/* Guarantee Badge */}
             <div className="flex justify-center mt-12">
-              <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-emerald-50 border border-emerald-100">
-                <Shield className="w-5 h-5 text-emerald-600" />
-                <span className="text-sm font-medium text-emerald-700">
+              <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-[var(--hm-success-50)] border border-emerald-100">
+                <Shield className="w-5 h-5 text-[var(--hm-success-500)]" />
+                <span className="text-sm font-medium text-[var(--hm-success-500)]">
                   {t('premium.7dayMoneybackGuaranteeNoQuestions')}
                 </span>
               </div>
@@ -830,7 +831,7 @@ export default function PremiumPlansPage() {
         {/* ========== TESTIMONIALS SECTION ========== */}
         <section 
           ref={testimonialsRef}
-          className="py-24 bg-gradient-to-b from-neutral-50 to-white"
+          className="py-24 bg-[var(--hm-bg-page)]"
         >
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-14">
@@ -839,12 +840,12 @@ export default function PremiumPlansPage() {
                 {t('premium.realResults')}
               </Badge>
               <h2 
-                className="text-4xl font-bold text-neutral-900 mb-4"
+                className="text-4xl font-bold text-[var(--hm-fg-primary)] mb-4"
                 style={{ fontFamily: "var(--font-sans)" }}
               >
                 {t('premium.whatOurMembersSay')}
               </h2>
-              <p className="text-neutral-500 max-w-xl mx-auto">
+              <p className="text-[var(--hm-fg-muted)] max-w-xl mx-auto">
                 {t('premium.joinHundredsOfSuccessfulProfessionals')}
               </p>
             </div>
@@ -860,7 +861,7 @@ export default function PremiumPlansPage() {
         </section>
 
         {/* ========== STATS SECTION ========== */}
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-[var(--hm-bg-elevated)]">
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
@@ -871,7 +872,7 @@ export default function PremiumPlansPage() {
               ].map((stat, i) => (
                 <div
                   key={i}
-                  className="relative text-center p-8 rounded-2xl bg-white border border-neutral-100 shadow-sm hover:shadow-xl transition-all duration-500 group overflow-hidden"
+                  className="relative text-center p-8 rounded-2xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border-subtle)] shadow-sm hover:shadow-xl transition-all duration-500 group overflow-hidden"
                 >
                   {/* Hover glow */}
                   <div 
@@ -886,12 +887,12 @@ export default function PremiumPlansPage() {
                     <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
                   </div>
                   <p 
-                    className="text-4xl font-bold text-neutral-900 mb-2"
+                    className="text-4xl font-bold text-[var(--hm-fg-primary)] mb-2"
                     style={{ fontFamily: "var(--font-sans)" }}
                   >
                     {stat.value}
                   </p>
-                  <p className="text-neutral-500 text-sm">{stat.label}</p>
+                  <p className="text-[var(--hm-fg-muted)] text-sm">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -899,18 +900,18 @@ export default function PremiumPlansPage() {
         </section>
 
         {/* ========== FAQ SECTION ========== */}
-        <section className="py-24 bg-neutral-50">
+        <section className="py-24 bg-[var(--hm-bg-page)]">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
               <h2 
-                className="text-3xl font-bold text-neutral-900 mb-4"
+                className="text-3xl font-bold text-[var(--hm-fg-primary)] mb-4"
                 style={{ fontFamily: "var(--font-sans)" }}
               >
                 {t('premium.frequentlyAskedQuestions')}
               </h2>
             </div>
 
-            <div className="rounded-2xl bg-white p-8 border border-neutral-100 shadow-sm">
+            <div className="rounded-2xl bg-[var(--hm-bg-elevated)] p-8 border border-[var(--hm-border-subtle)] shadow-sm">
               {faqs.map((faq, i) => (
                 <FAQItem
                   key={i}

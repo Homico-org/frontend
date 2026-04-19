@@ -68,14 +68,14 @@ export default function TimePicker({
         onClick={() => setIsOpen(!isOpen)}
         className={`inline-flex items-center gap-1.5 rounded-lg border transition-all ${
           isOpen
-            ? "border-[#C4735B]/40 ring-2 ring-[#C4735B]/10"
-            : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600"
-        } bg-white dark:bg-neutral-800 ${
+            ? "border-[var(--hm-brand-500)]/40 ring-2 ring-[var(--hm-brand-500)]/10"
+            : "border-[var(--hm-border)] hover:border-[var(--hm-border-strong)]"
+        } bg-[var(--hm-bg-elevated)] ${
           isSm ? "px-2 py-1 text-xs" : "px-2.5 py-1.5 text-sm"
         } ${className}`}
       >
-        <Clock className={`text-neutral-400 ${isSm ? "w-3 h-3" : "w-3.5 h-3.5"}`} />
-        <span className="font-medium text-neutral-900 dark:text-white">
+        <Clock className={`text-[var(--hm-fg-muted)] ${isSm ? "w-3 h-3" : "w-3.5 h-3.5"}`} />
+        <span className="font-medium text-[var(--hm-fg-primary)]">
           {formatHour(value)}
         </span>
       </button>
@@ -83,7 +83,7 @@ export default function TimePicker({
       {isOpen && pos && mounted && createPortal(
         <div
           ref={dropdownRef}
-          className="fixed z-[200] w-[100px] rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden"
+          className="fixed z-[200] w-[100px] rounded-xl shadow-2xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] overflow-hidden"
           style={{ top: pos.top, left: pos.left }}
         >
           <div className="max-h-[232px] overflow-y-auto py-1 scrollbar-thin">
@@ -97,9 +97,9 @@ export default function TimePicker({
                   className={`w-full px-3 py-1.5 text-xs font-medium text-left transition-colors ${
                     isActive
                       ? "text-white"
-                      : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                      : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
                   }`}
-                  style={isActive ? { backgroundColor: "#C4735B" } : undefined}
+                  style={isActive ? { backgroundColor: 'var(--hm-brand-500)' } : undefined}
                 >
                   {formatHour(h)}
                 </button>

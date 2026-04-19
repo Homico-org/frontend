@@ -61,8 +61,8 @@ export const WithSubmitAction: Story = {
       <button
         className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-white transition-all hover:scale-105 hover:shadow-lg"
         style={{
-          backgroundColor: '#C4735B',
-          boxShadow: '0 4px 20px #C4735B40',
+          backgroundColor: '#EF4E24',
+          boxShadow: '0 4px 20px #EF4E2440',
         }}
       >
         <Send className="w-4 h-4" />
@@ -102,7 +102,7 @@ export const GeorgianLabels: Story = {
     actions: (
       <button
         className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-white transition-all hover:scale-105"
-        style={{ backgroundColor: '#C4735B' }}
+        style={{ backgroundColor: '#EF4E24' }}
       >
         <Send className="w-4 h-4" />
         შეთავაზების გაგზავნა

@@ -33,7 +33,7 @@ const headerVariants = cva('p-4 sm:p-6 text-center', {
   variants: {
     variant: {
       default: '',
-      danger: 'bg-gradient-to-br from-red-500/10 to-red-500/5 border-b border-red-500/15',
+      danger: 'bg-gradient-to-br from-red-500/10 to-red-500/5 border-b border-[var(--hm-error-500)]/15',
       warning: 'bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border-b border-yellow-500/15',
       success: 'bg-gradient-to-br from-green-500/10 to-green-500/5 border-b border-green-500/15',
       info: 'bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-b border-blue-500/15',
@@ -51,11 +51,11 @@ const iconContainerVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-neutral-100 dark:bg-neutral-800',
-        danger: 'bg-red-100 dark:bg-red-900/30',
-        warning: 'bg-yellow-100 dark:bg-yellow-900/30',
-        success: 'bg-green-100 dark:bg-green-900/30',
-        info: 'bg-blue-100 dark:bg-blue-900/30',
+        default: 'bg-[var(--hm-bg-tertiary)]',
+        danger: 'bg-[var(--hm-error-100)]/30',
+        warning: 'bg-yellow-100',
+        success: 'bg-green-100',
+        info: 'bg-[var(--hm-info-100)]/30',
         accent: '', // Background handled via inline style for theme consistency
       },
     },
@@ -69,11 +69,11 @@ const iconContainerVariants = cva(
 const titleVariants = cva('text-xl font-bold', {
   variants: {
     variant: {
-      default: 'text-neutral-900 dark:text-white',
-      danger: 'text-red-600 dark:text-red-400',
-      warning: 'text-yellow-600 dark:text-yellow-500',
-      success: 'text-green-600 dark:text-green-400',
-      info: 'text-blue-600 dark:text-blue-400',
+      default: 'text-[var(--hm-fg-primary)]',
+      danger: 'text-[var(--hm-error-500)]',
+      warning: 'text-yellow-600',
+      success: 'text-green-600',
+      info: 'text-[var(--hm-info-500)]',
       accent: '', // Color handled via inline style for theme consistency
     },
   },
@@ -147,7 +147,8 @@ export function Modal({
     <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4" style={{ zIndex: 9999 }}>
       {/* Backdrop with blur */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-backdrop"
+        className="absolute inset-0 animate-fade-backdrop"
+        style={{ backgroundColor: 'rgba(21,17,12,0.55)' }}
         onClick={closeOnBackdrop ? handleClose : undefined}
       />
 
@@ -156,23 +157,23 @@ export function Modal({
         className={cn(
           modalVariants({ size }),
           'max-h-[92vh] sm:max-h-[90vh] overflow-y-auto',
-          'rounded-t-3xl sm:rounded-2xl',
+          '',
           'animate-slide-up-sheet sm:animate-fade-in',
           className
         )}
-        style={{ backgroundColor: 'var(--color-bg-primary)' }}
+        style={{ backgroundColor: 'var(--hm-bg-page)' }}
       >
         {/* Drag handle for mobile */}
-        <div className="sm:hidden flex justify-center pt-3 pb-1 sticky top-0 z-20" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
-          <div className="w-12 h-1.5 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+        <div className="sm:hidden flex justify-center pt-3 pb-1 sticky top-0 z-20" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
+          <div className="w-12 h-1.5 rounded-full bg-neutral-300" />
         </div>
 
         {showCloseButton && !preventClose && (
           <button
             onClick={handleClose}
-            className="absolute top-4 sm:top-4 right-4 p-2.5 sm:p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 active:bg-neutral-200 transition-colors z-10"
+            className="absolute top-4 sm:top-4 right-4 p-2.5 sm:p-2 rounded-full hover:bg-[var(--hm-bg-tertiary)] active:bg-[var(--hm-n-200)] transition-colors z-10"
           >
-            <X className="w-5 h-5 text-neutral-500" />
+            <X className="w-5 h-5 text-[var(--hm-fg-muted)]" />
           </button>
         )}
         {children}
@@ -229,7 +230,7 @@ export function ModalHeader({
       {description && (
         <p
           className="text-sm mt-2"
-          style={{ color: 'var(--color-text-secondary)' }}
+          style={{ color: 'var(--hm-fg-secondary)' }}
         >
           {description}
         </p>
@@ -294,10 +295,10 @@ export function ModalActions({
 }: ModalActionsProps) {
   const buttonColors: Record<ModalVariant, string> = {
     default: 'bg-neutral-800 hover:bg-neutral-900 disabled:bg-neutral-400',
-    danger: 'bg-red-500 hover:bg-red-600 disabled:bg-red-300 dark:disabled:bg-red-800',
-    warning: 'bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 dark:disabled:bg-yellow-800',
-    success: 'bg-green-500 hover:bg-green-600 disabled:bg-green-300 dark:disabled:bg-green-800',
-    info: 'bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 dark:disabled:bg-blue-800',
+    danger: 'bg-[var(--hm-error-500)] hover:bg-red-600 disabled:bg-red-300',
+    warning: 'bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300',
+    success: 'bg-green-500 hover:bg-green-600 disabled:bg-green-300',
+    info: 'bg-[var(--hm-info-500)] hover:bg-blue-600 disabled:bg-blue-300',
     accent: '', // Handled via inline style for theme consistency
   };
 
@@ -315,10 +316,10 @@ export function ModalActions({
       <button
         onClick={onCancel}
         disabled={isLoading}
-        className="flex-1 py-3.5 sm:py-3 rounded-xl font-medium text-base sm:text-sm transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 active:bg-neutral-200 disabled:opacity-50"
+        className="flex-1 py-3.5 sm:py-3 rounded-xl font-medium text-base sm:text-sm transition-all hover:bg-[var(--hm-bg-tertiary)] active:bg-[var(--hm-n-200)] disabled:opacity-50"
         style={{
-          border: '1px solid var(--color-border)',
-          color: 'var(--color-text-primary)',
+          border: '1px solid var(--hm-border)',
+          color: 'var(--hm-fg-primary)',
         }}
       >
         {cancelLabel}

@@ -35,54 +35,54 @@ module.exports = {
           800: '#004B3B', // Deep forest - primary dark
           900: '#022c22',
         },
-        // Terracotta for active/accent states (lighter palette)
+        // Homico Design System — vermillion brand
         terracotta: {
-          50: '#fef8f6',
-          100: '#fdf0eb',
-          200: '#fbe0d6',
-          300: '#f5c8b5',
-          400: '#E8956A', // Light terracotta
-          500: '#E07B4F', // Main terracotta
-          600: '#D26B3F', // Dark terracotta
-          700: '#b85a3d',
-          800: '#9a4832',
-          900: '#7d3d2d',
+          50:  '#FEEDE6',
+          100: '#FBD3C5',
+          200: '#F7B49B',
+          300: '#F28764',
+          400: '#F06B43',
+          500: '#EF4E24',  // primary
+          600: '#D13C14',
+          700: '#A92B08',
+          800: '#7D1E04',
+          900: '#501301',
         },
-        // Warm neutrals with slight green undertone
+        // Homico Design System — warm paper & ink neutrals
         neutral: {
-          50: '#fafaf9',
-          100: '#f5f5f4',
-          200: '#e7e5e4',
-          300: '#d6d3d1',
-          400: '#a8a29e',
-          500: '#78716c',
-          600: '#57534e',
-          700: '#44403c',
-          800: '#292524',
-          900: '#1c1917',
-          950: '#0c0a09',
+          50:  '#FAFAF7',  // paper
+          100: '#F2F0EB',
+          200: '#E3DFD6',
+          300: '#C9C3B5',
+          400: '#A69F8E',
+          500: '#8A8472',
+          600: '#5E594C',
+          700: '#3D3930',
+          800: '#262218',
+          900: '#14120E',  // ink
+          950: '#0D0B08',
         },
-        // Cream/Ivory backgrounds
+        // Cream — maps to paper neutrals
         cream: {
-          50: '#fefef9',
-          100: '#fdfcf5',
-          200: '#faf8ed',
-          300: '#f5f2e3',
-          400: '#ede8d4',
-          500: '#e2dcc4',
+          50:  '#FAFAF7',
+          100: '#F2F0EB',
+          200: '#E3DFD6',
+          300: '#C9C3B5',
+          400: '#A69F8E',
+          500: '#8A8472',
         },
-        // Dark mode specific colors - Soft twilight palette (lighter, warmer)
+        // Dark mode — ink-based warm
         dark: {
-          50: '#5a5a5e',   // Lightest - for hover states
-          100: '#4e4e52',  // Light - for elevated elements
-          200: '#434347',  // Medium light - for cards
-          300: '#38383c',  // Medium - for secondary bg
-          400: '#2d2d31',  // Main background
-          500: '#262629',  // Darker background
-          600: '#1f1f22',
-          700: '#1a1a1d',
-          800: '#151517',
-          900: '#101012',
+          50:  '#4A4336',
+          100: '#3D3930',
+          200: '#302B22',
+          300: '#26231B',
+          400: '#1D1B15',
+          500: '#14120E',
+          600: '#0D0B08',
+          700: '#0D0B08',
+          800: '#0D0B08',
+          900: '#0D0B08',
           // Semantic colors - Softer, lighter dark mode
           bg: '#28282c',        // Main page background - lighter charcoal
           card: '#323236',      // Card backgrounds - soft slate
@@ -93,9 +93,10 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        serif: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        display: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        sans: ['Inter', 'Noto Sans Georgian', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        serif: ['Fraunces', 'Noto Serif Georgian', 'Georgia', 'serif'],
+        display: ['Fraunces', 'Noto Serif Georgian', 'Georgia', 'serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'Menlo', 'monospace'],
       },
       fontSize: {
         'display-xl': ['4.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
@@ -104,14 +105,18 @@ module.exports = {
         'display-sm': ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.01em' }],
       },
       borderRadius: {
-        'sm': '0.25rem',
-        'DEFAULT': '0.375rem',
-        'md': '0.5rem',
-        'lg': '0.75rem',
-        'xl': '1rem',
-        '2xl': '1.5rem',
-        '3xl': '2rem',
-        '4xl': '2.5rem',
+        'none': '0',
+        'sm': '0',
+        'DEFAULT': '0',
+        'md': '0',
+        'lg': '0',
+        'xl': '0',
+        '2xl': '0',
+        '3xl': '0',
+        '4xl': '0',
+        // Only these stay rounded (per design system)
+        'full': '9999px',
+        'pill': '9999px',
       },
       boxShadow: {
         'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.04), 0 10px 20px -2px rgba(0, 0, 0, 0.02)',
@@ -128,7 +133,7 @@ module.exports = {
         'gradient-luxury': 'linear-gradient(135deg, #004B3B 0%, #0B3D2E 50%, #022c22 100%)',
         'gradient-cream': 'linear-gradient(180deg, #fefef9 0%, #faf8ed 100%)',
         'gradient-emerald': 'linear-gradient(135deg, #50c878 0%, #22c55e 100%)',
-        'gradient-terracotta': 'linear-gradient(135deg, #E07B4F 0%, #D26B3F 100%)',
+        'gradient-terracotta': 'linear-gradient(135deg, #F06B43 0%, #D13C14 100%)',
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-out forwards',

@@ -92,7 +92,7 @@ function PhotoUploadSection({
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+      <p className="text-xs font-medium" style={{ color: 'var(--hm-fg-secondary)' }}>
         {label}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -100,7 +100,7 @@ function PhotoUploadSection({
           <div
             key={url}
             className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0"
-            style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
+            style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}
           >
             <img src={url} alt="" className="w-full h-full object-cover" />
             <button
@@ -114,8 +114,8 @@ function PhotoUploadSection({
         <button
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="w-16 h-16 rounded-lg border-2 border-dashed flex items-center justify-center shrink-0 hover:border-[#C4735B] hover:text-[#C4735B] transition-colors"
-          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-tertiary)' }}
+          className="w-16 h-16 rounded-lg border-2 border-dashed flex items-center justify-center shrink-0 hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] transition-colors"
+          style={{ borderColor: 'var(--hm-border)', color: 'var(--hm-fg-muted)' }}
         >
           {uploading ? <LoadingSpinner size="xs" /> : <ImagePlus className="w-5 h-5" />}
         </button>
@@ -142,7 +142,7 @@ function PhotoThumbs({ photos, label }: { photos: string[]; label: string }) {
     <div className="flex items-center gap-2">
       <p
         className="text-[10px] font-semibold uppercase tracking-wider shrink-0"
-        style={{ color: 'var(--color-text-tertiary)' }}
+        style={{ color: 'var(--hm-fg-muted)' }}
       >
         {label}
       </p>
@@ -150,9 +150,9 @@ function PhotoThumbs({ photos, label }: { photos: string[]; label: string }) {
         {photos.slice(0, 4).map((url, idx) => (
           <div
             key={url}
-            className="w-10 h-10 rounded-lg overflow-hidden shrink-0 ring-2 ring-[var(--color-bg-elevated)]"
+            className="w-10 h-10 rounded-lg overflow-hidden shrink-0 ring-2 ring-[var(--hm-bg-elevated)]"
             style={{
-              backgroundColor: 'var(--color-bg-tertiary)',
+              backgroundColor: 'var(--hm-bg-tertiary)',
               marginLeft: idx > 0 ? '-8px' : undefined,
               position: 'relative',
               zIndex: 4 - idx,
@@ -169,8 +169,8 @@ function PhotoThumbs({ photos, label }: { photos: string[]; label: string }) {
           <div
             className="w-10 h-10 rounded-lg flex items-center justify-center text-xs font-semibold ring-2 shrink-0"
             style={{
-              backgroundColor: 'var(--color-bg-tertiary)',
-              color: 'var(--color-text-secondary)',
+              backgroundColor: 'var(--hm-bg-tertiary)',
+              color: 'var(--hm-fg-secondary)',
               marginLeft: '-8px',
               position: 'relative',
               zIndex: 0,
@@ -392,10 +392,10 @@ function BookingsContent() {
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium transition-all shrink-0 whitespace-nowrap"
             style={{
               backgroundColor:
-                activeTab === tab.id ? '#C4735B' : 'var(--color-bg-elevated)',
-              color: activeTab === tab.id ? '#fff' : 'var(--color-text-secondary)',
+                activeTab === tab.id ? 'var(--hm-brand-500)' : 'var(--hm-bg-elevated)',
+              color: activeTab === tab.id ? '#fff' : 'var(--hm-fg-secondary)',
               border:
-                activeTab === tab.id ? 'none' : '1px solid var(--color-border-subtle)',
+                activeTab === tab.id ? 'none' : '1px solid var(--hm-border-subtle)',
             }}
           >
             {tab.label}
@@ -406,9 +406,9 @@ function BookingsContent() {
                   backgroundColor:
                     activeTab === tab.id
                       ? 'rgba(255,255,255,0.25)'
-                      : 'var(--color-bg-tertiary)',
+                      : 'var(--hm-bg-tertiary)',
                   color:
-                    activeTab === tab.id ? '#fff' : 'var(--color-text-tertiary)',
+                    activeTab === tab.id ? '#fff' : 'var(--hm-fg-muted)',
                 }}
               >
                 {tab.count}
@@ -420,7 +420,7 @@ function BookingsContent() {
         {user?.role === 'pro' && (
           <button
             onClick={() => setShowSchedule(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[#C4735B] bg-[#C4735B]/10 hover:bg-[#C4735B]/20 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 transition-colors"
           >
             <Settings2 className="w-4 h-4" />
             {t('settings.availability')}
@@ -431,23 +431,23 @@ function BookingsContent() {
       {/* Content */}
       {loading ? (
         <div className="flex justify-center py-12">
-          <LoadingSpinner size="lg" color="#C4735B" />
+          <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
         </div>
       ) : filteredBookings.length === 0 ? (
         <div className="text-center py-16">
           <Calendar
             size={48}
             className="mx-auto mb-3 opacity-30"
-            style={{ color: 'var(--color-text-tertiary)' }}
+            style={{ color: 'var(--hm-fg-muted)' }}
           />
-          <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+          <p className="font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
             {t('booking.noBookings')}
           </p>
-          <p className="text-sm mt-1 mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-sm mt-1 mb-4" style={{ color: 'var(--hm-fg-secondary)' }}>
             {t('booking.noBookingsDescription')}
           </p>
           <Link href="/professionals">
-            <Button variant="default" size="default" className="bg-[#C4735B] hover:bg-[#B5624A] text-white border-0">
+            <Button variant="default" size="default" className="bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white border-0">
               {t('booking.findProfessional')}
             </Button>
           </Link>
@@ -471,7 +471,7 @@ function BookingsContent() {
                 key={bookingId}
                 className="rounded-2xl overflow-hidden transition-shadow hover:shadow-md shadow-sm border-t-2"
                 style={{
-                  backgroundColor: 'var(--color-bg-elevated)',
+                  backgroundColor: 'var(--hm-bg-elevated)',
                   borderTopColor: sc.strip,
                 }}
               >
@@ -481,8 +481,8 @@ function BookingsContent() {
                     {/* Avatar + name + meta */}
                     <div className="flex items-center gap-3 min-w-0">
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-black/5 dark:ring-white/10"
-                        style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
+                        className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-black/5"
+                        style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}
                       >
                         {other?.avatar ? (
                           <img
@@ -495,7 +495,7 @@ function BookingsContent() {
                         ) : (
                           <User
                             size={16}
-                            style={{ color: 'var(--color-text-tertiary)' }}
+                            style={{ color: 'var(--hm-fg-muted)' }}
                           />
                         )}
                       </div>
@@ -508,15 +508,15 @@ function BookingsContent() {
                                 : `/professionals/${other?.id || other?._id}`
                             }
                             className="font-bold text-base leading-tight truncate hover:underline"
-                            style={{ color: 'var(--color-text-primary)' }}
+                            style={{ color: 'var(--hm-fg-primary)' }}
                           >
                             {other?.name || '—'}
                           </Link>
                           <span
                             className="text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0"
                             style={{
-                              color: 'var(--color-text-tertiary)',
-                              backgroundColor: 'var(--color-bg-tertiary)',
+                              color: 'var(--hm-fg-muted)',
+                              backgroundColor: 'var(--hm-bg-tertiary)',
                             }}
                           >
                             {isPro ? t('booking.client') : t('booking.pro')}
@@ -524,7 +524,7 @@ function BookingsContent() {
                         </div>
                         <div
                           className="flex items-center gap-1.5 mt-1 text-sm"
-                          style={{ color: 'var(--color-text-secondary)' }}
+                          style={{ color: 'var(--hm-fg-secondary)' }}
                         >
                           <span className="flex items-center gap-1">
                             <Calendar size={12} />
@@ -533,7 +533,7 @@ function BookingsContent() {
                               locale as 'en' | 'ka' | 'ru',
                             )}
                           </span>
-                          <span style={{ color: 'var(--color-border)' }}>·</span>
+                          <span style={{ color: 'var(--hm-border)' }}>·</span>
                           <span className="flex items-center gap-1">
                             <Clock size={12} />
                             {formatHour(booking.startHour)}–
@@ -559,7 +559,7 @@ function BookingsContent() {
                   {booking.address && (
                     <div
                       className="flex items-center gap-1.5 mt-2.5 text-sm"
-                      style={{ color: 'var(--color-text-secondary)' }}
+                      style={{ color: 'var(--hm-fg-secondary)' }}
                     >
                       <MapPin size={13} className="shrink-0" />
                       <span className="truncate">{booking.address}</span>
@@ -570,7 +570,7 @@ function BookingsContent() {
                   {booking.note && (
                     <p
                       className="text-sm mt-2 line-clamp-2 italic"
-                      style={{ color: 'var(--color-text-tertiary)' }}
+                      style={{ color: 'var(--hm-fg-muted)' }}
                     >
                       &ldquo;{booking.note}&rdquo;
                     </p>
@@ -585,15 +585,15 @@ function BookingsContent() {
                         key={idx}
                         className="flex items-center justify-between py-2 text-sm"
                         style={{
-                          borderTop: idx > 0 ? '1px solid var(--color-border-subtle)' : undefined,
+                          borderTop: idx > 0 ? '1px solid var(--hm-border-subtle)' : undefined,
                         }}
                       >
-                        <span style={{ color: 'var(--color-text-primary)' }}>
+                        <span style={{ color: 'var(--hm-fg-primary)' }}>
                           {pick({ en: svc.name, ka: svc.nameKa }) || svc.name}
                           {svc.quantity > 1 && (
                             <span
                               className="ml-1"
-                              style={{ color: 'var(--color-text-tertiary)' }}
+                              style={{ color: 'var(--hm-fg-muted)' }}
                             >
                               &times; {svc.quantity}
                             </span>
@@ -601,7 +601,7 @@ function BookingsContent() {
                           {svc.unit && (
                             <span
                               className="ml-1 text-xs"
-                              style={{ color: 'var(--color-text-tertiary)' }}
+                              style={{ color: 'var(--hm-fg-muted)' }}
                             >
                               / {svc.unit}
                             </span>
@@ -609,7 +609,7 @@ function BookingsContent() {
                         </span>
                         <span
                           className="tabular-nums font-medium ml-4 shrink-0"
-                          style={{ color: 'var(--color-text-secondary)' }}
+                          style={{ color: 'var(--hm-fg-secondary)' }}
                         >
                           {formatCurrency(svc.subtotal)}
                         </span>
@@ -620,17 +620,17 @@ function BookingsContent() {
                     {booking.totalAmount != null && booking.totalAmount > 0 && (
                       <div
                         className="flex items-center justify-between py-2.5 mt-0.5 mb-2"
-                        style={{ borderTop: '1px solid var(--color-border-subtle)' }}
+                        style={{ borderTop: '1px solid var(--hm-border-subtle)' }}
                       >
                         <span
                           className="text-sm font-semibold"
-                          style={{ color: 'var(--color-text-secondary)' }}
+                          style={{ color: 'var(--hm-fg-secondary)' }}
                         >
                           {t('booking.total')}
                         </span>
                         <span
                           className="text-base font-bold tabular-nums"
-                          style={{ color: '#C4735B' }}
+                          style={{ color: 'var(--hm-brand-500)' }}
                         >
                           {formatCurrency(booking.totalAmount)}
                         </span>
@@ -662,7 +662,7 @@ function BookingsContent() {
                       <Link
                         href={`/review/booking/${bookingId}`}
                         className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors"
-                        style={{ color: '#C4735B' }}
+                        style={{ color: 'var(--hm-brand-500)' }}
                       >
                         <Star className="w-3.5 h-3.5" />
                         {t('reviews.leaveReview')}
@@ -677,13 +677,13 @@ function BookingsContent() {
                       onClick={() => setCancelModalId(bookingId)}
                       disabled={actionLoading === bookingId}
                       className="text-sm font-medium transition-colors disabled:opacity-40"
-                      style={{ color: 'var(--color-text-tertiary)' }}
+                      style={{ color: 'var(--hm-fg-muted)' }}
                       onMouseEnter={(e) =>
                         ((e.currentTarget as HTMLButtonElement).style.color = 'rgb(239,68,68)')
                       }
                       onMouseLeave={(e) =>
                         ((e.currentTarget as HTMLButtonElement).style.color =
-                          'var(--color-text-tertiary)')
+                          'var(--hm-fg-muted)')
                       }
                     >
                       {t('booking.cancelAction')}
@@ -753,8 +753,8 @@ function BookingsContent() {
                   <div
                     className="px-5 py-4"
                     style={{
-                      borderTop: '1px solid var(--color-border-subtle)',
-                      backgroundColor: 'var(--color-bg-tertiary)',
+                      borderTop: '1px solid var(--hm-border-subtle)',
+                      backgroundColor: 'var(--hm-bg-tertiary)',
                     }}
                   >
                     <PhotoUploadSection
@@ -802,8 +802,8 @@ function BookingsContent() {
                   <div
                     className="px-5 py-4"
                     style={{
-                      borderTop: '1px solid var(--color-border-subtle)',
-                      backgroundColor: 'var(--color-bg-tertiary)',
+                      borderTop: '1px solid var(--hm-border-subtle)',
+                      backgroundColor: 'var(--hm-bg-tertiary)',
                     }}
                   >
                     <PhotoUploadSection
@@ -847,7 +847,7 @@ function BookingsContent() {
                     {photos.length === 0 && (
                       <p
                         className="text-xs mt-1.5"
-                        style={{ color: 'var(--color-text-tertiary)' }}
+                        style={{ color: 'var(--hm-fg-muted)' }}
                       >
                         {t('booking.atLeastOnePhoto')}
                       </p>
@@ -874,7 +874,7 @@ function BookingsContent() {
           variant="accent"
         >
           <div className="space-y-3">
-            <p style={{ color: 'var(--color-text-secondary)' }}>
+            <p style={{ color: 'var(--hm-fg-secondary)' }}>
               {t('booking.cancelReason')}
             </p>
             <Textarea

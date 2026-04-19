@@ -146,7 +146,7 @@ function AiSearchIndicator({ isSearching }: { isSearching: boolean }) {
   if (!isSearching) return null;
   return (
     <div className="absolute right-10 top-1/2 -translate-y-1/2 flex items-center gap-1">
-      <Sparkles className="w-3.5 h-3.5 text-[#C4735B] animate-pulse" />
+      <Sparkles className="w-3.5 h-3.5 text-[var(--hm-brand-500)] animate-pulse" />
     </div>
   );
 }
@@ -187,11 +187,11 @@ function JobsSearchInput() {
       <div
         className={`relative flex items-center w-full h-11 rounded-xl border transition-all ${
           isFocused
-            ? "border-[#C4735B]/40 ring-2 ring-[#C4735B]/10"
-            : "border-neutral-200 dark:border-neutral-800"
-        } bg-white dark:bg-neutral-900`}
+            ? "border-[var(--hm-brand-500)]/40 ring-2 ring-[var(--hm-brand-500)]/10"
+            : "border-[var(--hm-border)]"
+        } bg-[var(--hm-bg-elevated)]`}
       >
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--hm-fg-muted)]">
           <Search className="w-[18px] h-[18px]" />
         </div>
         <input
@@ -201,16 +201,16 @@ function JobsSearchInput() {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={t("browse.searchJobs")}
-          className="flex-1 h-10 pr-9 bg-transparent text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none pl-10"
+          className="flex-1 h-10 pr-9 bg-transparent text-sm text-[var(--hm-fg-primary)] placeholder-neutral-400 focus:outline-none pl-10"
         />
         <AiSearchIndicator isSearching={isSearching} />
         {localSearch ? (
           <button
             onClick={() => handleSearchChange("")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
             aria-label="Clear search"
           >
-            <X className="w-3.5 h-3.5 text-neutral-500" />
+            <X className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
           </button>
         ) : null}
       </div>
@@ -258,11 +258,11 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
       <div
         className={`relative flex items-center w-full h-11 rounded-xl border transition-all ${
           isFocused
-            ? "border-[#C4735B]/40 ring-2 ring-[#C4735B]/10"
-            : "border-neutral-200 dark:border-neutral-800"
-        } bg-white dark:bg-neutral-900`}
+            ? "border-[var(--hm-brand-500)]/40 ring-2 ring-[var(--hm-brand-500)]/10"
+            : "border-[var(--hm-border)]"
+        } bg-[var(--hm-bg-elevated)]`}
       >
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--hm-fg-muted)]">
           <Search className="w-[18px] h-[18px]" />
         </div>
         <input
@@ -272,16 +272,16 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
-          className="flex-1 h-10 pr-9 bg-transparent text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none pl-10"
+          className="flex-1 h-10 pr-9 bg-transparent text-sm text-[var(--hm-fg-primary)] placeholder-neutral-400 focus:outline-none pl-10"
         />
         <AiSearchIndicator isSearching={isSearching} />
         {localSearch ? (
           <button
             onClick={() => handleSearchChange("")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
             aria-label="Clear search"
           >
-            <X className="w-3.5 h-3.5 text-neutral-500" />
+            <X className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
           </button>
         ) : null}
       </div>
@@ -481,10 +481,10 @@ function SidebarCategoriesUI({
             <button
               key={cat.key}
               onClick={() => onCategoryClick(cat.key)}
-              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
-                active ? "shadow-sm" : "hover:bg-neutral-50 dark:hover:bg-neutral-800"
+              className={`w-9 h-9 flex items-center justify-center transition-all ${
+                active ? "" : "hover:bg-[var(--hm-bg-tertiary)]"
               }`}
-              style={active ? { backgroundColor: `${ACCENT_COLOR}15`, color: ACCENT_COLOR } : {}}
+              style={active ? { backgroundColor: 'var(--hm-brand-50)', color: 'var(--hm-brand-700)' } : {}}
               title={getCategoryLabelStatic(cat.key, locale)}
             >
               <CategoryIcon type={cat.key} className="w-4 h-4" />
@@ -501,7 +501,7 @@ function SidebarCategoriesUI({
         <div className="flex justify-end px-1 mb-1">
           <button
             onClick={onClear}
-            className="flex items-center gap-1 text-[10px] font-medium text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+            className="flex items-center gap-1 text-[10px] font-medium text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors"
           >
             <RotateCcw className="w-2.5 h-2.5" />
             {t("browse.clearAll")}
@@ -522,8 +522,8 @@ function SidebarCategoriesUI({
               onClick={() => onCategoryClick(catKey)}
               className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all text-left group ${
                 active || hasSelectedSub
-                  ? "bg-[#C4735B]/10"
-                  : "hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                  ? "bg-[var(--hm-brand-500)]/10"
+                  : "hover:bg-[var(--hm-bg-tertiary)]/50"
               }`}
             >
               <span
@@ -535,8 +535,8 @@ function SidebarCategoriesUI({
               <span
                 className={`text-[12px] flex-1 truncate transition-colors ${
                   active || hasSelectedSub
-                    ? "font-semibold text-neutral-900 dark:text-white"
-                    : "text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-300"
+                    ? "font-semibold text-[var(--hm-fg-primary)]"
+                    : "text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-fg-primary)]"
                 }`}
               >
                 {label}
@@ -547,7 +547,7 @@ function SidebarCategoriesUI({
                     e.stopPropagation();
                     setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }));
                   }}
-                  className={`w-3 h-3 text-neutral-400 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer hover:text-neutral-600 flex-shrink-0 ${
+                  className={`w-3 h-3 text-[var(--hm-fg-muted)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer hover:text-[var(--hm-fg-secondary)] flex-shrink-0 ${
                     isExpanded ? "rotate-180" : "rotate-0"
                   }`}
                 />
@@ -565,17 +565,17 @@ function SidebarCategoriesUI({
                       onClick={() => onSubClick(catKey, sub.key)}
                       className={`w-full flex items-center gap-2 px-2 py-1 rounded-md text-left transition-all ${
                         selected
-                          ? "bg-[#C4735B]/10"
-                          : "hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                          ? "bg-[var(--hm-brand-500)]/10"
+                          : "hover:bg-[var(--hm-bg-tertiary)]/50"
                       }`}
                     >
                       <div
                         className={`w-3.5 h-3.5 rounded border-[1.5px] flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
                           selected
                             ? "border-transparent"
-                            : "border-neutral-300 dark:border-neutral-600"
+                            : "border-[var(--hm-border-strong)]"
                         }`}
-                        style={selected ? { backgroundColor: ACCENT_COLOR } : {}}
+                        style={selected ? { backgroundColor: 'var(--hm-brand-500)' } : {}}
                       >
                         {selected && (
                           <svg className="w-2 h-2 text-white" viewBox="0 0 12 12" fill="none">
@@ -586,8 +586,8 @@ function SidebarCategoriesUI({
                       <span
                         className={`text-[11px] truncate transition-colors ${
                           selected
-                            ? "font-medium text-neutral-900 dark:text-white"
-                            : "text-neutral-500 dark:text-neutral-400"
+                            ? "font-medium text-[var(--hm-fg-primary)]"
+                            : "text-[var(--hm-fg-muted)]"
                         }`}
                       >
                         {subLabel}
@@ -692,14 +692,16 @@ function ShellContent({ children }: { children: ReactNode }) {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-[#fafafa] dark:bg-[#0a0a0a] max-w-full">
+    <div className="h-screen flex flex-col overflow-hidden bg-[#fafafa] max-w-full">
       <Header fixed={false} />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Left Sidebar */}
         <aside
-          className="hidden lg:flex flex-col flex-shrink-0 border-r border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a] transition-all duration-300 ease-in-out relative"
+          className="hidden lg:flex flex-col flex-shrink-0 border-r transition-all duration-300 ease-in-out relative"
           style={{
+            borderColor: 'var(--hm-border)',
+            backgroundColor: 'var(--hm-bg-page)',
             width: isHydrated
               ? isCollapsed
                 ? SIDEBAR_COLLAPSED_WIDTH
@@ -711,30 +713,36 @@ function ShellContent({ children }: { children: ReactNode }) {
           <div className={`pt-4 pb-2 flex-shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}>
             <Link
               href="/post-job"
-              className={`group flex items-center justify-center border-2 border-dashed transition-all mb-3 ${
+              className={`group flex items-center justify-center border transition-all mb-3 ${
                 isCollapsed
-                  ? "w-10 h-10 rounded-xl mx-auto"
-                  : "w-full gap-2 py-2.5 rounded-xl"
-              } hover:border-solid hover:shadow-md`}
+                  ? "w-10 h-10 mx-auto"
+                  : "w-full gap-2 py-2.5"
+              } hover:shadow-md`}
               style={{
-                borderColor: ACCENT_COLOR,
-                color: ACCENT_COLOR,
+                borderColor: 'var(--hm-brand-500)',
+                backgroundColor: 'var(--hm-brand-500)',
+                color: '#fff',
               }}
               title={isCollapsed ? t("browse.postAJob") : undefined}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = ACCENT_COLOR;
-                e.currentTarget.style.color = '#fff';
+                e.currentTarget.style.backgroundColor = 'var(--hm-brand-600)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = ACCENT_COLOR;
+                e.currentTarget.style.backgroundColor = 'var(--hm-brand-500)';
               }}
             >
               <Plus className="w-4 h-4 flex-shrink-0 transition-transform group-hover:rotate-90" />
               {!isCollapsed && <span className="text-sm font-semibold">{t("browse.postAJob")}</span>}
             </Link>
 
-            <nav className="space-y-1">
+            {!isCollapsed && (
+              <div
+                className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-3 pb-2"
+              >
+                {t("nav.sectionWork")}
+              </div>
+            )}
+            <nav className="space-y-0.5">
               {visibleTabs.map((tab) => {
                 const isActive = activeTab === tab.key;
                 const Icon = tab.icon;
@@ -742,17 +750,29 @@ function ShellContent({ children }: { children: ReactNode }) {
                   <Link
                     key={tab.key}
                     href={tab.route}
-                    className={`relative flex items-center text-sm font-medium transition-all ${
-                      isCollapsed ? "justify-center px-2 py-2.5 rounded-xl" : "gap-3 px-3 py-2.5 rounded-xl"
+                    className={`relative flex items-center text-[13.5px] font-medium transition-colors ${
+                      isCollapsed ? "justify-center px-2 py-2.5" : "gap-3 pl-[14px] pr-2 py-2.5"
                     } ${
                       isActive
-                        ? "text-white shadow-sm"
-                        : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                        ? "font-semibold text-[var(--hm-fg-primary)]"
+                        : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
                     }`}
-                    style={isActive ? { backgroundColor: ACCENT_COLOR } : {}}
+                    style={
+                      isActive
+                        ? isCollapsed
+                          ? { color: 'var(--hm-brand-500)' }
+                          : {
+                              borderLeft: '2px solid var(--hm-brand-500)',
+                              background: 'linear-gradient(to right, color-mix(in srgb, var(--hm-brand-500) 6%, transparent), transparent 60%)',
+                              paddingLeft: '12px',
+                            }
+                        : isCollapsed
+                          ? {}
+                          : { borderLeft: '2px solid transparent' }
+                    }
                     title={isCollapsed ? (locale === "ka" ? tab.labelKa : locale === "ru" ? tab.labelRu : tab.label) : undefined}
                   >
-                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <Icon className="w-4 h-4 flex-shrink-0" />
                     {!isCollapsed && (
                       <span className="flex-1">
                         {locale === "ka" ? tab.labelKa : locale === "ru" ? tab.labelRu : tab.label}
@@ -760,11 +780,11 @@ function ShellContent({ children }: { children: ReactNode }) {
                     )}
                     {tab.key === "bookings" && pendingBookingCount > 0 && (
                       isCollapsed ? (
-                        <span className="absolute -top-0.5 -right-0.5 bg-[#C4735B] text-white text-[9px] font-bold min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-0.5 shadow-sm">
+                        <span className="absolute -top-0.5 -right-0.5 bg-[var(--hm-brand-500)] text-white text-[9px] font-bold min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-0.5 shadow-sm">
                           {pendingBookingCount}
                         </span>
                       ) : (
-                        <span className={`${isActive ? "bg-white/30 text-white" : "bg-[#C4735B] text-white"} text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1`}>
+                        <span className="font-mono text-[10.5px] tracking-[0.06em] text-[var(--hm-fg-muted)]">
                           {pendingBookingCount}
                         </span>
                       )
@@ -779,49 +799,63 @@ function ShellContent({ children }: { children: ReactNode }) {
 
           {/* Footer area (My pages + Support + Social) */}
           <div className={`mt-auto pb-4 ${isCollapsed ? "px-2" : "px-3"}`}>
-            {isAuthenticated && (
-              <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 space-y-1.5">
-                <Link
-                  href="/settings"
-                  className={`flex items-center text-sm font-medium transition-all ${
-                    isCollapsed
-                      ? "justify-center px-2 py-2.5 rounded-xl"
-                      : "gap-3 px-3 py-2.5 rounded-xl"
-                  } ${
-                    pathname.startsWith("/settings")
-                      ? "text-white shadow-sm"
-                      : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                  }`}
-                  style={
-                    pathname.startsWith("/settings")
-                      ? { backgroundColor: ACCENT_COLOR }
-                      : {}
-                  }
-                  title={isCollapsed ? t("settings.title") : undefined}
-                >
-                  <Settings className="w-5 h-5" />
-                  {!isCollapsed && <span>{t("settings.title")}</span>}
-                </Link>
-              </div>
-            )}
+            {isAuthenticated && (() => {
+              const settingsActive = pathname.startsWith("/settings");
+              return (
+                <div className="pt-3 border-t border-[var(--hm-border-subtle)] space-y-0.5">
+                  {!isCollapsed && (
+                    <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-1 pb-2">
+                      {t("nav.sectionAccount")}
+                    </div>
+                  )}
+                  <Link
+                    href="/settings"
+                    className={`flex items-center text-[13.5px] font-medium transition-colors ${
+                      isCollapsed ? "justify-center px-2 py-2.5" : "gap-3 pl-[14px] pr-2 py-2.5"
+                    } ${
+                      settingsActive
+                        ? "font-semibold text-[var(--hm-fg-primary)]"
+                        : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
+                    }`}
+                    style={
+                      settingsActive
+                        ? isCollapsed
+                          ? { color: 'var(--hm-brand-500)' }
+                          : {
+                              borderLeft: '2px solid var(--hm-brand-500)',
+                              background: 'linear-gradient(to right, color-mix(in srgb, var(--hm-brand-500) 6%, transparent), transparent 60%)',
+                              paddingLeft: '12px',
+                            }
+                        : isCollapsed
+                          ? {}
+                          : { borderLeft: '2px solid transparent' }
+                    }
+                    title={isCollapsed ? t("settings.title") : undefined}
+                  >
+                    <Settings className="w-4 h-4" />
+                    {!isCollapsed && <span>{t("settings.title")}</span>}
+                  </Link>
+                </div>
+              );
+            })()}
 
             <div
               className={`${
                 isAuthenticated ? "mt-3 pt-3" : "pt-3"
-              } border-t border-neutral-100 dark:border-neutral-800 space-y-1`}
+              } border-t border-[var(--hm-border-subtle)] space-y-1`}
             >
               {isCollapsed ? (
                 <div className="flex flex-col items-center gap-1.5">
                   <Link
                     href="/help"
-                    className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                     title={t("help.categories.support")}
                   >
                     <HelpCircle className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
                   </Link>
                   <a
                     href="mailto:info@homico.ge"
-                    className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                     aria-label="Email support"
                     title="info@homico.ge"
                   >
@@ -831,7 +865,7 @@ function ShellContent({ children }: { children: ReactNode }) {
                     href="https://www.facebook.com/profile.php?id=61585402505170"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                     aria-label="Facebook"
                     title="Facebook"
                   >
@@ -842,7 +876,7 @@ function ShellContent({ children }: { children: ReactNode }) {
                 <div className="flex items-center justify-between gap-3 px-1">
                   <Link
                     href="/help"
-                    className="inline-flex items-center gap-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                    className="inline-flex items-center gap-2 text-xs font-medium text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] transition-colors"
                   >
                     <HelpCircle className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
                     <span>{t("help.categories.support")}</span>
@@ -851,7 +885,7 @@ function ShellContent({ children }: { children: ReactNode }) {
                   <div className="flex items-center gap-2">
                     <a
                       href="mailto:info@homico.ge"
-                      className="w-8 h-8 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 flex items-center justify-center hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
+                      className="w-8 h-8 rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] flex items-center justify-center hover:bg-[var(--hm-bg-page)] transition-colors"
                       aria-label="Email support"
                       title="info@homico.ge"
                     >
@@ -861,7 +895,7 @@ function ShellContent({ children }: { children: ReactNode }) {
                       href="https://www.facebook.com/profile.php?id=61585402505170"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-8 h-8 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 flex items-center justify-center hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
+                      className="w-8 h-8 rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] flex items-center justify-center hover:bg-[var(--hm-bg-page)] transition-colors"
                       aria-label="Facebook"
                       title="Facebook"
                     >
@@ -875,31 +909,31 @@ function ShellContent({ children }: { children: ReactNode }) {
 
           <button
             onClick={toggleSidebar}
-            className="absolute -right-3 top-20 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-110"
+            className="absolute -right-3 top-20 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] shadow-sm hover:shadow-md transition-all duration-200 hover:scale-110"
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? (
               <ChevronRight className="w-3.5 h-3.5" style={{ color: ACCENT_COLOR }} />
             ) : (
-              <ChevronLeft className="w-3.5 h-3.5 text-neutral-500" />
+              <ChevronLeft className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
             )}
           </button>
         </aside>
 
         {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-white dark:bg-neutral-950">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-[var(--hm-bg-elevated)]">
           {/* Mobile Header Row & Search */}
           <div className="lg:hidden">
             {showHeaderRow && (
               <div className="px-3 pt-3 pb-1">
                 <div className="flex items-start gap-2">
-                  <HeaderIcon className="w-4 h-4 text-neutral-500 flex-shrink-0 mt-0.5" />
+                  <HeaderIcon className="w-4 h-4 text-[var(--hm-fg-muted)] flex-shrink-0 mt-0.5" />
                   <div className="min-w-0">
-                    <h1 className="text-sm font-semibold text-neutral-900 dark:text-white truncate">
+                    <h1 className="text-sm font-semibold text-[var(--hm-fg-primary)] truncate">
                       {pageHeader.title}
                     </h1>
                     {pageHeader.subtitle && (
-                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
+                      <p className="text-[11px] text-[var(--hm-fg-muted)] truncate">
                         {pageHeader.subtitle}
                       </p>
                     )}
@@ -1003,7 +1037,7 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
   return (
     <Suspense
       fallback={
-        <div className="h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#0a0a0a]">
+        <div className="h-screen flex items-center justify-center bg-[#fafafa]">
           <LoadingSpinner size="lg" color={ACCENT_COLOR} />
         </div>
       }

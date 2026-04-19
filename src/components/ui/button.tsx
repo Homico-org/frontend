@@ -4,36 +4,45 @@ import { cva, type VariantProps } from "class-variance-authority"
 import * as React from "react"
 import { LoadingSpinner } from "./LoadingSpinner"
 
+/**
+ * Homico Design System — Button
+ *
+ * Pill-shaped (border-radius: 9999px). Primary on vermillion brand.
+ * Sizes: sm=32px, md=40px, lg=48px, xl=54px
+ * Focus: 3px brand-100 ring
+ * Press: scale(0.98) 80ms
+ * Hover: 180ms ease-standard
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 relative overflow-hidden cursor-pointer",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium border border-transparent transition-all focus-visible:outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:bg-[var(--hm-n-200)] disabled:text-[var(--hm-fg-muted)] disabled:border-[var(--hm-n-200)] disabled:shadow-none disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:shrink-0 cursor-pointer active:scale-[0.98]",
   {
     variants: {
       variant: {
         default:
-          "bg-[#E07B4F] text-white shadow-lg shadow-[#E07B4F]/25 hover:shadow-xl hover:shadow-[#E07B4F]/35 hover:-translate-y-0.5 active:translate-y-0 focus-visible:ring-[#E07B4F]",
-        destructive:
-          "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/35 hover:-translate-y-0.5 focus-visible:ring-red-500",
-        outline:
-          "border-2 border-[#E07B4F]/30 bg-transparent text-[#E07B4F] hover:bg-[#E07B4F]/5 hover:border-[#E07B4F]/50 focus-visible:ring-[#E07B4F] dark:border-[#E07B4F]/40 dark:hover:bg-[#E07B4F]/10",
+          "bg-[var(--hm-brand-500)] text-white shadow-[0_4px_14px_rgba(239,78,36,0.25)] hover:bg-[var(--hm-brand-600)] hover:shadow-[0_6px_20px_rgba(239,78,36,0.35)] focus-visible:ring-[var(--hm-brand-100)]",
         secondary:
-          "bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] border border-[var(--color-border)] hover:bg-[var(--color-bg-secondary)] hover:border-[var(--color-border-subtle)] focus-visible:ring-[var(--color-border)]",
+          "bg-[var(--hm-n-800)] text-[var(--hm-n-50)] hover:bg-[var(--hm-n-700)] focus-visible:ring-[var(--hm-n-300)]",
+        outline:
+          "border border-[var(--hm-border-strong)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] hover:bg-[var(--hm-bg-tertiary)] focus-visible:ring-[var(--hm-brand-100)]",
         ghost:
-          "text-[var(--color-text-secondary)] hover:bg-[#E07B4F]/5 hover:text-[#E07B4F] focus-visible:ring-[#E07B4F]/50",
+          "text-[var(--hm-fg-secondary)] bg-transparent hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)] focus-visible:ring-[var(--hm-brand-100)]",
+        destructive:
+          "bg-[var(--hm-error-500)] text-white hover:bg-[#A83333] focus-visible:ring-[var(--hm-error-100)]",
         link:
-          "text-[#E07B4F] underline-offset-4 hover:underline focus-visible:ring-[#E07B4F]",
+          "text-[var(--hm-brand-500)] underline-offset-4 hover:underline focus-visible:ring-[var(--hm-brand-100)] p-0 h-auto",
         premium:
-          "bg-gradient-to-r from-[#E07B4F] via-[#E8956A] to-[#E07B4F] bg-[length:200%_100%] text-white shadow-lg shadow-[#E07B4F]/30 hover:shadow-xl hover:shadow-[#E07B4F]/40 hover:-translate-y-0.5 animate-gradient-shimmer focus-visible:ring-[#E07B4F]",
+          "bg-gradient-to-r from-[var(--hm-brand-400)] via-[var(--hm-brand-500)] to-[var(--hm-brand-400)] bg-[length:200%_100%] text-white shadow-[0_4px_14px_rgba(239,78,36,0.3)] hover:shadow-[0_6px_20px_rgba(239,78,36,0.4)] focus-visible:ring-[var(--hm-brand-100)] animate-gradient-shimmer",
         success:
-          "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/35 hover:-translate-y-0.5 focus-visible:ring-emerald-500",
+          "bg-[var(--hm-success-500)] text-white hover:brightness-110 focus-visible:ring-[var(--hm-success-100)]",
       },
       size: {
-        default: "h-11 px-5 py-2.5",
-        sm: "h-9 px-4 py-2 text-xs rounded-lg",
-        lg: "h-12 px-8 py-3 text-base rounded-xl",
-        xl: "h-14 px-10 py-4 text-lg rounded-2xl",
-        icon: "h-10 w-10 rounded-xl",
-        "icon-sm": "h-8 w-8 rounded-lg",
-        "icon-lg": "h-12 w-12 rounded-xl",
+        default: "h-10 px-[18px] text-[14px] [&_svg]:size-4",
+        sm: "h-8 px-[14px] text-[13px] [&_svg]:size-3.5",
+        lg: "h-12 px-6 text-[15px] font-semibold [&_svg]:size-[18px]",
+        xl: "h-[52px] px-[22px] text-[15px] font-semibold [&_svg]:size-5",
+        icon: "h-10 w-10 p-0 [&_svg]:size-[18px]",
+        "icon-sm": "h-[36px] w-[36px] p-0 [&_svg]:size-4",
+        "icon-lg": "h-12 w-12 p-0 [&_svg]:size-5",
       },
     },
     defaultVariants: {
@@ -55,8 +64,7 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, loading, leftIcon, rightIcon, children, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
-    
-    // When asChild is true, pass children directly to Slot without wrapping
+
     if (asChild) {
       return (
         <Comp
@@ -68,12 +76,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         </Comp>
       )
     }
-    
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={disabled || loading}
+        style={{ transitionDuration: 'var(--hm-dur-base)', transitionTimingFunction: 'var(--hm-ease-standard)' }}
         {...props}
       >
         {loading ? (
@@ -87,10 +96,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             {children}
             {rightIcon}
           </>
-        )}
-        {/* Shine effect overlay for default and premium variants */}
-        {(variant === 'default' || variant === 'premium' || variant === 'success') && !loading && (
-          <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
         )}
       </Comp>
     )

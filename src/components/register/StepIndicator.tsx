@@ -92,10 +92,10 @@ export default function StepIndicator({
                 <div
                   className={`${sizes.circle} rounded-full flex items-center justify-center font-semibold transition-all duration-300 flex-shrink-0 ${
                     isCompleted
-                      ? 'bg-[#C4735B] text-white'
+                      ? 'bg-[var(--hm-brand-500)] text-white'
                       : isCurrent
-                      ? 'bg-[#C4735B] text-white ring-4 ring-[#C4735B]/20'
-                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400'
+                      ? 'bg-[var(--hm-brand-500)] text-white ring-4 ring-[var(--hm-brand-500)]/20'
+                      : 'bg-[var(--hm-bg-tertiary)] text-neutral-400'
                   }`}
                 >
                   {isCompleted ? (
@@ -110,7 +110,7 @@ export default function StepIndicator({
                   <span
                     className={`${sizes.title} font-medium text-center whitespace-nowrap ${
                       isCurrent || isCompleted
-                        ? 'text-neutral-900 dark:text-white'
+                        ? 'text-[var(--hm-fg-primary)]'
                         : 'text-neutral-400'
                     }`}
                   >
@@ -124,8 +124,8 @@ export default function StepIndicator({
                 <div
                   className={`${sizes.lineWidth} ${sizes.lineHeight} mx-2 sm:mx-3 transition-all duration-300 flex-shrink-0 ${
                     index < currentIndex
-                      ? 'bg-[#C4735B]'
-                      : 'bg-neutral-200 dark:bg-neutral-700'
+                      ? 'bg-[var(--hm-brand-500)]'
+                      : 'bg-neutral-200'
                   }`}
                 />
               )}
@@ -155,10 +155,10 @@ export default function StepIndicator({
                 disabled={!isClickable}
                 className={`${sizes.circle} rounded-full flex items-center justify-center font-semibold transition-all duration-300 flex-shrink-0 ${
                   isCompleted
-                    ? 'bg-[#C4735B] text-white'
+                    ? 'bg-[var(--hm-brand-500)] text-white'
                     : isCurrent
-                    ? 'bg-[#C4735B] text-white ring-4 ring-[#C4735B]/20'
-                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400'
+                    ? 'bg-[var(--hm-brand-500)] text-white ring-4 ring-[var(--hm-brand-500)]/20'
+                    : 'bg-[var(--hm-bg-tertiary)] text-neutral-400'
                 } ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
               >
                 {isCompleted ? (
@@ -173,8 +173,8 @@ export default function StepIndicator({
                 <div
                   className={`w-0.5 h-8 my-1 transition-all duration-300 ${
                     index < currentIndex
-                      ? 'bg-[#C4735B]'
-                      : 'bg-neutral-200 dark:bg-neutral-700'
+                      ? 'bg-[var(--hm-brand-500)]'
+                      : 'bg-neutral-200'
                   }`}
                 />
               )}
@@ -185,7 +185,7 @@ export default function StepIndicator({
               <span
                 className={`${sizes.title} font-medium ${
                   isCurrent || isCompleted
-                    ? 'text-neutral-900 dark:text-white'
+                    ? 'text-[var(--hm-fg-primary)]'
                     : 'text-neutral-400'
                 }`}
               >
@@ -239,10 +239,10 @@ export function StepDots({
           key={index}
           className={`${dotSizes[size]} rounded-full transition-all duration-300 ${
             index === currentStep
-              ? 'bg-[#C4735B] scale-125'
+              ? 'bg-[var(--hm-brand-500)] scale-125'
               : index < currentStep
-              ? 'bg-[#C4735B]/50'
-              : 'bg-neutral-200 dark:bg-neutral-700'
+              ? 'bg-[var(--hm-brand-500)]/50'
+              : 'bg-neutral-200'
           }`}
         />
       ))}

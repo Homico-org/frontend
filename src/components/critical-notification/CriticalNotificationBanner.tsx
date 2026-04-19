@@ -19,27 +19,27 @@ const typeConfig: Record<string, {
 }> = {
   new_booking: {
     icon: Calendar,
-    bgColor: 'bg-[#C4735B]/10',
-    borderColor: 'border-[#C4735B]/30',
-    textColor: 'text-[#C4735B]',
+    bgColor: 'bg-[var(--hm-brand-500)]/10',
+    borderColor: 'border-[var(--hm-brand-500)]/30',
+    textColor: 'text-[var(--hm-brand-500)]',
   },
   booking_confirmed: {
     icon: CheckCircle2,
-    bgColor: 'bg-emerald-500/10',
-    borderColor: 'border-emerald-500/30',
-    textColor: 'text-emerald-600 dark:text-emerald-400',
+    bgColor: 'bg-[var(--hm-success-500)]/10',
+    borderColor: 'border-[var(--hm-success-500)]/30',
+    textColor: 'text-[var(--hm-success-500)]',
   },
   booking_started: {
     icon: Hammer,
-    bgColor: 'bg-blue-500/10',
+    bgColor: 'bg-[var(--hm-info-500)]/10',
     borderColor: 'border-blue-500/30',
-    textColor: 'text-blue-600 dark:text-blue-400',
+    textColor: 'text-[var(--hm-info-500)]',
   },
   booking_completed: {
     icon: Star,
-    bgColor: 'bg-amber-500/10',
-    borderColor: 'border-amber-500/30',
-    textColor: 'text-amber-600 dark:text-amber-400',
+    bgColor: 'bg-[var(--hm-warning-500)]/10',
+    borderColor: 'border-[var(--hm-warning-500)]/30',
+    textColor: 'text-[var(--hm-warning-500)]',
   },
 };
 
@@ -87,7 +87,7 @@ export default function CriticalNotificationBanner() {
               {/* Close */}
               <button
                 onClick={() => clearDismissed(notification.id)}
-                className="flex-shrink-0 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                className="flex-shrink-0 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
               >
                 <X className="w-4 h-4" />
               </button>

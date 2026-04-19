@@ -66,10 +66,10 @@ export default function Avatar({
   // Generate a consistent color based on the name
   const getColorFromName = (name: string) => {
     const colors = [
-      'bg-blue-500',
-      'bg-[#E07B4F]',
+      'bg-[var(--hm-info-500)]',
+      'bg-[var(--hm-brand-500)]',
       'bg-violet-500',
-      'bg-amber-500',
+      'bg-[var(--hm-warning-500)]',
       'bg-rose-500',
       'bg-cyan-500',
       'bg-indigo-500',
@@ -116,8 +116,13 @@ export default function Avatar({
   return (
     <div
       onClick={handleClick}
-      className={`${sizeClasses[size]} ${roundedClasses[rounded]} ${borderClass} ${cursorClass} ${getColorFromName(name)} flex items-center justify-center text-white font-medium ${className}`}
-      style={style}
+      className={`${sizeClasses[size]} ${roundedClasses[rounded]} ${borderClass} ${cursorClass} flex items-center justify-center font-semibold tracking-[0.02em] ${className}`}
+      style={{
+        background: 'var(--hm-n-50)',
+        color: 'var(--hm-n-900)',
+        border: '1.5px solid var(--hm-n-900)',
+        ...style,
+      }}
     >
       {initials}
     </div>

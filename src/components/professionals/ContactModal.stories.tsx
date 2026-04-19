@@ -75,7 +75,7 @@ export const Interactive: Story = {
         <button
           onClick={() => setIsOpen(true)}
           className="px-6 py-3 rounded-xl font-body text-sm font-semibold text-white transition-all hover:scale-105"
-          style={{ backgroundColor: '#C4735B' }}
+          style={{ backgroundColor: '#EF4E24' }}
         >
           Open Contact Modal
         </button>

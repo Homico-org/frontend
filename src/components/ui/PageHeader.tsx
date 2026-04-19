@@ -82,8 +82,8 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        bordered && 'border-b border-neutral-200 dark:border-neutral-800',
-        variant === 'default' && 'bg-white dark:bg-neutral-900',
+        bordered && 'border-b border-[var(--hm-border)]',
+        variant === 'default' && 'bg-[var(--hm-bg-elevated)]',
         variant === 'transparent' && 'bg-transparent',
         className
       )}
@@ -94,7 +94,7 @@ export function PageHeader({
           {backHref && backLabel && (
             <Link
               href={backHref}
-              className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-[#E07B4F] dark:hover:text-[#E8956A] transition-colors group mb-4"
+              className="inline-flex items-center gap-2 text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors group mb-4"
             >
               <ArrowLeft
                 className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"
@@ -114,11 +114,11 @@ export function PageHeader({
 
               {/* Title & Subtitle */}
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white">
+                <h1 className="text-xl sm:text-2xl font-bold text-[var(--hm-fg-primary)]">
                   {title}
                 </h1>
                 {subtitle && (
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  <p className="text-sm text-[var(--hm-fg-muted)]">
                     {subtitle}
                   </p>
                 )}

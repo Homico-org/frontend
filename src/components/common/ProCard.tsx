@@ -251,23 +251,23 @@ export default function ProCard({
     // Keep horizontal variant simple — used in recommendations etc.
     return (
       <Link href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick}>
-        <div className="relative h-full bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm group-hover:border-[#C4735B]/25 transition-all duration-300 group-hover:shadow-md p-3.5">
+        <div className="relative h-full bg-[var(--hm-bg-elevated)] rounded-xl overflow-hidden border border-[var(--hm-border-subtle)] shadow-sm group-hover:border-[var(--hm-brand-500)]/25 transition-all duration-300 group-hover:shadow-md p-3.5">
           <div className="flex items-center gap-3.5">
             <div className="relative flex-shrink-0">
-              <div className="w-14 h-14 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 ring-2 ring-white dark:ring-neutral-800 shadow-md">
+              <div className="w-14 h-14 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] ring-2 ring-white shadow-md">
                 {avatarUrl && !imageError ? (
                   <Image src={avatarUrl} alt={profile.name} fill sizes="56px" className="object-cover" onError={() => setImageError(true)} />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-lg font-bold text-neutral-400">{profile.name.charAt(0)}</div>
+                  <div className="w-full h-full flex items-center justify-center text-lg font-bold text-[var(--hm-fg-muted)]">{profile.name.charAt(0)}</div>
                 )}
               </div>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
-                <h3 className="font-semibold text-[13px] text-neutral-900 dark:text-white truncate group-hover:text-[#C4735B] transition-colors">{profile.name}</h3>
-                {profile.verificationStatus === 'verified' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />}
+                <h3 className="font-semibold text-[13px] text-[var(--hm-fg-primary)] truncate group-hover:text-[var(--hm-brand-500)] transition-colors">{profile.name}</h3>
+                {profile.verificationStatus === 'verified' && <CheckCircle2 className="w-3.5 h-3.5 text-[var(--hm-success-500)] flex-shrink-0" />}
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-neutral-500">
+              <div className="flex items-center gap-2 text-[11px] text-[var(--hm-fg-muted)]">
                 {(profile.totalReviews || 0) > 0 ? (
                   <StarRating rating={profile.avgRating > 0 ? profile.avgRating : 5.0} reviewCount={profile.totalReviews} showCount size="xs" />
                 ) : (
@@ -275,14 +275,14 @@ export default function ProCard({
                 )}
                 {matchedExperience && (
                   <>
-                    <span className="text-neutral-300">·</span>
+                    <span className="text-[var(--hm-n-300)]">·</span>
                     <span>{matchedExperience}</span>
                   </>
                 )}
                 {matchedPricing && (
                   <>
-                    <span className="text-neutral-300">·</span>
-                    <span className="text-[#C4735B] font-medium">{matchedPricing.value}</span>
+                    <span className="text-[var(--hm-n-300)]">·</span>
+                    <span className="text-[var(--hm-brand-500)] font-medium">{matchedPricing.value}</span>
                   </>
                 )}
               </div>
@@ -296,12 +296,12 @@ export default function ProCard({
   // Default / Compact variant — unified card with portfolio photos
   return (
     <Link ref={cardRef} href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} — ${t('browse.professionals')}`}>
-      <div className={`relative h-full flex flex-col bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80 shadow-sm group-hover:border-[#C4735B]/25 transition-all duration-300 group-hover:shadow-lg ${isPremium ? 'ring-1 ring-amber-300/30' : ''}`}>
+      <div className={`relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] shadow-sm group-hover:border-[var(--hm-brand-500)]/25 transition-all duration-300 group-hover:shadow-lg ${isPremium ? 'ring-1 ring-amber-300/30' : ''}`}>
 
         {/* Portfolio media carousel */}
         {mediaSlides.length > 0 ? (
           <div
-            className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-800 overflow-hidden"
+            className="relative aspect-[4/3] bg-[var(--hm-bg-tertiary)] overflow-hidden"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
@@ -327,7 +327,7 @@ export default function ProCard({
                     <video src={slide.src} className="w-full h-full object-cover" muted preload="metadata" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                        <Play className="w-4 h-4 text-neutral-700 ml-0.5" />
+                        <Play className="w-4 h-4 text-[var(--hm-fg-secondary)] ml-0.5" />
                       </div>
                     </div>
                   </div>
@@ -353,14 +353,14 @@ export default function ProCard({
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide((p) => (p - 1 + mediaSlides.length) % mediaSlides.length); }}
                   className="absolute left-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10"
                 >
-                  <ChevronLeft className="w-4 h-4 text-neutral-700" />
+                  <ChevronLeft className="w-4 h-4 text-[var(--hm-fg-secondary)]" />
                 </button>
                 <button
                   aria-label="Next image"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide((p) => (p + 1) % mediaSlides.length); }}
                   className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10"
                 >
-                  <ChevronRight className="w-4 h-4 text-neutral-700" />
+                  <ChevronRight className="w-4 h-4 text-[var(--hm-fg-secondary)]" />
                 </button>
               </>
             )}
@@ -372,7 +372,7 @@ export default function ProCard({
                   <button
                     key={i}
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide(i); }}
-                    className={`w-1.5 h-1.5 rounded-full transition-all ${activeSlide === i ? 'bg-white w-3' : 'bg-white/50'}`}
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${activeSlide === i ? 'bg-[var(--hm-bg-elevated)] w-3' : 'bg-white/50'}`}
                   />
                 ))}
                 {mediaSlides.length > 6 && (
@@ -390,17 +390,17 @@ export default function ProCard({
             )}
           </div>
         ) : (
-          <div className="relative aspect-[4/3] bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 flex items-center justify-center">
+          <div className="relative aspect-[4/3] bg-gradient-to-br from-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] flex items-center justify-center">
             <div className="text-center">
-              <Camera className="w-5 h-5 text-neutral-300 dark:text-neutral-600 mx-auto mb-1" />
-              <span className="text-[10px] text-neutral-400 dark:text-neutral-500">{t('professional.noPortfolioItemsYet')}</span>
+              <Camera className="w-5 h-5 text-[var(--hm-n-300)] mx-auto mb-1" />
+              <span className="text-[10px] text-[var(--hm-fg-muted)]">{t('professional.noPortfolioItemsYet')}</span>
             </div>
           </div>
         )}
 
         {/* Avatar overlapping carousel bottom */}
         <div className="relative -mt-6 ml-3 sm:ml-4 mb-0">
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 ring-3 ring-white dark:ring-neutral-900 shadow-md relative">
+          <div className="w-12 h-12 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] ring-3 ring-white shadow-md relative">
             {avatarUrl && !imageError ? (
               <Image
                 src={avatarUrl}
@@ -411,7 +411,7 @@ export default function ProCard({
                 onError={() => setImageError(true)}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-base font-bold text-neutral-400">
+              <div className="w-full h-full flex items-center justify-center text-base font-bold text-[var(--hm-fg-muted)]">
                 {profile.name.charAt(0)}
               </div>
             )}
@@ -423,14 +423,14 @@ export default function ProCard({
           {/* Pro identity */}
           <div className="mb-2">
             <div className="flex items-center gap-1.5">
-                <h3 className="font-semibold text-sm text-neutral-900 dark:text-white truncate group-hover:text-[#C4735B] transition-colors">
+                <h3 className="font-semibold text-sm text-[var(--hm-fg-primary)] truncate group-hover:text-[var(--hm-brand-500)] transition-colors">
                   {profile.name}
                 </h3>
                 {isOnline && (
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Online" />
+                  <span className="w-2 h-2 rounded-full bg-[var(--hm-success-500)] shrink-0" title="Online" />
                 )}
                 {profile.verificationStatus === 'verified' && (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[var(--hm-success-500)] flex-shrink-0" />
                 )}
                 {isTopRated && (
                   <span className="hidden sm:inline-flex">
@@ -456,14 +456,14 @@ export default function ProCard({
           </div>
 
           {/* Stats row */}
-          <div className="flex items-center gap-2 text-[11px] text-neutral-500 dark:text-neutral-400 mb-2.5 flex-wrap">
+          <div className="flex items-center gap-2 text-[11px] text-[var(--hm-fg-muted)] mb-2.5 flex-wrap">
             {matchedExperience && (
               <>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   {matchedExperience}
                 </span>
-                <span className="text-neutral-300 dark:text-neutral-600">·</span>
+                <span className="text-[var(--hm-n-300)]">·</span>
               </>
             )}
             <span className="flex items-center gap-1">
@@ -471,8 +471,8 @@ export default function ProCard({
             </span>
             {matchedPricing && (
               <>
-                <span className="text-neutral-300 dark:text-neutral-600">·</span>
-                <span className="flex items-center gap-1 text-[#C4735B] font-semibold">
+                <span className="text-[var(--hm-n-300)]">·</span>
+                <span className="flex items-center gap-1 text-[var(--hm-brand-500)] font-semibold">
                   <Wallet className="w-3 h-3" />
                   {matchedPricing.value}
                 </span>
@@ -480,8 +480,8 @@ export default function ProCard({
             )}
             {profile.avgResponseTime != null && profile.avgResponseTime > 0 && profile.avgResponseTime <= 24 && (
               <>
-                <span className="text-neutral-300 dark:text-neutral-600">·</span>
-                <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                <span className="text-[var(--hm-n-300)]">·</span>
+                <span className="flex items-center gap-1 text-[var(--hm-success-500)] font-medium">
                   <Zap className="w-3 h-3" />
                   {profile.avgResponseTime < 1
                     ? t('professional.lessThanHour')
@@ -498,13 +498,13 @@ export default function ProCard({
             {displaySubcats.map((key) => (
               <span
                 key={key}
-                className="px-2 py-0.5 text-[10px] font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 rounded-full"
+                className="px-2 py-0.5 text-[10px] font-medium text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] rounded-full"
               >
                 {catalogLabelMap.get(key) || getCategoryLabel(key)}
               </span>
             ))}
             {remainingSubcats > 0 && (
-              <span className="px-2 py-0.5 text-[10px] font-semibold text-[#C4735B] bg-[#C4735B]/10 rounded-full">
+              <span className="px-2 py-0.5 text-[10px] font-semibold text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 rounded-full">
                 +{remainingSubcats}
               </span>
             )}

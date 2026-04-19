@@ -15,8 +15,8 @@ const inputVariants = cva(
         lg: 'px-5 py-4 text-lg pl-14 pr-14',
       },
       variant: {
-        default: 'border focus:ring-[#C4735B]/50 focus:border-[#C4735B]',
-        error: 'border border-red-300 focus:ring-red-500/50 focus:border-red-500',
+        default: 'border focus:ring-[var(--hm-brand-500)]/50 focus:border-[var(--hm-brand-500)]',
+        error: 'border border-red-300 focus:ring-red-500/50 focus:border-[var(--hm-error-500)]',
         success: 'border border-green-300 focus:ring-green-500/50 focus:border-green-500',
       },
     },
@@ -81,7 +81,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
         {label && (
           <label
             className="block text-sm font-medium mb-2"
-            style={{ color: 'var(--color-text-primary)' }}
+            style={{ color: 'var(--hm-fg-primary)' }}
           >
             {label}
           </label>
@@ -97,7 +97,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
               <Lock
                 className={cn(
                   iconSizes[size || 'md'],
-                  error ? 'text-red-400' : 'text-neutral-400'
+                  error ? 'text-[var(--hm-error-500)]' : 'text-neutral-400'
                 )}
               />
             </div>
@@ -112,9 +112,9 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
               className
             )}
             style={{
-              backgroundColor: 'var(--color-bg-elevated)',
-              borderColor: error ? undefined : 'var(--color-border)',
-              color: 'var(--color-text-primary)',
+              backgroundColor: 'var(--hm-bg-elevated)',
+              borderColor: error ? undefined : 'var(--hm-border)',
+              color: 'var(--hm-fg-primary)',
             }}
             {...props}
           />
@@ -123,7 +123,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             onClick={() => setShowPassword(!showPassword)}
             disabled={disabled}
             className={cn(
-              'absolute top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50',
+              'absolute top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-[var(--hm-bg-tertiary)] transition-colors disabled:opacity-50',
               togglePositions[size || 'md']
             )}
             tabIndex={-1}
@@ -132,24 +132,24 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
               <EyeOff
                 className={cn(
                   iconSizes[size || 'md'],
-                  'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'
+                  'text-[var(--hm-fg-muted)] hover:text-neutral-600'
                 )}
               />
             ) : (
               <Eye
                 className={cn(
                   iconSizes[size || 'md'],
-                  'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'
+                  'text-[var(--hm-fg-muted)] hover:text-neutral-600'
                 )}
               />
             )}
           </button>
         </div>
         {error && (
-          <p className="mt-1.5 text-sm text-red-500">{error}</p>
+          <p className="mt-1.5 text-sm text-[var(--hm-error-500)]">{error}</p>
         )}
         {hint && !error && (
-          <p className="mt-1.5 text-sm text-neutral-500">{hint}</p>
+          <p className="mt-1.5 text-sm text-[var(--hm-fg-muted)]">{hint}</p>
         )}
       </div>
     );

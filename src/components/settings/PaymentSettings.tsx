@@ -93,7 +93,7 @@ export default function PaymentSettings({ onOpenAddCardModal }: PaymentSettingsP
   return (
     <div className="space-y-4">
       <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-[var(--hm-fg-muted)]">
           {t('settings.manageYourSavedCards')}
         </p>
         <Button
@@ -118,7 +118,7 @@ export default function PaymentSettings({ onOpenAddCardModal }: PaymentSettingsP
       {isLoading ? (
         <div className="py-12 flex flex-col items-center gap-3">
           <LoadingSpinner size="lg" />
-          <span className="text-sm text-neutral-400">
+          <span className="text-sm text-[var(--hm-fg-muted)]">
             {t('common.loading')}
           </span>
         </div>
@@ -142,14 +142,14 @@ export default function PaymentSettings({ onOpenAddCardModal }: PaymentSettingsP
       )}
 
       {/* Info box */}
-      <Card className="p-4 border-blue-500/20 bg-blue-500/5">
+      <Card className="p-4 border-blue-500/20 bg-[var(--hm-info-500)]/5">
         <div className="flex items-start gap-3">
           <IconBadge icon={Shield} variant="info" size="md" />
           <div>
-            <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
+            <p className="text-sm font-medium text-blue-700">
               {t('settings.securePayments')}
             </p>
-            <p className="text-xs mt-1 text-blue-600/70 dark:text-blue-400/70">
+            <p className="text-xs mt-1 text-[var(--hm-info-500)]/70">
               {t('settings.yourCardInformationIsEncrypted')}
             </p>
           </div>

@@ -25,6 +25,8 @@ import ProjectChat from "@/components/projects/ProjectChat";
 import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Checkbox from "@/components/ui/Checkbox";
+import { Input, Textarea } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ConfirmModal, Modal } from "@/components/ui/Modal";
 import { ACCENT_COLOR as ACCENT, ACCENT_LIGHT } from "@/constants/theme";
@@ -64,6 +66,7 @@ import {
   Hammer,
   History,
   Home,
+  Instagram,
   Layers,
   Map,
   MapPin,
@@ -697,22 +700,22 @@ export default function JobDetailClient() {
   const { user, isAuthValidated } = useAuth();
   const { openLoginModal } = useAuthModal();
 
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
   const { getCategoryLabel, locale } = useCategoryLabels();
   const { categories: catalogCats } = useCategories();
 
   const getLabel = useCallback((key: string): string => {
     for (const cat of catalogCats) {
-      if (cat.key === key) return locale === 'ka' ? cat.nameKa : cat.name;
+      if (cat.key === key) return pick({ en: cat.name, ka: cat.nameKa });
       for (const sub of cat.subcategories) {
-        if (sub.key === key) return locale === 'ka' ? sub.nameKa : sub.name;
+        if (sub.key === key) return pick({ en: sub.name, ka: sub.nameKa });
         for (const svc of (sub.services || [])) {
-          if (svc.key === key) return locale === 'ka' ? svc.nameKa : svc.name;
+          if (svc.key === key) return pick({ en: svc.name, ka: svc.nameKa });
         }
       }
     }
     return getCategoryLabel(key);
-  }, [catalogCats, locale, getCategoryLabel]);
+  }, [catalogCats, pick, getCategoryLabel]);
   const { trackEvent } = useAnalytics();
   const toast = useToast();
 
@@ -1829,19 +1832,19 @@ export default function JobDetailClient() {
   // Loading state with elegant skeleton
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#0D0D0C]">
+      <div className="min-h-screen bg-[var(--hm-bg-page)]">
         <Header />
         <HeaderSpacer />
         <div className="animate-pulse">
-          <div className="h-[60vh] bg-neutral-200 dark:bg-neutral-800" />
+          <div className="h-[60vh] bg-[var(--hm-n-200)]" />
           <div className="max-w-6xl mx-auto px-6 py-12">
-            <div className="h-8 w-48 bg-neutral-200 dark:bg-neutral-800 rounded-full mb-4" />
-            <div className="h-12 w-3/4 bg-neutral-200 dark:bg-neutral-800 rounded-lg mb-8" />
+            <div className="h-8 w-48 bg-[var(--hm-n-200)] rounded-full mb-4" />
+            <div className="h-12 w-3/4 bg-[var(--hm-n-200)] rounded-lg mb-8" />
             <div className="grid grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-24 bg-neutral-200 dark:bg-neutral-800 rounded-2xl"
+                  className="h-24 bg-[var(--hm-n-200)] rounded-2xl"
                 />
               ))}
             </div>
@@ -1864,33 +1867,38 @@ export default function JobDetailClient() {
   const isCompleted = job.status === "completed" || projectStage === "completed";
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#0D0D0C]">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       <Header />
       <HeaderSpacer />
 
       {/* Header / Hero */}
-      <section className="relative bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
+      <section className="relative bg-[var(--hm-bg-elevated)] border-b border-[var(--hm-border)]">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-2 sm:py-3">
           {/* Back button + Edit/Delete buttons row (only when job is not hired) */}
           <div className="flex items-center justify-between mb-2 sm:mb-3">
             <BackButton href="/jobs" />
             {isOwner && !isHired && (
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setShowInviteProsModal(true)}
-                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-1.5 rounded-lg text-sm font-medium text-[#C4735B] bg-[#C4735B]/10 hover:bg-[#C4735B]/20 active:bg-[#C4735B]/30 transition-all"
                   title={t("job.invitePros")}
+                  leftIcon={<UserPlus className="w-4 h-4" />}
+                  className="text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 hover:text-[var(--hm-brand-500)]"
                 >
-                  <UserPlus className="w-4 h-4" />
                   <span className="hidden sm:inline">{t("job.invite")}</span>
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="p-2 sm:p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 transition-all"
                   title={t("common.delete")}
+                  aria-label={t("common.delete")}
+                  className="text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)] hover:text-[var(--hm-error-500)]"
                 >
                   <Trash2 className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -1905,17 +1913,20 @@ export default function JobDetailClient() {
                 {isOwner && !isHired && (
                   <Link
                     href={`/post-job?edit=${job.id}`}
-                    className="absolute top-3 left-3 z-10 w-9 h-9 rounded-full bg-white/95 dark:bg-neutral-800/95 shadow-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-[#C4735B] hover:border-[#C4735B] transition-all"
+                    className="absolute top-3 left-3 z-10 w-9 h-9 rounded-full bg-white/95 shadow-lg border border-[var(--hm-border)] flex items-center justify-center text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)] hover:border-[var(--hm-brand-500)] transition-all"
                     title={t("jobDetail.editMedia")}
                   >
                     <Edit3 className="w-4 h-4" />
                   </Link>
                 )}
                 {/* Main Image — capped height on desktop to keep everything in viewport */}
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setSelectedMediaIndex(activeImageIndex)}
-                  className="relative w-full aspect-[16/9] lg:aspect-auto lg:h-[min(220px,28vh)] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group"
+                  className="relative w-full h-auto p-0 aspect-[16/9] lg:aspect-auto lg:h-[min(220px,28vh)] rounded-xl overflow-hidden bg-[var(--hm-bg-tertiary)] group hover:bg-transparent"
+                  aria-label={job.title}
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={storage.getFileUrl(allMedia[activeImageIndex]?.url)}
                     alt={job.title}
@@ -1929,18 +1940,19 @@ export default function JobDetailClient() {
                       {activeImageIndex + 1} / {allMedia.length}
                     </div>
                   )}
-                </button>
+                </Button>
 
                 {/* Thumbnail strip */}
                 {allMedia.length > 1 && (
                   <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
                     {allMedia.map((media, idx) => (
-                      <button
+                      <Button
                         key={idx}
+                        variant="ghost"
                         onClick={() => setActiveImageIndex(idx)}
-                        className={`relative flex-shrink-0 w-12 h-9 md:w-14 md:h-10 rounded-lg overflow-hidden transition-all ${
+                        className={`relative flex-shrink-0 w-12 h-9 md:w-14 md:h-10 p-0 rounded-lg overflow-hidden transition-all hover:bg-transparent ${
                           idx === activeImageIndex
-                            ? "ring-2 ring-offset-1 ring-offset-white dark:ring-offset-neutral-900"
+                            ? "ring-2 ring-offset-1 ring-offset-white"
                             : "opacity-60 hover:opacity-100"
                         }`}
                         style={
@@ -1948,7 +1960,9 @@ export default function JobDetailClient() {
                             ? ({ borderColor: ACCENT } as React.CSSProperties)
                             : undefined
                         }
+                        aria-label={`Image ${idx + 1}`}
                       >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={storage.getFileUrl(media.url)}
                           alt=""
@@ -1959,7 +1973,7 @@ export default function JobDetailClient() {
                             <Play className="w-4 h-4 text-white fill-white" />
                           </div>
                         )}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 )}
@@ -1970,8 +1984,8 @@ export default function JobDetailClient() {
                 {/* Status badges */}
                 <div className="flex flex-wrap items-center gap-2 mb-1.5">
                   {isOpen && (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--hm-success-100)]/30 text-[var(--hm-success-500)]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--hm-success-500)] animate-pulse" />
                       <span className="text-xs font-semibold">
                         {t("common.active")}
                       </span>
@@ -1997,12 +2011,12 @@ export default function JobDetailClient() {
                 </div>
 
                 {/* Title */}
-                <h1 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white mb-1 leading-tight">
+                <h1 className="text-base sm:text-lg font-bold text-[var(--hm-fg-primary)] mb-1 leading-tight">
                   {job.title}
                 </h1>
 
                 {/* Quick stats */}
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-1.5 sm:mb-2">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-[var(--hm-fg-secondary)] mb-1.5 sm:mb-2">
                   <span className="flex items-center gap-1 sm:gap-1.5">
                     <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                     {getTimeAgo(job.createdAt)}
@@ -2011,7 +2025,7 @@ export default function JobDetailClient() {
 
                 {/* Full address */}
                 {job.location && (
-                  <div className="flex items-start gap-1.5 text-sm text-neutral-600 dark:text-neutral-400 mb-2">
+                  <div className="flex items-start gap-1.5 text-sm text-[var(--hm-fg-secondary)] mb-2">
                     <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     <span>{job.location}</span>
                   </div>
@@ -2021,20 +2035,20 @@ export default function JobDetailClient() {
                 <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm mb-1.5 sm:mb-2">
                   {!(job.services && job.services.length > 0) && (
                     <>
-                      <span className="font-bold text-sm sm:text-base text-neutral-900 dark:text-white" style={{ color: ACCENT }}>
+                      <span className="font-bold text-sm sm:text-base text-[var(--hm-fg-primary)]" style={{ color: ACCENT }}>
                         {budgetDisplay}
                       </span>
-                      <span className="w-px h-4 bg-neutral-200 dark:bg-neutral-700" />
+                      <span className="w-px h-4 bg-[var(--hm-n-200)]" />
                     </>
                   )}
-                  <div className="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
+                  <div className="flex items-center gap-1.5 text-[var(--hm-fg-muted)]">
                     <Eye className="w-3.5 h-3.5" />
                     <span>
                       {job.viewCount || 0} {t("jobDetail.views")}
                     </span>
                   </div>
                   {!isHired && (
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-neutral-600 dark:text-neutral-400">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-[var(--hm-fg-secondary)]">
                       <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       <span>
                         {job.proposalCount || 0} {t("jobDetail.proposals")}
@@ -2068,8 +2082,8 @@ export default function JobDetailClient() {
               {/* Top row: Status badges + Category */}
               <div className="flex flex-wrap items-center gap-2">
                 {isOpen && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--hm-success-100)]/30 text-[var(--hm-success-500)]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--hm-success-500)] animate-pulse" />
                     <span className="text-xs font-semibold">
                       {t("common.active")}
                     </span>
@@ -2095,12 +2109,12 @@ export default function JobDetailClient() {
               </div>
 
               {/* Title */}
-              <h1 className="text-lg md:text-xl font-bold text-neutral-900 dark:text-white leading-tight">
+              <h1 className="text-lg md:text-xl font-bold text-[var(--hm-fg-primary)] leading-tight">
                 {job.title}
               </h1>
 
               {/* Meta info row */}
-              <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-[var(--hm-fg-secondary)]">
                 {job.location && (
                   <span className="flex items-center gap-1.5">
                     <MapPin className="w-4 h-4" />
@@ -2138,8 +2152,8 @@ export default function JobDetailClient() {
                 )}
                 {(job.propertyType || job.areaSize != null || job.roomCount != null || job.deadline) && (
                   <>
-                    <span className="w-px h-4 bg-neutral-200 dark:bg-neutral-700" />
-                    <div className="flex flex-wrap items-center gap-2 text-neutral-600 dark:text-neutral-400">
+                    <span className="w-px h-4 bg-[var(--hm-n-200)]" />
+                    <div className="flex flex-wrap items-center gap-2 text-[var(--hm-fg-secondary)]">
                       {job.propertyType && (
                         <span className="flex items-center gap-1">
                           <Home className="w-3.5 h-3.5" />
@@ -2197,7 +2211,7 @@ export default function JobDetailClient() {
       </section>
 
       {/* Main Content */}
-      <main className="relative z-10 bg-[#FAFAFA] dark:bg-[#0A0A0A]">
+      <main className="relative z-10 bg-[var(--hm-bg-page)]">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-3">
           {/* Submit Proposal button for pro */}
           {isPro &&
@@ -2218,7 +2232,7 @@ export default function JobDetailClient() {
             )}
           {isPro && !isOwner && isOpen && !isHired && (isCheckingProposal || !isAuthValidated) && (
             <div className="flex justify-end mb-4">
-              <div className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-neutral-400">
+              <div className="flex items-center gap-2 px-6 py-3 rounded-xl font-body text-sm font-semibold text-[var(--hm-fg-muted)]">
                 <LoadingSpinner size="sm" color="#737373" />
               </div>
             </div>
@@ -2249,7 +2263,7 @@ export default function JobDetailClient() {
             {/* Desktop Sidebar for hired projects - hidden in MVP mode */}
             {isHired && (isOwner || isHiredPro) && (
               <div className="hidden lg:block">
-                <div className="sticky top-24 bg-white dark:bg-neutral-900 rounded-2xl p-4 border border-neutral-200/50 dark:border-neutral-800">
+                <div className="sticky top-24 bg-[var(--hm-bg-elevated)] rounded-2xl p-4 border border-[var(--hm-border-subtle)]">
                   <ProjectSidebar
                     activeTab={activeSidebarTab}
                     onTabChange={setActiveSidebarTab}
@@ -2269,7 +2283,7 @@ export default function JobDetailClient() {
               {isHired &&
                 (isOwner || isHiredPro) &&
                 activeSidebarTab === "chat" && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[450px]">
+                  <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)] overflow-hidden min-h-[450px]">
                     <ProjectChat
                       jobId={job.id}
                       locale={locale}
@@ -2282,7 +2296,7 @@ export default function JobDetailClient() {
               {isHired &&
                 (isOwner || isHiredPro) &&
                 activeSidebarTab === "polls" && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
+                  <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)] p-4 md:p-6 min-h-[300px]">
                     <PollsTab
                       jobId={job.id}
                       isPro={isPro || !!isHiredPro}
@@ -2298,7 +2312,7 @@ export default function JobDetailClient() {
               {isHired &&
                 (isOwner || isHiredPro) &&
                 activeSidebarTab === "resources" && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 p-4 md:p-6 min-h-[300px]">
+                  <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)] p-4 md:p-6 min-h-[300px]">
                     <ProjectWorkspace
                       jobId={job.id}
                       locale={locale}
@@ -2312,23 +2326,25 @@ export default function JobDetailClient() {
               {isHired &&
                 (isOwner || isHiredPro) &&
                 activeSidebarTab === "history" && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden min-h-[300px]">
+                  <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)] overflow-hidden min-h-[300px]">
                     {/* Filter Tabs */}
-                    <div className="flex items-center gap-1 px-4 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/30">
+                    <div className="flex items-center gap-1 px-4 py-3 border-b border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)]/30">
                       {[
                         { key: "all", label: t("common.all") },
                         { key: "client", label: t("common.client") },
                         { key: "pro", label: t("jobDetail.pro") },
                       ].map((f) => (
-                        <button
+                        <Button
                           key={f.key}
+                          variant="ghost"
+                          size="sm"
                           onClick={() =>
                             setHistoryFilter(f.key as typeof historyFilter)
                           }
-                          className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                          className={`rounded-full ${
                             historyFilter === f.key
-                              ? "text-white"
-                              : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+                              ? "text-white hover:text-white"
+                              : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
                           }`}
                           style={
                             historyFilter === f.key
@@ -2337,7 +2353,7 @@ export default function JobDetailClient() {
                           }
                         >
                           {f.label}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                     {/* History Timeline */}
@@ -2347,7 +2363,7 @@ export default function JobDetailClient() {
                           <LoadingSpinner size="lg" color={ACCENT} />
                         </div>
                       ) : filteredHistory.length === 0 ? (
-                        <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
+                        <div className="text-center py-8 text-[var(--hm-fg-muted)]">
                           <History className="w-12 h-12 mx-auto mb-3 opacity-30" />
                           <p className="text-sm">
                             {t("jobDetail.noActivityYet")}
@@ -2356,7 +2372,7 @@ export default function JobDetailClient() {
                       ) : (
                         <div className="relative">
                           {/* Timeline Line */}
-                          <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
+                          <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-[var(--hm-n-200)]" />
 
                           <div className="space-y-4">
                             {filteredHistory.slice(0, 30).map((event, idx) => {
@@ -2368,7 +2384,7 @@ export default function JobDetailClient() {
                                   className="relative flex items-start gap-3 pl-1"
                                 >
                                   <div
-                                    className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white dark:ring-neutral-900"
+                                    className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white"
                                     style={{
                                       backgroundColor: config.bgColor,
                                       color: config.color,
@@ -2378,7 +2394,7 @@ export default function JobDetailClient() {
                                   </div>
                                   <div className="flex-1 min-w-0 pt-0.5">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <span className="text-sm font-medium text-neutral-900 dark:text-white">
+                                      <span className="text-sm font-medium text-[var(--hm-fg-primary)]">
                                         {event.userName}
                                       </span>
                                       <Badge
@@ -2394,20 +2410,16 @@ export default function JobDetailClient() {
                                           : t("jobDetail.pro")}
                                       </Badge>
                                     </div>
-                                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
-                                      {{
-                                        ka: config.labelKa,
-                                        en: config.label,
-                                        ru: config.label,
-                                      }[locale] ?? config.label}
+                                    <p className="text-xs text-[var(--hm-fg-secondary)] mt-0.5">
+                                      {pick({ en: config.label, ka: config.labelKa })}
                                       {description && (
-                                        <span className="text-neutral-500">
+                                        <span className="text-[var(--hm-fg-muted)]">
                                           {" "}
                                           · {description}
                                         </span>
                                       )}
                                     </p>
-                                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">
+                                    <p className="text-[10px] text-[var(--hm-fg-muted)] mt-1">
                                       {formatHistoryTime(event.createdAt)}
                                     </p>
                                   </div>
@@ -2419,7 +2431,7 @@ export default function JobDetailClient() {
                           {/* Show more indicator */}
                           {filteredHistory.length > 30 && (
                             <div className="mt-4 text-center">
-                              <span className="text-xs text-neutral-400">
+                              <span className="text-xs text-[var(--hm-fg-muted)]">
                                 {t("jobDetail.moreEvents", {
                                   count: filteredHistory.length - 30,
                                 })}
@@ -2439,30 +2451,33 @@ export default function JobDetailClient() {
                 <>
                   {/* Description */}
                   <section
-                    className={`bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-500 ${
+                    className={`bg-[var(--hm-bg-elevated)] rounded-xl p-4 sm:p-5 border border-[var(--hm-border-subtle)] transition-all duration-700 delay-500 ${
                       isVisible
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-4"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                      <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)]">
                         {t("common.description")}
                       </h2>
                       {isOwner && !isHired && (
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
                           onClick={() => {
                             setEditDescription(job.description || "");
                             setShowDescriptionEdit(true);
                           }}
-                          className="w-8 h-8 sm:w-8 sm:h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 active:bg-neutral-300 transition-colors"
                           title={t("common.edit")}
+                          aria-label={t("common.edit")}
+                          className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-n-200)]"
                         >
                           <Edit3 className="w-4 h-4" />
-                        </button>
+                        </Button>
                       )}
                     </div>
-                    <p className="font-body text-sm sm:text-base text-neutral-600 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
+                    <p className="font-body text-sm sm:text-base text-[var(--hm-fg-secondary)] leading-relaxed whitespace-pre-wrap">
                       {job.description}
                     </p>
                   </section>
@@ -2470,16 +2485,16 @@ export default function JobDetailClient() {
                   {/* Services breakdown */}
                   {job.services && job.services.length > 0 && (
                     <section
-                      className={`bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden transition-all duration-700 delay-500 ${
+                      className={`bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border-subtle)] overflow-hidden transition-all duration-700 delay-500 ${
                         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                       }`}
                     >
-                      <div className="flex items-center justify-between px-4 sm:px-5 py-3" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
-                        <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                      <div className="flex items-center justify-between px-4 sm:px-5 py-3" style={{ borderBottom: '1px solid var(--hm-border-subtle)' }}>
+                        <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)]">
                           {t("job.service")}
                         </h2>
                       </div>
-                      <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                      <div className="divide-y divide-[var(--hm-border-subtle)]">
                         {job.services.map((svc, idx) => {
                           const svcName = getLabel(svc.key);
                           const qty = svc.quantity || 1;
@@ -2495,9 +2510,9 @@ export default function JobDetailClient() {
                                     ? s.unitOptions?.find(u => u.key === svc.unitKey)
                                     : s.unitOptions?.[0];
                                   if (uo) {
-                                    unitLabel = locale === 'ka' ? uo.label.ka : uo.label.en;
+                                    unitLabel = pick({ en: uo.label.en, ka: uo.label.ka });
                                   } else {
-                                    unitLabel = locale === 'ka' ? s.unitNameKa : s.unitName;
+                                    unitLabel = pick({ en: s.unitName, ka: s.unitNameKa });
                                   }
                                 }
                               }
@@ -2507,10 +2522,10 @@ export default function JobDetailClient() {
                           return (
                             <div key={`${svc.key}-${idx}`} className="flex items-center justify-between px-4 sm:px-5 py-3">
                               <div className="flex-1 min-w-0">
-                                <span className="text-sm font-medium block truncate" style={{ color: 'var(--color-text-primary)' }}>
+                                <span className="text-sm font-medium block truncate" style={{ color: 'var(--hm-fg-primary)' }}>
                                   {svcName}
                                 </span>
-                                <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+                                <span className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
                                   {qty > 1 ? `${qty} × ` : ''}{unitLabel}
                                   {svc.unitPrice > 0 && qty > 1 && (
                                     <span className="ml-1">· {svc.unitPrice}₾/{unitLabel}</span>
@@ -2527,9 +2542,9 @@ export default function JobDetailClient() {
                         })}
                         {/* Total */}
                         {job.services.filter(s => s.unitPrice > 0).length > 1 && (
-                          <div className="flex items-center justify-between px-4 sm:px-5 py-3" style={{ backgroundColor: 'rgba(196,115,91,0.04)' }}>
-                            <span className="text-[12px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-                              {locale === 'ka' ? 'ჯამი' : 'Total'}
+                          <div className="flex items-center justify-between px-4 sm:px-5 py-3" style={{ backgroundColor: 'rgba(239,78,36,0.04)' }}>
+                            <span className="text-[12px] font-semibold" style={{ color: 'var(--hm-fg-secondary)' }}>
+                              {t('common.total')}
                             </span>
                             <span className="text-sm font-bold" style={{ color: ACCENT }}>
                               {job.services.reduce((sum, s) => sum + s.unitPrice * (s.quantity || 1), 0)}₾
@@ -2551,24 +2566,27 @@ export default function JobDetailClient() {
                     job.landArea != null ||
                     job.pointsCount != null) && (
                     <section
-                      className={`bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-600 ${
+                      className={`bg-[var(--hm-bg-elevated)] rounded-xl p-4 sm:p-5 border border-[var(--hm-border-subtle)] transition-all duration-700 delay-600 ${
                         isVisible
                           ? "opacity-100 translate-y-0"
                           : "opacity-0 translate-y-4"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                        <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)]">
                           {t("jobDetail.propertyDetails")}
                         </h2>
                         {isOwner && !isHired && (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={openPropertyEditModal}
-                            className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 active:bg-neutral-300 transition-colors"
                             title={t("common.edit")}
+                            aria-label={t("common.edit")}
+                            className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-n-200)]"
                           >
                             <Edit3 className="w-4 h-4" />
-                          </button>
+                          </Button>
                         )}
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -2644,24 +2662,27 @@ export default function JobDetailClient() {
                   {/* Work Types */}
                   {job.workTypes && job.workTypes.length > 0 && (
                     <section
-                      className={`bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-700 ${
+                      className={`bg-[var(--hm-bg-elevated)] rounded-xl p-4 sm:p-5 border border-[var(--hm-border-subtle)] transition-all duration-700 delay-700 ${
                         isVisible
                           ? "opacity-100 translate-y-0"
                           : "opacity-0 translate-y-4"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-3 sm:mb-4">
-                        <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                        <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)]">
                           {t("jobDetail.workTypes")}
                         </h2>
                         {isOwner && !isHired && (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={openWorkTypesEditModal}
-                            className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                             title={t("common.edit")}
+                            aria-label={t("common.edit")}
+                            className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-n-200)]"
                           >
                             <Edit3 className="w-4 h-4" />
-                          </button>
+                          </Button>
                         )}
                       </div>
                       <div className="flex flex-wrap gap-1.5 sm:gap-2">
@@ -2687,24 +2708,27 @@ export default function JobDetailClient() {
                     job.materialsProvided ||
                     job.occupiedDuringWork) && (
                     <section
-                      className={`bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[800ms] ${
+                      className={`bg-[var(--hm-bg-elevated)] rounded-xl p-4 sm:p-5 border border-[var(--hm-border-subtle)] transition-all duration-700 delay-[800ms] ${
                         isVisible
                           ? "opacity-100 translate-y-0"
                           : "opacity-0 translate-y-4"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-3 sm:mb-4">
-                        <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                        <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)]">
                           {t("jobDetail.requirements")}
                         </h2>
                         {isOwner && !isHired && (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
                             onClick={openRequirementsEditModal}
-                            className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-[#C4735B] hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                             title={t("common.edit")}
+                            aria-label={t("common.edit")}
+                            className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-n-200)]"
                           >
                             <Edit3 className="w-4 h-4" />
-                          </button>
+                          </Button>
                         )}
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
@@ -2742,13 +2766,13 @@ export default function JobDetailClient() {
                     const refLinks = job.references.filter((r) => r.type !== "image");
                     return (
                     <section
-                      className={`bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-700 delay-[900ms] ${
+                      className={`bg-[var(--hm-bg-elevated)] rounded-xl p-4 sm:p-5 border border-[var(--hm-border-subtle)] transition-all duration-700 delay-[900ms] ${
                         isVisible
                           ? "opacity-100 translate-y-0"
                           : "opacity-0 translate-y-4"
                       }`}
                     >
-                      <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3 sm:mb-4">
+                      <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-3 sm:mb-4">
                         {t("jobDetail.references")}
                       </h2>
 
@@ -2756,11 +2780,14 @@ export default function JobDetailClient() {
                       {refImages.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-3">
                           {refImages.map((ref, idx) => (
-                            <button
+                            <Button
                               key={idx}
+                              variant="ghost"
                               onClick={() => setSelectedRefImageIndex(idx)}
-                              className="relative aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 group"
+                              className="relative aspect-[4/3] h-auto p-0 rounded-lg sm:rounded-xl overflow-hidden bg-[var(--hm-bg-tertiary)] group hover:bg-transparent"
+                              aria-label={ref.title || `Reference ${idx + 1}`}
                             >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={storage.getFileUrl(ref.url)}
                                 alt={ref.title || ""}
@@ -2770,7 +2797,7 @@ export default function JobDetailClient() {
                               <div className="absolute top-2 right-2 p-1.5 rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Maximize2 className="w-3.5 h-3.5" />
                               </div>
-                            </button>
+                            </Button>
                           ))}
                         </div>
                       )}
@@ -2784,32 +2811,31 @@ export default function JobDetailClient() {
                             href={ref.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 active:bg-neutral-100 transition-all group"
+                            className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-[var(--hm-border-subtle)] hover:bg-[var(--hm-bg-tertiary)]/50 active:bg-[var(--hm-bg-tertiary)] transition-all group"
                           >
-                            <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center flex-shrink-0">
+                            <div className="w-10 h-10 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0">
                               {ref.type === "pinterest" ? (
+                                /* Pinterest brand mark — not available in lucide-react */
                                 <svg
                                   className="w-5 h-5"
                                   style={{ color: "#E60023" }}
                                   viewBox="0 0 24 24"
                                   fill="currentColor"
+                                  aria-hidden="true"
                                 >
                                   <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z" />
                                 </svg>
                               ) : ref.type === "instagram" ? (
-                                <svg
+                                <Instagram
                                   className="w-5 h-5"
                                   style={{ color: "#E4405F" }}
-                                  viewBox="0 0 24 24"
-                                  fill="currentColor"
-                                >
-                                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                                </svg>
+                                  strokeWidth={1.5}
+                                />
                               ) : (
-                                <ExternalLink className="w-5 h-5 text-neutral-400" />
+                                <ExternalLink className="w-5 h-5 text-[var(--hm-fg-muted)]" />
                               )}
                             </div>
-                            <span className="font-body text-sm text-neutral-600 dark:text-neutral-300 truncate flex-1">
+                            <span className="font-body text-sm text-[var(--hm-fg-secondary)] truncate flex-1">
                               {ref.title ||
                                 (() => {
                                   try {
@@ -2819,7 +2845,7 @@ export default function JobDetailClient() {
                                   }
                                 })()}
                             </span>
-                            <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-neutral-500 group-hover:translate-x-1 transition-all" />
+                            <ChevronRight className="w-4 h-4 text-[var(--hm-n-300)] group-hover:text-[var(--hm-fg-muted)] group-hover:translate-x-1 transition-all" />
                           </a>
                         ))}
                       </div>
@@ -2830,9 +2856,9 @@ export default function JobDetailClient() {
 
                   {/* Inline Applicants */}
                   {isOwner && proposals.length > 0 && (
-                    <section className="bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-5 border border-neutral-200/50 dark:border-neutral-800">
-                      <h2 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
-                        <Users className="w-4 h-4 text-[#C4735B]" />
+                    <section className="bg-[var(--hm-bg-elevated)] rounded-xl p-4 sm:p-5 border border-[var(--hm-border-subtle)]">
+                      <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-3 flex items-center gap-2">
+                        <Users className="w-4 h-4 text-[var(--hm-brand-500)]" />
                         {t("jobDetail.applicants")} ({proposals.length})
                       </h2>
                       <div className="space-y-3">
@@ -2845,15 +2871,16 @@ export default function JobDetailClient() {
                               key={proposal._id || proposal.id}
                               className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${
                                 isShortlisted
-                                  ? 'border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-900/10'
-                                  : 'border-neutral-200/50 dark:border-neutral-800'
+                                  ? 'border-emerald-200 bg-[var(--hm-success-50)]/50'
+                                  : 'border-[var(--hm-border-subtle)]'
                               }`}
                             >
                               <Link href={`/professionals/${pro.uid || pro.id || pro._id}`}>
                                 {pro.avatar ? (
+                                  /* eslint-disable-next-line @next/next/no-img-element */
                                   <img src={pro.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
                                 ) : (
-                                  <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-sm font-bold text-neutral-500">
+                                  <div className="w-10 h-10 rounded-full bg-[var(--hm-n-200)] flex items-center justify-center text-sm font-bold text-[var(--hm-fg-muted)]">
                                     {(pro.name || '?')[0]}
                                   </div>
                                 )}
@@ -2862,29 +2889,30 @@ export default function JobDetailClient() {
                                 <div className="flex items-center gap-2 mb-0.5">
                                   <Link
                                     href={`/professionals/${pro.uid || pro.id || pro._id}`}
-                                    className="text-sm font-medium text-neutral-900 dark:text-white hover:text-[#C4735B] transition-colors"
+                                    className="text-sm font-medium text-[var(--hm-fg-primary)] hover:text-[var(--hm-brand-500)] transition-colors"
                                   >
                                     {pro.name}
                                   </Link>
                                   {proposal.proposedPrice && (
-                                    <span className="text-xs font-semibold text-[#C4735B]">
+                                    <span className="text-xs font-semibold text-[var(--hm-brand-500)]">
                                       {proposal.proposedPrice}₾
                                     </span>
                                   )}
                                   {isShortlisted && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-medium">
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--hm-success-100)] text-[var(--hm-success-500)]/30 font-medium">
                                       {t("common.shortlisted")}
                                     </span>
                                   )}
                                 </div>
                                 {proposal.coverLetter && (
-                                  <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2">
+                                  <p className="text-xs text-[var(--hm-fg-muted)] line-clamp-2">
                                     {proposal.coverLetter}
                                   </p>
                                 )}
                                 {isPending && (
                                   <div className="flex items-center gap-2 mt-2">
-                                    <button
+                                    <Button
+                                      size="sm"
                                       onClick={async () => {
                                         try {
                                           await api.post(`/jobs/proposals/${proposal._id || proposal.id}/shortlist`, { hiringChoice: 'homico' });
@@ -2895,11 +2923,12 @@ export default function JobDetailClient() {
                                           ));
                                         } catch {}
                                       }}
-                                      className="px-3 py-1 rounded-lg text-xs font-medium bg-[#C4735B] text-white hover:bg-[#B5624A] transition-colors"
                                     >
                                       {t("common.interested")}
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
                                       onClick={async () => {
                                         try {
                                           await api.post(`/jobs/proposals/${proposal._id || proposal.id}/reject`);
@@ -2910,28 +2939,29 @@ export default function JobDetailClient() {
                                           ));
                                         } catch {}
                                       }}
-                                      className="px-3 py-1 rounded-lg text-xs font-medium text-neutral-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border border-neutral-200 dark:border-neutral-700 transition-colors"
+                                      className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)]"
                                     >
                                       {t("common.reject")}
-                                    </button>
+                                    </Button>
                                   </div>
                                 )}
                                 {isShortlisted && (
                                   <div className="flex items-center gap-2 mt-2">
-                                    <button
+                                    <Button
+                                      variant="success"
+                                      size="sm"
                                       onClick={async () => {
                                         try {
                                           await api.post(`/jobs/proposals/${proposal._id || proposal.id}/accept`);
                                           window.location.reload();
                                         } catch {}
                                       }}
-                                      className="px-3 py-1 rounded-lg text-xs font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
                                     >
                                       {t("common.hire")}
-                                    </button>
+                                    </Button>
                                     <Link
                                       href={`/professionals/${pro.uid || pro.id || pro._id}`}
-                                      className="px-3 py-1 rounded-lg text-xs font-medium text-neutral-500 border border-neutral-200 dark:border-neutral-700 hover:border-[#C4735B]/40 transition-colors"
+                                      className="px-3 py-1 rounded-lg text-xs font-medium text-[var(--hm-fg-muted)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-500)]/40 transition-colors"
                                     >
                                       {t("common.viewProfile")}
                                     </Link>
@@ -2980,9 +3010,9 @@ export default function JobDetailClient() {
                 isHired &&
                 activeSidebarTab === "details" &&
                 false && (
-                  <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/50 dark:border-neutral-800 overflow-hidden">
+                  <section className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)] overflow-hidden">
                     {/* Header with progress */}
-                    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800">
+                    <div className="p-4 border-b border-[var(--hm-border-subtle)]">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <div
@@ -2995,17 +3025,14 @@ export default function JobDetailClient() {
                             />
                           </div>
                           <div>
-                            <h3 className="font-display text-base font-semibold text-neutral-900 dark:text-white">
+                            <h3 className="font-display text-base font-semibold text-[var(--hm-fg-primary)]">
                               {t("jobDetail.projectStatus")}
                             </h3>
-                            <p className="text-xs text-neutral-500">
-                              {{
-                                ka: STAGES[getStageIndex(projectStage)]
-                                  ?.labelKa,
+                            <p className="text-xs text-[var(--hm-fg-muted)]">
+                              {pick({
                                 en: STAGES[getStageIndex(projectStage)]?.label,
-                                ru: STAGES[getStageIndex(projectStage)]?.label,
-                              }[locale] ??
-                                STAGES[getStageIndex(projectStage)]?.label}
+                                ka: STAGES[getStageIndex(projectStage)]?.labelKa,
+                              })}
                             </p>
                           </div>
                         </div>
@@ -3017,7 +3044,7 @@ export default function JobDetailClient() {
                         </div>
                       </div>
                       {/* Progress Bar */}
-                      <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                      <div className="h-2 bg-[var(--hm-bg-tertiary)] rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-700 ease-out"
                           style={{
@@ -3033,16 +3060,16 @@ export default function JobDetailClient() {
                       {isOwner &&
                         projectStage === "completed" &&
                         !isClientConfirmed && (
-                          <div className="mb-4 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                          <div className="mb-4 p-4 rounded-xl bg-[var(--hm-success-50)]/20 border border-emerald-200">
                             <div className="flex items-start gap-3 mb-3">
-                              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                              <div className="w-8 h-8 rounded-lg bg-[var(--hm-success-500)]/20 flex items-center justify-center flex-shrink-0">
+                                <CheckCircle2 className="w-4 h-4 text-[var(--hm-success-500)]" />
                               </div>
                               <div>
-                                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                                <p className="text-sm font-semibold text-emerald-800">
                                   {t("jobDetail.workCompleted")}
                                 </p>
-                                <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
+                                <p className="text-xs text-[var(--hm-success-500)] mt-0.5">
                                   {t(
                                     "jobDetail.pleaseReviewAndConfirmCompletion",
                                   )}
@@ -3082,16 +3109,16 @@ export default function JobDetailClient() {
                         projectStage === "completed" &&
                         isClientConfirmed &&
                         !hasSubmittedReview && (
-                          <div className="mb-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                          <div className="mb-4 p-4 rounded-xl bg-[var(--hm-warning-50)]/20 border border-amber-200">
                             <div className="flex items-start gap-3 mb-3">
-                              <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                                <Star className="w-4 h-4 text-amber-600" />
+                              <div className="w-8 h-8 rounded-lg bg-[var(--hm-warning-500)]/20 flex items-center justify-center flex-shrink-0">
+                                <Star className="w-4 h-4 text-[var(--hm-warning-500)]" />
                               </div>
                               <div>
-                                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                                <p className="text-sm font-semibold text-[var(--hm-warning-500)]">
                                   {t("jobDetail.leaveAReview")}
                                 </p>
-                                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                                <p className="text-xs text-[var(--hm-warning-500)] mt-0.5">
                                   {t("jobDetail.yourFeedbackHelpsOtherClients")}
                                 </p>
                               </div>
@@ -3132,12 +3159,12 @@ export default function JobDetailClient() {
                                   transition-all duration-300
                               ${
                                 isStageCompleted
-                                  ? "bg-emerald-500 text-white"
+                                  ? "bg-[var(--hm-success-500)] text-white"
                                   : isCurrent
                                     ? "text-white shadow-lg"
                                     : canAdvance
-                                      ? "bg-white dark:bg-neutral-800 border-2 border-dashed text-neutral-400"
-                                      : "bg-neutral-100 dark:bg-neutral-800 text-neutral-400"
+                                      ? "bg-[var(--hm-bg-elevated)] border-2 border-dashed text-[var(--hm-fg-muted)]"
+                                      : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]"
                               }
                             `}
                                   style={{
@@ -3164,8 +3191,8 @@ export default function JobDetailClient() {
                                   <div
                                     className={`w-0.5 flex-1 min-h-[24px] transition-colors duration-300 ${
                                       isStageCompleted
-                                        ? "bg-emerald-500"
-                                        : "bg-neutral-200 dark:bg-neutral-700"
+                                        ? "bg-[var(--hm-success-500)]"
+                                        : "bg-[var(--hm-n-200)]"
                                     }`}
                                   />
                                 )}
@@ -3175,20 +3202,21 @@ export default function JobDetailClient() {
                               <div
                                 className={`flex-1 pb-4 ${isLast ? "pb-0" : ""}`}
                               >
-                                <button
+                                <Button
+                                  variant="ghost"
                                   onClick={() =>
                                     canAdvance && handleStageChange(stage.key)
                                   }
                                   disabled={!canAdvance}
                                   className={`
-                                  w-full text-left p-3 rounded-xl transition-all duration-200
+                                  w-full h-auto justify-start text-left p-3 rounded-xl
                                   ${
                                     isCurrent
-                                      ? "bg-[#C4735B]/10 border border-[#C4735B]/20"
+                                      ? "bg-[var(--hm-brand-500)]/10 border border-[var(--hm-brand-500)]/20"
                                       : canAdvance
-                                        ? "bg-white dark:bg-neutral-800 border border-dashed border-[#C4735B]/40 hover:border-solid hover:border-[#C4735B] hover:shadow-md cursor-pointer"
+                                        ? "bg-[var(--hm-bg-elevated)] border border-dashed border-[var(--hm-brand-500)]/40 hover:border-solid hover:border-[var(--hm-brand-500)] hover:shadow-md cursor-pointer"
                                         : isStageCompleted
-                                          ? "bg-emerald-50/50 dark:bg-emerald-900/10"
+                                          ? "bg-[var(--hm-success-50)]/10"
                                           : ""
                                   }
                                 `}
@@ -3200,18 +3228,14 @@ export default function JobDetailClient() {
                                       text-sm font-medium
                                       ${
                                         isStageCompleted
-                                          ? "text-emerald-600 dark:text-emerald-400"
+                                          ? "text-[var(--hm-success-500)]"
                                           : isCurrent
-                                            ? "text-[#C4735B] font-semibold"
-                                            : "text-neutral-500 dark:text-neutral-400"
+                                            ? "text-[var(--hm-brand-500)] font-semibold"
+                                            : "text-[var(--hm-fg-muted)]"
                                       }
                                     `}
                                       >
-                                        {{
-                                          ka: stage.labelKa,
-                                          en: stage.label,
-                                          ru: stage.label,
-                                        }[locale] ?? stage.label}
+                                        {pick({ en: stage.label, ka: stage.labelKa })}
                                       </span>
                                       {isCurrent && (
                                         <span
@@ -3232,7 +3256,7 @@ export default function JobDetailClient() {
                                       </div>
                                     )}
                                   </div>
-                                </button>
+                                </Button>
                               </div>
                             </div>
                           );
@@ -3279,17 +3303,17 @@ export default function JobDetailClient() {
                 {/* Hired Professional Card - with phone for client */}
                 {isHired && job.hiredPro && isOwner && (
                   <div
-                    className={`rounded-xl sm:rounded-2xl p-4 sm:p-5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-700/80 transition-all duration-700 delay-600 ${
+                    className={`rounded-xl sm:rounded-2xl p-4 sm:p-5 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border-subtle)] transition-all duration-700 delay-600 ${
                       isVisible
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-4"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-4">
-                      <div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                        <Check className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />
+                      <div className="w-7 h-7 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                        <Check className="w-3.5 h-3.5 text-[var(--hm-fg-secondary)]" />
                       </div>
-                      <h3 className="font-display text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                      <h3 className="font-display text-xs font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider">
                         {t("common.hired")}
                       </h3>
                     </div>
@@ -3308,13 +3332,13 @@ export default function JobDetailClient() {
                         className="w-12 h-12"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="font-body font-semibold text-neutral-900 dark:text-white truncate group-hover:underline">
+                        <p className="font-body font-semibold text-[var(--hm-fg-primary)] truncate group-hover:underline">
                           {job.hiredPro.name ||
                             job.hiredPro.userId?.name ||
                             "Professional"}
                         </p>
                         {job.hiredPro.title && (
-                          <p className="font-body text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                          <p className="font-body text-xs text-[var(--hm-fg-muted)] truncate">
                             {job.hiredPro.title}
                           </p>
                         )}
@@ -3337,17 +3361,17 @@ export default function JobDetailClient() {
                 {/* Hired by banner for pro - show client info and phone */}
                 {isHired && isHiredPro && (
                   <div
-                    className={`rounded-xl sm:rounded-2xl p-4 sm:p-5 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-700/80 transition-all duration-700 delay-600 ${
+                    className={`rounded-xl sm:rounded-2xl p-4 sm:p-5 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border-subtle)] transition-all duration-700 delay-600 ${
                       isVisible
                         ? "opacity-100 translate-y-0"
                         : "opacity-0 translate-y-4"
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-4">
-                      <div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                        <BadgeCheck className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />
+                      <div className="w-7 h-7 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                        <BadgeCheck className="w-3.5 h-3.5 text-[var(--hm-fg-secondary)]" />
                       </div>
-                      <h3 className="font-display text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                      <h3 className="font-display text-xs font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider">
                         {t("jobDetail.youveBeenHired")}
                       </h3>
                     </div>
@@ -3360,15 +3384,15 @@ export default function JobDetailClient() {
                         src={job.clientId?.avatar}
                         name={job.clientId?.name || "Client"}
                         size="lg"
-                        className="w-12 h-12 group-hover:ring-2 group-hover:ring-[#C4735B]/50 transition-all"
+                        className="w-12 h-12 group-hover:ring-2 group-hover:ring-[var(--hm-brand-500)]/50 transition-all"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="font-body font-semibold text-neutral-900 dark:text-white truncate group-hover:text-[#C4735B] transition-colors">
+                        <p className="font-body font-semibold text-[var(--hm-fg-primary)] truncate group-hover:text-[var(--hm-brand-500)] transition-colors">
                           {job.clientId?.accountType === "organization"
                             ? job.clientId?.companyName || job.clientId?.name
                             : job.clientId?.name || "Client"}
                         </p>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        <p className="text-xs text-[var(--hm-fg-muted)]">
                           {t("common.client")}
                         </p>
                       </div>
@@ -3395,7 +3419,7 @@ export default function JobDetailClient() {
 
                 {/* Share Section - Only show when job is not hired */}
                 {!isHired && (
-                  <div className="group rounded-xl sm:rounded-2xl bg-gradient-to-br from-white to-neutral-50/80 dark:from-neutral-900 dark:to-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 p-3 sm:p-4">
+                  <div className="group rounded-xl sm:rounded-2xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border-subtle)] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 p-3 sm:p-4">
                     <div className="flex items-center justify-between mb-3 sm:mb-4">
                       <div className="flex items-center gap-2.5 sm:gap-3">
                         <div
@@ -3411,10 +3435,10 @@ export default function JobDetailClient() {
                           />
                         </div>
                         <div className="text-left">
-                          <span className="font-body font-semibold text-sm sm:text-base text-neutral-900 dark:text-white block">
+                          <span className="font-body font-semibold text-sm sm:text-base text-[var(--hm-fg-primary)] block">
                             {t("common.share")}
                           </span>
-                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                          <span className="text-xs text-[var(--hm-fg-muted)]">
                             #{job.jobNumber || job.id.slice(-6)}
                           </span>
                         </div>
@@ -3492,7 +3516,7 @@ export default function JobDetailClient() {
         !myProposal &&
         !isCheckingProposal &&
         isAuthValidated && (
-          <div className="sm:hidden fixed bottom-16 left-0 right-0 z-40 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 p-3 safe-area-bottom">
+          <div className="sm:hidden fixed bottom-16 left-0 right-0 z-40 bg-[var(--hm-bg-elevated)] border-t border-[var(--hm-border)] p-3 safe-area-bottom">
             <Button
               onClick={() => setShowProposalForm(true)}
               leftIcon={<Send className="w-4 h-4" />}
@@ -3540,7 +3564,7 @@ export default function JobDetailClient() {
         onConfirm={handleDeleteJob}
         title={t("jobDetail.deleteThisJob")}
         description={t("jobDetail.thisActionCannotBeUndone")}
-        icon={<Trash2 className="w-6 h-6 text-red-500" />}
+        icon={<Trash2 className="w-6 h-6 text-[var(--hm-error-500)]" />}
         variant="danger"
         cancelLabel={t("common.cancel")}
         confirmLabel={t("common.delete")}
@@ -3548,7 +3572,7 @@ export default function JobDetailClient() {
         loadingLabel="..."
       >
         {deleteError && (
-          <div className="px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-body text-sm mb-4">
+          <div className="px-4 py-3 rounded-xl bg-[var(--hm-error-50)]/20 text-[var(--hm-error-500)] font-body text-sm mb-4">
             {deleteError}
           </div>
         )}
@@ -3568,7 +3592,7 @@ export default function JobDetailClient() {
       {/* Success Toast */}
       {success && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
-          <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-emerald-500 text-white shadow-lg font-body">
+          <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-[var(--hm-success-500)] text-white shadow-lg font-body">
             <CheckCircle2 className="w-5 h-5" />
             <span className="font-medium">{success}</span>
             <Button
@@ -3586,7 +3610,7 @@ export default function JobDetailClient() {
       {/* Copy Link Toast */}
       {copyToast && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
-          <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-neutral-800 dark:bg-neutral-700 text-white shadow-lg font-body">
+          <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-neutral-800 text-white shadow-lg font-body">
             <Check className="w-5 h-5" />
             <span className="font-medium">{t("common.linkCopied")}</span>
           </div>
@@ -3654,14 +3678,13 @@ export default function JobDetailClient() {
         size="lg"
       >
         <div className="p-6">
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">
+          <h2 className="text-xl font-bold text-[var(--hm-fg-primary)] mb-4">
             {t("jobDetail.editDescription")}
           </h2>
-          <textarea
+          <Textarea
             value={editDescription}
             onChange={(e) => setEditDescription(e.target.value)}
             rows={8}
-            className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50 focus:border-[#C4735B]"
             placeholder={t("jobDetail.describeTheJob")}
           />
           <div className="flex justify-end gap-3 mt-4">
@@ -3689,14 +3712,13 @@ export default function JobDetailClient() {
         size="md"
       >
         <div className="p-6">
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">
+          <h2 className="text-xl font-bold text-[var(--hm-fg-primary)] mb-4">
             {t("jobDetail.editTitle")}
           </h2>
-          <input
+          <Input
             type="text"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50 focus:border-[#C4735B]"
             placeholder={t("jobDetail.jobTitle")}
           />
           <div className="flex justify-end gap-3 mt-4">
@@ -3725,13 +3747,13 @@ export default function JobDetailClient() {
         size="lg"
       >
         <div className="p-6">
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-6">
+          <h2 className="text-xl font-bold text-[var(--hm-fg-primary)] mb-6">
             {t("jobDetail.editPropertyDetails")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
             {/* Property Type */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t("job.propertyType")}
               </label>
               <Select
@@ -3754,7 +3776,7 @@ export default function JobDetailClient() {
 
             {/* Current Condition */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t("jobDetail.currentCondition")}
               </label>
               <Select
@@ -3777,10 +3799,10 @@ export default function JobDetailClient() {
 
             {/* Area Size */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t("jobDetail.areaSizeM")}
               </label>
-              <input
+              <Input
                 type="number"
                 value={editPropertyData.areaSize}
                 onChange={(e) =>
@@ -3789,17 +3811,16 @@ export default function JobDetailClient() {
                     areaSize: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
                 placeholder="100"
               />
             </div>
 
             {/* Land Area */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t("jobDetail.landAreaM")}
               </label>
-              <input
+              <Input
                 type="number"
                 value={editPropertyData.landArea}
                 onChange={(e) =>
@@ -3808,17 +3829,16 @@ export default function JobDetailClient() {
                     landArea: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
                 placeholder="500"
               />
             </div>
 
             {/* Room Count */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t("jobDetail.roomCount")}
               </label>
-              <input
+              <Input
                 type="number"
                 value={editPropertyData.roomCount}
                 onChange={(e) =>
@@ -3827,17 +3847,16 @@ export default function JobDetailClient() {
                     roomCount: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
                 placeholder="3"
               />
             </div>
 
             {/* Floor Count */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t("jobDetail.floorCount")}
               </label>
-              <input
+              <Input
                 type="number"
                 value={editPropertyData.floorCount}
                 onChange={(e) =>
@@ -3846,17 +3865,16 @@ export default function JobDetailClient() {
                     floorCount: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
                 placeholder="2"
               />
             </div>
 
             {/* Points Count */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t("jobDetail.pointsCount")}
               </label>
-              <input
+              <Input
                 type="number"
                 value={editPropertyData.pointsCount}
                 onChange={(e) =>
@@ -3865,17 +3883,16 @@ export default function JobDetailClient() {
                     pointsCount: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
                 placeholder="10"
               />
             </div>
 
             {/* Cadastral ID */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t("jobDetail.cadastralId")}
               </label>
-              <input
+              <Input
                 type="text"
                 value={editPropertyData.cadastralId}
                 onChange={(e) =>
@@ -3884,14 +3901,13 @@ export default function JobDetailClient() {
                     cadastralId: e.target.value,
                   }))
                 }
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4735B]/50"
                 placeholder="XX.XX.XX.XXX.XXX.XX.XXX"
               />
             </div>
 
             {/* Deadline */}
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t("jobDetail.deadline")}
               </label>
               <DatePicker
@@ -3932,16 +3948,17 @@ export default function JobDetailClient() {
         size="lg"
       >
         <div className="p-6">
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-6">
+          <h2 className="text-xl font-bold text-[var(--hm-fg-primary)] mb-6">
             {t("jobDetail.workTypes")}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[50vh] overflow-y-auto">
             {allWorkTypes.map((type) => {
               const isSelected = editWorkTypes.includes(type);
               return (
-                <button
+                <Button
                   key={type}
                   type="button"
+                  variant="outline"
                   onClick={() => {
                     setEditWorkTypes((prev) =>
                       isSelected
@@ -3949,14 +3966,14 @@ export default function JobDetailClient() {
                         : [...prev, type],
                     );
                   }}
-                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all border ${
+                  className={`h-auto px-4 py-3 rounded-xl ${
                     isSelected
-                      ? "border-[#C4735B] bg-[#C4735B]/10 text-[#C4735B]"
-                      : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-[#C4735B]/50"
+                      ? "border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]"
+                      : "hover:border-[var(--hm-brand-500)]/50"
                   }`}
                 >
                   {t(workTypeKeys[type] || type)}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -3982,93 +3999,85 @@ export default function JobDetailClient() {
         size="md"
       >
         <div className="p-6">
-          <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-6">
+          <h2 className="text-xl font-bold text-[var(--hm-fg-primary)] mb-6">
             {t("jobDetail.requirements")}
           </h2>
           <div className="space-y-4">
             {/* Furniture Included */}
-            <label className="flex items-center gap-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
-              <input
-                type="checkbox"
-                checked={editRequirements.furnitureIncluded}
-                onChange={(e) =>
-                  setEditRequirements((prev) => ({
-                    ...prev,
-                    furnitureIncluded: e.target.checked,
-                  }))
-                }
-                className="w-5 h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
-              />
+            <Checkbox
+              checked={editRequirements.furnitureIncluded}
+              onChange={(checked) =>
+                setEditRequirements((prev) => ({
+                  ...prev,
+                  furnitureIncluded: checked,
+                }))
+              }
+              className="p-4 rounded-xl border border-[var(--hm-border)] hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors w-full"
+            >
               <div className="flex items-center gap-2">
-                <Armchair className="w-5 h-5 text-neutral-500" />
-                <span className="text-neutral-900 dark:text-white">
+                <Armchair className="w-5 h-5 text-[var(--hm-fg-muted)]" />
+                <span className="text-[var(--hm-fg-primary)]">
                   {t("jobDetail.furnitureSelection")}
                 </span>
               </div>
-            </label>
+            </Checkbox>
 
             {/* Visualization Needed */}
-            <label className="flex items-center gap-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
-              <input
-                type="checkbox"
-                checked={editRequirements.visualizationNeeded}
-                onChange={(e) =>
-                  setEditRequirements((prev) => ({
-                    ...prev,
-                    visualizationNeeded: e.target.checked,
-                  }))
-                }
-                className="w-5 h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
-              />
+            <Checkbox
+              checked={editRequirements.visualizationNeeded}
+              onChange={(checked) =>
+                setEditRequirements((prev) => ({
+                  ...prev,
+                  visualizationNeeded: checked,
+                }))
+              }
+              className="p-4 rounded-xl border border-[var(--hm-border)] hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors w-full"
+            >
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-neutral-500" />
-                <span className="text-neutral-900 dark:text-white">
+                <Sparkles className="w-5 h-5 text-[var(--hm-fg-muted)]" />
+                <span className="text-[var(--hm-fg-primary)]">
                   {t("jobDetail.3dVisualization")}
                 </span>
               </div>
-            </label>
+            </Checkbox>
 
             {/* Materials Provided */}
-            <label className="flex items-center gap-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
-              <input
-                type="checkbox"
-                checked={editRequirements.materialsProvided}
-                onChange={(e) =>
-                  setEditRequirements((prev) => ({
-                    ...prev,
-                    materialsProvided: e.target.checked,
-                  }))
-                }
-                className="w-5 h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
-              />
+            <Checkbox
+              checked={editRequirements.materialsProvided}
+              onChange={(checked) =>
+                setEditRequirements((prev) => ({
+                  ...prev,
+                  materialsProvided: checked,
+                }))
+              }
+              className="p-4 rounded-xl border border-[var(--hm-border)] hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors w-full"
+            >
               <div className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-neutral-500" />
-                <span className="text-neutral-900 dark:text-white">
+                <Package className="w-5 h-5 text-[var(--hm-fg-muted)]" />
+                <span className="text-[var(--hm-fg-primary)]">
                   {t("jobDetail.materialsProvided")}
                 </span>
               </div>
-            </label>
+            </Checkbox>
 
             {/* Occupied During Work */}
-            <label className="flex items-center gap-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
-              <input
-                type="checkbox"
-                checked={editRequirements.occupiedDuringWork}
-                onChange={(e) =>
-                  setEditRequirements((prev) => ({
-                    ...prev,
-                    occupiedDuringWork: e.target.checked,
-                  }))
-                }
-                className="w-5 h-5 rounded border-neutral-300 text-[#C4735B] focus:ring-[#C4735B]"
-              />
+            <Checkbox
+              checked={editRequirements.occupiedDuringWork}
+              onChange={(checked) =>
+                setEditRequirements((prev) => ({
+                  ...prev,
+                  occupiedDuringWork: checked,
+                }))
+              }
+              className="p-4 rounded-xl border border-[var(--hm-border)] hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors w-full"
+            >
               <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-neutral-500" />
-                <span className="text-neutral-900 dark:text-white">
+                <Users className="w-5 h-5 text-[var(--hm-fg-muted)]" />
+                <span className="text-[var(--hm-fg-primary)]">
                   {t("jobDetail.occupiedDuringWork")}
                 </span>
               </div>
-            </label>
+            </Checkbox>
           </div>
           <div className="flex justify-end gap-3 mt-6">
             <Button
@@ -4097,11 +4106,11 @@ export default function JobDetailClient() {
             <div
               className="absolute top-0 left-0 right-0 h-[2px]"
               style={{
-                background: `linear-gradient(90deg, transparent 0%, ${ACCENT} 30%, #E8A87C 70%, transparent 100%)`,
+                background: `linear-gradient(90deg, transparent 0%, ${ACCENT} 30%, #F28764 70%, transparent 100%)`,
               }}
             />
             {/* Main bar */}
-            <div className="bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border-t border-white/20 dark:border-neutral-800/50 shadow-[0_-8px_32px_rgba(0,0,0,0.12)]">
+            <div className="bg-white/95 backdrop-blur-xl border-t border-white/50 shadow-[0_-8px_32px_rgba(0,0,0,0.12)]">
               <div className="max-w-6xl mx-auto px-4 py-3.5 sm:py-3 flex items-center gap-4">
                 {/* Desktop: value text with animated dot */}
                 <div className="hidden sm:flex items-center gap-3 flex-1 min-w-0">
@@ -4109,7 +4118,7 @@ export default function JobDetailClient() {
                     className="w-2 h-2 rounded-full flex-shrink-0 animate-pulse"
                     style={{ backgroundColor: ACCENT }}
                   />
-                  <p className="text-sm text-neutral-600 dark:text-neutral-300 truncate">
+                  <p className="text-sm text-[var(--hm-fg-secondary)] truncate">
                     {t("jobDetail.guestCtaTitle")}
                   </p>
                 </div>
@@ -4121,7 +4130,7 @@ export default function JobDetailClient() {
                     href="/register/professional"
                     className="guest-cta-primary flex-1 sm:flex-none relative flex items-center justify-center gap-2 px-6 py-3 sm:py-2.5 rounded-xl text-sm font-bold text-white overflow-hidden transition-all duration-300 hover:shadow-lg active:scale-[0.97]"
                     style={{
-                      background: `linear-gradient(135deg, ${ACCENT} 0%, #D4937B 50%, #E8A87C 100%)`,
+                      background: `linear-gradient(135deg, ${ACCENT} 0%, #F06B43 50%, #F28764 100%)`,
                       boxShadow: `0 4px 16px ${ACCENT}40`,
                     }}
                   >
@@ -4132,9 +4141,10 @@ export default function JobDetailClient() {
                   </Link>
 
                   {/* Secondary: Sign In */}
-                  <button
+                  <Button
+                    variant="outline"
                     onClick={() => openLoginModal()}
-                    className="flex-1 sm:flex-none flex items-center justify-center px-6 py-3 sm:py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-[0.97]"
+                    className="flex-1 sm:flex-none h-auto px-6 py-3 sm:py-2.5 rounded-xl text-sm font-semibold"
                     style={{
                       border: `1.5px solid ${ACCENT}30`,
                       color: ACCENT,
@@ -4150,7 +4160,7 @@ export default function JobDetailClient() {
                     }}
                   >
                     {t("jobDetail.guestCtaSignIn")}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

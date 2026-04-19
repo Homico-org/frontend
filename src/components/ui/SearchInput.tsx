@@ -6,16 +6,16 @@ import { cn } from '@/lib/utils';
 import { Search, X } from 'lucide-react';
 
 const searchInputVariants = cva(
-  'flex w-full rounded-xl text-[var(--color-text-primary)] transition-all duration-300 placeholder:text-[var(--color-text-muted)] disabled:cursor-not-allowed disabled:opacity-50',
+  'flex w-full rounded-xl text-[var(--hm-fg-primary)] transition-all duration-300 placeholder:text-[var(--hm-fg-muted)] disabled:cursor-not-allowed disabled:opacity-50',
   {
     variants: {
       variant: {
         default:
-          'bg-[var(--color-bg-primary)] border border-[var(--color-border-subtle)] focus:outline-none focus:border-[#E07B4F] focus:ring-2 focus:ring-[#E07B4F]/15',
+          'bg-[var(--hm-bg-page)] border border-[var(--hm-border-subtle)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15',
         filled:
-          'bg-[var(--color-bg-tertiary)] border border-transparent focus:outline-none focus:border-[#E07B4F] focus:ring-2 focus:ring-[#E07B4F]/15',
+          'bg-[var(--hm-bg-tertiary)] border border-transparent focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15',
         forest:
-          'bg-[var(--color-bg-tertiary)] border border-[var(--color-border-subtle)] focus:outline-none focus:border-[#4A7C59] focus:ring-2 focus:ring-[#4A7C59]/15',
+          'bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border-subtle)] focus:outline-none focus:border-[#4A7C59] focus:ring-2 focus:ring-[#4A7C59]/15',
       },
       inputSize: {
         sm: 'h-9 px-3 py-2 text-xs',
@@ -73,7 +73,7 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 
     return (
       <div className="relative">
-        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]">
+        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--hm-fg-muted)]">
           {icon || <Search className="w-5 h-5" strokeWidth={1.5} />}
         </div>
         <input
@@ -93,7 +93,7 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors"
             aria-label="Clear search"
           >
             <X className="w-4 h-4" strokeWidth={1.5} />

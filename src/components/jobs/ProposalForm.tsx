@@ -72,10 +72,10 @@ export default function ProposalForm({
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative w-full sm:max-w-lg bg-white dark:bg-neutral-900 sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up">
-        <div className="p-6 border-b border-neutral-100 dark:border-neutral-800">
+      <div className="relative w-full sm:max-w-lg bg-[var(--hm-bg-elevated)] sm:rounded-2xl overflow-hidden shadow-2xl animate-slide-up">
+        <div className="p-6 border-b border-[var(--hm-border-subtle)]">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
+            <h2 className="font-display text-xl font-semibold text-[var(--hm-fg-primary)]">
               {t('job.submitProposal')}
             </h2>
             <Button
@@ -83,7 +83,7 @@ export default function ProposalForm({
               size="icon-sm"
               onClick={onClose}
             >
-              <X className="w-5 h-5 text-neutral-400" />
+              <X className="w-5 h-5 text-[var(--hm-fg-muted)]" />
             </Button>
           </div>
         </div>
@@ -96,7 +96,7 @@ export default function ProposalForm({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
-            <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            <label className="block font-body text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
               {t('job.coverLetter')}
             </label>
             <Textarea
@@ -113,7 +113,7 @@ export default function ProposalForm({
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block font-body text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t('common.price')}
               </label>
               <Input
@@ -128,7 +128,7 @@ export default function ProposalForm({
               />
             </div>
             <div>
-              <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block font-body text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t('common.duration')}
               </label>
               <Input
@@ -145,7 +145,7 @@ export default function ProposalForm({
               />
             </div>
             <div>
-              <label className="block font-body text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block font-body text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                 {t('job.unit')}
               </label>
               <Select

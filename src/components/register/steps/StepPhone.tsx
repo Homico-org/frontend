@@ -53,7 +53,7 @@ export default function StepPhone({
         {/* Back button */}
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-neutral-500 hover:text-neutral-900 transition-colors mb-5 sm:mb-8 -ml-1 p-1"
+          className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors mb-5 sm:mb-8 -ml-1 p-1"
         >
           <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           {t('common.back')}
@@ -61,20 +61,20 @@ export default function StepPhone({
 
         {/* Header */}
         <div className="text-center mb-5 sm:mb-8">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[#C4735B]/10 flex items-center justify-center mx-auto mb-3 sm:mb-4">
-            <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-[#C4735B]" />
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[var(--hm-brand-500)]/10 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+            <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-[var(--hm-brand-500)]" />
           </div>
-          <h1 className="text-lg sm:text-2xl font-bold text-neutral-900 mb-1 sm:mb-2">
+          <h1 className="text-lg sm:text-2xl font-bold text-[var(--hm-fg-primary)] mb-1 sm:mb-2">
             {t('register.verification')}
           </h1>
-          <p className="text-xs sm:text-base text-neutral-500">
-            {t('register.codeSentTo')} <span className="font-medium text-neutral-900 break-all">{phone}</span>
+          <p className="text-xs sm:text-base text-[var(--hm-fg-muted)]">
+            {t('register.codeSentTo')} <span className="font-medium text-[var(--hm-fg-primary)] break-all">{phone}</span>
           </p>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-red-50 border border-red-100 text-xs sm:text-sm text-red-600 text-center">
+          <div className="mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-[var(--hm-error-50)] border border-red-100 text-xs sm:text-sm text-[var(--hm-error-500)] text-center">
             {error}
           </div>
         )}
@@ -90,21 +90,21 @@ export default function StepPhone({
         </div>
 
         {/* Delay hint */}
-        <p className="text-[11px] sm:text-xs text-neutral-400 text-center mb-4 sm:mb-6 leading-relaxed px-2">
+        <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] text-center mb-4 sm:mb-6 leading-relaxed px-2">
           {t('common.otpMayBeDelayed')}
         </p>
 
         {/* Resend */}
         <div className="text-center">
           {resendTimer > 0 ? (
-            <p className="text-xs sm:text-sm text-neutral-400">
+            <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">
               {t('forgotPassword.resendIn')} {resendTimer}s
             </p>
           ) : (
             <button
               onClick={onResend}
               disabled={isLoading}
-              className="text-xs sm:text-sm font-medium text-[#C4735B] hover:text-[#A85D47] active:scale-95 transition-all p-2 -m-2"
+              className="text-xs sm:text-sm font-medium text-[var(--hm-brand-500)] hover:text-[#A85D47] active:scale-95 transition-all p-2 -m-2"
             >
               {t('register.resendCode')}
             </button>
@@ -119,20 +119,20 @@ export default function StepPhone({
     <div className="w-full max-w-sm mx-auto">
       {/* Header */}
       <div className="text-center mb-5 sm:mb-8">
-        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[#C4735B]/10 flex items-center justify-center mx-auto mb-3 sm:mb-4">
-          <Smartphone className="w-6 h-6 sm:w-8 sm:h-8 text-[#C4735B]" />
+        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[var(--hm-brand-500)]/10 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+          <Smartphone className="w-6 h-6 sm:w-8 sm:h-8 text-[var(--hm-brand-500)]" />
         </div>
-        <h1 className="text-lg sm:text-2xl font-bold text-neutral-900 mb-1 sm:mb-2">
+        <h1 className="text-lg sm:text-2xl font-bold text-[var(--hm-fg-primary)] mb-1 sm:mb-2">
           {t('register.phoneNumber')}
         </h1>
-        <p className="text-xs sm:text-base text-neutral-500">
+        <p className="text-xs sm:text-base text-[var(--hm-fg-muted)]">
           {t('register.enterPhoneToVerify')}
         </p>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-red-50 border border-red-100 text-xs sm:text-sm text-red-600 text-center">
+        <div className="mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-[var(--hm-error-50)] border border-red-100 text-xs sm:text-sm text-[var(--hm-error-500)] text-center">
           {error}
         </div>
       )}
@@ -154,8 +154,8 @@ export default function StepPhone({
           onClick={() => onChannelChange('sms')}
           className={`flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl border-2 text-sm font-medium transition-all active:scale-[0.98] ${
             verificationChannel === 'sms'
-              ? 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]'
-              : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
+              ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)]'
+              : 'border-[var(--hm-border)] text-[var(--hm-fg-secondary)] hover:border-neutral-300'
           }`}
         >
           <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -167,7 +167,7 @@ export default function StepPhone({
           className={`flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl border-2 text-sm font-medium transition-all active:scale-[0.98] ${
             verificationChannel === 'whatsapp'
               ? 'border-[#25D366] bg-[#25D366]/5 text-[#25D366]'
-              : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
+              : 'border-[var(--hm-border)] text-[var(--hm-fg-secondary)] hover:border-neutral-300'
           }`}
         >
           <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

@@ -151,11 +151,11 @@ export default function ShareMenu({
 
           {/* Menu */}
           <div
-            className={`absolute right-0 ${menuPositionClass} z-50 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 py-2 min-w-[180px] animate-in fade-in slide-in-from-bottom-2 duration-200`}
+            className={`absolute right-0 ${menuPositionClass} z-50 bg-[var(--hm-bg-elevated)] rounded-xl shadow-xl border border-[var(--hm-border)] py-2 min-w-[180px] animate-in fade-in slide-in-from-bottom-2 duration-200`}
           >
             <button
               onClick={handleShareFacebook}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] transition-colors"
             >
               <div className={`${menuIconSizes[size]} rounded-full bg-[#1877F2] flex items-center justify-center`}>
                 <Facebook className="w-4 h-4 text-white" />
@@ -164,7 +164,7 @@ export default function ShareMenu({
             </button>
             <button
               onClick={handleShareWhatsApp}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] transition-colors"
             >
               <div className={`${menuIconSizes[size]} rounded-full bg-[#25D366] flex items-center justify-center`}>
                 <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -175,13 +175,13 @@ export default function ShareMenu({
             </button>
             <button
               onClick={handleCopyLink}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] transition-colors"
             >
-              <div className={`${menuIconSizes[size]} rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center`}>
+              <div className={`${menuIconSizes[size]} rounded-full bg-[var(--hm-n-200)] flex items-center justify-center`}>
                 {copySuccess ? (
-                  <Check className="w-4 h-4 text-emerald-600" />
+                  <Check className="w-4 h-4 text-[var(--hm-success-500)]" />
                 ) : (
-                  <Link2 className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+                  <Link2 className="w-4 h-4 text-[var(--hm-fg-secondary)]" />
                 )}
               </div>
               <span>{t('common.copyLink')}</span>
@@ -198,8 +198,8 @@ export default function ShareMenu({
           onClick={() => setIsOpen(!isOpen)}
           className={`${sizeClasses[size]} rounded-full shadow-lg flex items-center justify-center transition-all ${
             isOpen
-              ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rotate-45'
-              : 'bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700'
+              ? 'bg-neutral-900 text-white rotate-45'
+              : 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] hover:bg-neutral-50'
           }`}
           aria-label={t('common.share')}
         >

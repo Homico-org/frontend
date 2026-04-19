@@ -100,10 +100,10 @@ export default function ProjectSidebar({
               group relative flex items-center gap-3 px-4 py-3 rounded-xl
               font-medium text-sm transition-all duration-200
               ${isDisabled
-                ? "opacity-50 cursor-not-allowed text-neutral-400 dark:text-neutral-500"
+                ? "opacity-50 cursor-not-allowed text-[var(--hm-fg-muted)]"
                 : isActive
                   ? "text-white shadow-md"
-                  : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
               }
             `}
             style={isActive && !isDisabled ? { backgroundColor: ACCENT } : {}}
@@ -151,7 +151,7 @@ export default function ProjectSidebar({
 
       {/* Helper text for disabled items */}
       {!isProjectStarted && (
-        <p className="px-4 py-2 text-xs text-neutral-400 dark:text-neutral-500 italic">
+        <p className="px-4 py-2 text-xs text-[var(--hm-fg-muted)] italic">
           {t('job.chatPollsResourcesAvailableAfter')}
         </p>
       )}
@@ -225,10 +225,10 @@ export function ProjectSidebarMobile({
               relative flex items-center gap-2 px-4 py-2.5 rounded-full
               font-medium text-sm whitespace-nowrap transition-all duration-200 flex-shrink-0
               ${isDisabled
-                ? "opacity-40 cursor-not-allowed bg-neutral-100 dark:bg-neutral-800 text-neutral-400"
+                ? "opacity-40 cursor-not-allowed bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]"
                 : isActive
                   ? "text-white shadow-md"
-                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                  : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)]"
               }
             `}
             style={isActive && !isDisabled ? { backgroundColor: ACCENT } : {}}

@@ -4,25 +4,30 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
+/**
+ * Homico Design System — Input
+ * No border-radius (architectural). Focus: brand 3px glow.
+ * Padding: 12px 14px. Font: 15px.
+ */
 const inputVariants = cva(
-  "flex w-full rounded-xl text-[var(--color-text-primary)] transition-all duration-300 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[var(--color-text-muted)] disabled:cursor-not-allowed disabled:opacity-50",
+  "flex w-full text-[var(--hm-fg-primary)] file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[var(--hm-fg-muted)] disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] focus:outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/15",
+          "bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-[3px] focus:ring-[var(--hm-brand-100)]",
         filled:
-          "bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] focus:outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/15 hover:border-[var(--color-border)]",
+          "bg-[var(--hm-bg-tertiary)] border border-transparent focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-[3px] focus:ring-[var(--hm-brand-100)] focus:bg-[var(--hm-bg-elevated)]",
         ghost:
-          "bg-transparent border-b border-[var(--color-border-subtle)] rounded-none focus:outline-none focus:border-[#C4735B]",
+          "bg-transparent border-b border-[var(--hm-border-subtle)] rounded-none focus:outline-none focus:border-[var(--hm-brand-500)]",
         premium:
-          "bg-gradient-to-r from-[var(--color-bg-elevated)] to-[#C4735B]/5 border border-[#C4735B]/20 focus:outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/20 focus:shadow-lg focus:shadow-[#C4735B]/10",
+          "bg-[var(--hm-bg-elevated)] border border-[var(--hm-brand-200)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-[3px] focus:ring-[var(--hm-brand-100)]",
       },
       inputSize: {
-        sm: "h-9 px-3 py-2 text-xs",
-        default: "h-11 px-4 py-2.5 text-sm",
-        lg: "h-12 px-5 py-3 text-base",
-        xl: "h-14 px-6 py-4 text-base",
+        sm: "h-8 px-3 py-1.5 text-xs",
+        default: "h-10 px-4 py-2 text-[15px]",
+        lg: "h-12 px-4 py-3 text-[15px]",
+        xl: "h-14 px-5 py-4 text-base",
       },
     },
     defaultVariants: {
@@ -71,7 +76,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="relative">
         {leftIcon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--hm-fg-muted)]">
             {leftIcon}
           </div>
         )}
@@ -82,8 +87,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             inputVariants({ variant, inputSize }),
             leftIcon && "pl-10",
             rightIcon && "pr-12",
-            error && "border-red-500 focus:border-red-500 focus:ring-red-500/15",
-            success && "border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/15",
+            error && "border-[var(--hm-error-500)] focus:border-[var(--hm-error-500)] focus:ring-red-500/15",
+            success && "border-[var(--hm-success-500)] focus:border-[var(--hm-success-500)] focus:ring-emerald-500/15",
             hideSpinners && "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
             className
           )}
@@ -92,7 +97,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {rightIcon && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]">
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--hm-fg-muted)]">
             {rightIcon}
           </div>
         )}
@@ -107,22 +112,22 @@ Input.displayName = "Input"
 // ============================================================================
 
 const textareaVariants = cva(
-  "flex w-full rounded-xl text-[var(--color-text-primary)] transition-all duration-300 placeholder:text-[var(--color-text-muted)] disabled:cursor-not-allowed disabled:opacity-50 resize-none",
+  "flex w-full text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] disabled:cursor-not-allowed disabled:opacity-50 resize-none",
   {
     variants: {
       variant: {
         default:
-          "bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] focus:outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/15",
+          "bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-[3px] focus:ring-[var(--hm-brand-100)]",
         filled:
-          "bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] focus:outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/15 hover:border-[var(--color-border)]",
+          "bg-[var(--hm-bg-tertiary)] border border-transparent focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-[3px] focus:ring-[var(--hm-brand-100)] focus:bg-[var(--hm-bg-elevated)]",
         ghost:
-          "bg-transparent border-b border-[var(--color-border-subtle)] rounded-none focus:outline-none focus:border-[#C4735B]",
+          "bg-transparent border-b border-[var(--hm-border-subtle)] rounded-none focus:outline-none focus:border-[var(--hm-brand-500)]",
         premium:
-          "bg-gradient-to-r from-[var(--color-bg-elevated)] to-[#C4735B]/5 border border-[#C4735B]/20 focus:outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/20 focus:shadow-lg focus:shadow-[#C4735B]/10",
+          "bg-[var(--hm-bg-elevated)] border border-[var(--hm-brand-200)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-[3px] focus:ring-[var(--hm-brand-100)]",
       },
       textareaSize: {
         sm: "min-h-[80px] px-3 py-2 text-xs",
-        default: "min-h-[100px] px-4 py-3 text-sm",
+        default: "min-h-[100px] px-4 py-3 text-[15px]",
         lg: "min-h-[120px] px-5 py-4 text-base",
         xl: "min-h-[150px] px-6 py-5 text-base",
       },
@@ -147,8 +152,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       <textarea
         className={cn(
           textareaVariants({ variant, textareaSize }),
-          error && "border-red-500 focus:border-red-500 focus:ring-red-500/15",
-          success && "border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/15",
+          error && "border-[var(--hm-error-500)] focus:border-[var(--hm-error-500)] focus:ring-red-500/15",
+          success && "border-[var(--hm-success-500)] focus:border-[var(--hm-success-500)] focus:ring-emerald-500/15",
           className
         )}
         ref={ref}
@@ -179,25 +184,25 @@ const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
         <label
           ref={ref}
           className={cn(
-            "text-sm font-medium text-[var(--color-text-secondary)] flex items-center gap-2",
+            "text-sm font-medium text-[var(--hm-fg-secondary)] flex items-center gap-2",
             className
           )}
           {...props}
         >
           {children}
           {required && (
-            <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+            <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-[var(--hm-warning-500)]/15 text-[var(--hm-warning-500)] border border-[var(--hm-warning-500)]/20">
               *
             </span>
           )}
           {optional && (
-            <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]">
+            <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]">
               {optionalText}
             </span>
           )}
         </label>
         {hint && (
-          <span className="text-xs text-[var(--color-text-tertiary)]">{hint}</span>
+          <span className="text-xs text-[var(--hm-fg-muted)]">{hint}</span>
         )}
       </div>
     )
@@ -243,9 +248,9 @@ const FormGroup = ({
       {(error || success || helperText) && (
         <p className={cn(
           "text-xs",
-          error && "text-red-500",
-          success && "text-emerald-500",
-          !error && !success && "text-[var(--color-text-tertiary)]"
+          error && "text-[var(--hm-error-500)]",
+          success && "text-[var(--hm-success-500)]",
+          !error && !success && "text-[var(--hm-fg-muted)]"
         )}>
           {error || success || helperText}
         </p>

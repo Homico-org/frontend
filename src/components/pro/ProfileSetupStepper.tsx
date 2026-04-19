@@ -54,32 +54,32 @@ export default function ProfileSetupStepper({
   return (
     <>
       {/* Top Progress Header */}
-      <div className="sticky top-14 z-40 bg-[var(--color-bg-secondary)]/95 backdrop-blur-md border-b border-[var(--color-border-subtle)]">
+      <div className="sticky top-14 z-40 bg-[var(--hm-bg-page)]/95 backdrop-blur-md border-b border-[var(--hm-border-subtle)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
           {/* Step indicator and percentage */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold tracking-wider text-[var(--color-text-tertiary)] uppercase">
+              <span className="text-xs font-semibold tracking-wider text-[var(--hm-fg-muted)] uppercase">
                 {t('common.step')} {currentStep + 1} {t('common.of')} {steps.length}
                 {currentStepData?.isOptional && (
-                  <span className="ml-2 text-[var(--color-text-muted)]">
+                  <span className="ml-2 text-[var(--hm-fg-muted)]">
                     ({t('common.optional')})
                   </span>
                 )}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold" style={{ color: '#E07B4F' }}>
+              <span className="text-sm font-semibold" style={{ color: 'var(--hm-brand-500)' }}>
                 {progressPercentage}%
               </span>
-              <span className="text-xs text-[var(--color-text-muted)]">
+              <span className="text-xs text-[var(--hm-fg-muted)]">
                 {locale === 'ka' ? currentStepData?.titleKa : currentStepData?.title}
               </span>
             </div>
           </div>
 
           {/* Segmented Progress Bar */}
-          <div className="relative h-2 bg-[var(--color-bg-tertiary)] rounded-full overflow-hidden">
+          <div className="relative h-2 bg-[var(--hm-bg-tertiary)] rounded-full overflow-hidden">
             {/* Background segments */}
             <div className="absolute inset-0 flex">
               {steps.map((_, idx) => (
@@ -88,7 +88,7 @@ export default function ProfileSetupStepper({
                   className="h-full"
                   style={{
                     width: `${segmentWidth}%`,
-                    borderRight: idx < steps.length - 1 ? '2px solid var(--color-bg-secondary)' : 'none'
+                    borderRight: idx < steps.length - 1 ? '2px solid var(--hm-bg-page)' : 'none'
                   }}
                 />
               ))}
@@ -99,7 +99,7 @@ export default function ProfileSetupStepper({
               className="absolute inset-y-0 left-0 transition-all duration-500 ease-out rounded-full"
               style={{
                 width: `${((currentStep + 1) / steps.length) * 100}%`,
-                background: 'linear-gradient(90deg, #E07B4F 0%, #E8956A 100%)'
+                background: 'linear-gradient(90deg, var(--hm-brand-500) 0%, var(--hm-brand-300) 100%)'
               }}
             />
 
@@ -112,7 +112,7 @@ export default function ProfileSetupStepper({
                   style={{
                     width: `${segmentWidth}%`,
                     backgroundColor: step.isComplete && idx < currentStep ? 'rgba(224, 123, 79, 0.3)' : 'transparent',
-                    borderRight: idx < steps.length - 1 ? '2px solid var(--color-bg-secondary)' : 'none'
+                    borderRight: idx < steps.length - 1 ? '2px solid var(--hm-bg-page)' : 'none'
                   }}
                 />
               ))}
@@ -135,12 +135,12 @@ export default function ProfileSetupStepper({
                     flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap
                     transition-all duration-200
                     ${isActive
-                      ? 'bg-[#E07B4F] text-white shadow-md shadow-[#E07B4F]/20'
+                      ? 'bg-[var(--hm-brand-500)] text-white shadow-md shadow-[var(--hm-brand-500)]/20'
                       : isCompleted
-                        ? 'bg-[#E07B4F]/10 text-[#E07B4F] hover:bg-[#E07B4F]/20'
+                        ? 'bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/20'
                         : isClickable
-                          ? 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)]'
-                          : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] cursor-not-allowed opacity-60'
+                          ? 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)]'
+                          : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] cursor-not-allowed opacity-60'
                     }
                   `}
                 >
@@ -151,7 +151,7 @@ export default function ProfileSetupStepper({
                       w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold
                       ${isActive
                         ? 'bg-white/20 text-white'
-                        : 'bg-[var(--color-bg-elevated)] text-[var(--color-text-tertiary)]'
+                        : 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-muted)]'
                       }
                     `}>
                       {idx + 1}
@@ -168,7 +168,7 @@ export default function ProfileSetupStepper({
       </div>
 
       {/* Bottom Navigation Footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-bg-elevated)]/95 backdrop-blur-md border-t border-[var(--color-border)]">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--hm-bg-elevated)]/95 backdrop-blur-md border-t border-[var(--hm-border)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Back Button */}
@@ -179,8 +179,8 @@ export default function ProfileSetupStepper({
                 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium
                 transition-all duration-200
                 ${currentStep === 0
-                  ? 'text-[var(--color-text-muted)] cursor-not-allowed'
-                  : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]'
+                  ? 'text-[var(--hm-fg-muted)] cursor-not-allowed'
+                  : 'text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)]'
                 }
               `}
             >
@@ -195,7 +195,7 @@ export default function ProfileSetupStepper({
                 <button
                   onClick={onSaveDraft}
                   disabled={isLoading}
-                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-all duration-200"
+                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] transition-all duration-200"
                 >
                   {t('common.saveAsDraft')}
                 </button>
@@ -209,8 +209,8 @@ export default function ProfileSetupStepper({
                   flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold
                   transition-all duration-200
                   ${canProceed && !isLoading
-                    ? 'bg-[#E07B4F] hover:bg-[#D26B3F] text-white shadow-lg shadow-[#E07B4F]/25 hover:shadow-xl hover:shadow-[#E07B4F]/30'
-                    : 'bg-[var(--color-bg-muted)] text-[var(--color-text-muted)] cursor-not-allowed'
+                    ? 'bg-[var(--hm-brand-500)] hover:bg-[#D13C14] text-white shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-xl hover:shadow-[var(--hm-brand-500)]/30'
+                    : 'bg-[var(--hm-n-200)] text-[var(--hm-fg-muted)] cursor-not-allowed'
                   }
                 `}
               >

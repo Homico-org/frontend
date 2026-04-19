@@ -83,7 +83,7 @@ export function Collapsible({
         {showChevron && (
           <ChevronDown
             className={cn(
-              'w-4 h-4 text-neutral-400 transition-transform duration-200 flex-shrink-0 ml-2',
+              'w-4 h-4 text-[var(--hm-fg-muted)] transition-transform duration-200 flex-shrink-0 ml-2',
               isOpen && 'rotate-180'
             )}
             strokeWidth={1.5}

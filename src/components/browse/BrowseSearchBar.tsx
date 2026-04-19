@@ -80,7 +80,7 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
     <div ref={containerRef} className="relative w-full max-w-md">
       {/* Search Input */}
       <div className="relative flex items-center">
-        <Search className="absolute left-3 w-4 h-4 text-[var(--color-text-tertiary)] z-10" />
+        <Search className="absolute left-3 w-4 h-4 text-[var(--hm-fg-muted)] z-10" />
         <Input
           ref={inputRef}
           type="text"
@@ -121,22 +121,22 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
 
       {/* Suggestions Dropdown */}
       {showSuggestions && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-lg shadow-lg z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] rounded-lg shadow-lg z-50 overflow-hidden">
           {/* Recent Searches */}
           {recentSearches.length > 0 && (
-            <div className="p-2 border-b border-[var(--color-border-subtle)]">
-              <span className="text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wide px-2">
+            <div className="p-2 border-b border-[var(--hm-border-subtle)]">
+              <span className="text-[10px] font-medium text-[var(--hm-fg-muted)] uppercase tracking-wide px-2">
                 {t('browse.recent')}
               </span>
               <div className="mt-1 flex flex-wrap gap-1">
                 {recentSearches.map((search, idx) => (
                   <div
                     key={idx}
-                    className="group flex items-center gap-1 px-2 py-1 rounded-md bg-[var(--color-bg-tertiary)] hover:bg-[#E07B4F]/10 cursor-pointer"
+                    className="group flex items-center gap-1 px-2 py-1 rounded-md bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-brand-500)]/10 cursor-pointer"
                   >
                     <button
                       onClick={() => handleSearch(search)}
-                      className="text-xs text-[var(--color-text-secondary)] group-hover:text-[#E07B4F]"
+                      className="text-xs text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-brand-500)]"
                     >
                       {search}
                     </button>
@@ -147,7 +147,7 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
                       }}
                       className="opacity-0 group-hover:opacity-100 p-0.5"
                     >
-                      <X className="w-2.5 h-2.5 text-[var(--color-text-tertiary)]" />
+                      <X className="w-2.5 h-2.5 text-[var(--hm-fg-muted)]" />
                     </button>
                   </div>
                 ))}
@@ -157,7 +157,7 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
 
           {/* Suggestions */}
           <div className="p-2">
-            <span className="text-[10px] font-medium text-[var(--color-text-tertiary)] uppercase tracking-wide px-2">
+            <span className="text-[10px] font-medium text-[var(--hm-fg-muted)] uppercase tracking-wide px-2">
               {t('browse.popular')}
             </span>
             <div className="mt-1 space-y-0.5">
@@ -165,10 +165,10 @@ export default function BrowseSearchBar({ placeholder }: BrowseSearchBarProps) {
                 <button
                   key={suggestion.key}
                   onClick={() => handleSearch(locale === 'ka' ? suggestion.ka : suggestion.en)}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[#E07B4F]/10 text-left"
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[var(--hm-brand-500)]/10 text-left"
                 >
-                  <Search className="w-3.5 h-3.5 text-[var(--color-text-tertiary)]" />
-                  <span className="text-xs text-[var(--color-text-secondary)] hover:text-[#E07B4F]">
+                  <Search className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
+                  <span className="text-xs text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)]">
                     {locale === 'ka' ? suggestion.ka : suggestion.en}
                   </span>
                 </button>

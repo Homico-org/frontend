@@ -85,8 +85,8 @@ export default function PaymentMethodCard({
     <div
       className={`p-4 rounded-2xl flex items-center justify-between group hover:shadow-md transition-all ${className}`}
       style={{
-        backgroundColor: 'var(--color-bg-elevated)',
-        border: method.isDefault ? '2px solid #E07B4F' : '1px solid var(--color-border)',
+        backgroundColor: 'var(--hm-bg-elevated)',
+        border: method.isDefault ? '2px solid var(--hm-brand-500)' : '1px solid var(--hm-border)',
       }}
     >
       <div className="flex items-center gap-4">
@@ -102,7 +102,7 @@ export default function PaymentMethodCard({
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            <span className="font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
               •••• {method.cardLast4}
             </span>
             {method.isDefault && (
@@ -113,12 +113,12 @@ export default function PaymentMethodCard({
           </div>
           <div className="flex items-center gap-3 mt-0.5">
             {method.cardholderName && (
-              <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+              <span className="text-xs" style={{ color: 'var(--hm-fg-secondary)' }}>
                 {method.cardholderName}
               </span>
             )}
             {method.cardExpiry && (
-              <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+              <span className="text-xs" style={{ color: 'var(--hm-fg-muted)' }}>
                 {t('settings.exp')}: {method.cardExpiry}
               </span>
             )}
@@ -129,8 +129,8 @@ export default function PaymentMethodCard({
         {!method.isDefault && onSetDefault && (
           <button
             onClick={() => onSetDefault(method.id)}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800"
-            style={{ color: 'var(--color-text-secondary)' }}
+            className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all hover:bg-[var(--hm-bg-tertiary)]"
+            style={{ color: 'var(--hm-fg-secondary)' }}
           >
             {t('settings.setDefault')}
           </button>
@@ -139,7 +139,7 @@ export default function PaymentMethodCard({
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="p-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all disabled:opacity-50"
+            className="p-2 rounded-lg text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)] transition-all disabled:opacity-50"
           >
             {isDeleting ? (
               <LoadingSpinner size="sm" color="#ef4444" />
@@ -168,28 +168,28 @@ export function EmptyPaymentMethods({
   const { t } = useLanguage();
   return (
     <div className={`text-center py-10 sm:py-12 ${className}`}>
-      <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
+      <div className="w-16 h-16 rounded-2xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center mx-auto mb-4">
         <CreditCard
           className="h-8 w-8"
-          style={{ color: 'var(--color-text-tertiary)' }}
+          style={{ color: 'var(--hm-fg-muted)' }}
         />
       </div>
       <p
         className="text-sm sm:text-base font-medium"
-        style={{ color: 'var(--color-text-primary)' }}
+        style={{ color: 'var(--hm-fg-primary)' }}
       >
         {t('settings.noCardsAddedYet')}
       </p>
       <p
         className="text-sm mt-1"
-        style={{ color: 'var(--color-text-secondary)' }}
+        style={{ color: 'var(--hm-fg-secondary)' }}
       >
         {t('settings.addACardForFaster')}
       </p>
       {onAddCard && (
         <button
           onClick={onAddCard}
-          className="mt-4 px-6 py-3 bg-[#E07B4F] hover:bg-[#D26B3F] text-white rounded-xl transition-all flex items-center gap-2 mx-auto"
+          className="mt-4 px-6 py-3 bg-[var(--hm-brand-500)] hover:bg-[#D13C14] text-white rounded-xl transition-all flex items-center gap-2 mx-auto"
         >
           <CreditCard className="w-4 h-4" />
           {t('settings.addCard')}

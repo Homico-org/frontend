@@ -259,7 +259,7 @@ export default function ReviewsTab({
         {!isOwner && proId && isAuthenticated && !hasUserReviewed && (
           <Button
             onClick={() => setShowReviewModal(true)}
-            className="w-full sm:w-auto bg-[#C4735B] hover:bg-[#B5654D]"
+            className="w-full sm:w-auto bg-[var(--hm-brand-500)] hover:bg-[#B5654D]"
           >
             <MessageCircle className="w-4 h-4 mr-2" />
             {t("reviews.leaveReview")}
@@ -268,21 +268,21 @@ export default function ReviewsTab({
 
         {/* Owner: Request Reviews Section */}
         {isOwner && (
-          <div className="bg-gradient-to-br from-[#C4735B]/10 to-[#C4735B]/5 dark:from-[#C4735B]/20 dark:to-[#C4735B]/10 rounded-2xl border border-[#C4735B]/20 overflow-hidden">
+          <div className="bg-gradient-to-br from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 rounded-2xl border border-[var(--hm-brand-500)]/20 overflow-hidden">
             <div className="w-full flex items-center justify-between gap-3 p-4">
               <button
                 onClick={() => setShowRequestSection(!showRequestSection)}
-                className="flex-1 flex items-center justify-between hover:bg-[#C4735B]/5 transition-colors rounded-xl px-2 py-1"
+                className="flex-1 flex items-center justify-between hover:bg-[var(--hm-brand-500)]/5 transition-colors rounded-xl px-2 py-1"
               >
                 <div className="flex items-center gap-3">
-                  <div className="bg-[#C4735B] p-2 rounded-lg">
+                  <div className="bg-[var(--hm-brand-500)] p-2 rounded-lg">
                     <Users className="h-5 w-5 text-white" />
                   </div>
                   <div className="text-left">
-                    <h3 className="font-semibold text-neutral-900 dark:text-white">
+                    <h3 className="font-semibold text-[var(--hm-fg-primary)]">
                       {t("reviews.requestReviews")}
                     </h3>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    <p className="text-xs text-[var(--hm-fg-muted)]">
                       {t("reviews.shareWithClients")}
                     </p>
                   </div>
@@ -291,7 +291,7 @@ export default function ReviewsTab({
                   className={`transition-transform duration-200 ${showRequestSection ? "rotate-180" : ""}`}
                 >
                   <svg
-                    className="w-5 h-5 text-neutral-400"
+                    className="w-5 h-5 text-[var(--hm-fg-muted)]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -319,8 +319,8 @@ export default function ReviewsTab({
             {showRequestSection && (
               <div className="px-4 pb-4 space-y-3">
                 {/* Review Link */}
-                <div className="bg-white dark:bg-neutral-900 rounded-xl p-3">
-                  <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">
+                <div className="bg-[var(--hm-bg-elevated)] rounded-xl p-3">
+                  <label className="block text-xs font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                     {t("reviews.yourReviewLink")}
                   </label>
                   {isLinkLoading ? (
@@ -372,8 +372,8 @@ export default function ReviewsTab({
                 </div>
 
                 {/* Send SMS */}
-                <div className="bg-white dark:bg-neutral-900 rounded-xl p-3">
-                  <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1.5">
+                <div className="bg-[var(--hm-bg-elevated)] rounded-xl p-3">
+                  <label className="block text-xs font-medium text-[var(--hm-fg-secondary)] mb-1.5">
                     {t("reviews.sendInvitationSms")}
                   </label>
                   <div className="flex gap-2">
@@ -396,7 +396,7 @@ export default function ReviewsTab({
                       size="sm"
                       onClick={sendInvitation}
                       disabled={isSendingInvite || !invitePhone.trim()}
-                      className="shrink-0 bg-[#C4735B] hover:bg-[#B5654D]"
+                      className="shrink-0 bg-[var(--hm-brand-500)] hover:bg-[#B5654D]"
                     >
                       {isSendingInvite ? (
                         <LoadingSpinner size="sm" color="white" />
@@ -422,20 +422,20 @@ export default function ReviewsTab({
 
         {/* Filter Tabs - Modern segmented control */}
         {reviews.length > 0 && (
-          <div className="inline-flex p-1 bg-neutral-100 dark:bg-neutral-800 rounded-xl gap-1">
+          <div className="inline-flex p-1 bg-[var(--hm-bg-tertiary)] rounded-xl gap-1">
             <button
               onClick={() => setFilter("all")}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                 filter === "all"
-                  ? "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm"
-                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
+                  ? "bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-sm"
+                  : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
               }`}
             >
               {t("common.all")}
               <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                 filter === "all"
-                  ? "bg-neutral-100 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-300"
-                  : "bg-neutral-200/50 dark:bg-neutral-700 text-neutral-400"
+                  ? "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)]"
+                  : "bg-neutral-200/50 text-[var(--hm-fg-muted)]"
               }`}>
                 {reviews.length}
               </span>
@@ -444,16 +444,16 @@ export default function ReviewsTab({
               onClick={() => setFilter("homico")}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                 filter === "homico"
-                  ? "bg-white dark:bg-neutral-700 text-emerald-600 dark:text-emerald-400 shadow-sm"
-                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
+                  ? "bg-[var(--hm-bg-elevated)] text-[var(--hm-success-500)] shadow-sm"
+                  : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
               }`}
             >
-              <ShieldCheck className={`w-3.5 h-3.5 ${filter === "homico" ? "text-emerald-500" : ""}`} />
+              <ShieldCheck className={`w-3.5 h-3.5 ${filter === "homico" ? "text-[var(--hm-success-500)]" : ""}`} />
               Homico
               <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                 filter === "homico"
-                  ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400"
-                  : "bg-neutral-200/50 dark:bg-neutral-700 text-neutral-400"
+                  ? "bg-[var(--hm-success-100)]/50 text-[var(--hm-success-500)]"
+                  : "bg-neutral-200/50 text-[var(--hm-fg-muted)]"
               }`}>
                 {homicoCount}
               </span>
@@ -462,16 +462,16 @@ export default function ReviewsTab({
               onClick={() => setFilter("external")}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                 filter === "external"
-                  ? "bg-white dark:bg-neutral-700 text-blue-600 dark:text-blue-400 shadow-sm"
-                  : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
+                  ? "bg-[var(--hm-bg-elevated)] text-[var(--hm-info-500)] shadow-sm"
+                  : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
               }`}
             >
-              <Globe className={`w-3.5 h-3.5 ${filter === "external" ? "text-blue-500" : ""}`} />
+              <Globe className={`w-3.5 h-3.5 ${filter === "external" ? "text-[var(--hm-info-500)]" : ""}`} />
               {t("reviews.external")}
               <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                 filter === "external"
-                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"
-                  : "bg-neutral-200/50 dark:bg-neutral-700 text-neutral-400"
+                  ? "bg-[var(--hm-info-100)]/50 text-[var(--hm-info-500)]"
+                  : "bg-neutral-200/50 text-[var(--hm-fg-muted)]"
               }`}>
                 {externalCount}
               </span>
@@ -491,16 +491,16 @@ export default function ReviewsTab({
           ))
         ) : reviews.length > 0 ? (
           <div className="text-center py-8">
-            <p className="text-neutral-500 text-sm">
+            <p className="text-[var(--hm-fg-muted)] text-sm">
               {filter === "homico"
                 ? t("professional.noHomicoReviews")
                 : t("professional.noExternalReviews")}
             </p>
           </div>
         ) : (
-          <div className="text-center py-8 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800">
-            <Star className="w-10 h-10 text-neutral-300 dark:text-neutral-700 mx-auto mb-3" />
-            <p className="text-neutral-500 text-sm mb-1">
+          <div className="text-center py-8 bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)]">
+            <Star className="w-10 h-10 text-[var(--hm-n-300)] mx-auto mb-3" />
+            <p className="text-[var(--hm-fg-muted)] text-sm mb-1">
               {t("professional.noReviewsYet")}
             </p>
             {!isOwner && proId && isAuthenticated && !hasUserReviewed && (
@@ -531,16 +531,16 @@ export default function ReviewsTab({
         />
         <ModalBody>
           {/* User info - prefilled */}
-          <div className="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg mb-4">
-            <div className="w-10 h-10 bg-[#C4735B] rounded-full flex items-center justify-center text-white font-medium">
+          <div className="flex items-center gap-3 p-3 bg-[var(--hm-bg-tertiary)] rounded-lg mb-4">
+            <div className="w-10 h-10 bg-[var(--hm-brand-500)] rounded-full flex items-center justify-center text-white font-medium">
               {user?.name?.charAt(0)?.toUpperCase() || "U"}
             </div>
             <div>
-              <p className="font-medium text-neutral-900 dark:text-white text-sm">
+              <p className="font-medium text-[var(--hm-fg-primary)] text-sm">
                 {user?.name}
               </p>
               {isPhoneVerified && (
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                <p className="text-xs text-[var(--hm-success-500)] flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" />
                   {t("reviews.verifiedUser")}
                 </p>
@@ -550,8 +550,8 @@ export default function ReviewsTab({
 
           {/* Rating */}
           <div className="mb-5">
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              {t("reviews.rating")} <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
+              {t("reviews.rating")} <span className="text-[var(--hm-error-500)]">*</span>
             </label>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -567,14 +567,14 @@ export default function ReviewsTab({
                     className={`w-8 h-8 transition-colors ${
                       star <= (reviewHoverRating || reviewRating)
                         ? "text-amber-400 fill-amber-400"
-                        : "text-neutral-300 dark:text-neutral-600"
+                        : "text-[var(--hm-n-300)]"
                     }`}
                   />
                 </button>
               ))}
             </div>
             {reviewRating > 0 && (
-              <p className="text-xs text-neutral-500 mt-1">
+              <p className="text-xs text-[var(--hm-fg-muted)] mt-1">
                 {getRatingLabel(reviewRating)}
               </p>
             )}
@@ -582,7 +582,7 @@ export default function ReviewsTab({
 
           {/* Review Text */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
               {t("reviews.yourReview")}
             </label>
             <Textarea
@@ -596,8 +596,8 @@ export default function ReviewsTab({
           {/* Phone Number - only for non-verified users */}
           {!isPhoneVerified && (
             <div className="mb-4">
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                {t("reviews.phoneNumber")} <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
+                {t("reviews.phoneNumber")} <span className="text-[var(--hm-error-500)]">*</span>
               </label>
               <Input
                 type="tel"
@@ -605,7 +605,7 @@ export default function ReviewsTab({
                 onChange={(e) => setReviewerPhone(e.target.value)}
                 placeholder="+995 555 ..."
               />
-              <p className="text-xs text-neutral-500 mt-1">
+              <p className="text-xs text-[var(--hm-fg-muted)] mt-1">
                 {t("reviews.phoneVerificationNote")}
               </p>
             </div>
@@ -622,7 +622,7 @@ export default function ReviewsTab({
           <Button
             onClick={submitReview}
             disabled={isSubmittingReview || reviewRating === 0}
-            className="flex-1 bg-[#C4735B] hover:bg-[#B5654D]"
+            className="flex-1 bg-[var(--hm-brand-500)] hover:bg-[#B5654D]"
           >
             {isSubmittingReview ? (
               <LoadingSpinner size="sm" color="white" />

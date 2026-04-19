@@ -86,12 +86,12 @@ function DropdownWrapper({ id, open, setOpen, label, icon, active, align = "left
         onClick={() => setOpen(isOpen ? null : id)}
         className={[
           "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all border",
-          "hover:border-[#C4735B]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C4735B]/30",
+          "hover:border-[var(--hm-brand-500)]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/30",
           isOpen || active
-            ? "border-[#C4735B]/50 text-[#C4735B]"
-            : "border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]",
+            ? "border-[var(--hm-brand-500)]/50 text-[var(--hm-brand-500)]"
+            : "border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)]",
         ].join(" ")}
-        style={isOpen || active ? { backgroundColor: "rgba(196, 115, 91, 0.08)" } : undefined}
+        style={isOpen || active ? { backgroundColor: "rgba(239, 78, 36, 0.08)" } : undefined}
       >
         <span className="opacity-70">{icon}</span>
         <span>{label}</span>
@@ -99,8 +99,8 @@ function DropdownWrapper({ id, open, setOpen, label, icon, active, align = "left
       </button>
       {isOpen && (
         <div
-          className={`absolute top-full mt-1.5 z-50 rounded-xl border border-[var(--color-border-subtle)] shadow-lg min-w-[220px] ${align === "right" ? "right-0" : "left-0"}`}
-          style={{ background: "var(--color-bg-elevated)" }}
+          className={`absolute top-full mt-1.5 z-50 rounded-xl border border-[var(--hm-border-subtle)] shadow-lg min-w-[220px] ${align === "right" ? "right-0" : "left-0"}`}
+          style={{ background: "var(--hm-bg-elevated)" }}
         >
           {children}
         </div>
@@ -113,11 +113,11 @@ function ActivePill({ label, onRemove }: { label: string; onRemove: () => void }
   return (
     <Badge
       variant="default"
-      className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full border border-[#C4735B]/30 text-[#C4735B] cursor-default"
-      style={{ background: "rgba(196,115,91,0.10)" }}
+      className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full border border-[var(--hm-brand-500)]/30 text-[var(--hm-brand-500)] cursor-default"
+      style={{ background: "rgba(239,78,36,0.10)" }}
     >
       {label}
-      <button type="button" onClick={onRemove} className="ml-0.5 rounded-full hover:bg-[#C4735B]/20 transition-colors p-0.5">
+      <button type="button" onClick={onRemove} className="ml-0.5 rounded-full hover:bg-[var(--hm-brand-500)]/20 transition-colors p-0.5">
         <X className="w-3 h-3" />
       </button>
     </Badge>
@@ -251,12 +251,12 @@ export default function JobsFilterBar() {
           onClick={() => setCategoryModalOpen(true)}
           className={[
             "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all border",
-            "hover:border-[#C4735B]/40",
+            "hover:border-[var(--hm-brand-500)]/40",
             categoryButtonActive
-              ? "border-[#C4735B]/50 text-[#C4735B]"
-              : "border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]",
+              ? "border-[var(--hm-brand-500)]/50 text-[var(--hm-brand-500)]"
+              : "border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)]",
           ].join(" ")}
-          style={categoryButtonActive ? { backgroundColor: "rgba(196, 115, 91, 0.08)" } : undefined}
+          style={categoryButtonActive ? { backgroundColor: "rgba(239, 78, 36, 0.08)" } : undefined}
         >
           <span className="opacity-70"><LayoutGrid className="w-3.5 h-3.5" /></span>
           <span>{categoryButtonLabel}</span>
@@ -281,23 +281,23 @@ export default function JobsFilterBar() {
                   className={[
                     "px-2.5 py-1 rounded-full text-xs font-medium border transition-all",
                     filters.location === v
-                      ? "bg-[#C4735B] border-[#C4735B] text-white"
-                      : "border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-[#C4735B]/40",
+                      ? "bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)] text-white"
+                      : "border-[var(--hm-border-subtle)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-brand-500)]/40",
                   ].join(" ")}
                 >
                   {getCityLabel(v, locale)}
                 </button>
               ))}
             </div>
-            <div className="border-t border-[var(--color-border-subtle)] pt-2 space-y-0.5">
+            <div className="border-t border-[var(--hm-border-subtle)] pt-2 space-y-0.5">
               <button
                 type="button"
                 onClick={() => { setFilters({ ...filters, location: "all" }); setOpen(null); }}
                 className={[
                   "w-full text-left px-2 py-1.5 rounded-lg text-sm transition-colors",
                   !filters.location || filters.location === "all"
-                    ? "text-[#C4735B] font-medium"
-                    : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]",
+                    ? "text-[var(--hm-brand-500)] font-medium"
+                    : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]",
                 ].join(" ")}
               >
                 {t("browse.allCities")}
@@ -310,8 +310,8 @@ export default function JobsFilterBar() {
                   className={[
                     "w-full text-left px-2 py-1.5 rounded-lg text-sm transition-colors",
                     filters.location === city.value
-                      ? "text-[#C4735B] font-medium"
-                      : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]",
+                      ? "text-[var(--hm-brand-500)] font-medium"
+                      : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]",
                   ].join(" ")}
                 >
                   {getCityLabel(city.value, locale)}
@@ -340,8 +340,8 @@ export default function JobsFilterBar() {
                   className={[
                     "px-2.5 py-1 rounded-full text-xs font-medium border transition-all",
                     isBudgetPresetActive(preset.min, preset.max)
-                      ? "bg-[#C4735B] border-[#C4735B] text-white"
-                      : "border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-[#C4735B]/40",
+                      ? "bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)] text-white"
+                      : "border-[var(--hm-border-subtle)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-brand-500)]/40",
                   ].join(" ")}
                 >
                   {preset.label}
@@ -354,15 +354,15 @@ export default function JobsFilterBar() {
                 placeholder={t("browse.min")}
                 value={draftMin}
                 onChange={(e) => setDraftMin(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-tertiary)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#C4735B]/50"
+                className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] text-sm text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)]/50"
               />
-              <span className="text-[var(--color-text-tertiary)] text-sm">—</span>
+              <span className="text-[var(--hm-fg-muted)] text-sm">—</span>
               <input
                 type="number"
                 placeholder={t("browse.max")}
                 value={draftMax}
                 onChange={(e) => setDraftMax(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-tertiary)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#C4735B]/50"
+                className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] text-sm text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)]/50"
               />
             </div>
             <div className="flex gap-2">
@@ -373,7 +373,7 @@ export default function JobsFilterBar() {
                 variant="default"
                 size="sm"
                 onClick={applyBudget}
-                className="flex-1 text-xs bg-[#C4735B] hover:bg-[#B5624A] text-white border-0"
+                className="flex-1 text-xs bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white border-0"
               >
                 {t("browse.applyFilters")}
               </Button>
@@ -407,8 +407,8 @@ export default function JobsFilterBar() {
                 className={[
                   "w-full text-left px-3 py-2 text-sm transition-colors",
                   filters.sort === opt.value
-                    ? "text-[#C4735B] font-medium bg-[#C4735B]/5"
-                    : "text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]",
+                    ? "text-[var(--hm-brand-500)] font-medium bg-[var(--hm-brand-500)]/5"
+                    : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]",
                 ].join(" ")}
               >
                 {t(opt.key)}
@@ -423,12 +423,12 @@ export default function JobsFilterBar() {
         <button
           type="button"
           onClick={() => setCategoryModalOpen(true)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-sm font-medium text-[var(--color-text-primary)]"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-sm font-medium text-[var(--hm-fg-primary)]"
         >
           <SlidersHorizontal className="w-4 h-4" />
           <span>{t("browse.filters")}</span>
           {activeFilterCount > 0 && (
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#C4735B] text-white text-[10px] font-bold">
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--hm-brand-500)] text-white text-[10px] font-bold">
               {activeFilterCount}
             </span>
           )}
@@ -462,7 +462,7 @@ export default function JobsFilterBar() {
             <button
               type="button"
               onClick={clearAllFilters}
-              className="text-xs text-[#C4735B] hover:underline font-medium ml-1"
+              className="text-xs text-[var(--hm-brand-500)] hover:underline font-medium ml-1"
             >
               {t("browse.clearAll")}
             </button>

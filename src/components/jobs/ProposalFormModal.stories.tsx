@@ -66,7 +66,7 @@ const ProposalFormModalWrapper = ({
             setProposalData(defaultProposalData);
             setError(undefined);
           }}
-          className="px-4 py-2 bg-[#E07B4F] text-white rounded-lg hover:bg-[#D26B3F] transition-colors"
+          className="px-4 py-2 bg-[#F06B43] text-white rounded-lg hover:bg-[#D13C14] transition-colors"
         >
           Open Proposal Form
         </button>

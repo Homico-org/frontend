@@ -4,51 +4,55 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
+/**
+ * Homico Design System — Badge
+ * Architectural cut-corner chips. border-radius: 0.
+ * clip-path for cut corners. Uppercase, 11px, font-weight 600.
+ * Semantic variants use border color + leading dot, not bg tint.
+ */
 const badgeVariants = cva(
-  "inline-flex items-center gap-1.5 font-semibold transition-all duration-300",
+  "inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.02em] border text-[var(--hm-fg-primary)] border-[var(--hm-n-900)]",
   {
     variants: {
       variant: {
         default:
-          "bg-[#E07B4F]/10 text-[#E07B4F] border border-[#E07B4F]/20",
+          "bg-transparent",
         secondary:
-          "bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border)]",
+          "border-[var(--hm-border-strong)] text-[var(--hm-fg-secondary)]",
         success:
-          "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
+          "border-[var(--hm-success-500)] text-[var(--hm-success-500)]",
         warning:
-          "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+          "border-[#8A6312] text-[#8A6312]",
         danger:
-          "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20",
+          "border-[var(--hm-error-500)] text-[var(--hm-error-500)]",
         info:
-          "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+          "border-[var(--hm-info-500)] text-[var(--hm-info-500)]",
         outline:
-          "bg-transparent text-[#E07B4F] border border-[#E07B4F]/30",
+          "border-[var(--hm-border-strong)] text-[var(--hm-fg-secondary)] border-dashed",
         premium:
-          "bg-gradient-to-r from-[#E07B4F]/15 to-[#E8956A]/20 text-[#E07B4F] border border-[#E07B4F]/25 shadow-sm",
+          "bg-[var(--hm-brand-500)] text-white border-[var(--hm-brand-500)]",
         ghost:
-          "bg-transparent text-[var(--color-text-secondary)]",
+          "border-[var(--hm-border-strong)] border-dashed text-[var(--hm-fg-muted)]",
         pulse:
-          "bg-[#E07B4F]/10 text-[#E07B4F] border border-[#E07B4F]/20 animate-pulse",
-        // Solid variants for notification counts
+          "bg-[var(--hm-brand-500)] text-white border-[var(--hm-brand-500)] animate-pulse",
         "danger-solid":
-          "bg-red-500 text-white border-0",
+          "bg-[var(--hm-error-500)] text-white border-[var(--hm-error-500)]",
         "success-solid":
-          "bg-emerald-500 text-white border-0",
+          "bg-[var(--hm-success-500)] text-white border-[var(--hm-success-500)]",
         "warning-solid":
-          "bg-amber-500 text-white border-0",
+          "bg-[var(--hm-warning-500)] text-white border-[var(--hm-warning-500)]",
         "info-solid":
-          "bg-blue-500 text-white border-0",
+          "bg-[var(--hm-info-500)] text-white border-[var(--hm-info-500)]",
         "accent-solid":
-          "bg-[#E07B4F] text-white border-0",
+          "bg-[var(--hm-brand-500)] text-white border-[var(--hm-brand-500)]",
       },
       size: {
-        // Compact circular size for notification counts  
-        count: "text-[10px] min-w-[18px] h-[18px] px-1 rounded-full !gap-0 !inline-grid place-items-center",
-        xs: "text-[9px] px-1.5 py-0.5 rounded-md uppercase tracking-wider",
-        sm: "text-[10px] px-2 py-0.5 rounded-lg uppercase tracking-wider",
-        default: "text-xs px-2.5 py-1 rounded-xl",
-        lg: "text-sm px-3 py-1.5 rounded-xl",
-        xl: "text-base px-4 py-2 rounded-2xl",
+        count: "text-[10px] min-w-[18px] h-[18px] px-1 rounded-full !gap-0 !inline-grid place-items-center normal-case tracking-normal",
+        xs: "text-[9px] px-1.5 py-0.5",
+        sm: "text-[10px] px-2 py-0.5",
+        default: "text-[11px] px-2.5 py-1",
+        lg: "text-sm px-3.5 py-1.5",
+        xl: "text-base px-4 py-2",
       },
     },
     defaultVariants: {
@@ -71,16 +75,22 @@ export interface BadgeProps
 const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
   ({ className, variant, size, icon, dot, dotColor = 'default', removable, onRemove, children, ...props }, ref) => {
     const dotColors = {
-      default: 'bg-[#E07B4F]',
-      success: 'bg-emerald-500',
-      warning: 'bg-amber-500',
-      danger: 'bg-red-500',
+      default: 'bg-[var(--hm-brand-500)]',
+      success: 'bg-[var(--hm-success-500)]',
+      warning: 'bg-[var(--hm-warning-500)]',
+      danger: 'bg-[var(--hm-error-500)]',
     };
+
+    // Cut-corner clip-path (skip for count/round badges)
+    const clipStyle = size === 'count'
+      ? undefined
+      : { clipPath: 'polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)' } as React.CSSProperties;
 
     return (
       <div
         ref={ref}
         className={cn(badgeVariants({ variant, size }), className)}
+        style={clipStyle}
         {...props}
       >
         {dot && (
@@ -101,7 +111,7 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
           <button
             type="button"
             onClick={onRemove}
-            className="flex-shrink-0 ml-0.5 -mr-1 h-4 w-4 rounded-full flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            className="flex-shrink-0 ml-0.5 -mr-1 h-4 w-4 rounded-full flex items-center justify-center hover:bg-black/10 transition-colors"
           >
             <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

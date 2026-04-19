@@ -265,38 +265,38 @@ export default function InviteProsModal({
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <div className="flex flex-col h-[80vh] max-h-[700px]">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+        <div className="flex items-center justify-between p-5 border-b border-[var(--hm-border)]">
+          <h2 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
             {t("job.invitePros")}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
+            className="p-2 rounded-lg hover:bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Search & Filters */}
-        <div className="p-5 pb-3 space-y-3 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="p-5 pb-3 space-y-3 border-b border-[var(--hm-border-subtle)]">
           {/* Search */}
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--hm-fg-muted)]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t("job.searchByName")}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 focus:border-[#C4735B]"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)]/20 focus:border-[var(--hm-brand-500)]"
               />
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
                 showFilters || minRating > 0 || sortBy !== "recommended"
-                  ? "border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]"
-                  : "border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-neutral-300"
+                  ? "border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)]"
+                  : "border-[var(--hm-border)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-border-strong)]"
               }`}
             >
               <Filter className="w-4 h-4" />
@@ -309,7 +309,7 @@ export default function InviteProsModal({
             <div className="flex flex-wrap items-center gap-4 pt-2">
               {/* Sort */}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-neutral-500 whitespace-nowrap">{t("common.sortBy")}:</span>
+                <span className="text-xs text-[var(--hm-fg-muted)] whitespace-nowrap">{t("common.sortBy")}:</span>
                 <Select
                   options={sortOptions}
                   value={sortBy}
@@ -321,7 +321,7 @@ export default function InviteProsModal({
 
               {/* Min Rating */}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-neutral-500 whitespace-nowrap">{t("common.rating")}:</span>
+                <span className="text-xs text-[var(--hm-fg-muted)] whitespace-nowrap">{t("common.rating")}:</span>
                 <Select
                   options={ratingOptions}
                   value={minRating.toString()}
@@ -335,7 +335,7 @@ export default function InviteProsModal({
 
           {/* Selection count */}
           {newlySelectedCount > 0 && (
-            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#C4735B]/10 text-[#C4735B]">
+            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]">
               <span className="text-sm font-medium">
                 {newlySelectedCount} {t("job.selected")}
               </span>
@@ -357,8 +357,8 @@ export default function InviteProsModal({
             </div>
           ) : pros.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <UserPlus className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mb-3" />
-              <p className="text-neutral-500 dark:text-neutral-400">
+              <UserPlus className="w-12 h-12 text-[var(--hm-n-300)] mb-3" />
+              <p className="text-[var(--hm-fg-muted)]">
                 {t("job.noProsFound")}
               </p>
             </div>
@@ -375,20 +375,20 @@ export default function InviteProsModal({
                     onClick={() => toggleSelection(pro.id)}
                     className={`relative flex items-start gap-4 p-4 rounded-xl border-2 transition-all ${
                       isAlreadyInvited
-                        ? "border-emerald-300 bg-emerald-50/50 dark:bg-emerald-900/10 cursor-default opacity-70"
+                        ? "border-emerald-300 bg-[var(--hm-success-50)]/10 cursor-default opacity-70"
                         : isSelected
-                          ? "border-[#C4735B] bg-[#C4735B]/5 cursor-pointer"
-                          : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 cursor-pointer"
+                          ? "border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 cursor-pointer"
+                          : "border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] cursor-pointer"
                     }`}
                   >
                     {/* Selection checkbox */}
                     <div
                       className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center mt-1 transition-all ${
                         isAlreadyInvited
-                          ? "bg-emerald-500 border-emerald-500"
+                          ? "bg-[var(--hm-success-500)] border-[var(--hm-success-500)]"
                           : isSelected
-                            ? "bg-[#C4735B] border-[#C4735B]"
-                            : "border-neutral-300 dark:border-neutral-600"
+                            ? "bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)]"
+                            : "border-[var(--hm-border-strong)]"
                       }`}
                     >
                       {(isSelected || isAlreadyInvited) && (
@@ -407,11 +407,11 @@ export default function InviteProsModal({
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h4 className="font-semibold text-sm text-neutral-900 dark:text-white">
+                        <h4 className="font-semibold text-sm text-[var(--hm-fg-primary)]">
                           {pro.name}
                         </h4>
                         {pro.avgRating > 0 && (
-                          <div className="flex items-center gap-0.5 text-amber-500">
+                          <div className="flex items-center gap-0.5 text-[var(--hm-warning-500)]">
                             <Star className="w-3.5 h-3.5 fill-current" />
                             <span className="text-xs font-medium">
                               {pro.avgRating.toFixed(1)}
@@ -419,16 +419,16 @@ export default function InviteProsModal({
                           </div>
                         )}
                         {isAlreadyInvited && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--hm-success-100)] text-[var(--hm-success-500)]/30">
                             {t("job.invited")}
                           </span>
                         )}
                       </div>
 
                       {/* Stats */}
-                      <div className="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400 mb-1.5 flex-wrap">
+                      <div className="flex items-center gap-3 text-xs text-[var(--hm-fg-muted)] mb-1.5 flex-wrap">
                         {pro.city && <span>{pro.city}</span>}
-                        <span className="flex items-center gap-1 font-medium text-neutral-700 dark:text-neutral-300">
+                        <span className="flex items-center gap-1 font-medium text-[var(--hm-fg-secondary)]">
                           <Briefcase className="w-3.5 h-3.5" />
                           {projectsCount} {t("job.projects")}
                         </span>
@@ -441,7 +441,7 @@ export default function InviteProsModal({
 
                       {/* Bio */}
                       {pro.bio && (
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2">
+                        <p className="text-xs text-[var(--hm-fg-muted)] line-clamp-2">
                           {pro.bio}
                         </p>
                       )}
@@ -450,7 +450,7 @@ export default function InviteProsModal({
                     {/* Open profile button */}
                     <button
                       onClick={(e) => openProProfile(pro.id, e)}
-                      className="flex-shrink-0 p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 hover:text-[#C4735B] transition-colors"
+                      className="flex-shrink-0 p-2 rounded-lg hover:bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors"
                       title={t("job.viewProfile")}
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -468,7 +468,7 @@ export default function InviteProsModal({
               
               {/* End of list */}
               {!hasMore && pros.length > 0 && (
-                <p className="text-center text-xs text-neutral-400 py-4">
+                <p className="text-center text-xs text-[var(--hm-fg-muted)] py-4">
                   {t("common.noMoreResults") || "No more results"}
                 </p>
               )}
@@ -477,7 +477,7 @@ export default function InviteProsModal({
         </div>
 
         {/* Footer actions */}
-        <div className="flex items-center justify-between gap-3 p-5 border-t border-neutral-200 dark:border-neutral-700">
+        <div className="flex items-center justify-between gap-3 p-5 border-t border-[var(--hm-border)]">
           <Button variant="outline" onClick={onClose} disabled={isSending}>
             {t("common.cancel")}
           </Button>

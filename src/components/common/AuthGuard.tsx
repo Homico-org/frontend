@@ -66,8 +66,8 @@ export default function AuthGuard({
 
 function AuthLoadingFallback() {
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center">
-      <LoadingSpinner size="lg" color="#C4735B" />
+    <div className="min-h-screen bg-[var(--hm-bg-page)] flex items-center justify-center">
+      <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
     </div>
   );
 }

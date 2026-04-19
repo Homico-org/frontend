@@ -95,23 +95,23 @@ export function getTicketStatusLabel(status: string, locale: Locale = 'en'): str
 export function getJobStatusClasses(status: string): string {
   switch (status) {
     case 'open':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-800';
+      return 'bg-[var(--hm-success-50)] text-[var(--hm-success-500)] border-emerald-200';
     case 'pending':
-      return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-800';
+      return 'bg-[var(--hm-warning-50)] text-[var(--hm-warning-500)] border-amber-200';
     case 'assigned':
-      return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-800';
+      return 'bg-[var(--hm-info-50)] text-blue-700 border-blue-200';
     case 'in_progress':
-      return 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-800';
+      return 'bg-indigo-50 text-indigo-700 border-indigo-200';
     case 'review':
-      return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-800';
+      return 'bg-purple-50 text-purple-700 border-purple-200';
     case 'completed':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-800';
+      return 'bg-[var(--hm-success-50)] text-[var(--hm-success-500)] border-emerald-200';
     case 'cancelled':
-      return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-800';
+      return 'bg-[var(--hm-error-50)] text-[var(--hm-error-500)] border-red-200';
     case 'closed':
-      return 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-500/10 dark:text-neutral-400 dark:border-neutral-700';
+      return 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] border-[var(--hm-border)]';
     default:
-      return 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-500/10 dark:text-neutral-400 dark:border-neutral-700';
+      return 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] border-[var(--hm-border)]';
   }
 }
 
@@ -121,15 +121,15 @@ export function getJobStatusClasses(status: string): string {
 export function getProposalStatusClasses(status: string): string {
   switch (status) {
     case 'pending':
-      return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400';
+      return 'bg-[var(--hm-warning-50)] text-[var(--hm-warning-500)] border-amber-200';
     case 'accepted':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400';
+      return 'bg-[var(--hm-success-50)] text-[var(--hm-success-500)] border-emerald-200';
     case 'rejected':
-      return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400';
+      return 'bg-[var(--hm-error-50)] text-[var(--hm-error-500)] border-red-200';
     case 'withdrawn':
-      return 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-500/10 dark:text-neutral-400';
+      return 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] border-[var(--hm-border)]';
     default:
-      return 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-500/10 dark:text-neutral-400';
+      return 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] border-[var(--hm-border)]';
   }
 }
 
@@ -139,15 +139,15 @@ export function getProposalStatusClasses(status: string): string {
 export function getTicketStatusClasses(status: string): string {
   switch (status) {
     case 'open':
-      return 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400';
+      return 'bg-[var(--hm-warning-50)] text-[var(--hm-warning-500)]';
     case 'in_progress':
-      return 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400';
+      return 'bg-[var(--hm-info-50)] text-blue-700';
     case 'resolved':
-      return 'bg-[#E07B4F]/5 text-[#E07B4F] dark:bg-[#E07B4F]/10 dark:text-[#E8956A]';
+      return 'bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)]';
     case 'closed':
-      return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-500/10 dark:text-neutral-400';
+      return 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)]';
     default:
-      return 'bg-neutral-100 text-neutral-600';
+      return 'bg-[var(--hm-bg-tertiary)] text-neutral-600';
   }
 }
 

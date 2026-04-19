@@ -93,7 +93,7 @@ export default function HiringChoiceModal({
       <div
         className="relative w-full max-w-2xl overflow-hidden rounded-3xl shadow-2xl transition-all duration-500 ease-out"
         style={{
-          background: 'var(--color-bg-elevated)',
+          background: 'var(--hm-bg-elevated)',
           transform: isAnimating ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(20px)',
           opacity: isAnimating ? 1 : 0,
         }}
@@ -115,7 +115,7 @@ export default function HiringChoiceModal({
 
           {/* Floating decorative elements */}
           <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/5 blur-2xl" />
-          <div className="absolute -left-4 top-16 h-24 w-24 rounded-full bg-terracotta-500/10 blur-xl" />
+          <div className="absolute -left-4 top-16 h-24 w-24 rounded-full bg-[var(--hm-brand-500)]/10 blur-xl" />
 
           {/* Close button */}
           <Button
@@ -138,7 +138,7 @@ export default function HiringChoiceModal({
                   backdropFilter: 'blur(8px)',
                 }}
               >
-                <Crown className="h-6 w-6 text-terracotta-400" />
+                <Crown className="h-6 w-6 text-[var(--hm-brand-400)]" />
               </div>
               <div>
                 <h2
@@ -170,7 +170,7 @@ export default function HiringChoiceModal({
               onMouseLeave={() => setHoveredOption(null)}
               className="group relative flex flex-col overflow-hidden rounded-2xl border-2 p-5 text-left transition-all duration-300 disabled:opacity-50"
               style={{
-                borderColor: hoveredOption === 'homico' ? 'var(--color-accent)' : 'var(--color-accent)',
+                borderColor: hoveredOption === 'homico' ? 'var(--hm-brand-500)' : 'var(--hm-brand-500)',
                 background: hoveredOption === 'homico'
                   ? 'linear-gradient(135deg, rgba(224, 123, 79, 0.08) 0%, rgba(224, 123, 79, 0.03) 100%)'
                   : 'linear-gradient(135deg, rgba(224, 123, 79, 0.05) 0%, rgba(224, 123, 79, 0.02) 100%)',
@@ -193,7 +193,7 @@ export default function HiringChoiceModal({
                 <div
                   className="flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
                   style={{
-                    background: 'linear-gradient(135deg, var(--color-accent) 0%, #D26B3F 100%)',
+                    background: 'linear-gradient(135deg, var(--hm-brand-500) 0%, #D13C14 100%)',
                     boxShadow: '0 4px 12px rgba(224, 123, 79, 0.3)',
                   }}
                 >
@@ -202,15 +202,15 @@ export default function HiringChoiceModal({
                 <div>
                   <h3
                     className="text-lg font-semibold"
-                    style={{ color: 'var(--color-text-primary)' }}
+                    style={{ color: 'var(--hm-fg-primary)' }}
                   >
                     {t('proposal.hireThroughHomico')}
                   </h3>
                   <div className="flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-terracotta-500" />
+                    <Sparkles className="h-3.5 w-3.5 text-[var(--hm-brand-500)]" />
                     <span
                       className="text-xs font-medium"
-                      style={{ color: 'var(--color-accent)' }}
+                      style={{ color: 'var(--hm-brand-500)' }}
                     >
                       {t('proposal.fullProtection')}
                     </span>
@@ -233,26 +233,26 @@ export default function HiringChoiceModal({
                       className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md"
                       style={{
                         background: feature.highlight
-                          ? 'linear-gradient(135deg, var(--color-accent) 0%, #D26B3F 100%)'
-                          : 'var(--color-accent-soft)',
+                          ? 'linear-gradient(135deg, var(--hm-brand-500) 0%, #D13C14 100%)'
+                          : 'rgba(239,78,36,0.1)',
                       }}
                     >
                       {feature.highlight ? (
                         <CheckCircle2 className="h-3 w-3 text-white" />
                       ) : (
-                        <feature.icon className="h-3 w-3 text-terracotta-600" />
+                        <feature.icon className="h-3 w-3 text-[var(--hm-brand-600)]" />
                       )}
                     </div>
                     <div>
                       <p
                         className="text-sm font-medium leading-tight"
-                        style={{ color: 'var(--color-text-primary)' }}
+                        style={{ color: 'var(--hm-fg-primary)' }}
                       >
                         {feature.title}
                       </p>
                       <p
                         className="text-xs leading-tight"
-                        style={{ color: 'var(--color-text-tertiary)' }}
+                        style={{ color: 'var(--hm-fg-muted)' }}
                       >
                         {feature.description}
                       </p>
@@ -262,9 +262,9 @@ export default function HiringChoiceModal({
               </div>
 
               {/* Temporary free notice */}
-              <div className="mb-3 flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 border border-emerald-200/50 dark:border-emerald-800/50">
-                <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                <p className="text-xs text-emerald-700 dark:text-emerald-300">
+              <div className="mb-3 flex items-center gap-2 rounded-lg bg-[var(--hm-success-50)]/20 px-3 py-2 border border-emerald-200/50">
+                <Sparkles className="h-4 w-4 text-[var(--hm-success-500)] flex-shrink-0" />
+                <p className="text-xs text-[var(--hm-success-500)]">
                   {locale === 'ka' 
                     ? 'დროებით უფასოა! მალე დაემატება ესქრო და პროექტის მართვა' 
                     : 'Temporarily free! Escrow & project management coming soon'}
@@ -276,14 +276,14 @@ export default function HiringChoiceModal({
                 className="mt-auto flex items-center justify-between rounded-xl px-4 py-3 transition-all duration-300"
                 style={{
                   background: hoveredOption === 'homico'
-                    ? 'var(--color-accent)'
-                    : 'var(--color-accent-soft)',
+                    ? 'var(--hm-brand-500)'
+                    : 'rgba(239,78,36,0.1)',
                 }}
               >
                 <span
                   className="text-sm font-semibold transition-colors duration-300"
                   style={{
-                    color: hoveredOption === 'homico' ? 'white' : 'var(--color-accent)',
+                    color: hoveredOption === 'homico' ? 'white' : 'var(--hm-brand-500)',
                   }}
                 >
                   {t('proposal.hireWithGuarantee')}
@@ -300,10 +300,10 @@ export default function HiringChoiceModal({
               className="group relative flex flex-col overflow-hidden rounded-2xl border p-5 text-left transition-all duration-300 disabled:opacity-50"
               style={{
                 borderColor: hoveredOption === 'direct'
-                  ? 'var(--color-border-strong)'
-                  : 'var(--color-border-subtle)',
+                  ? 'var(--hm-border-strong)'
+                  : 'var(--hm-border-subtle)',
                 background: hoveredOption === 'direct'
-                  ? 'var(--color-bg-secondary)'
+                  ? 'var(--hm-bg-page)'
                   : 'transparent',
                 transform: hoveredOption === 'direct' ? 'scale(1.01)' : 'scale(1)',
               }}
@@ -313,21 +313,21 @@ export default function HiringChoiceModal({
                 <div
                   className="flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-105"
                   style={{
-                    background: 'var(--color-bg-muted)',
+                    background: 'var(--hm-n-200)',
                   }}
                 >
-                  <Phone className="h-5 w-5" style={{ color: 'var(--color-text-tertiary)' }} />
+                  <Phone className="h-5 w-5" style={{ color: 'var(--hm-fg-muted)' }} />
                 </div>
                 <div>
                   <h3
                     className="text-lg font-semibold"
-                    style={{ color: 'var(--color-text-primary)' }}
+                    style={{ color: 'var(--hm-fg-primary)' }}
                   >
                     {t('proposal.contactDirectly')}
                   </h3>
                   <span
                     className="text-xs"
-                    style={{ color: 'var(--color-text-muted)' }}
+                    style={{ color: 'var(--hm-fg-muted)' }}
                   >
                     {t('proposal.offplatform')}
                   </span>
@@ -338,7 +338,7 @@ export default function HiringChoiceModal({
               <div className="mb-4 space-y-2">
                 <p
                   className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider"
-                  style={{ color: 'var(--color-text-muted)' }}
+                  style={{ color: 'var(--hm-fg-muted)' }}
                 >
                   <AlertTriangle className="h-3.5 w-3.5" />
                   {t('proposal.beAware')}
@@ -350,11 +350,11 @@ export default function HiringChoiceModal({
                   >
                     <div
                       className="h-1.5 w-1.5 rounded-full"
-                      style={{ background: 'var(--color-text-muted)' }}
+                      style={{ background: 'var(--hm-fg-muted)' }}
                     />
                     <span
                       className="text-sm"
-                      style={{ color: 'var(--color-text-tertiary)' }}
+                      style={{ color: 'var(--hm-fg-muted)' }}
                     >
                       {risk}
                     </span>
@@ -369,13 +369,13 @@ export default function HiringChoiceModal({
               <div
                 className="flex items-center justify-between rounded-xl border px-4 py-3 transition-all duration-300"
                 style={{
-                  borderColor: 'var(--color-border-subtle)',
-                  background: hoveredOption === 'direct' ? 'var(--color-bg-muted)' : 'transparent',
+                  borderColor: 'var(--hm-border-subtle)',
+                  background: hoveredOption === 'direct' ? 'var(--hm-n-200)' : 'transparent',
                 }}
               >
                 <span
                   className="text-sm font-medium"
-                  style={{ color: 'var(--color-text-secondary)' }}
+                  style={{ color: 'var(--hm-fg-secondary)' }}
                 >
                   {t('proposal.continueAnyway')}
                 </span>
@@ -386,12 +386,12 @@ export default function HiringChoiceModal({
           {/* Bottom trust indicator */}
           <div
             className="mt-5 flex items-center justify-center gap-2 rounded-xl px-4 py-3"
-            style={{ background: 'var(--color-bg-tertiary)' }}
+            style={{ background: 'var(--hm-bg-tertiary)' }}
           >
-            <ShieldCheck className="h-4 w-4 text-forest-600 dark:text-forest-400" />
+            <ShieldCheck className="h-4 w-4 text-[var(--hm-fg-secondary)]" />
             <p
               className="text-xs"
-              style={{ color: 'var(--color-text-tertiary)' }}
+              style={{ color: 'var(--hm-fg-muted)' }}
             >
               {t('proposal.1000SuccessfulProjectsCompletedThrough')}
             </p>

@@ -15,8 +15,8 @@ const inputVariants = cva(
         lg: 'w-14 h-14 text-2xl',
       },
       variant: {
-        default: 'border focus:ring-[#C4735B]/50 focus:border-[#C4735B]',
-        error: 'border border-red-300 focus:ring-red-500/50 focus:border-red-500',
+        default: 'border focus:ring-[var(--hm-brand-500)]/50 focus:border-[var(--hm-brand-500)]',
+        error: 'border border-red-300 focus:ring-red-500/50 focus:border-[var(--hm-error-500)]',
         success: 'border border-green-300 focus:ring-green-500/50 focus:border-green-500',
       },
     },
@@ -156,7 +156,7 @@ export function OTPInput({
       {label && (
         <label
           className="block text-sm font-medium mb-3 text-center"
-          style={{ color: 'var(--color-text-primary)' }}
+          style={{ color: 'var(--hm-fg-primary)' }}
         >
           {label}
         </label>
@@ -179,15 +179,15 @@ export function OTPInput({
             disabled={disabled}
             className={cn(inputVariants({ size, variant: actualVariant }))}
             style={{
-              backgroundColor: 'var(--color-bg-elevated)',
-              borderColor: error ? undefined : 'var(--color-border)',
-              color: 'var(--color-text-primary)',
+              backgroundColor: 'var(--hm-bg-elevated)',
+              borderColor: error ? undefined : 'var(--hm-border)',
+              color: 'var(--hm-fg-primary)',
             }}
           />
         ))}
       </div>
       {error && (
-        <p className="mt-2 text-sm text-red-500 text-center">{error}</p>
+        <p className="mt-2 text-sm text-[var(--hm-error-500)] text-center">{error}</p>
       )}
     </div>
   );

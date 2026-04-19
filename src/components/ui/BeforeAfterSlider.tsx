@@ -77,7 +77,7 @@ export default function BeforeAfterSlider({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full ${aspectRatio} cursor-ew-resize select-none bg-neutral-100 dark:bg-neutral-800 overflow-hidden touch-none ${className}`}
+      className={`relative w-full ${aspectRatio} cursor-ew-resize select-none bg-[var(--hm-bg-tertiary)] overflow-hidden touch-none ${className}`}
       onMouseDown={(e) => {
         e.preventDefault();
         isDraggingRef.current = true;
@@ -135,14 +135,14 @@ export default function BeforeAfterSlider({
         className="absolute top-0 bottom-0 z-10"
         style={{ left: `${initialPosition}%`, transform: 'translateX(-50%)' }}
       >
-        <div className="absolute inset-0 w-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
+        <div className="absolute inset-0 w-0.5 bg-[var(--hm-bg-elevated)] shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-xl flex items-center justify-center border-2 border-[#C4735B]/20"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--hm-bg-elevated)] shadow-xl flex items-center justify-center border-2 border-[var(--hm-brand-500)]/20"
           style={{ width: px, height: px }}
         >
           <div className="flex items-center gap-0.5">
-            <ChevronLeft className="w-3 h-3 text-neutral-500" />
-            <ChevronRight className="w-3 h-3 text-neutral-500" />
+            <ChevronLeft className="w-3 h-3 text-[var(--hm-fg-muted)]" />
+            <ChevronRight className="w-3 h-3 text-[var(--hm-fg-muted)]" />
           </div>
         </div>
       </div>
@@ -153,7 +153,7 @@ export default function BeforeAfterSlider({
           <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-black/70 backdrop-blur-sm text-white text-[11px] font-semibold rounded-full">
             {beforeLabel || t('common.before')}
           </div>
-          <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-white/95 backdrop-blur-sm text-neutral-900 text-[11px] font-semibold rounded-full shadow-lg">
+          <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-white/95 backdrop-blur-sm text-[var(--hm-fg-primary)] text-[11px] font-semibold rounded-full shadow-lg">
             {afterLabel || t('common.after')}
           </div>
         </>

@@ -32,9 +32,9 @@ export default function SocialLinks({
 
   return (
     <div
-      className={`bg-white dark:bg-neutral-900 rounded-2xl p-5 shadow-sm border border-neutral-100 dark:border-neutral-800 ${className}`}
+      className={`bg-[var(--hm-bg-elevated)] rounded-2xl p-5 shadow-sm border border-[var(--hm-border-subtle)] ${className}`}
     >
-      <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+      <h3 className="text-sm font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider mb-3">
         {label}
       </h3>
       <div className="flex flex-wrap gap-2">
@@ -45,7 +45,7 @@ export default function SocialLinks({
             rel="noopener noreferrer"
             aria-label="Facebook"
           >
-            <IconBadge icon={Facebook} variant="facebook" size="md" />
+            <IconBadge icon={Facebook} variant="facebook" size="md" className="rounded-none" />
           </a>
         )}
         {instagramUrl && (
@@ -55,7 +55,7 @@ export default function SocialLinks({
             rel="noopener noreferrer"
             aria-label="Instagram"
           >
-            <IconBadge icon={Instagram} variant="instagram" size="md" />
+            <IconBadge icon={Instagram} variant="instagram" size="md" className="rounded-none" />
           </a>
         )}
         {linkedinUrl && (
@@ -65,7 +65,7 @@ export default function SocialLinks({
             rel="noopener noreferrer"
             aria-label="LinkedIn"
           >
-            <IconBadge icon={Linkedin} variant="linkedin" size="md" />
+            <IconBadge icon={Linkedin} variant="linkedin" size="md" className="rounded-none" />
           </a>
         )}
         {websiteUrl && (
@@ -75,7 +75,7 @@ export default function SocialLinks({
             rel="noopener noreferrer"
             aria-label="Website"
           >
-            <IconBadge icon={Globe} variant="neutral" size="md" />
+            <IconBadge icon={Globe} variant="neutral" size="md" className="rounded-none" />
           </a>
         )}
       </div>

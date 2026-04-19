@@ -60,8 +60,8 @@ const notificationConfig: Record<string, { icon: typeof Briefcase; color: string
   },
   job_invitation: {
     icon: Briefcase,
-    color: '#C4735B',
-    bgColor: 'rgba(196, 115, 91, 0.1)',
+    color: 'var(--hm-brand-500)',
+    bgColor: 'rgba(239, 78, 36, 0.1)',
   },
   new_message: {
     icon: MessageSquare,
@@ -95,8 +95,8 @@ const notificationConfig: Record<string, { icon: typeof Briefcase; color: string
   },
   new_booking: {
     icon: Briefcase,
-    color: '#C4735B',
-    bgColor: 'rgba(196, 115, 91, 0.1)',
+    color: 'var(--hm-brand-500)',
+    bgColor: 'rgba(239, 78, 36, 0.1)',
   },
   booking_confirmed: {
     icon: CheckCheck,
@@ -263,7 +263,7 @@ function SwipeableNotificationCard({
     <div className="relative overflow-hidden rounded-xl">
       {/* Delete background */}
       <div
-        className="absolute inset-y-0 right-0 w-24 flex items-center justify-center bg-red-500"
+        className="absolute inset-y-0 right-0 w-24 flex items-center justify-center bg-[var(--hm-error-500)]"
         style={{ opacity: Math.min(Math.abs(translateX) / 60, 1) }}
       >
         <Trash2 className="w-5 h-5 text-white" />
@@ -276,7 +276,7 @@ function SwipeableNotificationCard({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={() => translateX === 0 && onClick()}
-        className="relative bg-white dark:bg-neutral-900 transition-transform cursor-pointer active:bg-neutral-50 dark:active:bg-neutral-800"
+        className="relative bg-[var(--hm-bg-elevated)] transition-transform cursor-pointer active:bg-[var(--hm-bg-page)]"
         style={{
           transform: `translateX(${translateX}px)`,
           transition: isDragging ? 'none' : 'transform 0.2s ease-out',
@@ -296,24 +296,24 @@ function SwipeableNotificationCard({
             <div className="flex items-start justify-between gap-2">
               <h4
                 className={`text-sm font-medium leading-snug ${
-                  !notification.isRead ? 'text-neutral-900 dark:text-white' : 'text-neutral-600 dark:text-neutral-400'
+                  !notification.isRead ? 'text-[var(--hm-fg-primary)]' : 'text-[var(--hm-fg-secondary)]'
                 }`}
               >
                 {translated.title}
               </h4>
               {!notification.isRead && (
-                <div className="w-2 h-2 rounded-full bg-[#C4735B] flex-shrink-0 mt-1.5" />
+                <div className="w-2 h-2 rounded-full bg-[var(--hm-brand-500)] flex-shrink-0 mt-1.5" />
               )}
             </div>
-            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-500 line-clamp-2">
+            <p className="mt-0.5 text-xs text-[var(--hm-fg-muted)]0 line-clamp-2">
               {translated.message}
             </p>
             <div className="mt-2 flex items-center justify-between">
-              <span className="text-[11px] text-neutral-400 dark:text-neutral-600">
+              <span className="text-[11px] text-[var(--hm-fg-muted)]">
                 {formatTimeAgoCompact(notification.createdAt, locale as 'en' | 'ka' | 'ru')}
               </span>
               {notification.link && (
-                <span className="text-[11px] text-[#C4735B] flex items-center gap-0.5">
+                <span className="text-[11px] text-[var(--hm-brand-500)] flex items-center gap-0.5">
                   {t('common.view')}
                   <ChevronRight className="w-3 h-3" />
                 </span>
@@ -456,28 +456,28 @@ function NotificationsPageContent() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950">
-        <LoadingSpinner size="xl" variant="border" color="#C4735B" />
+      <div className="min-h-screen flex items-center justify-center bg-[var(--hm-bg-page)]">
+        <LoadingSpinner size="xl" variant="border" color="var(--hm-brand-500)" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100 dark:bg-neutral-950">
+    <div className="min-h-screen bg-[var(--hm-bg-tertiary)]">
       <Header />
       <HeaderSpacer />
 
       {/* Sticky Header */}
-      <div className="sticky top-14 z-40 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
+      <div className="sticky top-14 z-40 bg-[var(--hm-bg-elevated)] border-b border-[var(--hm-border)]">
         <div className="max-w-2xl mx-auto">
           {/* Title Row */}
           <div className="px-4 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h1 className="text-sm font-bold text-neutral-900 dark:text-white">
+              <h1 className="text-sm font-bold text-[var(--hm-fg-primary)]">
                 {t('common.notifications')}
               </h1>
               {unreadCount > 0 && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-[#C4735B] text-white">
+                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-[var(--hm-brand-500)] text-white">
                   {unreadCount}
                 </span>
               )}
@@ -492,7 +492,7 @@ function NotificationsPageContent() {
                   onClick={handleMarkAllRead}
                   title={t('notifications.markAllRead')}
                 >
-                  <CheckCheck className="w-5 h-5 text-[#C4735B]" />
+                  <CheckCheck className="w-5 h-5 text-[var(--hm-brand-500)]" />
                 </Button>
               )}
               {notifications.length > 0 && (
@@ -501,9 +501,9 @@ function NotificationsPageContent() {
                   size="icon"
                   onClick={handleDeleteAll}
                   title={t('notifications.clearAll')}
-                  className="hover:text-red-500"
+                  className="hover:text-[var(--hm-error-500)]"
                 >
-                  <Trash2 className="w-5 h-5 text-neutral-400" />
+                  <Trash2 className="w-5 h-5 text-[var(--hm-fg-muted)]" />
                 </Button>
               )}
             </div>
@@ -517,8 +517,8 @@ function NotificationsPageContent() {
                 onClick={() => setActiveFilter(filter.key)}
                 className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
                   activeFilter === filter.key
-                    ? 'bg-[#C4735B] text-white'
-                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                    ? 'bg-[var(--hm-brand-500)] text-white'
+                    : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-neutral-200'
                 }`}
               >
                 {filter.label}
@@ -539,7 +539,7 @@ function NotificationsPageContent() {
           <div className="sm:hidden px-4 pb-3">
             <button
               onClick={() => setShowFilterMenu(true)}
-              className="flex items-center gap-2 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg text-sm font-medium text-neutral-700 dark:text-neutral-300"
+              className="flex items-center gap-2 px-3 py-2 bg-[var(--hm-bg-tertiary)] rounded-lg text-sm font-medium text-[var(--hm-fg-secondary)]"
             >
               <Filter className="w-4 h-4" />
               <span>{currentFilter?.label}</span>
@@ -560,17 +560,17 @@ function NotificationsPageContent() {
             className="absolute inset-0 bg-black/50"
             onClick={() => setShowFilterMenu(false)}
           />
-          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-neutral-900 rounded-t-2xl animate-slide-up">
+          <div className="absolute bottom-0 left-0 right-0 bg-[var(--hm-bg-elevated)] rounded-t-2xl animate-slide-up">
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
                   {t('common.filter')}
                 </h3>
                 <button
                   onClick={() => setShowFilterMenu(false)}
-                  className="p-2 -mr-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  className="p-2 -mr-2 rounded-lg hover:bg-[var(--hm-bg-tertiary)]"
                 >
-                  <X className="w-5 h-5 text-neutral-500" />
+                  <X className="w-5 h-5 text-[var(--hm-fg-muted)]" />
                 </button>
               </div>
               <div className="space-y-1">
@@ -583,8 +583,8 @@ function NotificationsPageContent() {
                     }}
                     className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
                       activeFilter === filter.key
-                        ? 'bg-[#C4735B]/10 text-[#C4735B]'
-                        : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                        ? 'bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]'
+                        : 'text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]'
                     }`}
                   >
                     <span className="font-medium">{filter.label}</span>
@@ -613,7 +613,7 @@ function NotificationsPageContent() {
         {isLoading ? (
           <div className="p-4 space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-neutral-900 rounded-2xl p-4">
+              <div key={i} className="bg-[var(--hm-bg-elevated)] rounded-2xl p-4">
                 <div className="flex gap-3">
                   <Skeleton className="w-10 h-10 rounded-xl" />
                   <div className="flex-1 space-y-2">
@@ -627,15 +627,15 @@ function NotificationsPageContent() {
         ) : filteredNotifications.length === 0 ? (
           /* Empty State */
           <div className="px-4 py-12 text-center">
-            <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3">
-              <Bell className="w-5 h-5 text-neutral-400" />
+            <div className="w-10 h-10 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center mx-auto mb-3">
+              <Bell className="w-5 h-5 text-[var(--hm-fg-muted)]" />
             </div>
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-1">
+            <h3 className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-1">
               {activeFilter === 'unread'
                 ? t('notifications.allCaughtUp')
                 : t('notifications.noNotifications')}
             </h3>
-            <p className="text-xs text-neutral-500 max-w-xs mx-auto">
+            <p className="text-xs text-[var(--hm-fg-muted)] max-w-xs mx-auto">
               {activeFilter === 'unread'
                 ? t('notifications.allRead')
                 : t('notifications.newWillAppear')}
@@ -647,7 +647,7 @@ function NotificationsPageContent() {
               <div key={group.label}>
                 {/* Date Label */}
                 <div className="px-4 py-2 sticky top-[116px] sm:top-[140px] z-10">
-                  <span className="text-xs font-medium text-neutral-500 dark:text-neutral-500 uppercase tracking-wide">
+                  <span className="text-xs font-medium text-[var(--hm-fg-muted)]0 uppercase tracking-wide">
                     {group.label}
                   </span>
                 </div>
@@ -672,7 +672,7 @@ function NotificationsPageContent() {
         {/* Swipe hint for mobile */}
         {filteredNotifications.length > 0 && (
           <div className="sm:hidden px-4 py-6 text-center">
-            <p className="text-xs text-neutral-400 dark:text-neutral-600">
+            <p className="text-xs text-[var(--hm-fg-muted)]">
               {t('notifications.swipeLeftToDelete')}
             </p>
           </div>

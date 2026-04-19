@@ -146,13 +146,13 @@ export default function StepSelectServices({
     <div className="w-full max-w-lg mx-auto">
       {/* Header */}
       <div className="text-center mb-4 sm:mb-6">
-        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[#C4735B]/10 flex items-center justify-center mx-auto mb-3 sm:mb-4">
-          <Briefcase className="w-6 h-6 sm:w-8 sm:h-8 text-[#C4735B]" />
+        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[var(--hm-brand-500)]/10 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+          <Briefcase className="w-6 h-6 sm:w-8 sm:h-8 text-[var(--hm-brand-500)]" />
         </div>
-        <h1 className="text-lg sm:text-2xl font-bold text-neutral-900 mb-1 sm:mb-2">
+        <h1 className="text-lg sm:text-2xl font-bold text-[var(--hm-fg-primary)] mb-1 sm:mb-2">
           {t('register.whatServicesDoYouOffer')}
         </h1>
-        <p className="text-xs sm:text-base text-neutral-500 px-2">
+        <p className="text-xs sm:text-base text-[var(--hm-fg-muted)] px-2">
           {t('register.selectServicesDescription')}
         </p>
       </div>
@@ -169,23 +169,23 @@ export default function StepSelectServices({
                 <div
                   className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border-2 transition-all ${
                     expandedService === service.key
-                      ? 'border-[#C4735B] bg-[#C4735B]/5'
-                      : 'border-[#C4735B]/30 bg-[#C4735B]/5'
+                      ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5'
+                      : 'border-[var(--hm-brand-500)]/30 bg-[var(--hm-brand-500)]/5'
                   }`}
                 >
-                  <span className="text-xs sm:text-sm font-medium text-neutral-900 max-w-[120px] sm:max-w-none truncate">
+                  <span className="text-xs sm:text-sm font-medium text-[var(--hm-fg-primary)] max-w-[120px] sm:max-w-none truncate">
                     {locale === 'ka' ? service.nameKa : service.name}
                   </span>
                   <button
                     onClick={() => setExpandedService(expandedService === service.key ? null : service.key)}
-                    className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs text-[#C4735B] font-medium hover:text-[#A85D47] active:scale-95 transition-all"
+                    className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs text-[var(--hm-brand-500)] font-medium hover:text-[#A85D47] active:scale-95 transition-all"
                   >
                     {getExperienceLabel(service.experience)}
                     <ChevronDown className={`w-2.5 h-2.5 sm:w-3 sm:h-3 transition-transform ${expandedService === service.key ? 'rotate-180' : ''}`} />
                   </button>
                   <button
                     onClick={() => removeService(service.key)}
-                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-neutral-200 hover:bg-red-100 active:bg-red-200 text-neutral-500 hover:text-red-500 flex items-center justify-center transition-colors"
+                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-[var(--hm-n-200)] hover:bg-[var(--hm-error-100)] active:bg-red-200 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] flex items-center justify-center transition-colors"
                   >
                     <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   </button>
@@ -193,13 +193,13 @@ export default function StepSelectServices({
 
                 {/* Experience dropdown */}
                 {expandedService === service.key && (
-                  <div className="absolute top-full left-0 mt-1 z-20 bg-white rounded-lg sm:rounded-xl border border-neutral-200 shadow-lg overflow-hidden min-w-[120px] sm:min-w-[140px]">
+                  <div className="absolute top-full left-0 mt-1 z-20 bg-[var(--hm-bg-elevated)] rounded-lg sm:rounded-xl border border-[var(--hm-border)] shadow-lg overflow-hidden min-w-[120px] sm:min-w-[140px]">
                     {EXPERIENCE_OPTIONS.map(opt => (
                       <button
                         key={opt.value}
                         onClick={() => updateExperience(service.key, opt.value)}
-                        className={`w-full px-2.5 sm:px-3 py-2 text-left text-xs sm:text-sm hover:bg-neutral-50 active:bg-neutral-100 transition-colors ${
-                          service.experience === opt.value ? 'bg-[#C4735B]/5 text-[#C4735B] font-medium' : 'text-neutral-700'
+                        className={`w-full px-2.5 sm:px-3 py-2 text-left text-xs sm:text-sm hover:bg-[var(--hm-bg-page)] active:bg-[var(--hm-bg-tertiary)] transition-colors ${
+                          service.experience === opt.value ? 'bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)] font-medium' : 'text-neutral-700'
                         }`}
                       >
                         {locale === 'ka' ? opt.labelKa : locale === 'ru' ? opt.labelRu : opt.labelEn}
@@ -222,7 +222,7 @@ export default function StepSelectServices({
 
       {/* Search */}
       <div className="relative mb-3 sm:mb-4">
-        <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-neutral-400" />
+        <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-fg-muted)]" />
         <Input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -232,14 +232,14 @@ export default function StepSelectServices({
       </div>
 
       {/* Services List - Grouped by Category */}
-      <div className="max-h-[280px] sm:max-h-[350px] overflow-y-auto rounded-xl sm:rounded-2xl border border-neutral-200 overscroll-contain">
+      <div className="max-h-[280px] sm:max-h-[350px] overflow-y-auto rounded-xl sm:rounded-2xl border border-[var(--hm-border)] overscroll-contain">
         {categoriesLoading ? (
           <div className="py-6 sm:py-8 text-center">
-            <div className="inline-block w-5 h-5 sm:w-6 sm:h-6 border-2 border-[#C4735B] border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs sm:text-sm text-neutral-400 mt-2">{t('common.loading')}</p>
+            <div className="inline-block w-5 h-5 sm:w-6 sm:h-6 border-2 border-[var(--hm-brand-500)] border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)] mt-2">{t('common.loading')}</p>
           </div>
         ) : filteredServices.length === 0 ? (
-          <div className="py-6 sm:py-8 text-center text-xs sm:text-sm text-neutral-400">
+          <div className="py-6 sm:py-8 text-center text-xs sm:text-sm text-[var(--hm-fg-muted)]">
             {t('common.noResults')}
           </div>
         ) : (
@@ -248,8 +248,8 @@ export default function StepSelectServices({
             return (
               <div key={categoryKey}>
                 {/* Category Header */}
-                <div className="sticky top-0 px-3 sm:px-4 py-1.5 sm:py-2 bg-neutral-100 border-b border-neutral-200 z-10">
-                  <p className="text-[10px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                <div className="sticky top-0 px-3 sm:px-4 py-1.5 sm:py-2 bg-[var(--hm-bg-tertiary)] border-b border-[var(--hm-border)] z-10">
+                  <p className="text-[10px] sm:text-xs font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider">
                     {categoryName}
                   </p>
                 </div>
@@ -261,16 +261,16 @@ export default function StepSelectServices({
                       <button
                         key={service.key}
                         onClick={() => toggleService(service)}
-                        className={`w-full flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 text-left transition-colors active:bg-neutral-100 ${
-                          selected ? 'bg-[#C4735B]/5' : 'hover:bg-neutral-50'
+                        className={`w-full flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 text-left transition-colors active:bg-[var(--hm-bg-tertiary)] ${
+                          selected ? 'bg-[var(--hm-brand-500)]/5' : 'hover:bg-neutral-50'
                         }`}
                       >
-                        <p className={`text-xs sm:text-sm font-medium pr-2 ${selected ? 'text-[#C4735B]' : 'text-neutral-900'}`}>
+                        <p className={`text-xs sm:text-sm font-medium pr-2 ${selected ? 'text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-primary)]'}`}>
                           {locale === 'ka' ? service.nameKa : service.name}
                         </p>
                         <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
                           selected
-                            ? 'border-[#C4735B] bg-[#C4735B]'
+                            ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]'
                             : 'border-neutral-300'
                         }`}>
                           {selected && <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />}
@@ -286,7 +286,7 @@ export default function StepSelectServices({
       </div>
 
       {/* Counter */}
-      <p className="text-center text-xs sm:text-sm text-neutral-400 mt-3 sm:mt-4">
+      <p className="text-center text-xs sm:text-sm text-[var(--hm-fg-muted)] mt-3 sm:mt-4">
         {selectedServices.length} {t('register.servicesSelected')}
       </p>
     </div>

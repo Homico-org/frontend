@@ -109,9 +109,9 @@ export function SelectionGroup<T extends string | number = string>({
   return (
     <div className={className}>
       {label && (
-        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+        <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-[var(--hm-error-500)] ml-1">*</span>}
         </label>
       )}
       <div className={getLayoutClasses()}>
@@ -136,7 +136,7 @@ export function SelectionGroup<T extends string | number = string>({
                 option.icon && 'flex items-center justify-center',
                 option.icon && sizeStyles.gap,
                 option.disabled && 'opacity-50 cursor-not-allowed',
-                !isSelected && 'border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600'
+                !isSelected && 'border-[var(--hm-border)] text-[var(--hm-fg-muted)] hover:border-neutral-300'
               )}
               style={isSelected ? {
                 borderColor: ACCENT_COLOR,
@@ -216,9 +216,9 @@ export function SelectionCardGroup<T extends string | number = string>({
   return (
     <div className={className}>
       {label && (
-        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
+        <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-3">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-[var(--hm-error-500)] ml-1">*</span>}
         </label>
       )}
       <div className={getLayoutClasses()}>
@@ -238,7 +238,7 @@ export function SelectionCardGroup<T extends string | number = string>({
               className={cn(
                 'flex-1 p-4 rounded-xl border-2 transition-all text-left',
                 option.disabled && 'opacity-50 cursor-not-allowed',
-                !isSelected && 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 bg-white dark:bg-neutral-800'
+                !isSelected && 'border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] bg-[var(--hm-bg-elevated)]'
               )}
               style={isSelected ? {
                 borderColor: ACCENT_COLOR,
@@ -265,7 +265,7 @@ export function SelectionCardGroup<T extends string | number = string>({
                     {displayLabel}
                   </div>
                   {showDescriptions && displayDescription && (
-                    <div className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                    <div className="text-sm text-[var(--hm-fg-muted)] mt-0.5">
                       {displayDescription}
                     </div>
                   )}
@@ -274,7 +274,7 @@ export function SelectionCardGroup<T extends string | number = string>({
                 <div
                   className={cn(
                     'w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors',
-                    isSelected ? 'border-current' : 'border-neutral-300 dark:border-neutral-600'
+                    isSelected ? 'border-current' : 'border-[var(--hm-border-strong)]'
                   )}
                   style={isSelected ? { borderColor: ACCENT_COLOR } : undefined}
                 >

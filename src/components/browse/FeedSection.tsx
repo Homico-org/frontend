@@ -240,13 +240,13 @@ export default function FeedSection({
       {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80"
+          className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)]"
         >
-          <div className="aspect-[4/3] bg-neutral-200 dark:bg-neutral-700 animate-pulse" />
+          <div className="aspect-[4/3] bg-[var(--hm-n-200)] animate-pulse" />
           <div className="p-2.5 sm:p-4">
-            <div className="h-3 sm:h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/3 animate-pulse mb-2" />
-            <div className="h-4 sm:h-5 bg-neutral-200 dark:bg-neutral-700 rounded w-full animate-pulse mb-2" />
-            <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-2/3 animate-pulse" />
+            <div className="h-3 sm:h-4 bg-[var(--hm-n-200)] rounded w-1/3 animate-pulse mb-2" />
+            <div className="h-4 sm:h-5 bg-[var(--hm-n-200)] rounded w-full animate-pulse mb-2" />
+            <div className="h-3 bg-[var(--hm-n-200)] rounded w-2/3 animate-pulse" />
           </div>
         </div>
       ))}
@@ -274,24 +274,24 @@ export default function FeedSection({
       return (
         <Link
           href={`/professionals/${user.id}`}
-          className="flex items-center justify-between gap-3 p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 rounded-xl sm:rounded-2xl hover:border-[#C4735B]/40 transition-all group"
+          className="flex items-center justify-between gap-3 p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20 rounded-xl sm:rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all group"
         >
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#C4735B]/15 flex items-center justify-center flex-shrink-0">
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B]" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[var(--hm-brand-500)]/15 flex items-center justify-center flex-shrink-0">
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)]" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
+              <p className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate">
                 {locale === "ka" ? "დაამატე შენი პროექტი" : "Add Your Project"}
               </p>
-              <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
+              <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
                 {locale === "ka"
                   ? "აჩვენე შენი ნამუშევრები კლიენტებს"
                   : "Showcase your work to attract clients"}
               </p>
             </div>
           </div>
-          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       );
     }
@@ -300,26 +300,26 @@ export default function FeedSection({
       return (
         <Link
           href="/register"
-          className="flex items-center justify-between gap-3 p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 rounded-xl sm:rounded-2xl hover:border-[#C4735B]/40 transition-all group"
+          className="flex items-center justify-between gap-3 p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20 rounded-xl sm:rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all group"
         >
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#C4735B]/15 flex items-center justify-center flex-shrink-0">
-              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B]" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[var(--hm-brand-500)]/15 flex items-center justify-center flex-shrink-0">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)]" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
+              <p className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate">
                 {locale === "ka"
                   ? "დარეგისტრირდი პროფესიონალად"
                   : "Register as a Professional"}
               </p>
-              <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
+              <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
                 {locale === "ka"
                   ? "აჩვენე შენი ნამუშევრები და იპოვე კლიენტები"
                   : "Showcase your work and find clients"}
               </p>
             </div>
           </div>
-          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       );
     }
@@ -328,26 +328,26 @@ export default function FeedSection({
       return (
         <Link
           href="/post-job"
-          className="flex items-center justify-between gap-3 p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 rounded-xl sm:rounded-2xl hover:border-[#C4735B]/40 transition-all group"
+          className="flex items-center justify-between gap-3 p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20 rounded-xl sm:rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all group"
         >
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#C4735B]/15 flex items-center justify-center flex-shrink-0">
-              <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B]" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[var(--hm-brand-500)]/15 flex items-center justify-center flex-shrink-0">
+              <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)]" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
+              <p className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate">
                 {locale === "ka"
                   ? "განათავსე დავალება"
                   : "Post a Job to Find a Pro"}
               </p>
-              <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
+              <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
                 {locale === "ka"
                   ? "აღწერე დავალება და მიიღე შეთავაზებები"
                   : "Describe your project and get proposals"}
               </p>
             </div>
           </div>
-          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       );
     }
@@ -396,9 +396,9 @@ export default function FeedSection({
           {/* Load More / Loader */}
           <div ref={loaderRef} className="flex justify-center py-6 sm:py-12">
             {isLoadingMore && (
-              <div className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-neutral-100 dark:bg-neutral-800">
+              <div className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[var(--hm-bg-tertiary)]">
                 <LoadingSpinner size="sm" color={ACCENT_COLOR} />
-                <span className="text-xs sm:text-sm text-neutral-500">
+                <span className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">
                   {t("common.loading")}
                 </span>
               </div>

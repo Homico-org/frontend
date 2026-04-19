@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import HomicoLogo from '@/components/common/HomicoLogo';
 import LanguageSelector from '@/components/common/LanguageSelector';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -35,8 +36,8 @@ function RegisterContent() {
 
   if (authLoading) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
-        <LoadingSpinner size="xl" variant="border" color="#C4735B" />
+      <div className="min-h-[100dvh] flex items-center justify-center" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
+        <LoadingSpinner size="xl" variant="border" color="var(--hm-brand-500)" />
       </div>
     );
   }
@@ -48,12 +49,12 @@ function RegisterContent() {
   ];
 
   return (
-    <div className="min-h-[100dvh] flex flex-col" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+    <div className="min-h-[100dvh] flex flex-col" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
       {/* Header */}
       <header className="px-4 sm:px-6 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/favicon.png" alt="Homico" width={28} height={28} className="h-7 w-7 rounded-[8px]" />
-          <span className="text-[18px] font-semibold" style={{ color: 'var(--color-text-primary)' }}>Homico</span>
+          <HomicoLogo size={28} className="h-7 w-7" />
+          <span className="text-[18px] font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>Homico</span>
         </Link>
         <div className="flex items-center gap-2">
           <LanguageSelector variant="compact" />
@@ -70,13 +71,13 @@ function RegisterContent() {
           <div
             className={`text-center mb-8 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
           >
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#C4735B] to-[#D4937B] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#C4735B]/20">
-              <Image src="/favicon.png" alt="" width={32} height={32} className="rounded-lg" />
+            <div className="mx-auto mb-4 flex items-center justify-center">
+              <HomicoLogo size={56} />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
               {pick('Welcome to Homico', 'კეთილი იყოს შენი მობრძანება')}
             </h1>
-            <p className="text-sm sm:text-base" style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="text-sm sm:text-base" style={{ color: 'var(--hm-fg-secondary)' }}>
               {pick('How do you want to use Homico?', 'როგორ გსურს Homico-ს გამოყენება?')}
             </p>
           </div>
@@ -90,18 +91,18 @@ function RegisterContent() {
               onClick={() => { trackEvent('register_click', 'client'); router.push('/register/client'); }}
               className="w-full group flex items-center gap-4 p-4 sm:p-5 rounded-2xl text-left transition-all hover:shadow-md active:scale-[0.99]"
               style={{
-                backgroundColor: 'var(--color-bg-elevated)',
-                border: '1px solid var(--color-border-subtle)',
+                backgroundColor: 'var(--hm-bg-elevated)',
+                border: '1px solid var(--hm-border-subtle)',
               }}
             >
-              <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
-                <Search className="w-6 h-6 text-blue-500" />
+              <div className="w-12 h-12 rounded-xl bg-[var(--hm-info-50)]/20 flex items-center justify-center shrink-0">
+                <Search className="w-6 h-6 text-[var(--hm-info-500)]" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-bold mb-0.5" style={{ color: 'var(--color-text-primary)' }}>
+                <h3 className="text-base font-bold mb-0.5" style={{ color: 'var(--hm-fg-primary)' }}>
                   {pick('I need a professional', 'მჭირდება სპეციალისტი')}
                 </h3>
-                <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                <p className="text-xs" style={{ color: 'var(--hm-fg-secondary)' }}>
                   {pick('Find and hire verified home service pros', 'იპოვე და დაიქირავე ვერიფიცირებული სპეციალისტი')}
                 </p>
               </div>
@@ -113,18 +114,18 @@ function RegisterContent() {
               onClick={() => { trackEvent('register_click', 'pro'); router.push('/register/professional'); }}
               className="w-full group flex items-center gap-4 p-4 sm:p-5 rounded-2xl text-left transition-all hover:shadow-md active:scale-[0.99]"
               style={{
-                backgroundColor: 'rgba(196,115,91,0.06)',
-                border: '1px solid rgba(196,115,91,0.2)',
+                backgroundColor: 'rgba(239,78,36,0.06)',
+                border: '1px solid rgba(239,78,36,0.2)',
               }}
             >
-              <div className="w-12 h-12 rounded-xl bg-[#C4735B]/15 flex items-center justify-center shrink-0">
-                <Briefcase className="w-6 h-6 text-[#C4735B]" />
+              <div className="w-12 h-12 rounded-xl bg-[var(--hm-brand-500)]/15 flex items-center justify-center shrink-0">
+                <Briefcase className="w-6 h-6 text-[var(--hm-brand-500)]" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-bold mb-0.5" style={{ color: 'var(--color-text-primary)' }}>
+                <h3 className="text-base font-bold mb-0.5" style={{ color: 'var(--hm-fg-primary)' }}>
                   {pick('I am a professional', 'ვარ სპეციალისტი')}
                 </h3>
-                <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                <p className="text-xs" style={{ color: 'var(--hm-fg-secondary)' }}>
                   {pick('Join our network, find clients, grow your business', 'შემოგვიერთდი, იპოვე კლიენტები, გაზარდე შემოსავალი')}
                 </p>
               </div>
@@ -137,8 +138,8 @@ function RegisterContent() {
             className={`flex items-center justify-center gap-4 sm:gap-6 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
           >
             {features.map((f, i) => (
-              <div key={i} className="flex items-center gap-1.5 text-[11px] sm:text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                <span className="text-emerald-500">{f.icon}</span>
+              <div key={i} className="flex items-center gap-1.5 text-[11px] sm:text-xs" style={{ color: 'var(--hm-fg-muted)' }}>
+                <span className="text-[var(--hm-success-500)]">{f.icon}</span>
                 {f.text}
               </div>
             ))}
@@ -148,9 +149,9 @@ function RegisterContent() {
 
       {/* Footer */}
       <footer className="text-center pb-6 px-4">
-        <p className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>
+        <p className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
           {pick('Already have an account?', 'უკვე გაქვს ანგარიში?')}{' '}
-          <button onClick={() => openLoginModal()} className="font-medium text-[#C4735B] hover:underline">
+          <button onClick={() => openLoginModal()} className="font-medium text-[var(--hm-brand-500)] hover:underline">
             {pick('Log in', 'შესვლა')}
           </button>
         </p>
@@ -163,8 +164,8 @@ export default function RegisterPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-[100dvh] flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
-          <LoadingSpinner size="xl" variant="border" color="#C4735B" />
+        <div className="min-h-[100dvh] flex items-center justify-center" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
+          <LoadingSpinner size="xl" variant="border" color="var(--hm-brand-500)" />
         </div>
       }
     >

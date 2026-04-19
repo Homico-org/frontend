@@ -14,11 +14,11 @@ export default function UIShowcase() {
   return (
     <div className="min-h-screen bg-[#f8f7f4]">
       {/* Header */}
-      <header className="border-b border-neutral-200 sticky top-0 bg-[#f8f7f4]/95 backdrop-blur-sm z-50">
+      <header className="border-b border-[var(--hm-border)] sticky top-0 bg-[#f8f7f4]/95 backdrop-blur-sm z-50">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-lg font-semibold text-neutral-800">UI Components</span>
-            <span className="text-xs text-neutral-400">temp</span>
+            <span className="text-lg font-semibold text-[var(--hm-fg-primary)]">UI Components</span>
+            <span className="text-xs text-[var(--hm-fg-muted)]">temp</span>
           </div>
           <Button variant="ghost" href="/portfolio" size="sm">
             Back to App
@@ -31,13 +31,13 @@ export default function UIShowcase() {
 
         {/* Section: Buttons */}
         <section>
-          <h2 className="text-xl font-semibold text-neutral-800 mb-6">Button</h2>
+          <h2 className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-6">Button</h2>
 
           <div className="space-y-6">
 
             {/* Primary */}
-            <div className="p-5 rounded-xl border border-neutral-200 bg-white">
-              <p className="text-xs text-neutral-500 mb-4 font-mono">
+            <div className="p-5 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)]">
+              <p className="text-xs text-[var(--hm-fg-muted)] mb-4 font-mono">
                 {`variant="primary"`}
               </p>
               <div className="flex flex-wrap items-center gap-3">
@@ -55,8 +55,8 @@ export default function UIShowcase() {
             </div>
 
             {/* Secondary */}
-            <div className="p-5 rounded-xl border border-neutral-200 bg-white">
-              <p className="text-xs text-neutral-500 mb-4 font-mono">
+            <div className="p-5 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)]">
+              <p className="text-xs text-[var(--hm-fg-muted)] mb-4 font-mono">
                 {`variant="secondary"`}
               </p>
               <div className="flex flex-wrap items-center gap-3">
@@ -69,8 +69,8 @@ export default function UIShowcase() {
             </div>
 
             {/* Outline */}
-            <div className="p-5 rounded-xl border border-neutral-200 bg-white">
-              <p className="text-xs text-neutral-500 mb-4 font-mono">
+            <div className="p-5 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)]">
+              <p className="text-xs text-[var(--hm-fg-muted)] mb-4 font-mono">
                 {`variant="outline"`}
               </p>
               <div className="flex flex-wrap items-center gap-3">
@@ -83,8 +83,8 @@ export default function UIShowcase() {
             </div>
 
             {/* Ghost */}
-            <div className="p-5 rounded-xl border border-neutral-200 bg-white">
-              <p className="text-xs text-neutral-500 mb-4 font-mono">
+            <div className="p-5 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)]">
+              <p className="text-xs text-[var(--hm-fg-muted)] mb-4 font-mono">
                 {`variant="ghost"`}
               </p>
               <div className="flex flex-wrap items-center gap-3">
@@ -97,8 +97,8 @@ export default function UIShowcase() {
             </div>
 
             {/* Full Width */}
-            <div className="p-5 rounded-xl border border-neutral-200 bg-white">
-              <p className="text-xs text-neutral-500 mb-4 font-mono">fullWidth=true</p>
+            <div className="p-5 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)]">
+              <p className="text-xs text-[var(--hm-fg-muted)] mb-4 font-mono">fullWidth=true</p>
               <div className="max-w-sm space-y-2">
                 <Button variant="primary" fullWidth icon={<ButtonIcons.Send />}>
                   Send Message
@@ -110,8 +110,8 @@ export default function UIShowcase() {
             </div>
 
             {/* As Link */}
-            <div className="p-5 rounded-xl border border-neutral-200 bg-white">
-              <p className="text-xs text-neutral-500 mb-4 font-mono">
+            <div className="p-5 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)]">
+              <p className="text-xs text-[var(--hm-fg-muted)] mb-4 font-mono">
                 {`href="/portfolio"`}
               </p>
               <div className="flex flex-wrap items-center gap-3">
@@ -129,15 +129,15 @@ export default function UIShowcase() {
 
         {/* Icons */}
         <section className="mt-10">
-          <h2 className="text-xl font-semibold text-neutral-800 mb-6">ButtonIcons</h2>
-          <div className="p-5 rounded-xl border border-neutral-200 bg-white">
+          <h2 className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-6">ButtonIcons</h2>
+          <div className="p-5 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)]">
             <div className="flex flex-wrap gap-4">
               {Object.entries(ButtonIcons).map(([name, Icon]) => (
                 <div key={name} className="flex flex-col items-center gap-1.5 p-2">
-                  <div className="w-5 h-5 text-neutral-600">
+                  <div className="w-5 h-5 text-[var(--hm-fg-secondary)]">
                     <Icon />
                   </div>
-                  <span className="text-[10px] text-neutral-400 font-mono">{name}</span>
+                  <span className="text-[10px] text-[var(--hm-fg-muted)] font-mono">{name}</span>
                 </div>
               ))}
             </div>
@@ -146,8 +146,8 @@ export default function UIShowcase() {
 
         {/* Usage */}
         <section className="mt-10">
-          <h2 className="text-xl font-semibold text-neutral-800 mb-6">Usage</h2>
-          <div className="p-5 rounded-xl border border-neutral-200 bg-white font-mono text-xs text-neutral-600 overflow-x-auto">
+          <h2 className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-6">Usage</h2>
+          <div className="p-5 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] font-mono text-xs text-[var(--hm-fg-secondary)] overflow-x-auto">
             <pre>{`import Button, { ButtonIcons } from '@/components/common/Button';
 
 <Button variant="primary">Click me</Button>

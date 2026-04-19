@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { BadgeCheck, Star, Sparkles, Clock, AlertTriangle, CheckCircle, Zap } from 'lucide-react';
+import { BadgeCheck, Star, Sparkles, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft } from 'lucide-react';
 import { ACCENT_COLOR } from '@/constants/theme';
 
 export type StatusPillVariant =
@@ -14,6 +14,9 @@ export type StatusPillVariant =
   | 'featured'
   | 'pending'
   | 'completed'
+  | 'accepted'
+  | 'rejected'
+  | 'withdrawn'
   | 'homico'; // For Homico-verified work
 
 export type StatusPillSize = 'xs' | 'sm' | 'md';
@@ -53,67 +56,88 @@ const variantConfig: Record<StatusPillVariant, {
   labelKa: string;
 }> = {
   verified: {
-    bgClass: 'bg-emerald-50 dark:bg-emerald-900/20',
-    textClass: 'text-emerald-600 dark:text-emerald-400',
+    bgClass: 'bg-[var(--hm-success-50)]',
+    textClass: 'text-[var(--hm-success-500)]',
     icon: BadgeCheck,
     labelEn: 'Verified',
     labelKa: 'დადასტურებული',
   },
   topRated: {
-    bgClass: 'bg-amber-50 dark:bg-amber-900/20',
-    textClass: 'text-amber-600 dark:text-amber-400',
+    bgClass: 'bg-[var(--hm-warning-50)]',
+    textClass: 'text-[var(--hm-warning-500)]',
     icon: Star,
     labelEn: 'Top Rated',
     labelKa: 'საუკეთესო',
   },
   new: {
-    bgClass: 'bg-blue-50 dark:bg-blue-900/20',
-    textClass: 'text-blue-600 dark:text-blue-400',
+    bgClass: 'bg-[var(--hm-info-50)]',
+    textClass: 'text-[var(--hm-info-500)]',
     icon: Sparkles,
     labelEn: 'New',
     labelKa: 'ახალი',
   },
   urgent: {
-    bgClass: 'bg-red-50 dark:bg-red-900/20',
-    textClass: 'text-red-600 dark:text-red-400',
+    bgClass: 'bg-[var(--hm-error-50)]',
+    textClass: 'text-[var(--hm-error-500)]',
     icon: AlertTriangle,
     labelEn: 'Urgent',
     labelKa: 'სასწრაფო',
   },
   applied: {
-    bgClass: 'bg-violet-50 dark:bg-violet-900/20',
-    textClass: 'text-violet-600 dark:text-violet-400',
+    bgClass: 'bg-violet-50',
+    textClass: 'text-violet-600',
     icon: CheckCircle,
     labelEn: 'Applied',
     labelKa: 'გაგზავნილი',
   },
   premium: {
-    bgClass: '', // Uses inline style for theme color
-    textClass: '',
+    bgClass: 'bg-[var(--hm-brand-50)]',
+    textClass: 'text-[var(--hm-brand-700)]',
     icon: Zap,
     labelEn: 'Premium',
     labelKa: 'პრემიუმ',
   },
   featured: {
-    bgClass: 'bg-purple-50 dark:bg-purple-900/20',
-    textClass: 'text-purple-600 dark:text-purple-400',
+    bgClass: 'bg-purple-50',
+    textClass: 'text-purple-600',
     icon: Star,
     labelEn: 'Featured',
     labelKa: 'გამორჩეული',
   },
   pending: {
-    bgClass: 'bg-yellow-50 dark:bg-yellow-900/20',
-    textClass: 'text-yellow-600 dark:text-yellow-500',
+    bgClass: 'bg-[var(--hm-warning-50)]',
+    textClass: 'text-[var(--hm-warning-500)]',
     icon: Clock,
     labelEn: 'Pending',
     labelKa: 'მოლოდინში',
   },
   completed: {
-    bgClass: 'bg-green-50 dark:bg-green-900/20',
-    textClass: 'text-green-600 dark:text-green-400',
+    bgClass: 'bg-[var(--hm-success-50)]',
+    textClass: 'text-[var(--hm-success-500)]',
     icon: CheckCircle,
     labelEn: 'Completed',
     labelKa: 'დასრულებული',
+  },
+  accepted: {
+    bgClass: 'bg-[var(--hm-success-50)]',
+    textClass: 'text-[var(--hm-success-500)]',
+    icon: CheckCircle,
+    labelEn: 'Accepted',
+    labelKa: 'მიღებული',
+  },
+  rejected: {
+    bgClass: 'bg-[var(--hm-error-50)]',
+    textClass: 'text-[var(--hm-error-500)]',
+    icon: XCircle,
+    labelEn: 'Rejected',
+    labelKa: 'უარყოფილი',
+  },
+  withdrawn: {
+    bgClass: 'bg-[var(--hm-bg-tertiary)]',
+    textClass: 'text-[var(--hm-fg-secondary)]',
+    icon: CornerUpLeft,
+    labelEn: 'Withdrawn',
+    labelKa: 'გაუქმებული',
   },
   homico: {
     bgClass: '', // Uses inline style for theme color

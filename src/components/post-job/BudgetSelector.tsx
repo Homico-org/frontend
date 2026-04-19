@@ -54,7 +54,7 @@ export default function BudgetSelector({
   return (
     <div className={className}>
       {/* Budget Type Selector — Segmented Control */}
-      <div className="flex p-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 mb-5">
+      <div className="flex p-1 rounded-xl bg-[var(--hm-bg-tertiary)] mb-5">
         {budgetTypes.map((type) => (
           <button
             key={type.value}
@@ -62,8 +62,8 @@ export default function BudgetSelector({
             onClick={() => onBudgetTypeChange(type.value)}
             className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-4 rounded-lg text-[13px] sm:text-sm font-semibold transition-all ${
               budgetType === type.value
-                ? 'bg-white dark:bg-neutral-700 text-[#C4735B] shadow-sm'
-                : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] shadow-sm'
+                : 'text-[var(--hm-fg-muted)] hover:text-neutral-700'
             }`}
           >
             {locale === 'ka' ? type.labelKa : type.labelEn}
@@ -75,7 +75,7 @@ export default function BudgetSelector({
       {budgetType !== 'negotiable' && (
         <div className={`grid gap-4 ${budgetType === 'range' ? 'grid-cols-2' : 'grid-cols-1'}`}>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-medium text-base">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--hm-fg-muted)] font-medium text-base">
               {currency}
             </span>
             <input
@@ -84,12 +84,12 @@ export default function BudgetSelector({
               value={formatNumber(budgetMin)}
               onChange={(e) => onBudgetMinChange(parseNumber(e.target.value))}
               placeholder={budgetType === 'range' ? (t('job.min')) : '1'}
-              className="w-full pl-9 pr-4 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-base focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 focus:border-[#C4735B] transition-all"
+              className="w-full pl-9 pr-4 py-3.5 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] text-base focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)]/20 focus:border-[var(--hm-brand-500)] transition-all"
             />
           </div>
           {budgetType === 'range' && (
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-medium text-base">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--hm-fg-muted)] font-medium text-base">
                 {currency}
               </span>
               <input
@@ -98,7 +98,7 @@ export default function BudgetSelector({
                 value={formatNumber(budgetMax)}
                 onChange={(e) => onBudgetMaxChange(parseNumber(e.target.value))}
                 placeholder={t('job.max')}
-                className="w-full pl-9 pr-4 py-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-base focus:outline-none focus:ring-2 focus:ring-[#C4735B]/20 focus:border-[#C4735B] transition-all"
+                className="w-full pl-9 pr-4 py-3.5 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] text-base focus:outline-none focus:ring-2 focus:ring-[var(--hm-brand-500)]/20 focus:border-[var(--hm-brand-500)] transition-all"
               />
             </div>
           )}
@@ -106,7 +106,7 @@ export default function BudgetSelector({
       )}
 
       {budgetType === 'negotiable' && (
-        <p className="text-base text-neutral-500 dark:text-neutral-400 text-center py-5">
+        <p className="text-base text-[var(--hm-fg-muted)] text-center py-5">
           {t('job.priceWillBeDeterminedAfter')}
         </p>
       )}

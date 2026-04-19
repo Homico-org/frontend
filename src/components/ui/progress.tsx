@@ -10,9 +10,9 @@ const progressVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[var(--color-bg-tertiary)]",
-        terracotta: "bg-[#E07B4F]/10",
-        gradient: "bg-gradient-to-r from-[#E07B4F]/5 to-[#E8956A]/10",
+        default: "bg-[var(--hm-n-100)]",
+        terracotta: "bg-[var(--hm-brand-50)]",
+        gradient: "bg-[var(--hm-n-100)]",
       },
       size: {
         sm: "h-1.5",
@@ -33,12 +33,12 @@ const indicatorVariants = cva(
   {
     variants: {
       indicatorVariant: {
-        default: "bg-[#E07B4F]",
-        gradient: "bg-gradient-to-r from-[#E07B4F] to-[#E8956A]",
-        success: "bg-emerald-500",
-        warning: "bg-amber-500",
-        danger: "bg-red-500",
-        animated: "bg-gradient-to-r from-[#E07B4F] via-[#E8956A] to-[#E07B4F] bg-[length:200%_100%] animate-gradient-shimmer",
+        default: "bg-[var(--hm-brand-500)]",
+        gradient: "bg-gradient-to-r from-[var(--hm-brand-500)] to-[var(--hm-brand-300)]",
+        success: "bg-[var(--hm-success-500)]",
+        warning: "bg-[var(--hm-warning-500)]",
+        danger: "bg-[var(--hm-error-500)]",
+        animated: "bg-gradient-to-r from-[var(--hm-brand-500)] via-[var(--hm-brand-300)] to-[var(--hm-brand-500)] bg-[length:200%_100%] animate-gradient-shimmer",
       },
     },
     defaultVariants: {
@@ -64,12 +64,12 @@ const Progress = React.forwardRef<
     {(label || showValue || showPercentage) && (
       <div className="flex items-center justify-between">
         {label && (
-          <span className="text-sm font-medium text-[var(--color-text-secondary)]">
+          <span className="text-sm font-medium text-[var(--hm-fg-secondary)]">
             {label}
           </span>
         )}
         {(showValue || showPercentage) && (
-          <span className="text-sm font-bold text-[#E07B4F]">
+          <span className="text-sm font-bold text-[var(--hm-brand-500)]">
             {showPercentage ? `${Math.round(value || 0)}%` : value}
           </span>
         )}
@@ -129,7 +129,7 @@ const CircleProgress = React.forwardRef<HTMLDivElement, CircleProgressProps>(
             cy={sizeValue / 2}
             r={radius}
             fill="none"
-            stroke="var(--color-border)"
+            stroke="var(--hm-border)"
             strokeWidth={strokeWidth}
           />
           {/* Progress circle */}
@@ -147,15 +147,15 @@ const CircleProgress = React.forwardRef<HTMLDivElement, CircleProgressProps>(
           />
           <defs>
             <linearGradient id="progress-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#E07B4F" />
-              <stop offset="100%" stopColor="#E8956A" />
+              <stop offset="0%" stopColor="var(--hm-brand-500)" />
+              <stop offset="100%" stopColor="#F28764" />
             </linearGradient>
           </defs>
         </svg>
         {showValue && (
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className={cn(
-              "font-bold text-[var(--color-text-primary)]",
+              "font-bold text-[var(--hm-fg-primary)]",
               size === 'sm' && "text-[10px]",
               size === 'default' && "text-xs",
               size === 'lg' && "text-sm",
@@ -164,7 +164,7 @@ const CircleProgress = React.forwardRef<HTMLDivElement, CircleProgressProps>(
               {Math.round(value)}%
             </span>
             {label && size !== 'sm' && (
-              <span className="text-[9px] text-[var(--color-text-tertiary)]">{label}</span>
+              <span className="text-[9px] text-[var(--hm-fg-muted)]">{label}</span>
             )}
           </div>
         )}
@@ -206,9 +206,9 @@ const StepProgress = React.forwardRef<HTMLDivElement, StepProgressProps>(
                   <div
                     className={cn(
                       "w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm transition-all duration-300",
-                      isCompleted && "bg-gradient-to-br from-[#E07B4F] to-[#D26B3F] text-white shadow-lg shadow-[#E07B4F]/25",
-                      isCurrent && "bg-[#E07B4F]/10 text-[#E07B4F] border-2 border-[#E07B4F]",
-                      !isCompleted && !isCurrent && "bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] border border-[var(--color-border)]"
+                      isCompleted && "bg-gradient-to-br from-[var(--hm-brand-500)] to-[#D13C14] text-white shadow-lg shadow-[var(--hm-brand-500)]/25",
+                      isCurrent && "bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] border-2 border-[var(--hm-brand-500)]",
+                      !isCompleted && !isCurrent && "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] border border-[var(--hm-border)]"
                     )}
                   >
                     {isCompleted ? (
@@ -224,12 +224,12 @@ const StepProgress = React.forwardRef<HTMLDivElement, StepProgressProps>(
                   <div className="mt-2 text-center">
                     <p className={cn(
                       "text-xs font-medium",
-                      (isCompleted || isCurrent) ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"
+                      (isCompleted || isCurrent) ? "text-[var(--hm-fg-primary)]" : "text-[var(--hm-fg-muted)]"
                     )}>
                       {step.label}
                     </p>
                     {step.description && (
-                      <p className="text-[10px] text-[var(--color-text-tertiary)] mt-0.5 max-w-[80px]">
+                      <p className="text-[10px] text-[var(--hm-fg-muted)] mt-0.5 max-w-[80px]">
                         {step.description}
                       </p>
                     )}
@@ -240,7 +240,7 @@ const StepProgress = React.forwardRef<HTMLDivElement, StepProgressProps>(
                     <div
                       className={cn(
                         "h-full rounded-full transition-all duration-500",
-                        isCompleted ? "bg-gradient-to-r from-[#E07B4F] to-[#E8956A]" : "bg-[var(--color-border)]"
+                        isCompleted ? "bg-gradient-to-r from-[var(--hm-brand-500)] to-[#F28764]" : "bg-[var(--hm-border)]"
                       )}
                     />
                   </div>

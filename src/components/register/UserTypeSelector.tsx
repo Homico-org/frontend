@@ -59,18 +59,18 @@ export default function UserTypeSelector({
       {/* Client */}
       <button
         onClick={() => onSelect("client")}
-        className="group relative bg-white dark:bg-neutral-900 rounded-xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-[#C4735B]/40 p-5 sm:p-6 text-left transition-all duration-200 hover:shadow-lg active:scale-[0.98]"
+        className="group relative bg-[var(--hm-bg-elevated)] rounded-xl border-2 border-[var(--hm-border)] hover:border-[var(--hm-brand-500)]/40 p-5 sm:p-6 text-left transition-all duration-200 hover:shadow-lg active:scale-[0.98]"
       >
-        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-4">
-          <Search className="w-5 h-5 text-blue-500" />
+        <div className="w-10 h-10 rounded-xl bg-[var(--hm-info-50)]/20 flex items-center justify-center mb-4">
+          <Search className="w-5 h-5 text-[var(--hm-info-500)]" />
         </div>
-        <h3 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white mb-1">
+        <h3 className="text-base sm:text-lg font-bold text-[var(--hm-fg-primary)] mb-1">
           {t.client.title}
         </h3>
-        <p className="text-xs sm:text-sm text-neutral-500 mb-4 leading-relaxed">
+        <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)] mb-4 leading-relaxed">
           {t.client.description}
         </p>
-        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-neutral-900 dark:text-white group-hover:text-[#C4735B] group-hover:gap-2.5 transition-all">
+        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--hm-fg-primary)] group-hover:text-[var(--hm-brand-500)] group-hover:gap-2.5 transition-all">
           {t.client.cta}
           <ArrowRight className="w-4 h-4" />
         </span>
@@ -79,18 +79,18 @@ export default function UserTypeSelector({
       {/* Pro */}
       <button
         onClick={() => onSelect("pro")}
-        className="group relative bg-neutral-900 dark:bg-neutral-800 rounded-xl border-2 border-neutral-800 dark:border-neutral-700 hover:border-[#C4735B]/60 p-5 sm:p-6 text-left transition-all duration-200 hover:shadow-lg hover:shadow-[#C4735B]/10 active:scale-[0.98]"
+        className="group relative bg-neutral-900 rounded-xl border-2 border-neutral-800 hover:border-[var(--hm-brand-500)]/60 p-5 sm:p-6 text-left transition-all duration-200 hover:shadow-lg hover:shadow-[var(--hm-brand-500)]/10 active:scale-[0.98]"
       >
-        <div className="w-10 h-10 rounded-xl bg-[#C4735B]/20 flex items-center justify-center mb-4">
-          <Briefcase className="w-5 h-5 text-[#C4735B]" />
+        <div className="w-10 h-10 rounded-xl bg-[var(--hm-brand-500)]/20 flex items-center justify-center mb-4">
+          <Briefcase className="w-5 h-5 text-[var(--hm-brand-500)]" />
         </div>
         <h3 className="text-base sm:text-lg font-bold text-white mb-1">
           {t.pro.title}
         </h3>
-        <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
+        <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)] mb-4 leading-relaxed">
           {t.pro.description}
         </p>
-        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C4735B] group-hover:gap-2.5 transition-all">
+        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--hm-brand-500)] group-hover:gap-2.5 transition-all">
           {t.pro.cta}
           <ArrowRight className="w-4 h-4" />
         </span>

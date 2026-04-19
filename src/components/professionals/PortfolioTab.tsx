@@ -42,15 +42,15 @@ export default function PortfolioTab({
     return (
       <div className="animate-in fade-in duration-300">
         {isOwner ? (
-          <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 shadow-sm border-2 border-dashed border-neutral-200 dark:border-neutral-700">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-8 shadow-sm border-2 border-dashed border-[var(--hm-border)]">
             <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 mx-auto mb-4 flex items-center justify-center">
-                <Plus className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 mx-auto mb-4 flex items-center justify-center">
+                <Plus className="w-8 h-8 text-[var(--hm-warning-500)]" />
               </div>
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+              <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)] mb-2">
                 {t('professional.addYourFirstProject')}
               </h3>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4 max-w-sm mx-auto">
+              <p className="text-sm text-[var(--hm-fg-muted)] mb-4 max-w-sm mx-auto">
                 {t('professional.showcaseYourBestWorkTo')}
               </p>
               <Button onClick={onAddProject} leftIcon={<Plus className="w-4 h-4" />}>
@@ -122,7 +122,7 @@ export default function PortfolioTab({
                     e.stopPropagation();
                     onEditProject?.(project);
                   }}
-                  className="w-8 h-8 rounded-full bg-white/95 dark:bg-neutral-800/95 shadow-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-[#C4735B] hover:border-[#C4735B] hover:scale-110 transition-all"
+                  className="w-8 h-8 rounded-full bg-white/95 shadow-lg border border-[var(--hm-border)] flex items-center justify-center text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)] hover:border-[var(--hm-brand-500)] hover:scale-110 transition-all"
                   title={t('common.edit')}
                 >
                   <Edit3 className="w-3.5 h-3.5" />
@@ -133,7 +133,7 @@ export default function PortfolioTab({
                     e.stopPropagation();
                     onDeleteProject?.(project.id);
                   }}
-                  className="w-8 h-8 rounded-full bg-white/95 dark:bg-neutral-800/95 shadow-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:text-red-500 hover:border-red-500 hover:scale-110 transition-all"
+                  className="w-8 h-8 rounded-full bg-white/95 shadow-lg border border-[var(--hm-border)] flex items-center justify-center text-[var(--hm-fg-secondary)] hover:text-[var(--hm-error-500)] hover:border-[var(--hm-error-500)] hover:scale-110 transition-all"
                   title={t('common.delete')}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -144,7 +144,7 @@ export default function PortfolioTab({
             {/* Homico Badge for non-editable projects */}
             {isOwner && project.isEditable === false && (
               <div className="absolute top-3 right-3 z-50">
-                <div className="px-2.5 py-1 rounded-full bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-semibold uppercase tracking-wide shadow-lg flex items-center gap-1">
+                <div className="px-2.5 py-1 rounded-full bg-[var(--hm-success-500)]/90 backdrop-blur-sm text-white text-[10px] font-semibold uppercase tracking-wide shadow-lg flex items-center gap-1">
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                   </svg>

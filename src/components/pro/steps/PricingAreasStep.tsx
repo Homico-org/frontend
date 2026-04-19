@@ -76,8 +76,8 @@ export default function PricingAreasStep({
         onClick={handleNationwide}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
           formData.nationwide
-            ? "bg-[#C4735B] text-white"
-            : "bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)] hover:border-[#C4735B]/30"
+            ? "bg-[var(--hm-brand-500)] text-white"
+            : "bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] border border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/30"
         }`}
       >
         <Globe className="w-4 h-4 shrink-0" />
@@ -125,16 +125,16 @@ export default function PricingAreasStep({
                   onClick={toggleRegion}
                   className="flex items-center gap-2 mb-2 group"
                 >
-                  <MapPin className="w-3.5 h-3.5 text-[#C4735B] shrink-0" />
-                  <span className="text-xs font-semibold text-[var(--color-text-primary)]">
+                  <MapPin className="w-3.5 h-3.5 text-[var(--hm-brand-500)] shrink-0" />
+                  <span className="text-xs font-semibold text-[var(--hm-fg-primary)]">
                     {regionName}
                   </span>
                   {regionSelectedCount > 0 && (
-                    <span className="text-[10px] text-[#C4735B] font-medium">
+                    <span className="text-[10px] text-[var(--hm-brand-500)] font-medium">
                       {regionSelectedCount}/{uniqueCities.length}
                     </span>
                   )}
-                  <span className="text-[10px] text-[var(--color-text-muted)] opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-[10px] text-[var(--hm-fg-muted)] opacity-0 group-hover:opacity-100 transition-opacity">
                     {allSelected ? t("common.clear") : t("common.all")}
                   </span>
                 </button>
@@ -150,8 +150,8 @@ export default function PricingAreasStep({
                         onClick={() => toggleCity(city)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                           isSelected
-                            ? "bg-[#C4735B] text-white"
-                            : "bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)] hover:border-[#C4735B]/30"
+                            ? "bg-[var(--hm-brand-500)] text-white"
+                            : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] border border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/30"
                         }`}
                       >
                         {isSelected && (
@@ -170,7 +170,7 @@ export default function PricingAreasStep({
 
       {/* Selection summary */}
       {selectedCount > 0 && (
-        <p className="text-xs text-[var(--color-text-muted)] text-center">
+        <p className="text-xs text-[var(--hm-fg-muted)] text-center">
           {formData.nationwide
             ? t("common.nationwide")
             : `${selectedCount} ${t("common.cities") || "ქალაქი"}`}

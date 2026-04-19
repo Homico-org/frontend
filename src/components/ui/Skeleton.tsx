@@ -16,10 +16,15 @@ export function Skeleton({ className, style }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'animate-pulse rounded bg-neutral-100 dark:bg-neutral-800',
+        '',
         className
       )}
-      style={style}
+      style={{
+        background: 'linear-gradient(90deg, var(--hm-bg-tertiary) 0%, var(--hm-border-subtle) 50%, var(--hm-bg-tertiary) 100%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 1.4s ease-in-out infinite',
+        ...style,
+      }}
     />
   );
 }
@@ -91,7 +96,7 @@ export function SkeletonCard({
     return (
       <div
         className={cn(
-          'flex gap-4 p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 animate-pulse',
+          'flex gap-4 p-4 rounded-2xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] animate-pulse',
           className
         )}
       >
@@ -109,7 +114,7 @@ export function SkeletonCard({
     return (
       <div
         className={cn(
-          'rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden animate-pulse',
+          'rounded-xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] overflow-hidden animate-pulse',
           className
         )}
       >
@@ -128,7 +133,7 @@ export function SkeletonCard({
   return (
     <div
       className={cn(
-        'rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden animate-pulse',
+        'rounded-2xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] overflow-hidden animate-pulse',
         className
       )}
     >
@@ -137,7 +142,7 @@ export function SkeletonCard({
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-3 w-full" />
         <Skeleton className="h-3 w-2/3" />
-        <div className="flex items-center gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+        <div className="flex items-center gap-3 pt-3 border-t border-[var(--hm-border-subtle)]">
           <SkeletonAvatar size="sm" />
           <Skeleton className="h-3 w-20" />
         </div>
@@ -185,7 +190,7 @@ export function SkeletonProCard({ className }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 overflow-hidden animate-pulse',
+        'rounded-xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] overflow-hidden animate-pulse',
         className
       )}
     >
@@ -251,7 +256,7 @@ export function SkeletonListItem({ className }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 animate-pulse',
+        'flex items-center gap-4 p-4 rounded-xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] animate-pulse',
         className
       )}
     >

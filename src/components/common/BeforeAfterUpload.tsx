@@ -81,34 +81,34 @@ export default function BeforeAfterUpload({
       {pairs.map((pair, idx) => (
         <div
           key={idx}
-          className="relative flex gap-3 p-3 rounded-xl bg-white dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 shadow-sm"
+          className="relative flex gap-3 p-3 rounded-xl bg-[var(--hm-bg-elevated)]/50 border border-[var(--hm-border)] shadow-sm"
         >
           <div className="flex-1 space-y-1.5">
-            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-error-500)] bg-[var(--hm-error-50)]/20 px-2 py-0.5 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
               {t('common.before')}
             </span>
-            <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
+            <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200">
               <Image src={getUrl(pair.before)} alt="" fill className="object-cover" sizes="200px" />
             </div>
           </div>
           <div className="flex items-center">
-            <div className="w-8 h-8 rounded-full bg-[#C4735B]/10 flex items-center justify-center">
-              <ChevronRight className="w-4 h-4 text-[#C4735B]" />
+            <div className="w-8 h-8 rounded-full bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
+              <ChevronRight className="w-4 h-4 text-[var(--hm-brand-500)]" />
             </div>
           </div>
           <div className="flex-1 space-y-1.5">
-            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-success-500)] bg-[var(--hm-success-50)]/20 px-2 py-0.5 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               {t('common.after')}
             </span>
-            <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200 dark:ring-neutral-700">
+            <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-1 ring-neutral-200">
               <Image src={getUrl(pair.after)} alt="" fill className="object-cover" sizes="200px" />
             </div>
           </div>
           <button
             onClick={() => removePair(idx)}
-            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[var(--hm-error-500)] text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -117,28 +117,28 @@ export default function BeforeAfterUpload({
 
       {/* Pending before or add new */}
       {pendingBefore ? (
-        <div className="relative flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-300 dark:border-amber-700">
+        <div className="relative flex gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300">
           <div className="flex-1 space-y-1.5">
-            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-amber-600 bg-amber-100 dark:bg-amber-800/30 px-2 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-warning-500)] bg-[var(--hm-warning-100)] px-2 py-0.5 rounded-full">
               ✓ {t('common.before')}
             </span>
-            <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-2 ring-amber-300 dark:ring-amber-600">
+            <div className="relative aspect-[4/3] rounded-lg overflow-hidden ring-2 ring-amber-300">
               <Image src={getUrl(pendingBefore)} alt="" fill className="object-cover" sizes="200px" />
             </div>
           </div>
           <div className="flex items-center">
-            <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-800/30 flex items-center justify-center">
-              <ChevronRight className="w-4 h-4 text-amber-600" />
+            <div className="w-8 h-8 rounded-full bg-[var(--hm-warning-100)] flex items-center justify-center">
+              <ChevronRight className="w-4 h-4 text-[var(--hm-warning-500)]" />
             </div>
           </div>
           <div className="flex-1 space-y-1.5">
-            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-neutral-400 px-2 py-0.5">
+            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-fg-muted)] px-2 py-0.5">
               {t('common.after')}
             </span>
             <button
               onClick={() => afterInputRef.current?.click()}
               disabled={uploading === 'after'}
-              className="aspect-[4/3] w-full rounded-lg border-2 border-dashed border-amber-300 dark:border-amber-600 flex flex-col items-center justify-center text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors"
+              className="aspect-[4/3] w-full rounded-lg border-2 border-dashed border-amber-300 flex flex-col items-center justify-center text-[var(--hm-warning-500)] hover:bg-[var(--hm-warning-50)] transition-colors"
             >
               {uploading === 'after' ? (
                 <LoadingSpinner size="sm" />
@@ -163,7 +163,7 @@ export default function BeforeAfterUpload({
           <button
             onClick={() => beforeInputRef.current?.click()}
             disabled={uploading === 'before'}
-            className="flex-1 p-4 rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-600 flex flex-col items-center justify-center text-neutral-400 hover:border-[#C4735B] hover:text-[#C4735B] hover:bg-[#C4735B]/5 transition-all"
+            className="flex-1 p-4 rounded-xl border-2 border-dashed border-[var(--hm-border-strong)] flex flex-col items-center justify-center text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/5 transition-all"
           >
             {uploading === 'before' ? (
               <LoadingSpinner size="sm" />
@@ -176,7 +176,7 @@ export default function BeforeAfterUpload({
           </button>
           <button
             disabled
-            className="flex-1 p-4 rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center text-neutral-300 dark:text-neutral-600"
+            className="flex-1 p-4 rounded-xl border-2 border-dashed border-[var(--hm-border)] flex flex-col items-center justify-center text-[var(--hm-n-300)]"
           >
             <Plus className="w-5 h-5" />
             <span className="text-xs mt-1 font-medium">{t('common.after')}</span>

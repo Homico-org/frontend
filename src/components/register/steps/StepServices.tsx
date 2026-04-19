@@ -46,10 +46,10 @@ export default function StepServices({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl lg:text-2xl font-bold text-neutral-900 mb-1">
+        <h1 className="text-xl lg:text-2xl font-bold text-[var(--hm-fg-primary)] mb-1">
           {t('register.portfolio')}
         </h1>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-[var(--hm-fg-muted)]">
           {t('register.showcaseYourWorkMinimum')}
         </p>
       </div>
@@ -62,15 +62,15 @@ export default function StepServices({
       {/* Portfolio Projects Section */}
       <Card className={`p-4 border-2 transition-all ${
         hasValidProject
-          ? 'border-emerald-500/50'
-          : 'border-[#C4735B] ring-4 ring-[#C4735B]/10'
+          ? 'border-[var(--hm-success-500)]/50'
+          : 'border-[var(--hm-brand-500)] ring-4 ring-[var(--hm-brand-500)]/10'
       }`}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)] flex items-center gap-2">
               <IconBadge icon={ImageIcon} variant="accent" size="sm" />
               {t('common.projects')}
-              <span className="text-[#C4735B]">*</span>
+              <span className="text-[var(--hm-brand-500)]">*</span>
             </h2>
             {hasValidProject ? (
               <Badge variant="success" size="xs">
@@ -95,13 +95,13 @@ export default function StepServices({
         {portfolioProjects.length === 0 ? (
           <div
             onClick={addPortfolioProject}
-            className="border-2 border-dashed border-[#C4735B]/30 rounded-xl p-6 text-center hover:border-[#C4735B]/50 hover:bg-[#C4735B]/5 transition-colors cursor-pointer"
+            className="border-2 border-dashed border-[var(--hm-brand-500)]/30 rounded-xl p-6 text-center hover:border-[var(--hm-brand-500)]/50 hover:bg-[var(--hm-brand-500)]/5 transition-colors cursor-pointer"
           >
             <IconBadge icon={Plus} variant="accent" size="lg" className="mx-auto mb-3" />
-            <p className="text-sm font-medium text-neutral-900 mb-1">
+            <p className="text-sm font-medium text-[var(--hm-fg-primary)] mb-1">
               {t('register.addYourFirstProject')}
             </p>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-[var(--hm-fg-muted)]">
               {t('register.showcaseYourWork')}
             </p>
           </div>
@@ -129,7 +129,7 @@ export default function StepServices({
               type="button"
               variant="outline"
               onClick={addPortfolioProject}
-              className="w-full border-2 border-dashed border-[#C4735B]/20 text-[#C4735B] hover:border-[#C4735B]/40 hover:bg-[#C4735B]/5"
+              className="w-full border-2 border-dashed border-[var(--hm-brand-500)]/20 text-[var(--hm-brand-500)] hover:border-[var(--hm-brand-500)]/40 hover:bg-[var(--hm-brand-500)]/5"
               leftIcon={<Plus className="w-4 h-4" />}
             >
               {t('register.addAnotherProject')}
@@ -138,7 +138,7 @@ export default function StepServices({
         )}
       </Card>
 
-      <p className="text-xs text-neutral-400 text-center">
+      <p className="text-xs text-[var(--hm-fg-muted)] text-center">
         {t('register.youCanUpdateThisInformation')}
       </p>
     </div>
@@ -179,7 +179,7 @@ function ProjectCard({
   const beforeInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <Card variant="outlined" className="p-3 bg-[#C4735B]/5 border-[#C4735B]/10">
+    <Card variant="outlined" className="p-3 bg-[var(--hm-brand-500)]/5 border-[var(--hm-brand-500)]/10">
       <div className="flex items-start justify-between gap-2 mb-2">
         <Input
           type="text"
@@ -193,7 +193,7 @@ function ProjectCard({
           variant="ghost"
           size="icon"
           onClick={onRemove}
-          className="text-neutral-400 hover:text-red-500 hover:bg-red-50"
+          className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)]"
         >
           <Trash2 className="w-4 h-4" />
         </Button>
@@ -216,7 +216,7 @@ function ProjectCard({
               <img
                 src={img}
                 alt={`Project ${index + 1} image ${imgIndex + 1}`}
-                className="w-16 h-16 object-cover rounded-lg border border-[#C4735B]/20"
+                className="w-16 h-16 object-cover rounded-lg border border-[var(--hm-brand-500)]/20"
               />
               <Button
                 type="button"
@@ -277,7 +277,7 @@ function ProjectCard({
                 </div>
                 <div className="w-1/2 h-full relative">
                   <NextImage src={pair.afterImage} alt="After" fill className="object-cover" sizes="100px" unoptimized />
-                  <span className="absolute bottom-0 right-0 text-[8px] bg-emerald-500/80 text-white px-1">
+                  <span className="absolute bottom-0 right-0 text-[8px] bg-[var(--hm-success-500)]/80 text-white px-1">
                     {t('common.after')}
                   </span>
                 </div>
@@ -304,7 +304,7 @@ function ProjectCard({
           size="sm"
           onClick={() => imageInputRef.current?.click()}
           leftIcon={<ImageIcon className="w-3 h-3" />}
-          className="text-[#C4735B] border-[#C4735B]/30 hover:bg-[#C4735B]/5"
+          className="text-[var(--hm-brand-500)] border-[var(--hm-brand-500)]/30 hover:bg-[var(--hm-brand-500)]/5"
         >
           {t('register.photo')}
         </Button>
@@ -324,7 +324,7 @@ function ProjectCard({
           size="sm"
           onClick={() => beforeInputRef.current?.click()}
           leftIcon={<ArrowLeftRight className="w-3 h-3" />}
-          className="text-emerald-600 border-emerald-300 hover:bg-emerald-50"
+          className="text-[var(--hm-success-500)] border-emerald-300 hover:bg-[var(--hm-success-50)]"
         >
           {t('register.beforeafter')}
         </Button>

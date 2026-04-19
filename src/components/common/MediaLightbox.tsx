@@ -241,7 +241,7 @@ export default function MediaLightbox({
                   onClick={() => goToIndex(idx)}
                   className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 transition-all ${
                     idx === currentIndex
-                      ? 'ring-2 ring-[#C4735B] ring-offset-2 ring-offset-black'
+                      ? 'ring-2 ring-[var(--hm-brand-500)] ring-offset-2 ring-offset-black'
                       : 'opacity-60 hover:opacity-100'
                   }`}
                 >

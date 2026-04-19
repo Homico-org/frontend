@@ -120,7 +120,7 @@ export const WithFooter: Story = {
       <CardFooter>
         <CardActions align="between">
           <span className="text-sm text-neutral-500">3 comments</span>
-          <button className="text-sm font-medium text-[#C4735B] hover:underline">
+          <button className="text-sm font-medium text-[#EF4E24] hover:underline">
             View Details
           </button>
         </CardActions>
@@ -213,7 +213,7 @@ export const CompleteExample: Story = {
             <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700" />
             <span className="text-sm font-medium">Giorgi K.</span>
           </div>
-          <span className="text-sm font-semibold text-[#C4735B]">$45,000</span>
+          <span className="text-sm font-semibold text-[#EF4E24]">$45,000</span>
         </CardActions>
       </CardFooter>
     </Card>

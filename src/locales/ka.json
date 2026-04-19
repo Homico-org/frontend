@@ -276,7 +276,9 @@
     "tools": "კალკულატორები",
     "jobs": "სამუშაოები",
     "bookings": "ჯავშნები",
-    "forBusiness": "კომპანიებისთვის"
+    "forBusiness": "კომპანიებისთვის",
+    "sectionWork": "სამუშაო",
+    "sectionAccount": "ანგარიში"
   },
   "validation": {
     "required": "ეს ველი სავალდებულოა",
@@ -347,6 +349,7 @@
     "signInWithGoogle": "შესვლა Google-ით",
     "orContinueWith": "ან გააგრძელე",
     "phoneNumber": "ტელეფონის ნომერი",
+    "enterPhoneNumber": "შეიყვანეთ თქვენი მობილურის ნომერი",
     "sendCode": "კოდის გაგზავნა",
     "verification": "ვერიფიკაცია",
     "enterCode": "შეიყვანეთ კოდი",
@@ -421,7 +424,9 @@
     "postAJob": "სამუშაოს განთავსება",
     "signInOrCreateAn": "შედი ან შექმენი ანგარიში",
     "signOut": "გასვლა",
-    "signUp": "რეგისტრაცია"
+    "signUp": "რეგისტრაცია",
+    "darkMode": "მუქი რეჟიმი",
+    "lightMode": "ღია რეჟიმი"
   },
   "browse": {
     "title": "დათვალიერება",
@@ -920,6 +925,32 @@
     "portfolio": "პორტფოლიო",
     "reviews": "შეფასება",
     "contact": "კონტაქტი",
+    "viewsLabel": "ნახვები",
+    "reviewsLabel": "შეფასებები",
+    "jobsLabel": "დასრულებული",
+    "yearsExpShort": "წლის გამოცდ.",
+    "unitsShort": "ერთეული",
+    "saveShort": "დაზოგე",
+    "years12": "1-2 წელი",
+    "years35": "3-5 წელი",
+    "years510": "5-10 წელი",
+    "years10plus": "10+ წელი",
+    "pendingBooking": "მომლოდინე ჯავშანი",
+    "confirmedBooking": "დადასტურებული ჯავშანი",
+    "memberSince": "წევრია",
+    "fileReadError": "ფაილი ვერ წაიკითხა. სცადეთ ისევ არჩევა (iCloud-იდან გადმოწერეთ და შემდეგ ატვირთეთ).",
+    "monthJanuary": "იანვარი",
+    "monthFebruary": "თებერვალი",
+    "monthMarch": "მარტი",
+    "monthApril": "აპრილი",
+    "monthMay": "მაისი",
+    "monthJune": "ივნისი",
+    "monthJuly": "ივლისი",
+    "monthAugust": "აგვისტო",
+    "monthSeptember": "სექტემბერი",
+    "monthOctober": "ოქტომბერი",
+    "monthNovember": "ნოემბერი",
+    "monthDecember": "დეკემბერი",
     "inviteToJob": "დაპატიჟება სამუშაოზე",
     "services": "სერვისები",
     "experience": "გამოცდილება",
@@ -1163,7 +1194,10 @@
     "useADifferentCard": "ახალი ბარათით გადახდა",
     "whatOurMembersSay": "რას ქულებს შენი მესამე მეგობარი გთხოვთ?",
     "yourNewBenefits": "თქვენი ახალი შესაძლებლობები",
-    "yr": "წელი"
+    "yr": "წელი",
+    "readyToGrow": "მზად ხარ ბიზნესის გასაზრდელად",
+    "payAmount": "გადაიხადე {currency}{amount}",
+    "saveAmount": "დაზოგე {currency}{amount}/წელი"
   },
   "notifications": {
     "title": "შეტყობინებები",
@@ -3394,5 +3428,22 @@
     "confirmPasswordPlaceholder": "გაიმეორეთ პაროლი",
     "passwordMismatch": "პაროლები არ ემთხვევა",
     "activateAccount": "ანგარიშის გააქტიურება"
+  },
+  "ai": {
+    "smartAssistant": "ინტელექტუალური ასისტენტი",
+    "clearChat": "ჩატის გასუფთავება",
+    "minimize": "მინიმიზაცია",
+    "hide": "დამალვა",
+    "greeting": "გამარჯობა! მე ვარ Homico AI",
+    "loginPrompt": "შედით ანგარიშზე რომ ჩემთან საუბარი დაიწყოთ",
+    "tryAsking": "სცადეთ კითხვა:",
+    "askQuestion": "დასვით შეკითხვა...",
+    "loginToChat": "შედით ანგარიშზე...",
+    "disclaimer": "Homico AI შეიძლება შეცდეს. გადაამოწმეთ მნიშვნელოვანი ინფორმაცია.",
+    "dragToMove": "გადაიტანე",
+    "pricing": "ფასები",
+    "averagePrice": "საშუალო ფასი",
+    "basedOnProfessionals": "{count} პროფესიონალის მიხედვით",
+    "faqs": "ხშირი კითხვები"
   }
 }

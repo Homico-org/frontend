@@ -40,8 +40,8 @@ export default function Checkbox({
           isSm ? "w-4 h-4" : "w-[18px] h-[18px]"
         } ${
           checked
-            ? "border-[#C4735B] bg-[#C4735B] shadow-sm"
-            : "border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 hover:border-[#C4735B]/50"
+            ? "border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)] shadow-sm"
+            : "border-[var(--hm-border-strong)] bg-[var(--hm-bg-elevated)] hover:border-[var(--hm-brand-500)]/50"
         }`}
       >
         {checked && (
@@ -55,8 +55,8 @@ export default function Checkbox({
         <span
           className={`${isSm ? "text-xs" : "text-sm"} ${
             checked
-              ? "text-neutral-900 dark:text-white"
-              : "text-neutral-600 dark:text-neutral-400"
+              ? "text-[var(--hm-fg-primary)]"
+              : "text-[var(--hm-fg-secondary)]"
           }`}
         >
           {children || label}

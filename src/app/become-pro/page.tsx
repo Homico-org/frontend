@@ -84,8 +84,8 @@ export default function BecomeProPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--color-bg-primary)" }}>
-        <LoadingSpinner size="lg" color="#C4735B" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--hm-bg-page)" }}>
+        <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
       </div>
     );
   }
@@ -153,7 +153,7 @@ export default function BecomeProPage() {
       <HeaderSpacer />
       <div
         className="min-h-screen"
-        style={{ backgroundColor: "var(--color-bg-primary)" }}
+        style={{ backgroundColor: "var(--hm-bg-page)" }}
       >
         <div className="max-w-2xl mx-auto px-4 py-8 sm:py-16">
           {/* Hero */}
@@ -162,12 +162,12 @@ export default function BecomeProPage() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C4735B] to-[#D4937B] flex items-center justify-center mx-auto mb-5 shadow-lg">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)] to-[#F06B43] flex items-center justify-center mx-auto mb-5 shadow-lg">
               <Briefcase className="w-7 h-7 text-white" />
             </div>
             <h1
               className="text-2xl sm:text-3xl font-bold mb-3"
-              style={{ color: "var(--color-text-primary)" }}
+              style={{ color: "var(--hm-fg-primary)" }}
             >
               {pick(
                 "Become a Professional",
@@ -177,7 +177,7 @@ export default function BecomeProPage() {
             </h1>
             <p
               className="text-base sm:text-lg max-w-md mx-auto"
-              style={{ color: "var(--color-text-secondary)" }}
+              style={{ color: "var(--hm-fg-secondary)" }}
             >
               {pick(
                 "Join Homico and start finding clients for your services",
@@ -198,21 +198,21 @@ export default function BecomeProPage() {
                 key={i}
                 className="flex items-start gap-3 p-4 rounded-xl"
                 style={{
-                  backgroundColor: "var(--color-bg-elevated)",
-                  border: "1px solid var(--color-border-subtle)",
+                  backgroundColor: "var(--hm-bg-elevated)",
+                  border: "1px solid var(--hm-border-subtle)",
                 }}
               >
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: "rgba(196,115,91,0.1)", color: "#C4735B" }}
+                  style={{ backgroundColor: "rgba(239,78,36,0.1)", color: 'var(--hm-brand-500)' }}
                 >
                   {f.icon}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--color-text-primary)" }}>
+                  <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--hm-fg-primary)" }}>
                     {f.title}
                   </p>
-                  <p className="text-xs leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
+                  <p className="text-xs leading-relaxed" style={{ color: "var(--hm-fg-secondary)" }}>
                     {f.desc}
                   </p>
                 </div>
@@ -228,7 +228,7 @@ export default function BecomeProPage() {
           >
             <h2
               className="text-lg font-bold text-center mb-5"
-              style={{ color: "var(--color-text-primary)" }}
+              style={{ color: "var(--hm-fg-primary)" }}
             >
               {pick("How it works", "როგორ მუშაობს", "Как это работает")}
             </h2>
@@ -242,14 +242,14 @@ export default function BecomeProPage() {
                   key={step.num}
                   className="flex-1 flex items-center sm:flex-col sm:items-center gap-3 sm:gap-2 p-4 rounded-xl text-center"
                   style={{
-                    backgroundColor: "var(--color-bg-elevated)",
-                    border: "1px solid var(--color-border-subtle)",
+                    backgroundColor: "var(--hm-bg-elevated)",
+                    border: "1px solid var(--hm-border-subtle)",
                   }}
                 >
-                  <div className="w-8 h-8 rounded-full bg-[#C4735B] text-white flex items-center justify-center text-sm font-bold shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-[var(--hm-brand-500)] text-white flex items-center justify-center text-sm font-bold shrink-0">
                     {step.num}
                   </div>
-                  <p className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>
+                  <p className="text-sm font-medium" style={{ color: "var(--hm-fg-primary)" }}>
                     {step.text}
                   </p>
                 </div>
@@ -267,7 +267,7 @@ export default function BecomeProPage() {
               onClick={handleUpgrade}
               disabled={isUpgrading}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-white text-base font-semibold transition-all hover:shadow-lg active:scale-[0.98] disabled:opacity-60"
-              style={{ backgroundColor: "#C4735B" }}
+              style={{ backgroundColor: 'var(--hm-brand-500)' }}
             >
               {isUpgrading ? (
                 <LoadingSpinner size="sm" />
@@ -279,7 +279,7 @@ export default function BecomeProPage() {
                 </>
               )}
             </button>
-            <p className="text-xs mt-3" style={{ color: "var(--color-text-muted)" }}>
+            <p className="text-xs mt-3" style={{ color: "var(--hm-fg-muted)" }}>
               {pick("Free to join. No monthly fees.", "უფასოა. ყოველთვიური გადასახადი არ არის.", "Бесплатно. Без ежемесячных платежей.")}
             </p>
           </div>

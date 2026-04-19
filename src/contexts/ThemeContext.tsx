@@ -13,37 +13,38 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Default to light mode only - dark mode will be added in future
-  const [theme] = useState<Theme>('light');
+  const [theme, setThemeState] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Always use light mode
-    localStorage.setItem('theme', 'light');
+    const stored = (typeof window !== 'undefined' ? localStorage.getItem('theme') : null) as Theme | null;
+    const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initial: Theme = stored ?? (prefersDark ? 'dark' : 'light');
+    setThemeState(initial);
   }, []);
 
-  // Apply theme class to document (always light)
   useEffect(() => {
-    if (mounted) {
-      document.documentElement.classList.remove('dark');
+    if (!mounted) return;
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
     }
-  }, [mounted]);
+    localStorage.setItem('theme', theme);
+  }, [theme, mounted]);
 
-  // These are no-ops for now but kept for API compatibility
+  const setTheme = useCallback((next: Theme) => {
+    setThemeState(next);
+  }, []);
+
   const toggleTheme = useCallback(() => {
-    // No-op - dark mode disabled for now
+    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
   }, []);
 
-  const setTheme = useCallback(() => {
-    // No-op - dark mode disabled for now
-  }, []);
-
-  // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({ theme, toggleTheme, setTheme }), [theme, toggleTheme, setTheme]);
 
-  // Don't block render - always render children
-  // The theme is always 'light' so no flash will occur
   return (
     <ThemeContext.Provider value={contextValue}>
       {children}

@@ -102,12 +102,12 @@ export default function StepAccount({
     <div className="space-y-3 sm:space-y-4">
       {/* Header */}
       <div className="mb-1">
-        <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-neutral-900 mb-0.5 sm:mb-1">
+        <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-[var(--hm-fg-primary)] mb-0.5 sm:mb-1">
           {isPro
             ? t("register.professionalAccount")
             : t("register.createAccount")}
         </h1>
-        <p className="text-xs sm:text-sm text-neutral-500">
+        <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">
           {t("register.fillInYourBasicInformation")}
         </p>
       </div>
@@ -132,8 +132,8 @@ export default function StepAccount({
           <Card
             className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-2 transition-all ${
               uploadedAvatarUrl
-                ? "border-emerald-500/50"
-                : "border-[#C4735B] ring-4 ring-[#C4735B]/10"
+                ? "border-[var(--hm-success-500)]/50"
+                : "border-[var(--hm-brand-500)] ring-4 ring-[var(--hm-brand-500)]/10"
             }`}
           >
             <div className="relative shrink-0">
@@ -142,7 +142,7 @@ export default function StepAccount({
                 className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden cursor-pointer border-2 border-dashed transition-all ${
                   avatarPreview
                     ? "border-transparent"
-                    : "border-[#C4735B] hover:border-[#A85D47]"
+                    : "border-[var(--hm-brand-500)] hover:border-[#A85D47]"
                 }`}
               >
                 {avatarPreview ? (
@@ -152,9 +152,9 @@ export default function StepAccount({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-[#C4735B]/10 flex items-center justify-center">
+                  <div className="w-full h-full bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
                     <svg
-                      className="w-6 h-6 sm:w-8 sm:h-8 text-[#C4735B]"
+                      className="w-6 h-6 sm:w-8 sm:h-8 text-[var(--hm-brand-500)]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -216,14 +216,14 @@ export default function StepAccount({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                <h3 className="text-xs sm:text-sm font-medium text-neutral-900">
+                <h3 className="text-xs sm:text-sm font-medium text-[var(--hm-fg-primary)]">
                   {t("register.profilePhoto")}
                 </h3>
-                <span className="text-[9px] sm:text-[10px] text-[#C4735B] font-medium">
+                <span className="text-[9px] sm:text-[10px] text-[var(--hm-brand-500)] font-medium">
                   {t("common.required")}
                 </span>
               </div>
-              <p className="text-[10px] sm:text-xs text-neutral-500">
+              <p className="text-[10px] sm:text-xs text-[var(--hm-fg-muted)]">
                 {t("register.uploadARealPhotoOf")}
               </p>
               {uploadedAvatarUrl && (
@@ -247,7 +247,7 @@ export default function StepAccount({
               required
               autoComplete="off"
               data-form-type="other"
-              className="bg-white dark:bg-neutral-900 h-10 sm:h-11 text-sm"
+              className="bg-[var(--hm-bg-elevated)] h-10 sm:h-11 text-sm"
             />
           </FormGroup>
           <FormGroup>
@@ -275,8 +275,8 @@ export default function StepAccount({
               size="sm"
               className={`h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm ${
                 verificationChannel === "sms"
-                  ? "bg-[#C4735B] text-white hover:bg-[#A85D47] hover:text-white shadow-sm"
-                  : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700"
+                  ? "bg-[var(--hm-brand-500)] text-white hover:bg-[#A85D47] hover:text-white shadow-sm"
+                  : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:bg-[var(--hm-n-200)] hover:text-[var(--hm-fg-secondary)]"
               }`}
             >
               <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5" />
@@ -290,7 +290,7 @@ export default function StepAccount({
               className={`h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm ${
                 verificationChannel === "whatsapp"
                   ? "bg-[#25D366] text-white hover:bg-[#1da851] hover:text-white shadow-sm"
-                  : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700"
+                  : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:bg-[var(--hm-n-200)] hover:text-[var(--hm-fg-secondary)]"
               }`}
             >
               <SocialIcon name="whatsapp" size="sm" className="mr-1 sm:mr-1.5" />
@@ -343,14 +343,14 @@ export default function StepAccount({
         <Checkbox
           checked={agreedToTerms}
           onChange={setAgreedToTerms}
-          className="p-2 -mx-2 rounded-lg active:bg-neutral-50 transition-colors"
+          className="p-2 -mx-2 rounded-lg active:bg-[var(--hm-bg-page)] transition-colors"
         >
             {locale === "ka" ? (
               <>
                 ვეთანხმები{" "}
                 <Link
                   href="/terms"
-                  className="text-[#C4735B] hover:underline font-medium"
+                  className="text-[var(--hm-brand-500)] hover:underline font-medium"
                   onClick={(e) => e.stopPropagation()}
                 >
                   პირობებს
@@ -358,7 +358,7 @@ export default function StepAccount({
                 და{" "}
                 <Link
                   href="/privacy"
-                  className="text-[#C4735B] hover:underline font-medium"
+                  className="text-[var(--hm-brand-500)] hover:underline font-medium"
                   onClick={(e) => e.stopPropagation()}
                 >
                   კონფიდენციალურობას
@@ -369,7 +369,7 @@ export default function StepAccount({
                 Я согласен с{" "}
                 <Link
                   href="/terms"
-                  className="text-[#C4735B] hover:underline font-medium"
+                  className="text-[var(--hm-brand-500)] hover:underline font-medium"
                   onClick={(e) => e.stopPropagation()}
                 >
                   Условиями
@@ -377,7 +377,7 @@ export default function StepAccount({
                 и{" "}
                 <Link
                   href="/privacy"
-                  className="text-[#C4735B] hover:underline font-medium"
+                  className="text-[var(--hm-brand-500)] hover:underline font-medium"
                   onClick={(e) => e.stopPropagation()}
                 >
                   Политикой конфиденциальности
@@ -388,7 +388,7 @@ export default function StepAccount({
                 I agree to{" "}
                 <Link
                   href="/terms"
-                  className="text-[#C4735B] hover:underline font-medium"
+                  className="text-[var(--hm-brand-500)] hover:underline font-medium"
                   onClick={(e) => e.stopPropagation()}
                 >
                   Terms
@@ -396,7 +396,7 @@ export default function StepAccount({
                 &{" "}
                 <Link
                   href="/privacy"
-                  className="text-[#C4735B] hover:underline font-medium"
+                  className="text-[var(--hm-brand-500)] hover:underline font-medium"
                   onClick={(e) => e.stopPropagation()}
                 >
                   Privacy
@@ -424,11 +424,11 @@ export default function StepAccount({
 
       {/* Switch type button */}
       {showFooter && (
-        <div className="pt-3 sm:pt-4 border-t border-neutral-100">
+        <div className="pt-3 sm:pt-4 border-t border-[var(--hm-border-subtle)]">
           <button
             type="button"
             onClick={onSwitchType}
-            className="w-full py-2 text-xs sm:text-sm text-neutral-500 hover:text-[#C4735B] transition-colors text-center"
+            className="w-full py-2 text-xs sm:text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors text-center"
           >
             {isPro
               ? t("register.backToClientRegistration")

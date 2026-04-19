@@ -187,24 +187,24 @@ export default function ProfessionalsPage() {
       {Array.from({ length: 9 }).map((_, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/70 dark:border-neutral-800/80"
+          className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)]"
         >
-          <div className="grid grid-cols-3 gap-px aspect-[3/1.15] bg-neutral-200 dark:bg-neutral-700">
+          <div className="grid grid-cols-3 gap-px aspect-[3/1.15] bg-[var(--hm-n-200)]">
             {[0, 1, 2].map(j => (
-              <div key={j} className="bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+              <div key={j} className="bg-[var(--hm-bg-tertiary)] animate-pulse" />
             ))}
           </div>
           <div className="p-3 sm:p-4">
             <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-700 animate-pulse flex-shrink-0" />
+              <div className="w-10 h-10 rounded-full bg-[var(--hm-n-200)] animate-pulse flex-shrink-0" />
               <div className="flex-1">
-                <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-2/3 animate-pulse mb-1.5" />
-                <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-1/3 animate-pulse" />
+                <div className="h-4 bg-[var(--hm-n-200)] rounded w-2/3 animate-pulse mb-1.5" />
+                <div className="h-3 bg-[var(--hm-n-200)] rounded w-1/3 animate-pulse" />
               </div>
             </div>
             <div className="flex gap-1.5">
-              <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-16 animate-pulse" />
-              <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-20 animate-pulse" />
+              <div className="h-5 bg-[var(--hm-n-200)] rounded-full w-16 animate-pulse" />
+              <div className="h-5 bg-[var(--hm-n-200)] rounded-full w-20 animate-pulse" />
             </div>
           </div>
         </div>
@@ -233,51 +233,51 @@ export default function ProfessionalsPage() {
           {!isAuthenticated && (
             <Link
               href="/register"
-              className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 rounded-xl sm:rounded-2xl hover:border-[#C4735B]/40 transition-all group"
+              className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gradient-to-r from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20 rounded-xl sm:rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all group"
             >
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#C4735B]/15 flex items-center justify-center flex-shrink-0">
-                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B]" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[var(--hm-brand-500)]/15 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)]" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
+                  <p className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate">
                     {locale === "ka"
                       ? "დარეგისტრირდი პროფესიონალად"
                       : "Register as a Professional"}
                   </p>
-                  <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
+                  <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
                     {locale === "ka"
                       ? "შემოგვიერთდი და იპოვე კლიენტები"
                       : "Join and start finding clients"}
                   </p>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           )}
           {isAuthenticated && user?.role === "client" && (
             <Link
               href="/post-job"
-              className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gradient-to-r from-[#C4735B]/10 to-[#C4735B]/5 border border-[#C4735B]/20 rounded-xl sm:rounded-2xl hover:border-[#C4735B]/40 transition-all group"
+              className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gradient-to-r from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20 rounded-xl sm:rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all group"
             >
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#C4735B]/15 flex items-center justify-center flex-shrink-0">
-                  <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B]" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[var(--hm-brand-500)]/15 flex items-center justify-center flex-shrink-0">
+                  <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)]" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm sm:text-base font-semibold text-neutral-900 truncate">
+                  <p className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate">
                     {locale === "ka"
                       ? "განათავსე დავალება"
                       : "Post a Job to Find a Pro"}
                   </p>
-                  <p className="text-[11px] sm:text-xs text-neutral-500 truncate">
+                  <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
                     {locale === "ka"
                       ? "აღწერე დავალება და მიიღე შეთავაზებები"
                       : "Describe your project and get proposals"}
                   </p>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4735B] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           )}
         </>
@@ -287,7 +287,7 @@ export default function ProfessionalsPage() {
         <ProfessionalsSkeleton />
       ) : results.length > 0 ? (
         <>
-        <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+        <p className="text-xs mb-2" style={{ color: 'var(--hm-fg-muted)' }}>
           {results.length} {t("browse.resultsFound")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 items-stretch">
@@ -316,8 +316,8 @@ export default function ProfessionalsPage() {
       <div ref={loaderRef} className="flex justify-center py-6 sm:py-10">
         {isLoadingMore && (
           <div className="flex items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl glass-card">
-            <LoadingSpinner size="sm" variant="border" color="#E07B4F" />
-            <span className="text-xs sm:text-sm font-medium text-[var(--color-text-secondary)]">
+            <LoadingSpinner size="sm" variant="border" color="var(--hm-brand-500)" />
+            <span className="text-xs sm:text-sm font-medium text-[var(--hm-fg-secondary)]">
               {t("browse.loadingMore")}
             </span>
           </div>

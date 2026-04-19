@@ -3,6 +3,7 @@
 import { formatCurrency } from '@/utils/currencyUtils';
 
 import { useLanguage } from "@/contexts/LanguageContext";
+import { StatusPill } from '@/components/ui/StatusPill';
 export interface Proposal {
   id: string;
   coverLetter: string;
@@ -28,34 +29,12 @@ export default function MyProposalCard({
   className = '',
 }: MyProposalCardProps) {
   const { t } = useLanguage();
-  const statusConfig = {
-    pending: {
-      label: t('common.pending'),
-      bg: 'bg-amber-50 dark:bg-amber-500/10',
-      text: 'text-amber-700 dark:text-amber-400',
-      dot: 'bg-amber-500',
-    },
-    accepted: {
-      label: t('common.accepted'),
-      bg: 'bg-emerald-50 dark:bg-emerald-500/10',
-      text: 'text-emerald-700 dark:text-emerald-400',
-      dot: 'bg-emerald-500',
-    },
-    rejected: {
-      label: t('common.rejected'),
-      bg: 'bg-red-50 dark:bg-red-500/10',
-      text: 'text-red-700 dark:text-red-400',
-      dot: 'bg-red-500',
-    },
-    withdrawn: {
-      label: t('job.withdrawn'),
-      bg: 'bg-neutral-100 dark:bg-neutral-500/10',
-      text: 'text-neutral-600 dark:text-neutral-400',
-      dot: 'bg-neutral-400',
-    },
+  const statusLabelKeys: Record<Proposal['status'], string> = {
+    pending: 'common.pending',
+    accepted: 'common.accepted',
+    rejected: 'common.rejected',
+    withdrawn: 'job.withdrawn',
   };
-
-  const status = statusConfig[proposal.status] || statusConfig.pending;
 
   const getDurationLabel = () => {
     const units = {
@@ -68,50 +47,49 @@ export default function MyProposalCard({
 
   return (
     <section
-      className={`group relative bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl border border-neutral-200/80 dark:border-neutral-800 overflow-hidden transition-all duration-300 hover:border-[#C4735B]/30 hover:shadow-lg hover:shadow-[#C4735B]/5 ${className}`}
+      className={`group relative bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] overflow-hidden transition-all duration-300 hover:border-[var(--hm-brand-500)]/30 hover:shadow-lg hover:shadow-[var(--hm-brand-500)]/5 ${className}`}
     >
       {/* Accent line */}
-      <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#C4735B] via-[#D4846C] to-[#C4735B]" />
+      <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[var(--hm-brand-500)] via-[#F06B43] to-[var(--hm-brand-500)]" />
 
       <div className="p-4 sm:p-5">
         {/* Header: Title + Status */}
         <div className="flex items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
           <div className="flex items-center gap-2 sm:gap-2.5">
             {/* Terracotta icon */}
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-[#C4735B]/10 flex items-center justify-center flex-shrink-0">
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C4735B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center flex-shrink-0">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-brand-500)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
               </svg>
             </div>
-            <span className="text-xs sm:text-sm font-semibold text-neutral-900 dark:text-white">
+            <span className="text-xs sm:text-sm font-semibold text-[var(--hm-fg-primary)]">
               {t('job.yourProposal')}
             </span>
           </div>
 
-          {/* Status pill */}
-          <div className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full ${status.bg}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${status.dot} animate-pulse`} />
-            <span className={`text-[10px] sm:text-[11px] font-medium ${status.text}`}>
-              {status.label}
-            </span>
-          </div>
+          <StatusPill
+            variant={proposal.status}
+            size="sm"
+            locale={locale}
+            label={t(statusLabelKeys[proposal.status])}
+          />
         </div>
 
         {/* Metrics row */}
         {(proposal.proposedPrice || proposal.estimatedDuration) && (
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-neutral-100 dark:border-neutral-800">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-[var(--hm-border-subtle)]">
             {proposal.proposedPrice && (
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--hm-fg-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                  <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-[var(--hm-fg-muted)]">
                     {t('common.price')}
                   </p>
-                  <p className="text-sm sm:text-base font-bold text-[#C4735B]">
+                  <p className="text-sm sm:text-base font-bold text-[var(--hm-brand-500)]">
                     {formatCurrency(proposal.proposedPrice)}
                   </p>
                 </div>
@@ -119,22 +97,22 @@ export default function MyProposalCard({
             )}
 
             {proposal.proposedPrice && proposal.estimatedDuration && (
-              <div className="hidden sm:block w-px h-8 bg-neutral-200 dark:bg-neutral-700" />
+              <div className="hidden sm:block w-px h-8 bg-[var(--hm-n-200)]" />
             )}
 
             {proposal.estimatedDuration && (
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--hm-fg-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12 6 12 12 16 14" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                  <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-[var(--hm-fg-muted)]">
                     {t('common.duration')}
                   </p>
-                  <p className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white">
+                  <p className="text-sm sm:text-base font-bold text-[var(--hm-fg-primary)]">
                     {proposal.estimatedDuration}{getDurationLabel()}
                   </p>
                 </div>
@@ -145,8 +123,8 @@ export default function MyProposalCard({
 
         {/* Cover letter */}
         <div className="relative">
-          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#C4735B]/40 via-[#C4735B]/20 to-transparent rounded-full" />
-          <p className="pl-3 sm:pl-3.5 text-xs sm:text-[13px] leading-relaxed text-neutral-600 dark:text-neutral-400 line-clamp-3">
+          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[var(--hm-brand-500)]/40 via-[var(--hm-brand-500)]/20 to-transparent rounded-full" />
+          <p className="pl-3 sm:pl-3.5 text-xs sm:text-[13px] leading-relaxed text-[var(--hm-fg-secondary)] line-clamp-3">
             {proposal.coverLetter}
           </p>
         </div>

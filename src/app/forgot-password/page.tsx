@@ -83,12 +83,12 @@ export default function ForgotPasswordPage() {
         </div>
 
         {/* Title */}
-        <h2 className="text-[26px] font-bold text-center text-neutral-900 dark:text-white mb-2">
+        <h2 className="text-[26px] font-bold text-center text-[var(--hm-fg-primary)] mb-2">
           {t('forgotPassword.forgotPassword')}
         </h2>
 
         {/* Subtitle */}
-        <p className="text-center text-neutral-500 dark:text-neutral-400 text-[15px] mb-8">
+        <p className="text-center text-[var(--hm-fg-muted)] text-[15px] mb-8">
           {t('forgotPassword.enterYourPhoneNumberTo')}
         </p>
 
@@ -126,13 +126,13 @@ export default function ForgotPasswordPage() {
 
         {/* OR Divider */}
         <div className="flex items-center my-6">
-          <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
-          <span className="px-4 text-sm text-neutral-400">OR</span>
-          <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+          <div className="flex-1 h-px bg-[var(--hm-n-200)]" />
+          <span className="px-4 text-sm text-[var(--hm-fg-muted)]">OR</span>
+          <div className="flex-1 h-px bg-[var(--hm-n-200)]" />
         </div>
 
         {/* Back to Login Link */}
-        <p className="text-center text-[15px] text-neutral-600 dark:text-neutral-400">
+        <p className="text-center text-[15px] text-[var(--hm-fg-secondary)]">
           {t('forgotPassword.rememberYourPassword')}{' '}
           <Button
             variant="link"

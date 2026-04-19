@@ -164,11 +164,11 @@ export default function QuickHirePage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-dark-300">
+      <div className="min-h-screen bg-[var(--hm-bg-page)]">
         <Header />
       <HeaderSpacer />
         <div className="flex items-center justify-center py-20">
-          <LoadingSpinner size="lg" color="#C4735B" />
+          <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
         </div>
       </div>
     );
@@ -176,25 +176,25 @@ export default function QuickHirePage() {
 
   if (requestSent) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-dark-300">
+      <div className="min-h-screen bg-[var(--hm-bg-page)]">
         <Header />
       <HeaderSpacer />
         <div className="container-custom py-16">
           <div className="max-w-md mx-auto text-center">
-            <div className="w-16 h-16 bg-[#E07B4F]/10 dark:bg-[#E07B4F]/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-8 h-8 text-[#E07B4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 bg-[var(--hm-brand-500)]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 text-[var(--hm-brand-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-3">Request Sent</h1>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
+            <h1 className="text-2xl font-bold text-[var(--hm-fg-primary)] mb-3">Request Sent</h1>
+            <p className="text-[var(--hm-fg-secondary)] mb-8">
               Your request has been sent to {selectedPros.length} professional{selectedPros.length > 1 ? 's' : ''}.
               The first one to accept will contact you.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 href="/professionals"
-                className="px-6 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium rounded-xl transition-colors"
+                className="px-6 py-3 bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-n-200)] text-[var(--hm-fg-secondary)] font-medium rounded-xl transition-colors"
               >
                 Back to Browse
               </Link>
@@ -206,7 +206,7 @@ export default function QuickHirePage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-dark-300">
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
       <Header />
       <HeaderSpacer />
 
@@ -214,14 +214,14 @@ export default function QuickHirePage() {
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="mb-6">
-            <Link href="/professionals" className="inline-flex items-center gap-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-white text-sm mb-4">
+            <Link href="/professionals" className="inline-flex items-center gap-2 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] text-sm mb-4">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               Back
             </Link>
-            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Quick Hire</h1>
-            <p className="text-neutral-500 dark:text-neutral-400 mt-1">Find someone available right now</p>
+            <h1 className="text-2xl font-bold text-[var(--hm-fg-primary)]">Quick Hire</h1>
+            <p className="text-[var(--hm-fg-muted)] mt-1">Find someone available right now</p>
           </div>
 
           {/* Stepper */}
@@ -236,7 +236,7 @@ export default function QuickHirePage() {
                           ? 'bg-neutral-900 text-white'
                           : step === s.id
                           ? 'bg-neutral-900 text-white'
-                          : 'bg-neutral-200 text-neutral-500'
+                          : 'bg-[var(--hm-n-200)] text-neutral-500'
                       }`}
                     >
                       {step > s.id ? (
@@ -247,7 +247,7 @@ export default function QuickHirePage() {
                         s.id
                       )}
                     </div>
-                    <span className={`text-sm font-medium hidden sm:block ${step >= s.id ? 'text-neutral-900 dark:text-white' : 'text-neutral-400'}`}>
+                    <span className={`text-sm font-medium hidden sm:block ${step >= s.id ? 'text-[var(--hm-fg-primary)]' : 'text-neutral-400'}`}>
                       {s.title}
                     </span>
                   </div>
@@ -260,16 +260,16 @@ export default function QuickHirePage() {
           </div>
 
           {/* Content */}
-          <div className="bg-white dark:bg-dark-card rounded-2xl border border-neutral-200 dark:border-dark-border p-6">
+          <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border)] p-6">
             {/* Step 1: Service Selection */}
             {step === 1 && (
               <div>
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1">What do you need?</h2>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">Select a service category</p>
+                <h2 className="text-lg font-semibold text-[var(--hm-fg-primary)] mb-1">What do you need?</h2>
+                <p className="text-sm text-[var(--hm-fg-muted)] mb-4">Select a service category</p>
 
                 {/* Search */}
                 <div className="relative mb-4">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--hm-fg-muted)] z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <Input
@@ -290,7 +290,7 @@ export default function QuickHirePage() {
                       className={`p-3 rounded-xl border text-left transition-all ${
                         selectedCategory === cat.key
                           ? 'border-neutral-900 bg-neutral-900 text-white'
-                          : 'border-neutral-200 hover:border-neutral-300 text-neutral-700'
+                          : 'border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] text-neutral-700'
                       }`}
                     >
                       <span className="text-sm font-medium">{cat.label}</span>
@@ -300,12 +300,12 @@ export default function QuickHirePage() {
 
                 {filteredCategories.length === 0 && (
                   <div className="text-center py-8">
-                    <p className="text-neutral-500 dark:text-neutral-400">No services found</p>
+                    <p className="text-[var(--hm-fg-muted)]">No services found</p>
                     <button
                       onClick={() => {
                         setSelectedCategory(searchQuery);
                       }}
-                      className="mt-2 text-sm text-neutral-900 dark:text-white font-medium hover:underline"
+                      className="mt-2 text-sm text-[var(--hm-fg-primary)] font-medium hover:underline"
                     >
                       Use &quot;{searchQuery}&quot; as custom service
                     </button>
@@ -318,13 +318,13 @@ export default function QuickHirePage() {
             {step === 2 && (
               <div className="space-y-5">
                 <div>
-                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1">Tell us more</h2>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">Describe what you need and where</p>
+                  <h2 className="text-lg font-semibold text-[var(--hm-fg-primary)] mb-1">Tell us more</h2>
+                  <p className="text-sm text-[var(--hm-fg-muted)] mb-4">Describe what you need and where</p>
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-2">
+                  <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                     What needs to be done?
                   </label>
                   <Textarea
@@ -337,7 +337,7 @@ export default function QuickHirePage() {
 
                 {/* Location */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-2">
+                  <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                     Location
                   </label>
                   <LocationPicker
@@ -352,8 +352,8 @@ export default function QuickHirePage() {
 
                 {/* Media Upload */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-400 mb-2">
-                    Photos or Videos <span className="text-neutral-400 font-normal">(optional)</span>
+                  <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
+                    Photos or Videos <span className="text-[var(--hm-fg-muted)] font-normal">(optional)</span>
                   </label>
                   <MediaUpload
                     value={media}
@@ -368,17 +368,17 @@ export default function QuickHirePage() {
             {/* Step 3: Select Pros */}
             {step === 3 && (
               <div>
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1">Select professionals</h2>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+                <h2 className="text-lg font-semibold text-[var(--hm-fg-primary)] mb-1">Select professionals</h2>
+                <p className="text-sm text-[var(--hm-fg-muted)] mb-4">
                   Choose who to contact. First to accept gets the job.
                 </p>
 
                 {isLoadingPros ? (
                   <div className="text-center py-12">
                     <div className="flex justify-center mb-3">
-                      <LoadingSpinner size="lg" color="#C4735B" />
+                      <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
                     </div>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">Finding available professionals...</p>
+                    <p className="text-sm text-[var(--hm-fg-muted)]">Finding available professionals...</p>
                   </div>
                 ) : suggestedPros.length > 0 ? (
                   <div className="space-y-2">
@@ -389,7 +389,7 @@ export default function QuickHirePage() {
                         className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                           selectedPros.includes(pro.id)
                             ? 'border-neutral-900 bg-neutral-50'
-                            : 'border-neutral-200 hover:border-neutral-300'
+                            : 'border-[var(--hm-border)] hover:border-neutral-300'
                         }`}
                       >
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
@@ -411,26 +411,26 @@ export default function QuickHirePage() {
                         />
 
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-neutral-900 dark:text-white truncate">{pro.name}</div>
-                          <div className="text-sm text-neutral-500 dark:text-neutral-400 truncate">{pro.title}</div>
+                          <div className="font-medium text-[var(--hm-fg-primary)] truncate">{pro.name}</div>
+                          <div className="text-sm text-[var(--hm-fg-muted)] truncate">{pro.title}</div>
                         </div>
 
                         <div className="text-right flex-shrink-0">
                           <div className="flex items-center gap-1 text-sm">
-                            <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-4 h-4 text-[var(--hm-warning-500)]" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
                             <span className="font-medium">{pro.avgRating.toFixed(1)}</span>
                           </div>
-                          <div className="text-xs text-neutral-400">{pro.totalReviews} reviews</div>
+                          <div className="text-xs text-[var(--hm-fg-muted)]">{pro.totalReviews} reviews</div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <p className="text-neutral-600 dark:text-neutral-400 mb-4">No available professionals found</p>
-                    <Link href="/post-job" className="text-neutral-900 dark:text-white font-medium hover:underline">
+                    <p className="text-[var(--hm-fg-secondary)] mb-4">No available professionals found</p>
+                    <Link href="/post-job" className="text-[var(--hm-fg-primary)] font-medium hover:underline">
                       Post a regular job instead
                     </Link>
                   </div>

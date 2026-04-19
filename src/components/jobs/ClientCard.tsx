@@ -43,23 +43,23 @@ export default function ClientCard({
         src={client.avatar}
         name={client.name}
         size="md"
-        className={`w-9 h-9 ${linkToProfile ? 'group-hover:ring-2 group-hover:ring-[#C4735B]/30 transition-all' : ''}`}
+        className={`w-9 h-9 ${linkToProfile ? 'group-hover:ring-2 group-hover:ring-[var(--hm-brand-500)]/30 transition-all' : ''}`}
       />
       <div className="min-w-0 flex-1">
-        <p className={`text-sm font-semibold text-neutral-900 dark:text-white truncate ${
-          linkToProfile ? 'group-hover:text-[#C4735B] transition-colors' : ''
+        <p className={`text-sm font-semibold text-[var(--hm-fg-primary)] truncate ${
+          linkToProfile ? 'group-hover:text-[var(--hm-brand-500)] transition-colors' : ''
         }`}>
           {displayName}
         </p>
         <div className="flex items-center gap-1.5">
           {client.city && (
-            <span className="text-[11px] text-neutral-500 dark:text-neutral-400 flex items-center gap-0.5">
+            <span className="text-[11px] text-[var(--hm-fg-muted)] flex items-center gap-0.5">
               <MapPin className="w-2.5 h-2.5" />
               {client.city}
             </span>
           )}
           {client.accountType === 'organization' && (
-            <span className="text-[11px] text-neutral-400 flex items-center gap-0.5">
+            <span className="text-[11px] text-[var(--hm-fg-muted)] flex items-center gap-0.5">
               <Building2 className="w-2.5 h-2.5" />
               {organizationLabel}
             </span>
@@ -71,11 +71,11 @@ export default function ClientCard({
 
   return (
     <div
-      className={`bg-white dark:bg-neutral-900 rounded-xl p-3 border border-neutral-200/50 dark:border-neutral-800 transition-all duration-500 ${
+      className={`bg-[var(--hm-bg-elevated)] rounded-xl p-3 border border-[var(--hm-border-subtle)] transition-all duration-500 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       } ${className}`}
     >
-      <p className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-2">
+      <p className="text-[10px] font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider mb-2">
         {label}
       </p>
       {linkToProfile && client._id ? (

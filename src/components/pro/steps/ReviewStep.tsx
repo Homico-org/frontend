@@ -94,20 +94,20 @@ export default function ReviewStep({
   }) => (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-2">
-        <Icon className="w-4 h-4 text-[#C4735B]" />
-        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
+        <Icon className="w-4 h-4 text-[var(--hm-brand-500)]" />
+        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--hm-fg-secondary)]">
           {title}
         </span>
         {complete ? (
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+          <CheckCircle2 className="w-3.5 h-3.5 text-[var(--hm-success-500)]" />
         ) : required ? (
-          <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+          <AlertCircle className="w-3.5 h-3.5 text-[var(--hm-error-500)]" />
         ) : null}
       </div>
       <button
         type="button"
         onClick={() => onEditStep(stepIndex)}
-        className="flex items-center gap-1 text-xs text-[#C4735B] hover:text-[#A85D4A] font-medium transition-colors"
+        className="flex items-center gap-1 text-xs text-[var(--hm-brand-500)] hover:text-[var(--hm-brand-700)] font-medium transition-colors"
       >
         <Pencil className="w-3 h-3" />
         {t("common.edit")}
@@ -118,27 +118,27 @@ export default function ReviewStep({
   return (
     <div className="space-y-4">
       {/* ── About ── */}
-      <div className="bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border-subtle)] p-4">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border-subtle)] p-4">
         <SectionHeader icon={User} title={t("common.about")} stepIndex={0} complete={hasBio && hasAvatar} />
 
         <div className="flex items-start gap-3">
           {avatarPreview ? (
             <img src={avatarPreview} alt="" className="w-14 h-14 rounded-xl object-cover" />
           ) : (
-            <div className="w-14 h-14 rounded-xl bg-[var(--color-bg-tertiary)] flex items-center justify-center">
-              <User className="w-7 h-7 text-[var(--color-text-muted)]" />
+            <div className="w-14 h-14 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
+              <User className="w-7 h-7 text-[var(--hm-fg-muted)]" />
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-[var(--color-text-primary)] line-clamp-3">
-              {formData.bio || <span className="text-[var(--color-text-muted)] italic">{t("common.notAdded")}</span>}
+            <p className="text-sm text-[var(--hm-fg-primary)] line-clamp-3">
+              {formData.bio || <span className="text-[var(--hm-fg-muted)] italic">{t("common.notAdded")}</span>}
             </p>
           </div>
         </div>
 
         {/* Social links */}
         {(formData.whatsapp || formData.telegram || formData.instagram || formData.facebook || formData.linkedin || formData.website) && (
-          <div className="mt-3 pt-3 border-t border-[var(--color-border-subtle)] flex flex-wrap gap-1.5">
+          <div className="mt-3 pt-3 border-t border-[var(--hm-border-subtle)] flex flex-wrap gap-1.5">
             {formData.whatsapp && <Badge variant="success" size="sm" icon={<Phone className="w-3 h-3" />}>WhatsApp</Badge>}
             {formData.telegram && <Badge variant="info" size="sm" icon={<MessageCircle className="w-3 h-3" />}>Telegram</Badge>}
             {formData.instagram && <Badge variant="secondary" size="sm" icon={<Instagram className="w-3 h-3" />}>Instagram</Badge>}
@@ -150,11 +150,11 @@ export default function ReviewStep({
 
         {/* Custom skills */}
         {customServices.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-[var(--color-border-subtle)]">
-            <p className="text-[10px] text-[var(--color-text-muted)] mb-1.5">{t("common.customSkills")}</p>
+          <div className="mt-3 pt-3 border-t border-[var(--hm-border-subtle)]">
+            <p className="text-[10px] text-[var(--hm-fg-muted)] mb-1.5">{t("common.customSkills")}</p>
             <div className="flex flex-wrap gap-1.5">
               {customServices.map((s, i) => (
-                <span key={i} className="px-2 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs">
+                <span key={i} className="px-2 py-1 rounded-lg bg-[var(--hm-success-50)]/20 text-[var(--hm-success-500)] text-xs">
                   {s}
                 </span>
               ))}
@@ -164,7 +164,7 @@ export default function ReviewStep({
       </div>
 
       {/* ── Services & Pricing ── */}
-      <div className="bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border-subtle)] p-4">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border-subtle)] p-4">
         <SectionHeader icon={Briefcase} title={`${t("common.services")} & ${t("common.pricing")}`} stepIndex={1} complete={hasServices} />
 
         {selectedSubcategoriesWithPricing.length > 0 ? (
@@ -177,15 +177,15 @@ export default function ReviewStep({
               const pricedServices = sub.services.filter((s) => s.isActive && s.price > 0);
 
               return (
-                <div key={sub.key} className="border border-[var(--color-border-subtle)] rounded-lg p-3">
+                <div key={sub.key} className="border border-[var(--hm-border-subtle)] rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <span className="text-sm font-medium text-[var(--color-text-primary)]">{displayName}</span>
+                      <span className="text-sm font-medium text-[var(--hm-fg-primary)]">{displayName}</span>
                       {catName && (
-                        <span className="text-[10px] text-[var(--color-text-muted)] ml-2">{catName}</span>
+                        <span className="text-[10px] text-[var(--hm-fg-muted)] ml-2">{catName}</span>
                       )}
                     </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B] font-medium">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] font-medium">
                       {expLabel}
                     </span>
                   </div>
@@ -194,51 +194,51 @@ export default function ReviewStep({
                     <div className="space-y-1">
                       {pricedServices.map((svc) => (
                         <div key={svc.serviceKey} className="flex items-center justify-between text-xs">
-                          <span className="text-[var(--color-text-secondary)]">{svc.label}</span>
-                          <span className="font-medium text-[var(--color-text-primary)]">
-                            {svc.price}₾ <span className="text-[var(--color-text-muted)] font-normal">/ {svc.unitLabel}</span>
+                          <span className="text-[var(--hm-fg-secondary)]">{svc.label}</span>
+                          <span className="font-medium text-[var(--hm-fg-primary)]">
+                            {svc.price}₾ <span className="text-[var(--hm-fg-muted)] font-normal">/ {svc.unitLabel}</span>
                           </span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-[var(--color-text-muted)] italic">{t("common.negotiable")}</p>
+                    <p className="text-xs text-[var(--hm-fg-muted)] italic">{t("common.negotiable")}</p>
                   )}
                 </div>
               );
             })}
           </div>
         ) : (
-          <p className="text-sm text-[var(--color-text-muted)]">{t("common.notAdded")}</p>
+          <p className="text-sm text-[var(--hm-fg-muted)]">{t("common.notAdded")}</p>
         )}
       </div>
 
       {/* ── Service Areas ── */}
-      <div className="bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border-subtle)] p-4">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border-subtle)] p-4">
         <SectionHeader icon={MapPin} title={t("common.serviceArea")} stepIndex={2} complete={hasAreas} />
 
         {formData.nationwide ? (
           <div className="flex items-center gap-2">
             <span className="text-base">🇬🇪</span>
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+            <span className="text-sm font-medium text-[var(--hm-fg-primary)]">
               {locationData?.nationwide || t("common.nationwide")}
             </span>
           </div>
         ) : formData.serviceAreas.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {formData.serviceAreas.map((area) => (
-              <span key={area} className="px-2.5 py-1 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] text-xs">
+              <span key={area} className="px-2.5 py-1 rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] text-xs">
                 {area}
               </span>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-[var(--color-text-muted)]">{t("common.noneSelected")}</p>
+          <p className="text-sm text-[var(--hm-fg-muted)]">{t("common.noneSelected")}</p>
         )}
       </div>
 
       {/* ── Portfolio ── */}
-      <div className="bg-[var(--color-bg-elevated)] rounded-xl border border-[var(--color-border-subtle)] p-4">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border-subtle)] p-4">
         <SectionHeader icon={Images} title={t("common.portfolio")} stepIndex={3} complete={hasPortfolio} required={false} />
 
         {portfolioProjects.length > 0 ? (
@@ -246,14 +246,14 @@ export default function ReviewStep({
             {portfolioProjects.slice(0, 8).map((project, idx) => {
               const cover = project.images?.[0] || project.beforeAfterPairs?.[0]?.beforeImage;
               return (
-                <div key={project.id || idx} className="relative aspect-square rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)]">
+                <div key={project.id || idx} className="relative aspect-square rounded-lg overflow-hidden bg-[var(--hm-bg-tertiary)]">
                   {cover ? (
                     <img src={cover} alt={project.title} className="w-full h-full object-cover" />
                   ) : project.videos?.[0] ? (
                     <video src={project.videos[0]} className="w-full h-full object-cover" muted playsInline />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Images className="w-6 h-6 text-[var(--color-text-muted)]" />
+                      <Images className="w-6 h-6 text-[var(--hm-fg-muted)]" />
                     </div>
                   )}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-1.5">
@@ -264,7 +264,7 @@ export default function ReviewStep({
             })}
           </div>
         ) : (
-          <p className="text-sm text-[var(--color-text-muted)]">{t("common.noProjectsAdded")}</p>
+          <p className="text-sm text-[var(--hm-fg-muted)]">{t("common.noProjectsAdded")}</p>
         )}
       </div>
     </div>

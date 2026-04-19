@@ -102,13 +102,13 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, locale 
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
-        <div className="px-4 py-3 border-b border-neutral-100">
-          <h3 className="text-base font-semibold text-neutral-900">
+        <div className="px-4 py-3 border-b border-[var(--hm-border-subtle)]">
+          <h3 className="text-base font-semibold text-[var(--hm-fg-primary)]">
             {t('common.adjustPhoto')}
           </h3>
-          <p className="text-xs text-neutral-500 mt-0.5">
+          <p className="text-xs text-[var(--hm-fg-muted)] mt-0.5">
             {t('common.dragToRepositionPinchOr')}
           </p>
         </div>
@@ -129,9 +129,9 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, locale 
         </div>
 
         {/* Zoom slider */}
-        <div className="px-4 py-3 bg-neutral-50 border-t border-neutral-100">
+        <div className="px-4 py-3 bg-[var(--hm-bg-page)] border-t border-[var(--hm-border-subtle)]">
           <div className="flex items-center gap-3">
-            <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-[var(--hm-fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
             </svg>
             <input
@@ -141,27 +141,27 @@ export default function AvatarCropper({ image, onCropComplete, onCancel, locale 
               step={0.1}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="flex-1 h-1.5 bg-neutral-200 rounded-full appearance-none cursor-pointer accent-[#C4735B] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#C4735B] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer"
+              className="flex-1 h-1.5 bg-[var(--hm-n-200)] rounded-full appearance-none cursor-pointer accent-[var(--hm-brand-500)] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--hm-brand-500)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer"
             />
-            <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-[var(--hm-fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
             </svg>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="px-4 py-3 flex gap-2 border-t border-neutral-100">
+        <div className="px-4 py-3 flex gap-2 border-t border-[var(--hm-border-subtle)]">
           <button
             onClick={onCancel}
             disabled={isProcessing}
-            className="flex-1 py-2.5 rounded-lg border border-neutral-200 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 transition-colors"
+            className="flex-1 py-2.5 rounded-lg border border-[var(--hm-border)] text-sm font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-page)] disabled:opacity-50 transition-colors"
           >
             {t('common.cancel')}
           </button>
           <button
             onClick={handleSave}
             disabled={isProcessing}
-            className="flex-1 py-2.5 rounded-lg bg-[#C4735B] hover:bg-[#A85D47] disabled:bg-neutral-300 text-sm font-medium text-white transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-lg bg-[var(--hm-brand-500)] hover:bg-[#A85D47] disabled:bg-neutral-300 text-sm font-medium text-white transition-colors flex items-center justify-center gap-2"
           >
             {isProcessing ? (
               <>

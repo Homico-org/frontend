@@ -1,5 +1,6 @@
 "use client";
 
+import { ACCENT_COLOR } from "@/constants/theme";
 import AuthGuard from "@/components/common/AuthGuard";
 import Avatar from "@/components/common/Avatar";
 import EmptyState from "@/components/common/EmptyState";
@@ -47,17 +48,17 @@ interface ProjectStageUpdateEvent {
   };
 }
 
-const TERRACOTTA = "#C4735B";
+const TERRACOTTA = ACCENT_COLOR;
 
 const STAGE_CONFIG: Record<
   ProjectStage,
   { en: string; ka: string; color: string; step: number }
 > = {
-  hired: { en: "Hired", ka: "დაქირავებული", color: "bg-blue-500", step: 1 },
-  started: { en: "Started", ka: "დაწყებული", color: "bg-[#C4735B]", step: 2 },
-  in_progress: { en: "In Progress", ka: "მიმდინარე", color: "bg-[#C4735B]", step: 3 },
-  review: { en: "Under Review", ka: "შემოწმება", color: "bg-amber-500", step: 4 },
-  completed: { en: "Completed", ka: "დასრულებული", color: "bg-emerald-500", step: 5 },
+  hired: { en: "Hired", ka: "დაქირავებული", color: "bg-[var(--hm-info-500)]", step: 1 },
+  started: { en: "Started", ka: "დაწყებული", color: "bg-[var(--hm-brand-500)]", step: 2 },
+  in_progress: { en: "In Progress", ka: "მიმდინარე", color: "bg-[var(--hm-brand-500)]", step: 3 },
+  review: { en: "Under Review", ka: "შემოწმება", color: "bg-[var(--hm-warning-500)]", step: 4 },
+  completed: { en: "Completed", ka: "დასრულებული", color: "bg-[var(--hm-success-500)]", step: 5 },
 };
 
 function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
@@ -218,16 +219,16 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="relative w-16 h-16 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#C4735B] to-[#A85D48] opacity-20 animate-pulse" />
-            <div className="absolute inset-2 rounded-xl bg-[var(--color-bg-elevated)] flex items-center justify-center">
-              <Briefcase className="w-6 h-6 text-[#C4735B] animate-pulse" />
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)] to-[#A85D48] opacity-20 animate-pulse" />
+            <div className="absolute inset-2 rounded-xl bg-[var(--hm-bg-elevated)] flex items-center justify-center">
+              <Briefcase className="w-6 h-6 text-[var(--hm-brand-500)] animate-pulse" />
             </div>
             <div
-              className="absolute inset-0 rounded-2xl border-2 border-[#C4735B]/30 animate-spin"
+              className="absolute inset-0 rounded-2xl border-2 border-[var(--hm-brand-500)]/30 animate-spin"
               style={{ animationDuration: "3s" }}
             />
           </div>
-          <p className="text-[var(--color-text-secondary)] font-medium">
+          <p className="text-[var(--hm-fg-secondary)] font-medium">
             {language === "ka" ? "იტვირთება..." : "Loading..."}
           </p>
         </div>
@@ -240,16 +241,16 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-md mx-auto px-4">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-red-500/10 flex items-center justify-center">
-            <AlertTriangle className="w-8 h-8 text-red-500" />
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--hm-error-500)]/10 flex items-center justify-center">
+            <AlertTriangle className="w-8 h-8 text-[var(--hm-error-500)]" />
           </div>
-          <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">
+          <h3 className="text-xl font-semibold text-[var(--hm-fg-primary)] mb-2">
             {language === "ka" ? "შეცდომა" : "Error"}
           </h3>
-          <p className="text-[var(--color-text-secondary)] mb-6">{error}</p>
+          <p className="text-[var(--hm-fg-secondary)] mb-6">{error}</p>
           <button
             onClick={fetchAllProposals}
-            className="px-6 py-3 rounded-xl bg-[#C4735B] text-white font-medium hover:bg-[#A85D48] transition-all"
+            className="px-6 py-3 rounded-xl bg-[var(--hm-brand-500)] text-white font-medium hover:bg-[#A85D48] transition-all"
           >
             {language === "ka" ? "ხელახლა ცდა" : "Try Again"}
           </button>
@@ -270,7 +271,7 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
       bodyClassName={!isEmbedded ? "pb-24" : undefined}
       rightContent={
         <div className="hidden sm:flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#C4735B]/10 text-[#C4735B] text-xs font-semibold">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] text-xs font-semibold">
             {works.length}
           </span>
         </div>
@@ -289,7 +290,7 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
               value={searchQuery}
               onValueChange={setSearchQuery}
               inputSize="default"
-              className="bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
+              className="bg-[var(--hm-bg-elevated)] border-[var(--hm-border)]"
             />
           </div>
         )}
@@ -331,14 +332,14 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
                 <Link
                   key={proposal.id}
                   href={`/jobs/${job.id}`}
-                  className="group flex bg-white dark:bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200/80 dark:border-neutral-800 hover:border-[#C4735B]/30 dark:hover:border-[#C4735B]/30 transition-colors duration-150 hover:shadow-md"
+                  className="group flex bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/30 transition-colors duration-150 hover:shadow-md"
                 >
                   {/* Status color strip */}
-                  <div className={`w-1 sm:w-1.5 flex-shrink-0 ${completed ? "bg-emerald-500" : stageConfig?.color || "bg-[#C4735B]"}`} />
+                  <div className={`w-1 sm:w-1.5 flex-shrink-0 ${completed ? "bg-[var(--hm-success-500)]" : stageConfig?.color || "bg-[var(--hm-brand-500)]"}`} />
 
                   {/* Optional thumbnail - desktop only */}
                   {firstImage && (
-                    <div className="hidden sm:block w-28 lg:w-36 flex-shrink-0 overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                    <div className="hidden sm:block w-28 lg:w-36 flex-shrink-0 overflow-hidden bg-[var(--hm-bg-tertiary)]">
                       <img
                         src={storage.getFileUrl(firstImage)}
                         alt=""
@@ -359,7 +360,7 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
                           className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0"
                         />
                         <div className="min-w-0">
-                          <span className="text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 truncate block">
+                          <span className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] truncate block">
                             {job.clientId?.name || t("common.client")}
                           </span>
                         </div>
@@ -374,19 +375,19 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
                         </Badge>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className="text-sm sm:text-base font-bold text-neutral-900 dark:text-white tabular-nums whitespace-nowrap">
+                        <p className="text-sm sm:text-base font-bold text-[var(--hm-fg-primary)] tabular-nums whitespace-nowrap">
                           {agreedPrice ? `${agreedPrice.toLocaleString()}₾` : formatBudget(job, t)}
                         </p>
                       </div>
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-[13px] sm:text-base font-semibold text-neutral-900 dark:text-white line-clamp-1 group-hover:text-[#C4735B] transition-colors duration-150 mb-0.5">
+                    <h3 className="text-[13px] sm:text-base font-semibold text-[var(--hm-fg-primary)] line-clamp-1 group-hover:text-[var(--hm-brand-500)] transition-colors duration-150 mb-0.5">
                       {job.title}
                     </h3>
 
                     {/* Meta: location + category */}
-                    <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-neutral-400 mb-2 sm:mb-2.5">
+                    <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-[var(--hm-fg-muted)] mb-2 sm:mb-2.5">
                       {job.location && (
                         <span className="flex items-center gap-1 truncate">
                           <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
@@ -394,7 +395,7 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
                         </span>
                       )}
                       {job.category && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-[#C4735B]/10 font-semibold uppercase tracking-wider text-[#C4735B]">
+                        <span className="px-1.5 py-0.5 rounded-full bg-[var(--hm-brand-500)]/10 font-semibold uppercase tracking-wider text-[var(--hm-brand-500)]">
                           {getCategoryLabel(job.category)}
                         </span>
                       )}
@@ -409,24 +410,24 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
                               <div key={key} className="flex items-center gap-1">
                                 <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
                                   config.step <= (stageConfig?.step || 0)
-                                    ? config.step === stageConfig?.step ? stageConfig.color : "bg-emerald-500"
-                                    : "bg-neutral-200 dark:bg-neutral-700"
+                                    ? config.step === stageConfig?.step ? stageConfig.color : "bg-[var(--hm-success-500)]"
+                                    : "bg-[var(--hm-n-200)]"
                                 }`} />
                                 <span className={`hidden sm:inline text-[10px] ${
-                                  key === stage ? "font-semibold text-neutral-700 dark:text-neutral-200" : "text-neutral-400"
+                                  key === stage ? "font-semibold text-[var(--hm-fg-secondary)]" : "text-[var(--hm-fg-muted)]"
                                 }`}>
                                   {language === "ka" ? config.ka : config.en}
                                 </span>
                               </div>
                             ))}
                           </div>
-                          <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-500 tabular-nums">
+                          <span className="text-[10px] sm:text-[11px] font-semibold text-[var(--hm-fg-muted)] tabular-nums">
                             {progress}%
                           </span>
                         </div>
-                        <div className="h-1 sm:h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                        <div className="h-1 sm:h-1.5 rounded-full bg-[var(--hm-bg-tertiary)] overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all duration-500 ${stageConfig?.color || "bg-[#C4735B]"}`}
+                            className={`h-full rounded-full transition-all duration-500 ${stageConfig?.color || "bg-[var(--hm-brand-500)]"}`}
                             style={{ width: `${Math.max(progress, 5)}%` }}
                           />
                         </div>
@@ -435,9 +436,9 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
 
                     {/* Completed badge for completed projects */}
                     {completed && (
-                      <div className="flex items-center gap-1.5 mb-2.5 sm:mb-3 px-2 py-1 sm:py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100/80 dark:border-emerald-800/30 w-fit">
-                        <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600" />
-                        <span className="text-[10px] sm:text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+                      <div className="flex items-center gap-1.5 mb-2.5 sm:mb-3 px-2 py-1 sm:py-1.5 rounded-lg bg-[var(--hm-success-50)]/20 border border-emerald-100/80 w-fit">
+                        <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--hm-success-500)]" />
+                        <span className="text-[10px] sm:text-[11px] font-medium text-[var(--hm-success-500)]">
                           {proposal.projectTracking?.completedAt
                             ? `${language === "ka" ? "დასრულდა" : "Completed"} ${new Date(proposal.projectTracking.completedAt).toLocaleDateString(language === "ka" ? "ka-GE" : "en-US", { month: "short", day: "numeric" })}`
                             : t("common.completed")}
@@ -446,8 +447,8 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
                     )}
 
                     {/* Footer */}
-                    <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                      <div className="flex items-center gap-3 text-[10px] sm:text-[11px] text-neutral-400">
+                    <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-[var(--hm-border-subtle)]">
+                      <div className="flex items-center gap-3 text-[10px] sm:text-[11px] text-[var(--hm-fg-muted)]">
                         {proposal.projectTracking?.startedAt && (
                           <span className="flex items-center gap-1">
                             <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
@@ -465,7 +466,7 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-1 text-[11px] sm:text-[13px] font-medium text-[#C4735B] group-hover:gap-2 transition-all">
+                      <div className="flex items-center gap-1 text-[11px] sm:text-[13px] font-medium text-[var(--hm-brand-500)] group-hover:gap-2 transition-all">
                         <span>{language === "ka" ? "გახსნა" : "View"}</span>
                         <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </div>

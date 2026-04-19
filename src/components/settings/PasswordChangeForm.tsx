@@ -99,7 +99,7 @@ export default function PasswordChangeForm({
       <div>
         <p
           className="text-sm"
-          style={{ color: 'var(--color-text-secondary)' }}
+          style={{ color: 'var(--hm-fg-secondary)' }}
         >
           {t('settings.enterYourCurrentPasswordAnd')}
         </p>
@@ -117,7 +117,7 @@ export default function PasswordChangeForm({
         <div>
           <label
             className="block text-sm font-medium mb-1.5"
-            style={{ color: 'var(--color-text-secondary)' }}
+            style={{ color: 'var(--hm-fg-secondary)' }}
           >
             {t('settings.currentPassword')}
           </label>
@@ -129,9 +129,9 @@ export default function PasswordChangeForm({
               placeholder={t('settings.enterCurrentPassword')}
               className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
               style={{
-                backgroundColor: 'var(--color-bg-elevated)',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text-primary)',
+                backgroundColor: 'var(--hm-bg-elevated)',
+                border: '1px solid var(--hm-border)',
+                color: 'var(--hm-fg-primary)',
               }}
             />
             <Button
@@ -150,7 +150,7 @@ export default function PasswordChangeForm({
         <div>
           <label
             className="block text-sm font-medium mb-1.5"
-            style={{ color: 'var(--color-text-secondary)' }}
+            style={{ color: 'var(--hm-fg-secondary)' }}
           >
             {t('settings.newPassword')}
           </label>
@@ -162,9 +162,9 @@ export default function PasswordChangeForm({
               placeholder={t('settings.enterNewPassword')}
               className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
               style={{
-                backgroundColor: 'var(--color-bg-elevated)',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text-primary)',
+                backgroundColor: 'var(--hm-bg-elevated)',
+                border: '1px solid var(--hm-border)',
+                color: 'var(--hm-fg-primary)',
               }}
             />
             <Button
@@ -182,7 +182,7 @@ export default function PasswordChangeForm({
           {passwordData.newPassword && (
             <div className="mt-2">
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+                <div className="flex-1 h-1.5 bg-[var(--hm-n-200)] rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-300"
                     style={{
@@ -200,7 +200,7 @@ export default function PasswordChangeForm({
               </div>
               <p
                 className="text-xs mt-1"
-                style={{ color: 'var(--color-text-tertiary)' }}
+                style={{ color: 'var(--hm-fg-muted)' }}
               >
                 {t('settings.useAtLeast6Characters')}
               </p>
@@ -212,7 +212,7 @@ export default function PasswordChangeForm({
         <div>
           <label
             className="block text-sm font-medium mb-1.5"
-            style={{ color: 'var(--color-text-secondary)' }}
+            style={{ color: 'var(--hm-fg-secondary)' }}
           >
             {t('settings.confirmNewPassword')}
           </label>
@@ -224,11 +224,11 @@ export default function PasswordChangeForm({
               placeholder={t('settings.confirmNewPassword')}
               className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-12 text-base rounded-xl transition-all duration-200"
               style={{
-                backgroundColor: 'var(--color-bg-elevated)',
+                backgroundColor: 'var(--hm-bg-elevated)',
                 border: passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword
                   ? '1px solid #ef4444'
-                  : '1px solid var(--color-border)',
-                color: 'var(--color-text-primary)',
+                  : '1px solid var(--hm-border)',
+                color: 'var(--hm-fg-primary)',
               }}
             />
             <Button
@@ -242,7 +242,7 @@ export default function PasswordChangeForm({
             </Button>
           </div>
           {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
-            <p className="text-xs mt-1 text-red-500">
+            <p className="text-xs mt-1 text-[var(--hm-error-500)]">
               {t('settings.passwordsDoNotMatch')}
             </p>
           )}

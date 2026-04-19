@@ -57,12 +57,12 @@ function ReviewRow({ label, onEdit, editLabel, children }: { label: string; onEd
   return (
     <div className="flex items-start justify-between gap-3 px-4 py-3">
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mb-1">{label}</p>
+        <p className="text-[10px] font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider mb-1">{label}</p>
         {children}
       </div>
       <button
         onClick={onEdit}
-        className="flex-shrink-0 text-[11px] font-medium text-[#C4735B] hover:underline mt-0.5"
+        className="flex-shrink-0 text-[11px] font-medium text-[var(--hm-brand-500)] hover:underline mt-0.5"
       >
         {editLabel}
       </button>
@@ -489,7 +489,7 @@ function PostJobPageContent() {
   if (authLoading || isLoadingJob) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <LoadingSpinner size="xl" variant="border" color="#C4735B" />
+        <LoadingSpinner size="xl" variant="border" color="var(--hm-brand-500)" />
       </div>
     );
   }
@@ -497,14 +497,14 @@ function PostJobPageContent() {
   return (
     <div className="flex flex-col min-h-screen pb-28 lg:pb-14">
       {/* Page Title + Progress */}
-      <div className="bg-white dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-800 sticky top-14 z-40">
+      <div className="bg-[var(--hm-bg-elevated)] border-b border-[var(--hm-border-subtle)] sticky top-14 z-40">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pt-3 pb-2">
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-              <Plus className="w-4 h-4 text-[#C4735B]" />
+            <h1 className="text-sm font-bold text-[var(--hm-fg-primary)] flex items-center gap-2">
+              <Plus className="w-4 h-4 text-[var(--hm-brand-500)]" />
               {isEditMode ? t('job.editJob') : t('browse.postAJob')}
             </h1>
-            <span className="text-[11px] text-neutral-400">
+            <span className="text-[11px] text-[var(--hm-fg-muted)]">
               {getCurrentStepIndex() + 1}/{STEP_IDS.length}
             </span>
           </div>
@@ -522,10 +522,10 @@ function PostJobPageContent() {
                   disabled={!isCompleted}
                   className={`flex-1 text-center text-[10px] sm:text-[11px] font-medium transition-colors ${
                     isCurrent
-                      ? 'text-[#C4735B]'
+                      ? 'text-[var(--hm-brand-500)]'
                       : isCompleted
-                        ? 'text-neutral-600 dark:text-neutral-400 cursor-pointer hover:text-[#C4735B]'
-                        : 'text-neutral-300 dark:text-neutral-600'
+                        ? 'text-[var(--hm-fg-secondary)] cursor-pointer hover:text-[var(--hm-brand-500)]'
+                        : 'text-neutral-300'
                   }`}
                 >
                   <span className="hidden sm:inline">{getStepLabel(step)}</span>
@@ -543,10 +543,10 @@ function PostJobPageContent() {
                   key={step}
                   className={`flex-1 h-1 rounded-full transition-colors duration-300 ${
                     index < currentIndex
-                      ? 'bg-[#C4735B]'
+                      ? 'bg-[var(--hm-brand-500)]'
                       : index === currentIndex
-                        ? 'bg-[#C4735B]/40'
-                        : 'bg-neutral-100 dark:bg-neutral-800'
+                        ? 'bg-[var(--hm-brand-500)]/40'
+                        : 'bg-[var(--hm-bg-tertiary)]'
                   }`}
                 />
               );
@@ -567,18 +567,18 @@ function PostJobPageContent() {
           {currentStep === "category" && (
             <div className="max-w-2xl mx-auto space-y-4">
               <div>
-                <h1 className="text-lg font-bold text-neutral-900 dark:text-white mb-0.5">
+                <h1 className="text-lg font-bold text-[var(--hm-fg-primary)] mb-0.5">
                   {t('job.projectDetails')}
                 </h1>
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-[var(--hm-fg-muted)]">
                   {t('job.selectPropertyTypeCategoryAnd')}
                 </p>
               </div>
 
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                    {t('common.title')} <span className="text-[#C4735B]">*</span>
+                  <label className="block text-sm font-semibold text-[var(--hm-fg-secondary)] mb-2">
+                    {t('common.title')} <span className="text-[var(--hm-brand-500)]">*</span>
                   </label>
                   <Input
                     value={formData.title}
@@ -590,8 +590,8 @@ function PostJobPageContent() {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                    {t('common.description')} <span className="text-[#C4735B]">*</span>
+                  <label className="block text-sm font-semibold text-[var(--hm-fg-secondary)] mb-2">
+                    {t('common.description')} <span className="text-[var(--hm-brand-500)]">*</span>
                   </label>
                   <Textarea
                     value={formData.description}
@@ -604,8 +604,8 @@ function PostJobPageContent() {
 
                 {/* Timing Selection */}
                 <div>
-                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
-                    {t('job.whenDoYouNeedIt')} <span className="text-[#C4735B]">*</span>
+                  <label className="block text-sm font-semibold text-[var(--hm-fg-secondary)] mb-3">
+                    {t('job.whenDoYouNeedIt')} <span className="text-[var(--hm-brand-500)]">*</span>
                   </label>
                   <TimingSelector
                     value={formData.timing}
@@ -616,8 +616,8 @@ function PostJobPageContent() {
 
                 {/* Property Type Selection with Icons */}
                 <div>
-                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
-                    {t('job.propertyType')} <span className="text-[#C4735B]">*</span>
+                  <label className="block text-sm font-semibold text-[var(--hm-fg-secondary)] mb-3">
+                    {t('job.propertyType')} <span className="text-[var(--hm-brand-500)]">*</span>
                   </label>
                   <PropertyTypeSelector
                     value={formData.propertyType}
@@ -628,8 +628,8 @@ function PostJobPageContent() {
 
                 {/* Category & Subcategory Selection */}
                 <div>
-                  <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
-                    {t('job.categoryService')} <span className="text-[#C4735B]">*</span>
+                  <label className="block text-sm font-semibold text-[var(--hm-fg-secondary)] mb-3">
+                    {t('job.categoryService')} <span className="text-[var(--hm-brand-500)]">*</span>
                   </label>
                   <JobServicePicker
                     selectedCategory={selectedCategory}
@@ -644,14 +644,14 @@ function PostJobPageContent() {
 
                 {/* Category-specific fields */}
                 {selectedSubcategory && getActiveFields().length > 0 && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <h3 className="text-sm sm:text-base font-semibold text-neutral-900 mb-3 sm:mb-4">
+                  <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <h3 className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] mb-3 sm:mb-4">
                       {t('job.additionalDetails')}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       {getActiveFields().map((field) => (
                         <div key={field.key}>
-                          <label className="block text-sm font-medium text-neutral-600 mb-2">
+                          <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
                             {t(field.labelKey)}
                             {field.required && " *"}
                           </label>
@@ -670,12 +670,12 @@ function PostJobPageContent() {
                                 updateFormData(field.key, value);
                               }}
                               placeholder={field.placeholder}
-                              className={`w-full px-4 py-3 rounded-xl border border-neutral-200 bg-white text-base placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 transition-all ${
+                              className={`w-full px-4 py-3 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-base placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/10 transition-all ${
                                 field.suffix || field.suffixKey ? "pr-12" : ""
                               }`}
                             />
                             {(field.suffix || field.suffixKey) && (
-                              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-400 font-medium">
+                              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[var(--hm-fg-muted)] font-medium">
                                 {field.suffixKey ? t(field.suffixKey) : field.suffix}
                               </span>
                             )}
@@ -688,9 +688,9 @@ function PostJobPageContent() {
 
                 {/* Cadastral Code Input - Only for architecture/design */}
                 {(selectedCategory === "architecture" || selectedCategory === "design") && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <label className="block text-sm sm:text-base font-semibold text-neutral-900 mb-2 sm:mb-3">
-                      {t('job.cadastralCode')} <span className="text-neutral-400 font-normal text-xs sm:text-sm">({t('common.optional')})</span>
+                  <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <label className="block text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] mb-2 sm:mb-3">
+                      {t('job.cadastralCode')} <span className="text-[var(--hm-fg-muted)] font-normal text-xs sm:text-sm">({t('common.optional')})</span>
                     </label>
                     <Input
                       value={formData.cadastralId}
@@ -698,7 +698,7 @@ function PostJobPageContent() {
                       placeholder="XX.XX.XX.XXX.XXX"
                       className="text-base py-3"
                     />
-                    <p className="mt-3 text-sm text-neutral-500 leading-relaxed">
+                    <p className="mt-3 text-sm text-[var(--hm-fg-muted)] leading-relaxed">
                       {t('job.cadastralCodeHelpsIdentifyThe')}
                     </p>
                   </div>
@@ -706,8 +706,8 @@ function PostJobPageContent() {
 
                 {/* Land Area Input - Only for house/building with architecture/design */}
                 {(formData.propertyType === "house" || formData.propertyType === "building") && (selectedCategory === "architecture" || selectedCategory === "design") && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <label className="block text-sm sm:text-base font-semibold text-neutral-900 mb-2 sm:mb-3">
+                  <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <label className="block text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] mb-2 sm:mb-3">
                       {t('job.landArea')}
                     </label>
                     <div className="relative">
@@ -722,13 +722,13 @@ function PostJobPageContent() {
                           }
                         }}
                         placeholder={"5007"}
-                        className="w-full px-4 py-3 pr-14 rounded-xl border border-neutral-200 bg-white text-base placeholder:text-neutral-400 focus:outline-none focus:border-[#C4735B] focus:ring-2 focus:ring-[#C4735B]/10 transition-all"
+                        className="w-full px-4 py-3 pr-14 rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-base placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/10 transition-all"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-400 font-medium">
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[var(--hm-fg-muted)] font-medium">
                         m²
                       </span>
                     </div>
-                    <p className="mt-3 text-sm text-neutral-500 leading-relaxed">
+                    <p className="mt-3 text-sm text-[var(--hm-fg-muted)] leading-relaxed">
                       {t('job.specifyTheLandPlotArea')}
                     </p>
                   </div>
@@ -736,8 +736,8 @@ function PostJobPageContent() {
 
                 {/* Property Condition Selector - For relevant categories */}
                 {selectedCategory && categoriesNeedingCondition.includes(selectedCategory) && (
-                  <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <label className="block text-sm sm:text-base font-semibold text-neutral-900 mb-3 sm:mb-4">
+                  <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] p-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <label className="block text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] mb-3 sm:mb-4">
                       {t('job.propertyCondition')}
                     </label>
                     <ConditionSelector
@@ -746,7 +746,7 @@ function PostJobPageContent() {
                       locale={locale as "en" | "ka" | "ru"}
                       category={selectedCategory}
                     />
-                    <p className="mt-4 text-sm text-neutral-500 leading-relaxed">
+                    <p className="mt-4 text-sm text-[var(--hm-fg-muted)] leading-relaxed">
                       {t('job.propertyConditionHelpsProfessionalsProvide')}
                     </p>
                   </div>
@@ -758,19 +758,19 @@ function PostJobPageContent() {
           {/* STEP 2: Location */}
           {currentStep === "location" && (
             <div className="max-w-2xl mx-auto">
-              <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5">
-                <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-0.5">
+              <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] p-4 sm:p-5">
+                <h2 className="text-lg font-bold text-[var(--hm-fg-primary)] mb-0.5">
                   {t('job.locationBudget')}
                 </h2>
-                <p className="text-sm sm:text-base text-neutral-500 mb-4 sm:mb-6">
+                <p className="text-sm sm:text-base text-[var(--hm-fg-muted)] mb-4 sm:mb-6">
                   {t("postJob.locationBudgetSubtitle")}
                 </p>
 
                 <div className="space-y-5 sm:space-y-6">
                   {/* Address */}
                   <div>
-                    <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                      {t('job.jobAddress')} <span className="text-[#C4735B]">*</span>
+                    <label className="block text-sm font-semibold text-[var(--hm-fg-secondary)] mb-2">
+                      {t('job.jobAddress')} <span className="text-[var(--hm-brand-500)]">*</span>
                     </label>
                     <AddressPicker
                       value={formData.location}
@@ -783,22 +783,22 @@ function PostJobPageContent() {
                   {/* Budget Type Selection — hidden when per-service budgets are set */}
                   {hasServiceBudgets ? (
                     serviceBudgetTotal > 0 ? (
-                      <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(196,115,91,0.06)', border: '1px solid rgba(196,115,91,0.2)' }}>
-                        <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                      <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(239,78,36,0.06)', border: '1px solid rgba(239,78,36,0.2)' }}>
+                        <p className="text-sm font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
                           {t('common.budget')}
                         </p>
-                        <p className="text-lg font-bold mt-1" style={{ color: '#C4735B' }}>
+                        <p className="text-lg font-bold mt-1" style={{ color: 'var(--hm-brand-500)' }}>
                           {serviceBudgetTotal}₾
                         </p>
-                        <p className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                        <p className="text-[11px] mt-0.5" style={{ color: 'var(--hm-fg-muted)' }}>
                           {locale === 'ka' ? 'სერვისების ბიუჯეტიდან' : 'From per-service budgets'}
                         </p>
                       </div>
                     ) : null
                   ) : (
                     <div>
-                      <label className="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
-                        {t('common.budget')} <span className="text-[#C4735B]">*</span>
+                      <label className="block text-sm font-semibold text-[var(--hm-fg-secondary)] mb-3">
+                        {t('common.budget')} <span className="text-[var(--hm-brand-500)]">*</span>
                       </label>
                       <BudgetSelector
                         budgetType={formData.budgetType}
@@ -828,38 +828,38 @@ function PostJobPageContent() {
           {currentStep === "details" && (
             <div className="max-w-2xl mx-auto space-y-4">
               <div>
-                <h1 className="text-lg font-bold text-neutral-900 dark:text-white mb-0.5">
+                <h1 className="text-lg font-bold text-[var(--hm-fg-primary)] mb-0.5">
                   {t('job.addPhotos')}
                 </h1>
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-[var(--hm-fg-muted)]">
                   {t("postJob.photosRequirementHelp")}
                 </p>
               </div>
 
-              <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 space-y-4">
+              <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] p-4 space-y-4">
                 {/* Photos - Enhanced with explanation */}
                 <div className={`p-4 sm:p-5 lg:p-6 rounded-2xl border-2 transition-all ${
                   (existingMedia.length + mediaFiles.length) > 0
-                    ? 'bg-emerald-50/50 border-emerald-200'
+                    ? 'bg-[var(--hm-success-50)]/50 border-emerald-200'
                     : 'bg-gradient-to-br from-amber-50/50 to-orange-50/30 border-amber-200/60'
                 }`}>
                   <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
                     <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       (existingMedia.length + mediaFiles.length) > 0
-                        ? 'bg-emerald-100'
-                        : 'bg-amber-100'
+                        ? 'bg-[var(--hm-success-100)]'
+                        : 'bg-[var(--hm-warning-100)]'
                     }`}>
                       <ImageIcon className={`w-5 h-5 sm:w-6 sm:h-6 ${
                         (existingMedia.length + mediaFiles.length) > 0
-                          ? 'text-emerald-600'
-                          : 'text-amber-600'
+                          ? 'text-[var(--hm-success-500)]'
+                          : 'text-[var(--hm-warning-500)]'
                       }`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <label className="block text-sm sm:text-base font-semibold text-neutral-800 mb-1">
-                        {t('job.addPhotos')} <span className="text-[#C4735B]">*</span>
+                      <label className="block text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] mb-1">
+                        {t('job.addPhotos')} <span className="text-[var(--hm-brand-500)]">*</span>
                       </label>
-                      <p className="text-sm text-neutral-500 leading-relaxed">
+                      <p className="text-sm text-[var(--hm-fg-muted)] leading-relaxed">
                         {t("postJob.photosRequirementHelp")}
                       </p>
                     </div>
@@ -873,8 +873,8 @@ function PostJobPageContent() {
                         { icon: <Ruler className="w-3.5 h-3.5 sm:w-4 sm:h-4" />, text: t('job.dimensions') },
                         { icon: <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4" />, text: t('job.desiredStyle') },
                       ].map((tip, i) => (
-                        <span key={i} className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/80 border border-neutral-200 text-xs sm:text-sm text-neutral-600">
-                          <span className="text-[#C4735B]">{tip.icon}</span>
+                        <span key={i} className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/80 border border-[var(--hm-border)] text-xs sm:text-sm text-[var(--hm-fg-secondary)]">
+                          <span className="text-[var(--hm-brand-500)]">{tip.icon}</span>
                           {tip.text}
                         </span>
                       ))}
@@ -887,8 +887,8 @@ function PostJobPageContent() {
                       onClick={() => fileInputRef.current?.click()}
                       className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all flex-shrink-0 ${
                         (existingMedia.length + mediaFiles.length) > 0
-                          ? 'border-emerald-300 hover:border-emerald-400 hover:bg-emerald-100/50 bg-white'
-                          : 'border-amber-300 hover:border-amber-400 hover:bg-amber-100/50 bg-white'
+                          ? 'border-emerald-300 hover:border-emerald-400 hover:bg-[var(--hm-success-100)]/50 bg-[var(--hm-bg-elevated)]'
+                          : 'border-amber-300 hover:border-amber-400 hover:bg-[var(--hm-warning-100)]/50 bg-[var(--hm-bg-elevated)]'
                       }`}
                     >
                       <input
@@ -900,10 +900,10 @@ function PostJobPageContent() {
                         className="hidden"
                       />
                       <Plus className={`w-6 h-6 ${
-                        (existingMedia.length + mediaFiles.length) > 0 ? 'text-emerald-500' : 'text-amber-500'
+                        (existingMedia.length + mediaFiles.length) > 0 ? 'text-[var(--hm-success-500)]' : 'text-[var(--hm-warning-500)]'
                       }`} />
                       <span className={`text-xs font-medium mt-1 ${
-                        (existingMedia.length + mediaFiles.length) > 0 ? 'text-emerald-600' : 'text-amber-600'
+                        (existingMedia.length + mediaFiles.length) > 0 ? 'text-[var(--hm-success-500)]' : 'text-[var(--hm-warning-500)]'
                       }`}>
                         {t('common.add')}
                       </span>
@@ -911,11 +911,11 @@ function PostJobPageContent() {
 
                     {/* Preview - Existing */}
                     {existingMedia.map((media, idx) => (
-                      <div key={`existing-${idx}`} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-2">
+                      <div key={`existing-${idx}`} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-[var(--hm-bg-tertiary)] flex-shrink-0 ring-2 ring-emerald-200 ring-offset-2">
                         <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="96px" />
                         <button
                           onClick={() => removeExistingMedia(idx)}
-                          className="absolute top-2 right-2 w-6 h-6 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
+                          className="absolute top-2 right-2 w-6 h-6 bg-black/60 hover:bg-[var(--hm-error-500)] rounded-full flex items-center justify-center transition-colors"
                         >
                           <X className="w-3.5 h-3.5 text-white" />
                         </button>
@@ -924,11 +924,11 @@ function PostJobPageContent() {
 
                     {/* Preview - New */}
                     {mediaFiles.map((media, idx) => (
-                      <div key={`new-${idx}`} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0 ring-2 ring-emerald-200 ring-offset-2">
+                      <div key={`new-${idx}`} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-[var(--hm-bg-tertiary)] flex-shrink-0 ring-2 ring-emerald-200 ring-offset-2">
                         <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="96px" unoptimized />
                         <button
                           onClick={() => removeMediaFile(idx)}
-                          className="absolute top-2 right-2 w-6 h-6 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
+                          className="absolute top-2 right-2 w-6 h-6 bg-black/60 hover:bg-[var(--hm-error-500)] rounded-full flex items-center justify-center transition-colors"
                         >
                           <X className="w-3.5 h-3.5 text-white" />
                         </button>
@@ -938,7 +938,7 @@ function PostJobPageContent() {
 
                   {/* Success state */}
                   {(existingMedia.length + mediaFiles.length) > 0 && (
-                    <div className="mt-4 flex items-center gap-2 text-sm text-emerald-600">
+                    <div className="mt-4 flex items-center gap-2 text-sm text-[var(--hm-success-500)]">
                       <Check className="w-4 h-4" />
                       <span>
                         {t("postJob.photosAddedSuccess", {
@@ -951,7 +951,7 @@ function PostJobPageContent() {
 
                   {/* Required validation message */}
                   {(existingMedia.length + mediaFiles.length) === 0 && formData.title.trim() && formData.description.trim() && (
-                    <div className="mt-4 flex items-center gap-2 text-sm text-amber-600">
+                    <div className="mt-4 flex items-center gap-2 text-sm text-[var(--hm-warning-500)]">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
@@ -969,10 +969,10 @@ function PostJobPageContent() {
           {currentStep === "review" && (
             <div className="max-w-2xl mx-auto space-y-4">
               <div className="mb-1">
-                <h1 className="text-lg font-bold text-neutral-900 dark:text-white mb-0.5">
+                <h1 className="text-lg font-bold text-[var(--hm-fg-primary)] mb-0.5">
                   {t('job.reviewYourJobPost')}
                 </h1>
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-[var(--hm-fg-muted)]">
                   {t('job.pleaseEnsureAllDetailsAre')}
                 </p>
               </div>
@@ -980,33 +980,33 @@ function PostJobPageContent() {
               {/* Hero card — Title + Category + Timing + Budget */}
               <div
                 className="rounded-2xl p-4 sm:p-5 relative overflow-hidden"
-                style={{ backgroundColor: 'rgba(196,115,91,0.06)', border: '1px solid rgba(196,115,91,0.15)' }}
+                style={{ backgroundColor: 'rgba(239,78,36,0.06)', border: '1px solid rgba(239,78,36,0.15)' }}
               >
                 <button
                   onClick={() => goToStep("category")}
-                  className="absolute top-3 right-3 text-[11px] font-medium px-2.5 py-1 rounded-lg transition-colors hover:bg-[rgba(196,115,91,0.1)]"
-                  style={{ color: '#C4735B' }}
+                  className="absolute top-3 right-3 text-[11px] font-medium px-2.5 py-1 rounded-lg transition-colors hover:bg-[rgba(239,78,36,0.1)]"
+                  style={{ color: 'var(--hm-brand-500)' }}
                 >
                   <Pencil className="w-3 h-3 inline mr-1" />{t('common.edit')}
                 </button>
 
                 {/* Title */}
-                <h2 className="text-base sm:text-lg font-bold pr-16" style={{ color: 'var(--color-text-primary)' }}>
+                <h2 className="text-base sm:text-lg font-bold pr-16" style={{ color: 'var(--hm-fg-primary)' }}>
                   {formData.title}
                 </h2>
-                <p className="text-[13px] mt-1 line-clamp-2" style={{ color: 'var(--color-text-secondary)' }}>
+                <p className="text-[13px] mt-1 line-clamp-2" style={{ color: 'var(--hm-fg-secondary)' }}>
                   {formData.description}
                 </p>
 
                 {/* Meta pills */}
                 <div className="flex flex-wrap gap-1.5 mt-3">
                   {selectedCategoryData && (
-                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(196,115,91,0.12)', color: '#C4735B' }}>
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(239,78,36,0.12)', color: 'var(--hm-brand-500)' }}>
                       <CategoryIcon type={selectedCategory} className="w-3.5 h-3.5" />
                       {locale === "ka" ? selectedCategoryData.nameKa : selectedCategoryData.name}
                     </span>
                   )}
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: 'var(--color-bg-elevated)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: 'var(--hm-bg-elevated)', color: 'var(--hm-fg-secondary)', border: '1px solid var(--hm-border-subtle)' }}>
                     <Clock className="w-3 h-3" />
                     {formData.timing === "flexible" && t('job.flexible')}
                     {formData.timing === "asap" && t('job.asap')}
@@ -1021,7 +1021,7 @@ function PostJobPageContent() {
                         : formData.budgetType === "negotiable" ? null
                           : formData.budgetMin ? `${formData.budgetMin}₾` : null;
                     return budgetText ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(196,115,91,0.12)', color: '#C4735B' }}>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(239,78,36,0.12)', color: 'var(--hm-brand-500)' }}>
                         {budgetText}
                       </span>
                     ) : null;
@@ -1033,27 +1033,27 @@ function PostJobPageContent() {
               {selectedJobServices.length > 0 && (
                 <div
                   className="rounded-2xl overflow-hidden"
-                  style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+                  style={{ backgroundColor: 'var(--hm-bg-elevated)', border: '1px solid var(--hm-border-subtle)' }}
                 >
-                  <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
-                    <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                  <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: '1px solid var(--hm-border-subtle)' }}>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--hm-fg-muted)' }}>
                       {t('job.service')} ({selectedJobServices.length})
                     </span>
-                    <button onClick={() => goToStep("category")} className="text-[11px] font-medium" style={{ color: '#C4735B' }}>
+                    <button onClick={() => goToStep("category")} className="text-[11px] font-medium" style={{ color: 'var(--hm-brand-500)' }}>
                       {t('common.edit')}
                     </button>
                   </div>
-                  <div className="divide-y" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                  <div className="divide-y" style={{ borderColor: 'var(--hm-border-subtle)' }}>
                     {selectedJobServices.map(svc => {
                       const qty = svc.quantity || 1;
                       const lineTotal = svc.budget * qty;
                       return (
                         <div key={svc.serviceKey} className="flex items-center justify-between px-4 py-2.5">
                           <div className="flex-1 min-w-0">
-                            <span className="text-[13px] font-medium block truncate" style={{ color: 'var(--color-text-primary)' }}>
+                            <span className="text-[13px] font-medium block truncate" style={{ color: 'var(--hm-fg-primary)' }}>
                               {locale === 'ka' ? svc.nameKa : svc.name}
                             </span>
-                            <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+                            <span className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
                               {qty > 1 ? `${qty} × ` : ''}{locale === 'ka' ? svc.unitNameKa : svc.unitName}
                               {svc.budget > 0 && qty > 1 && (
                                 <span className="ml-1">· {svc.budget}₾/{locale === 'ka' ? svc.unitNameKa : svc.unitName}</span>
@@ -1061,7 +1061,7 @@ function PostJobPageContent() {
                             </span>
                           </div>
                           {svc.budget > 0 && (
-                            <span className="text-[13px] font-bold shrink-0 ml-3" style={{ color: '#C4735B' }}>
+                            <span className="text-[13px] font-bold shrink-0 ml-3" style={{ color: 'var(--hm-brand-500)' }}>
                               {lineTotal}₾
                             </span>
                           )}
@@ -1070,11 +1070,11 @@ function PostJobPageContent() {
                     })}
                     {/* Total row when multiple services have budgets */}
                     {serviceBudgetTotal > 0 && selectedJobServices.filter(s => s.budget > 0).length > 1 && (
-                      <div className="flex items-center justify-between px-4 py-2.5" style={{ backgroundColor: 'rgba(196,115,91,0.04)' }}>
-                        <span className="text-[12px] font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                      <div className="flex items-center justify-between px-4 py-2.5" style={{ backgroundColor: 'rgba(239,78,36,0.04)' }}>
+                        <span className="text-[12px] font-semibold" style={{ color: 'var(--hm-fg-secondary)' }}>
                           {locale === 'ka' ? 'ჯამი' : 'Total'}
                         </span>
-                        <span className="text-[14px] font-bold" style={{ color: '#C4735B' }}>
+                        <span className="text-[14px] font-bold" style={{ color: 'var(--hm-brand-500)' }}>
                           {serviceBudgetTotal}₾
                         </span>
                       </div>
@@ -1086,17 +1086,17 @@ function PostJobPageContent() {
               {/* Location + Property card */}
               <div
                 className="rounded-2xl p-4 flex items-start gap-3"
-                style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+                style={{ backgroundColor: 'var(--hm-bg-elevated)', border: '1px solid var(--hm-border-subtle)' }}
               >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                  <MapPin className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
+                  <MapPin className="w-4 h-4" style={{ color: 'var(--hm-fg-secondary)' }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+                  <p className="text-[13px] font-medium truncate" style={{ color: 'var(--hm-fg-primary)' }}>
                     {formData.location}
                   </p>
                   <div className="flex flex-wrap gap-1 mt-1.5">
-                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-secondary)' }}>
                       {formData.propertyType === "apartment" && t('job.apartment')}
                       {formData.propertyType === "house" && t('job.house')}
                       {formData.propertyType === "office" && t('job.office')}
@@ -1104,7 +1104,7 @@ function PostJobPageContent() {
                       {formData.propertyType === "other" && t('common.other')}
                     </span>
                     {formData.propertyCondition && (
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#C4735B]/10 text-[#C4735B]">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]">
                         {formData.propertyCondition === "shell" && t('job.shell')}
                         {formData.propertyCondition === "black-frame" && t('job.blackFrame')}
                         {formData.propertyCondition === "needs-renovation" && t('job.fullRenovation')}
@@ -1112,11 +1112,11 @@ function PostJobPageContent() {
                         {formData.propertyCondition === "good" && t('job.good')}
                       </span>
                     )}
-                    {formData.areaSize && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>{formData.areaSize} m²</span>}
-                    {formData.roomCount && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>{formData.roomCount} {t('job.rooms')}</span>}
+                    {formData.areaSize && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-secondary)' }}>{formData.areaSize} m²</span>}
+                    {formData.roomCount && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-secondary)' }}>{formData.roomCount} {t('job.rooms')}</span>}
                   </div>
                 </div>
-                <button onClick={() => goToStep("location")} className="text-[11px] font-medium shrink-0" style={{ color: '#C4735B' }}>
+                <button onClick={() => goToStep("location")} className="text-[11px] font-medium shrink-0" style={{ color: 'var(--hm-brand-500)' }}>
                   {t('common.edit')}
                 </button>
               </div>
@@ -1125,24 +1125,24 @@ function PostJobPageContent() {
               {(existingMedia.length > 0 || mediaFiles.length > 0) && (
                 <div
                   className="rounded-2xl p-4"
-                  style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}
+                  style={{ backgroundColor: 'var(--hm-bg-elevated)', border: '1px solid var(--hm-border-subtle)' }}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--hm-fg-muted)' }}>
                       {t('common.photos')} ({existingMedia.length + mediaFiles.length})
                     </span>
-                    <button onClick={() => goToStep("details")} className="text-[11px] font-medium" style={{ color: '#C4735B' }}>
+                    <button onClick={() => goToStep("details")} className="text-[11px] font-medium" style={{ color: 'var(--hm-brand-500)' }}>
                       {t('common.edit')}
                     </button>
                   </div>
                   <div className="flex gap-2 overflow-x-auto pb-1">
                     {existingMedia.map((media, idx) => (
-                      <div key={`re-${idx}`} className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
+                      <div key={`re-${idx}`} className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
                         <Image src={storage.getFileUrl(media.url)} alt="" fill className="object-cover" sizes="80px" />
                       </div>
                     ))}
                     {mediaFiles.map((media, idx) => (
-                      <div key={`rn-${idx}`} className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
+                      <div key={`rn-${idx}`} className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
                         <Image src={media.preview} alt="" fill className="object-cover" sizes="80px" unoptimized />
                       </div>
                     ))}
@@ -1150,7 +1150,7 @@ function PostJobPageContent() {
                 </div>
               )}
 
-              <p className="text-center text-[11px] text-neutral-400 pt-1">
+              <p className="text-center text-[11px] text-[var(--hm-fg-muted)] pt-1">
                 {t('job.willBeReviewedByAdmins')}
               </p>
             </div>
@@ -1160,13 +1160,13 @@ function PostJobPageContent() {
 
       {/* Footer Navigation */}
       <footer className="fixed bottom-14 lg:bottom-0 left-0 right-0 z-40">
-        <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-t border-neutral-200/50 dark:border-neutral-800/50">
+        <div className="bg-white/80 backdrop-blur-xl border-t border-[var(--hm-border-subtle)]">
           <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center justify-between gap-3">
               {getCurrentStepIndex() > 0 ? (
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   {t('common.back')}
@@ -1174,7 +1174,7 @@ function PostJobPageContent() {
               ) : (
                 <button
                   onClick={() => router.back()}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-[var(--hm-fg-muted)] hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                 >
                   <X className="w-4 h-4" />
                   {t('common.cancel')}
@@ -1189,7 +1189,7 @@ function PostJobPageContent() {
                   (currentStep === "location" && !canProceedFromLocation()) ||
                   (currentStep === "details" && !canProceedFromDetails())
                 }
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#C4735B] hover:bg-[#B5624A] disabled:bg-neutral-200 dark:disabled:bg-neutral-700 disabled:text-neutral-400 disabled:cursor-not-allowed transition-all shadow-lg shadow-[#C4735B]/20 disabled:shadow-none"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] disabled:bg-[var(--hm-n-200)] disabled:text-[var(--hm-fg-muted)] disabled:cursor-not-allowed transition-all shadow-lg shadow-[var(--hm-brand-500)]/20 disabled:shadow-none"
               >
                 {isSubmitting ? (
                   <LoadingSpinner size="xs" color="white" />
@@ -1214,7 +1214,7 @@ export default function PostJobPage() {
     <AuthGuard allowedRoles={["client", "pro", "admin"]}>
       <Suspense
         fallback={
-          <div className="min-h-screen flex items-center justify-center bg-[#FAFAF9]">
+          <div className="min-h-screen flex items-center justify-center bg-[var(--hm-bg-page)]">
             <LoadingSpinner size="xl" variant="border" color={ACCENT_COLOR} />
           </div>
         }

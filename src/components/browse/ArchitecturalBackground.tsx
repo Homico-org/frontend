@@ -286,16 +286,16 @@ export default function ArchitecturalBackground() {
       {/* Fixed positioning to stay visible during scroll - hidden on mobile for cleaner UX */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden hidden md:block" style={{ zIndex: 1 }}>
         {/* Gradient overlays */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] opacity-30 dark:opacity-15">
-          <div className="absolute inset-0 bg-gradient-to-bl from-[#E07B4F]/20 via-transparent to-transparent blur-3xl" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] opacity-30">
+          <div className="absolute inset-0 bg-gradient-to-bl from-[var(--hm-brand-500)]/20 via-transparent to-transparent blur-3xl" />
         </div>
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] opacity-25 dark:opacity-10">
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] opacity-25">
           <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 via-transparent to-transparent blur-3xl" />
         </div>
 
         {/* Floating architectural elements - carefully positioned */}
         {/* Light mode: stronger colors, Dark mode: subtle colors */}
-        <div className="text-[#E07B4F]/50 dark:text-[#E8956A]/35">
+        <div className="text-[var(--hm-brand-500)]/50">
           {/* Top left area */}
           <FloatingElement x={5} y={8} delay={0} duration={25}>
             <FloorPlanRoom size={90} opacity={0.12} />
@@ -371,7 +371,7 @@ export default function ArchitecturalBackground() {
 
         {/* Subtle dot pattern overlay */}
         <div
-          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.025]"
+          className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
             backgroundSize: '40px 40px',

@@ -164,7 +164,7 @@ export default function CreatePollModal({
         title={t('polls.newPoll')}
         description={t('polls.createAPollForClient')}
         variant="accent"
-        icon={<Image className="w-6 h-6 text-[#C4735B]" />}
+        icon={<Image className="w-6 h-6 text-[var(--hm-brand-500)]" />}
       />
 
       <ModalBody className="max-h-[45vh] overflow-y-auto">
@@ -176,7 +176,7 @@ export default function CreatePollModal({
 
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
               {t('polls.title')} *
             </label>
             <Input
@@ -188,7 +188,7 @@ export default function CreatePollModal({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
               {t('common.description')} ({t('common.optional')})
             </label>
             <Textarea
@@ -201,7 +201,7 @@ export default function CreatePollModal({
 
           {/* Option type toggle */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-2">
               {t('polls.optionType')}
             </label>
             <div className="flex gap-2">
@@ -211,7 +211,7 @@ export default function CreatePollModal({
                 onClick={() => setOptionType('image')}
                 className={cn(
                   'flex-1',
-                  optionType === 'image' && 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]'
+                  optionType === 'image' && 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)]'
                 )}
                 leftIcon={<Image className="w-4 h-4" />}
               >
@@ -223,7 +223,7 @@ export default function CreatePollModal({
                 onClick={() => setOptionType('text')}
                 className={cn(
                   'flex-1',
-                  optionType === 'text' && 'border-[#C4735B] bg-[#C4735B]/5 text-[#C4735B]'
+                  optionType === 'text' && 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)]'
                 )}
                 leftIcon={<Type className="w-4 h-4" />}
               >
@@ -235,7 +235,7 @@ export default function CreatePollModal({
           {/* Options */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              <label className="text-sm font-medium text-[var(--hm-fg-secondary)]">
                 {t('polls.options')} ({options.length}/6)
               </label>
               {options.length < 6 && (
@@ -257,7 +257,7 @@ export default function CreatePollModal({
               {options.map((option, index) => (
                 <div key={option.id} className="relative group">
                   {optionType === 'image' ? (
-                    <div className="aspect-[4/3] rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-600 overflow-hidden relative">
+                    <div className="aspect-[4/3] rounded-lg border-2 border-dashed border-[var(--hm-border-strong)] overflow-hidden relative">
                       {option.imageUrl || option.imagePreview ? (
                         <>
                           <img
@@ -275,9 +275,9 @@ export default function CreatePollModal({
                               newOptions[index].imagePreview = '';
                               setOptions(newOptions);
                             }}
-                            className="absolute top-2 right-2 bg-white/90 dark:bg-neutral-900/90 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-2 right-2 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <X className="w-3 h-3 text-neutral-600" />
+                            <X className="w-3 h-3 text-[var(--hm-fg-secondary)]" />
                           </Button>
                         </>
                       ) : (
@@ -286,7 +286,7 @@ export default function CreatePollModal({
                           variant="ghost"
                           onClick={() => fileInputRefs.current[index]?.click()}
                           disabled={uploadingIndex === index}
-                          className="absolute inset-0 flex flex-col items-center justify-center text-neutral-400 hover:text-[#C4735B] h-full w-full rounded-lg"
+                          className="absolute inset-0 flex flex-col items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] h-full w-full rounded-lg"
                         >
                           {uploadingIndex === index ? (
                             <LoadingSpinner size="md" color="currentColor" />
@@ -331,7 +331,7 @@ export default function CreatePollModal({
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => handleRemoveOption(index)}
-                          className="text-neutral-400 hover:text-red-500"
+                          className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)]"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

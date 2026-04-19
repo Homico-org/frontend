@@ -45,10 +45,10 @@ export default function StepReview({
   return (
     <div className="space-y-6">
       {/* Profile Card Preview */}
-      <Card className="relative overflow-hidden bg-gradient-to-br from-[#FDF8F6] to-[#FAF5F2] p-6 lg:p-8 border-[#C4735B]/20">
+      <Card className="relative overflow-hidden bg-gradient-to-br from-[var(--hm-bg-elevated)] to-[var(--hm-bg-page)] p-6 lg:p-8 border-[var(--hm-brand-500)]/20">
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#C4735B]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#C4735B]/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--hm-brand-500)]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[var(--hm-brand-500)]/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
 
         <div className="relative">
           {/* Header label */}
@@ -61,7 +61,7 @@ export default function StepReview({
               size="sm"
               onClick={() => goToStep('account')}
               leftIcon={<Edit2 className="w-3 h-3" />}
-              className="text-[#C4735B]"
+              className="text-[var(--hm-brand-500)]"
             >
               {t('register.editProfile')}
             </Button>
@@ -71,11 +71,11 @@ export default function StepReview({
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
             {/* Avatar */}
             <div className="relative group">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-4 ring-[#C4735B]/20 shadow-lg">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden ring-4 ring-[var(--hm-brand-500)]/20 shadow-lg">
                 {avatarPreview ? (
                   <NextImage src={avatarPreview} alt="Avatar" fill className="object-cover" sizes="80px" unoptimized />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-[#C4735B] to-[#A85D47] flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-[var(--hm-brand-500)] to-[#A85D47] flex items-center justify-center">
                     <span className="text-3xl font-bold text-white">
                       {formData.fullName?.charAt(0)?.toUpperCase() || 'P'}
                     </span>
@@ -83,18 +83,18 @@ export default function StepReview({
                 )}
               </div>
               {/* Status indicator */}
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 ring-4 ring-[#FDF8F6] flex items-center justify-center">
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[var(--hm-success-500)] ring-4 ring-[#FDF8F6] flex items-center justify-center">
                 <Check className="w-3 h-3 text-white" />
               </div>
             </div>
 
             {/* Info */}
             <div className="flex-1 text-center sm:text-left">
-              <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-1">
+              <h2 className="text-2xl sm:text-3xl font-bold text-[var(--hm-fg-primary)] mb-1">
                 {formData.fullName || (t('register.yourName'))}
               </h2>
               {formData.city && (
-                <p className="text-neutral-500 text-sm mb-3">
+                <p className="text-[var(--hm-fg-muted)] text-sm mb-3">
                   {formData.city}
                 </p>
               )}
@@ -118,16 +118,16 @@ export default function StepReview({
           </div>
 
           {/* Stats row */}
-          <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-[#C4735B]/10">
+          <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-[var(--hm-brand-500)]/10">
             <div className="text-center">
-              <p className="text-2xl font-bold text-neutral-900">{validProjects.length}</p>
-              <p className="text-[11px] text-neutral-500 uppercase tracking-wider">
+              <p className="text-2xl font-bold text-[var(--hm-fg-primary)]">{validProjects.length}</p>
+              <p className="text-[11px] text-[var(--hm-fg-muted)] uppercase tracking-wider">
                 {t('common.projects')}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-neutral-900">{customServices.length}</p>
-              <p className="text-[11px] text-neutral-500 uppercase tracking-wider">
+              <p className="text-2xl font-bold text-[var(--hm-fg-primary)]">{customServices.length}</p>
+              <p className="text-[11px] text-[var(--hm-fg-muted)] uppercase tracking-wider">
                 {t('common.services')}
               </p>
             </div>
@@ -139,7 +139,7 @@ export default function StepReview({
       {validProjects.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-neutral-900 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-[var(--hm-fg-primary)] flex items-center gap-2">
               <IconBadge icon={ImageIcon} variant="accent" size="sm" />
               {t('register.portfolio')}
             </h3>
@@ -147,7 +147,7 @@ export default function StepReview({
               variant="link"
               size="sm"
               onClick={() => goToStep('services')}
-              className="text-[#C4735B]"
+              className="text-[var(--hm-brand-500)]"
             >
               {t('common.edit')}
             </Button>
@@ -160,7 +160,7 @@ export default function StepReview({
               return (
                 <div key={project.id} className="group relative">
                   {project.images.length > 0 ? (
-                    <div className="aspect-[4/3] rounded-xl overflow-hidden bg-neutral-100">
+                    <div className="aspect-[4/3] rounded-xl overflow-hidden bg-[var(--hm-bg-tertiary)]">
                       <img
                         src={project.images[0]}
                         alt={project.title || 'Project'}
@@ -204,10 +204,10 @@ export default function StepReview({
                       </div>
                     </div>
                   ) : (
-                    <div className="aspect-[4/3] rounded-xl bg-neutral-100 flex items-center justify-center">
+                    <div className="aspect-[4/3] rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
                       <div className="text-center">
                         <IconBadge icon={ImageIcon} variant="neutral" size="lg" className="mx-auto mb-1" />
-                        <p className="text-xs text-neutral-400">{t('register.noMedia')}</p>
+                        <p className="text-xs text-[var(--hm-fg-muted)]">{t('register.noMedia')}</p>
                       </div>
                     </div>
                   )}
@@ -221,16 +221,16 @@ export default function StepReview({
       {/* Details Cards */}
       <div className="grid sm:grid-cols-2 gap-4">
         {/* Contact Info */}
-        <Card className="p-4 hover:border-[#C4735B]/30 hover:shadow-sm transition-all">
+        <Card className="p-4 hover:border-[var(--hm-brand-500)]/30 hover:shadow-sm transition-all">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+            <h3 className="text-xs font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider">
               {t('register.contact')}
             </h3>
             <Button
               variant="link"
               size="sm"
               onClick={() => goToStep('account')}
-              className="text-[#C4735B] text-[10px]"
+              className="text-[var(--hm-brand-500)] text-[10px]"
             >
               {t('register.change')}
             </Button>
@@ -239,8 +239,8 @@ export default function StepReview({
             <div className="flex items-center gap-3">
               <IconBadge icon={Phone} variant="neutral" size="sm" />
               <div className="min-w-0">
-                <p className="text-xs text-neutral-400">{t('common.phone')}</p>
-                <p className="text-sm font-medium text-neutral-900 truncate">
+                <p className="text-xs text-[var(--hm-fg-muted)]">{t('common.phone')}</p>
+                <p className="text-sm font-medium text-[var(--hm-fg-primary)] truncate">
                   {countries[phoneCountry].phonePrefix}{formData.phone || '-'}
                 </p>
               </div>
@@ -249,8 +249,8 @@ export default function StepReview({
               <div className="flex items-center gap-3">
                 <IconBadge icon={Mail} variant="neutral" size="sm" />
                 <div className="min-w-0">
-                  <p className="text-xs text-neutral-400">{t('common.email')}</p>
-                  <p className="text-sm font-medium text-neutral-900 truncate">{formData.email}</p>
+                  <p className="text-xs text-[var(--hm-fg-muted)]">{t('common.email')}</p>
+                  <p className="text-sm font-medium text-[var(--hm-fg-primary)] truncate">{formData.email}</p>
                 </div>
               </div>
             )}
@@ -259,16 +259,16 @@ export default function StepReview({
 
         {/* Services List */}
         {customServices.length > 0 && (
-          <Card className="p-4 hover:border-[#C4735B]/30 hover:shadow-sm transition-all">
+          <Card className="p-4 hover:border-[var(--hm-brand-500)]/30 hover:shadow-sm transition-all">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+              <h3 className="text-xs font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider">
                 {t('common.services')}
               </h3>
               <Button
                 variant="link"
                 size="sm"
                 onClick={() => goToStep('category')}
-                className="text-[#C4735B] text-[10px]"
+                className="text-[var(--hm-brand-500)] text-[10px]"
               >
                 {locale === 'ka' ? 'შეცვლა' : 'Change'}
               </Button>
