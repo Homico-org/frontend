@@ -457,11 +457,14 @@ export default function AiChatWidget(): React.ReactElement | null {
             exit={{ x: 20, opacity: 0 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
             onClick={() => setIsHidden(false)}
-            className="fixed right-0 top-1/2 -translate-y-1/2 z-40 flex items-center gap-1 pl-2 pr-1 py-3 bg-[var(--hm-brand-500)] text-white rounded-l-xl shadow-lg hover:pr-2 hover:shadow-xl transition-all group"
+            className="fixed right-0 top-[60%] -translate-y-1/2 z-40 flex items-center gap-1.5 pl-2 pr-1.5 py-2.5 text-white rounded-l-xl shadow-lg hover:pr-2.5 hover:shadow-xl transition-all group"
+            style={{
+              background: 'linear-gradient(135deg, var(--hm-brand-500) 0%, var(--hm-brand-700) 100%)',
+            }}
             aria-label="Show AI Assistant"
           >
-            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-            <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0">
+            <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+            <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-white/40">
               <Image
                 src="/AI-mascot.png"
                 alt="AI"
@@ -514,11 +517,12 @@ export default function AiChatWidget(): React.ReactElement | null {
 
             {/* Mascot avatar */}
             <div
-              className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 transition-all duration-200 ${
+              className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden transition-all duration-200 ${
                 isDragging
-                  ? "border-[var(--hm-brand-500)] shadow-xl shadow-[var(--hm-brand-500)]/30 scale-110"
-                  : "border-white shadow-lg group-hover:border-[var(--hm-brand-500)]/50 group-hover:shadow-xl"
+                  ? "ring-2 ring-[var(--hm-brand-500)] shadow-xl shadow-[var(--hm-brand-500)]/30 scale-110"
+                  : "ring-2 ring-[var(--hm-bg-elevated)] shadow-lg group-hover:ring-[var(--hm-brand-500)]/60 group-hover:shadow-xl"
               }`}
+              style={{ backgroundColor: 'var(--hm-brand-500)' }}
             >
               <Image
                 src="/AI-mascot.png"
@@ -536,9 +540,9 @@ export default function AiChatWidget(): React.ReactElement | null {
                 isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
               }`}
             >
-              <span className="w-1 h-1 rounded-full bg-neutral-400" />
-              <span className="w-1 h-1 rounded-full bg-neutral-400" />
-              <span className="w-1 h-1 rounded-full bg-neutral-400" />
+              <span className="w-1 h-1 rounded-full bg-[var(--hm-fg-muted)]" />
+              <span className="w-1 h-1 rounded-full bg-[var(--hm-fg-muted)]" />
+              <span className="w-1 h-1 rounded-full bg-[var(--hm-fg-muted)]" />
             </div>
 
             {/* X dismiss badge */}
@@ -558,7 +562,7 @@ export default function AiChatWidget(): React.ReactElement | null {
                     setIsHidden(true);
                   }
                 }}
-                className="absolute -top-1 -right-1 w-5 h-5 bg-neutral-700/80 hover:bg-[var(--hm-error-500)] rounded-full flex items-center justify-center shadow-md transition-colors z-10 cursor-pointer opacity-0 group-hover:opacity-100"
+                className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--hm-n-700)]/80 hover:bg-[var(--hm-error-500)] rounded-full flex items-center justify-center shadow-md transition-colors z-10 cursor-pointer opacity-0 group-hover:opacity-100"
                 aria-label="Hide AI Assistant"
               >
                 <X className="w-3 h-3 text-white" />
@@ -567,11 +571,11 @@ export default function AiChatWidget(): React.ReactElement | null {
 
             {/* Tooltip */}
             <div
-              className={`hidden sm:block absolute bottom-full mb-2 px-3 py-1.5 bg-neutral-900 text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none ${fabSide === "right" ? "right-0" : "left-0"}`}
+              className={`hidden sm:block absolute bottom-full mb-2 px-3 py-1.5 bg-[var(--hm-n-900)] text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none ${fabSide === "right" ? "right-0" : "left-0"}`}
             >
-              Homico AI · {isDragging ? "↕" : t("ai.dragToMove")}
+              <span style={{ fontFamily: 'var(--hm-font-display)' }}>Homico AI</span> · {isDragging ? "↕" : t("ai.dragToMove")}
               <div
-                className={`absolute top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-neutral-900 ${fabSide === "right" ? "right-4" : "left-4"}`}
+                className={`absolute top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[var(--hm-n-900)] ${fabSide === "right" ? "right-4" : "left-4"}`}
               />
             </div>
           </motion.button>
@@ -605,22 +609,33 @@ export default function AiChatWidget(): React.ReactElement | null {
               }}
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-[var(--hm-brand-500)] to-[#A85D47] px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center overflow-hidden p-0.5">
+              <div
+                className="px-4 py-3.5 flex items-center justify-between relative overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, var(--hm-brand-500) 0%, var(--hm-brand-700) 100%)',
+                  borderBottom: '1px solid var(--hm-brand-700)',
+                }}
+              >
+                {/* Architectural decorative line */}
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                <div className="flex items-center gap-3 relative z-10">
+                  <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/30 shadow-md flex-shrink-0 bg-white/15">
                     <Image
                       src="/AI-mascot.png"
                       alt="Homico AI"
-                      width={36}
-                      height={36}
-                      className="w-full h-full object-contain"
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
                     />
                   </div>
-                  <div>
-                    <h2 className="text-white font-semibold text-sm">
+                  <div className="min-w-0">
+                    <h2
+                      className="text-white font-semibold text-[15px] tracking-tight leading-none"
+                      style={{ fontFamily: 'var(--hm-font-display)' }}
+                    >
                       Homico AI
                     </h2>
-                    <p className="text-white/70 text-xs">
+                    <p className="text-white/75 text-[11px] mt-1 leading-none">
                       {t("ai.smartAssistant")}
                     </p>
                   </div>
@@ -663,7 +678,10 @@ export default function AiChatWidget(): React.ReactElement | null {
               <div className="flex-1 overflow-y-auto p-4 space-y-1">
                 {!isAuthenticated ? (
                   <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                    <div className="w-20 h-20 rounded-full overflow-hidden mb-4">
+                    <div
+                      className="w-20 h-20 rounded-full overflow-hidden mb-4 ring-2 ring-[var(--hm-brand-500)]/15 shadow-md"
+                      style={{ backgroundColor: 'var(--hm-brand-500)' }}
+                    >
                       <Image
                         src="/AI-mascot.png"
                         alt="Homico AI"
@@ -673,8 +691,8 @@ export default function AiChatWidget(): React.ReactElement | null {
                       />
                     </div>
                     <h3
-                      className="text-base font-semibold mb-1"
-                      style={{ color: "var(--hm-fg-primary)" }}
+                      className="text-lg font-semibold mb-1.5 tracking-tight"
+                      style={{ color: "var(--hm-fg-primary)", fontFamily: 'var(--hm-font-display)' }}
                     >
                       {t("ai.greeting")}
                     </h3>
@@ -751,26 +769,29 @@ export default function AiChatWidget(): React.ReactElement | null {
                   backgroundColor: "var(--hm-bg-elevated)",
                 }}
               >
-                <div className="flex items-center gap-2">
-                  <Input
-                    ref={inputRef}
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={!isAuthenticated ? t("ai.loginToChat") : t("ai.askQuestion")}
-                    disabled={isLoading || !isAuthenticated}
-                    className="flex-1"
-                  />
+                <div className="flex items-stretch gap-2">
+                  <div className="flex-1 min-w-0">
+                    <Input
+                      ref={inputRef}
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder={!isAuthenticated ? t("ai.loginToChat") : t("ai.askQuestion")}
+                      disabled={isLoading || !isAuthenticated}
+                      className="w-full"
+                    />
+                  </div>
                   <Button
                     onClick={handleSend}
                     disabled={
                       !inputValue.trim() || isLoading || !isAuthenticated
                     }
-                    size="sm"
-                    className="p-2.5 rounded-xl"
+                    size="icon"
+                    className="flex-shrink-0 h-10 w-10"
+                    aria-label={t("ai.send") || "Send"}
                   >
-                    <Send className="w-5 h-5" />
+                    <Send className="w-4 h-4" />
                   </Button>
                 </div>
                 <p
