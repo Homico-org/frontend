@@ -104,7 +104,7 @@ Replace `<button>` with `<Button variant="…">`. Map common patterns:
 - [x] `src/components/browse/JobsFilterBar.tsx` — 1 of 10 buttons → `<Button link>`, 2 inputs → `<Input filled>`, 5 ternaries → `pick()`. 9 dropdown/pill buttons kept (custom per-state Tailwind sizing).
 - [ ] `src/app/tools/analyzer/page.tsx` (10)
 - [SKIP] `src/app/admin/reports/page.tsx` (10) — uses `ADMIN_THEME`
-- [ ] `src/components/post-job/JobServicePicker.tsx` (8)
+- [~] `src/components/post-job/JobServicePicker.tsx` — 14 of 14 locale ternaries → `pick()`/`t()` (3 new common keys: `qty`). 8 buttons + 3 inputs deferred (heavy per-state styling, not high-value to break visuals).
 - [ ] `src/app/tools/compare/page.tsx` (8)
 
 ---

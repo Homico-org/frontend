@@ -61,6 +61,7 @@
     "duration": "Duration",
     "amount": "Amount",
     "price": "Price",
+    "qty": "Qty",
     "budget": "Budget",
     "negotiable": "Negotiable",
     "perSqmShort": "/sqm",
@@ -132,6 +133,7 @@
     "noMoreResults": "No more results",
     "years": "years",
     "months": "months",
+    "weeks": "weeks",
     "days": "days",
     "hours": "hours",
     "minutes": "minutes",
@@ -525,7 +527,13 @@
     "aiSuggested": "AI suggested",
     "selectAll": "Select all",
     "deselectAll": "Deselect all",
-    "category": "Category"
+    "category": "Category",
+    "addYourProject": "Add Your Project",
+    "addYourProjectDescription": "Showcase your work to attract clients",
+    "registerAsProfessionalCta": "Register as a Professional",
+    "registerAsProfessionalDescription": "Showcase your work and find clients",
+    "postAJobToFindPro": "Post a Job to Find a Pro",
+    "postAJobToFindProDescription": "Describe your project and get proposals"
   },
   "job": {
     "title": "Title",
@@ -2756,7 +2764,9 @@
     "addPricingOption": "Add pricing option",
     "selectAtLeastOneService": "Select at least one service",
     "priceQuestion": "price?",
-    "chooseDifferentCategory": "Choose different category"
+    "chooseDifferentCategory": "Choose different category",
+    "selectedCategoriesCount": "Selected categories: {selected}/{max}",
+    "selectedServicesCount": "Selected services: {selected}/{max}"
   },
   "categories": {
     "renovation": "Renovation",

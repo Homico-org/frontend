@@ -27,8 +27,9 @@ interface RichContentRendererProps {
 // Locale-aware field picker
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function pickLocale(obj: any, field: string, locale: string): string {
-  if (locale === "ka" && obj[`${field}Ka`]) return obj[`${field}Ka`] as string;
-  if (locale === "ru" && obj[`${field}Ru`]) return obj[`${field}Ru`] as string;
+  const localeSuffix: Record<string, string> = { ka: "Ka", ru: "Ru" };
+  const suffix = localeSuffix[locale];
+  if (suffix && obj[`${field}${suffix}`]) return obj[`${field}${suffix}`] as string;
   return (obj[field] as string) || "";
 }
 
@@ -125,11 +126,11 @@ function ProfessionalListRenderer({
 
 function CategoryListRenderer({
   categories,
-  locale,
 }: {
   categories: CategoryItem[];
   locale: string;
 }): React.ReactElement | null {
+  const { pick } = useLanguage();
   if (categories.length === 0) return null;
 
   return (
@@ -145,9 +146,7 @@ function CategoryListRenderer({
             className="gap-1.5 cursor-pointer hover:opacity-80"
           >
             <Grid3X3 className="w-3.5 h-3.5" />
-            {locale === "ka" && category.nameKa
-              ? category.nameKa
-              : category.name}
+            {pick({ en: category.name, ka: category.nameKa })}
             {category.subcategoryCount !== undefined &&
               category.subcategoryCount > 0 && (
                 <span className="opacity-50">
@@ -229,16 +228,12 @@ function ReviewListRenderer({
 
 function PriceInfoRenderer({
   priceInfo,
-  locale,
 }: {
   priceInfo: PriceInfo;
   locale: string;
 }): React.ReactElement {
-  const { t } = useLanguage();
-  const categoryName =
-    locale === "ka" && priceInfo.categoryKa
-      ? priceInfo.categoryKa
-      : priceInfo.category;
+  const { t, pick } = useLanguage();
+  const categoryName = pick({ en: priceInfo.category, ka: priceInfo.categoryKa });
 
   return (
     <div
@@ -290,7 +285,7 @@ function PriceInfoRenderer({
                 className="text-sm"
                 style={{ color: "var(--hm-fg-secondary)" }}
               >
-                {locale === "ka" && range.labelKa ? range.labelKa : range.label}
+                {pick({ en: range.label, ka: range.labelKa })}
               </span>
               <span
                 className="text-sm font-medium"
@@ -308,9 +303,7 @@ function PriceInfoRenderer({
           className="mt-3 text-xs"
           style={{ color: "var(--hm-fg-muted)" }}
         >
-          {locale === "ka" && priceInfo.noteKa
-            ? priceInfo.noteKa
-            : priceInfo.note}
+          {pick({ en: priceInfo.note, ka: priceInfo.noteKa })}
         </p>
       )}
 

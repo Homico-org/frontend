@@ -123,7 +123,7 @@ export default function ServiceBookingModal({
   onClose,
   professional,
 }: ServiceBookingModalProps) {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const toast = useToast();
   const router = useRouter();
   const { categories } = useCategories();
@@ -182,21 +182,16 @@ export default function ServiceBookingModal({
   // Calendar: generate next 14 days
   const calendarDays = useMemo(() => {
     const days: { date: string; label: string; dayLabel: string }[] = [];
+    const intlLocale = pick({ ka: 'ka-GE', ru: 'ru-RU', en: 'en-US' }, 'en-US');
     for (let i = 0; i < 14; i++) {
       const d = new Date(Date.now() + i * 86400000);
       const iso = d.toISOString().split('T')[0];
-      const dayLabel = d.toLocaleDateString(
-        locale === 'ka' ? 'ka-GE' : locale === 'ru' ? 'ru-RU' : 'en-US',
-        { weekday: 'short' },
-      );
-      const dateLabel = d.toLocaleDateString(
-        locale === 'ka' ? 'ka-GE' : locale === 'ru' ? 'ru-RU' : 'en-US',
-        { day: 'numeric', month: 'short' },
-      );
+      const dayLabel = d.toLocaleDateString(intlLocale, { weekday: 'short' });
+      const dateLabel = d.toLocaleDateString(intlLocale, { day: 'numeric', month: 'short' });
       days.push({ date: iso, label: dateLabel, dayLabel });
     }
     return days;
-  }, [locale]);
+  }, [pick]);
 
   // Computed totals
   const totalAmount = useMemo(
@@ -369,22 +364,17 @@ export default function ServiceBookingModal({
               ) : (
                 activeServices.map((svc) => {
                   const info = svcNameMap[svc.serviceKey];
-                  const name =
-                    info
-                      ? locale === 'ka'
-                        ? info.nameKa || info.name
-                        : info.name
-                      : svc.serviceKey;
+                  const name = info
+                    ? pick({ en: info.name, ka: info.nameKa || info.name })
+                    : svc.serviceKey;
                   // Unit label: use unitKey to find specific option, or fall back to primary
                   const unitOpt = svc.unitKey && info?.unitOptions
                     ? info.unitOptions.find(u => u.key === svc.unitKey)
                     : null;
                   const unit = unitOpt
-                    ? (locale === 'ka' ? unitOpt.label.ka : unitOpt.label.en)
+                    ? pick({ en: unitOpt.label.en, ka: unitOpt.label.ka })
                     : info
-                      ? locale === 'ka'
-                        ? info.unitKa || info.unit
-                        : info.unit
+                      ? pick({ en: info.unit, ka: info.unitKa || info.unit })
                       : '';
                   const key = svcKey(svc);
                   const qty = selectedServices[key]?.quantity ?? 0;
@@ -666,16 +656,15 @@ export default function ServiceBookingModal({
               <div className="space-y-1.5">
                 {Object.values(selectedServices).map((s) => {
                   const info = svcNameMap[s.serviceKey];
-                  const name =
-                    info
-                      ? locale === 'ka'
-                        ? info.nameKa || info.name
-                        : info.name
-                      : s.serviceKey;
+                  const name = info
+                    ? pick({ en: info.name, ka: info.nameKa || info.name })
+                    : s.serviceKey;
                   const unitOpt = s.unitKey && info?.unitOptions
                     ? info.unitOptions.find(u => u.key === s.unitKey)
                     : null;
-                  const unitLabel = unitOpt ? (locale === 'ka' ? unitOpt.label.ka : unitOpt.label.en) : '';
+                  const unitLabel = unitOpt
+                    ? pick({ en: unitOpt.label.en, ka: unitOpt.label.ka })
+                    : '';
                   const discount = getApplicableDiscount(s.discountTiers, s.quantity);
                   const lineTotal = getLineTotal(s);
 
@@ -827,14 +816,14 @@ export default function ServiceBookingModal({
                 {confirmedServices.map((s) => {
                   const info = svcNameMap[s.serviceKey];
                   const name = info
-                    ? locale === 'ka'
-                      ? info.nameKa || info.name
-                      : info.name
+                    ? pick({ en: info.name, ka: info.nameKa || info.name })
                     : s.serviceKey;
                   const unitOpt = s.unitKey && info?.unitOptions
                     ? info.unitOptions.find(u => u.key === s.unitKey)
                     : null;
-                  const unitLabel = unitOpt ? (locale === 'ka' ? unitOpt.label.ka : unitOpt.label.en) : '';
+                  const unitLabel = unitOpt
+                    ? pick({ en: unitOpt.label.en, ka: unitOpt.label.ka })
+                    : '';
                   const lineTotal = getLineTotal(s);
                   return (
                     <div key={svcKey(s)} className="flex items-center justify-between text-sm">

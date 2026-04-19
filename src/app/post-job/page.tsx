@@ -497,7 +497,7 @@ function PostJobPageContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen pb-28 lg:pb-14">
+    <div className="flex flex-col min-h-screen pb-28 lg:pb-14 bg-[var(--hm-bg-page)]">
       {/* Page Title + Progress */}
       <div className="bg-[var(--hm-bg-elevated)] border-b border-[var(--hm-border-subtle)] sticky top-14 z-40">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pt-3 pb-2">
@@ -836,8 +836,8 @@ function PostJobPageContent() {
                 {/* Photos - Enhanced with explanation */}
                 <div className={`p-4 sm:p-5 lg:p-6 rounded-2xl border-2 transition-all ${
                   (existingMedia.length + mediaFiles.length) > 0
-                    ? 'bg-[var(--hm-success-50)]/50 border-emerald-200'
-                    : 'bg-gradient-to-br from-amber-50/50 to-orange-50/30 border-amber-200/60'
+                    ? 'bg-[var(--hm-success-50)]/50 border-[var(--hm-success-100)]'
+                    : 'bg-[var(--hm-warning-50)]/50 border-[var(--hm-warning-100)]'
                 }`}>
                   <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
                     <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
@@ -1178,7 +1178,7 @@ function PostJobPageContent() {
 
       {/* Footer Navigation */}
       <footer className="fixed bottom-14 lg:bottom-0 left-0 right-0 z-40">
-        <div className="bg-[var(--hm-bg-elevated)]/80 backdrop-blur-xl border-t border-[var(--hm-border-subtle)]">
+        <div className="bg-[var(--hm-bg-elevated)] border-t border-[var(--hm-border-subtle)] shadow-[0_-4px_12px_rgba(20,18,14,0.06)]">
           <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center justify-between gap-3">
               {getCurrentStepIndex() > 0 ? (

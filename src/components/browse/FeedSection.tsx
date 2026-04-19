@@ -282,12 +282,10 @@ export default function FeedSection({
             </div>
             <div className="min-w-0">
               <p className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate">
-                {locale === "ka" ? "დაამატე შენი პროექტი" : "Add Your Project"}
+                {t("browse.addYourProject")}
               </p>
               <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
-                {locale === "ka"
-                  ? "აჩვენე შენი ნამუშევრები კლიენტებს"
-                  : "Showcase your work to attract clients"}
+                {t("browse.addYourProjectDescription")}
               </p>
             </div>
           </div>
@@ -308,14 +306,10 @@ export default function FeedSection({
             </div>
             <div className="min-w-0">
               <p className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate">
-                {locale === "ka"
-                  ? "დარეგისტრირდი პროფესიონალად"
-                  : "Register as a Professional"}
+                {t("browse.registerAsProfessionalCta")}
               </p>
               <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
-                {locale === "ka"
-                  ? "აჩვენე შენი ნამუშევრები და იპოვე კლიენტები"
-                  : "Showcase your work and find clients"}
+                {t("browse.registerAsProfessionalDescription")}
               </p>
             </div>
           </div>
@@ -336,14 +330,10 @@ export default function FeedSection({
             </div>
             <div className="min-w-0">
               <p className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate">
-                {locale === "ka"
-                  ? "განათავსე დავალება"
-                  : "Post a Job to Find a Pro"}
+                {t("browse.postAJobToFindPro")}
               </p>
               <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
-                {locale === "ka"
-                  ? "აღწერე დავალება და მიიღე შეთავაზებები"
-                  : "Describe your project and get proposals"}
+                {t("browse.postAJobToFindProDescription")}
               </p>
             </div>
           </div>

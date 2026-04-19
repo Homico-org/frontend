@@ -43,13 +43,11 @@ export default function JobServicePicker({
   selectedServices,
   onServicesChange,
 }: JobServicePickerProps) {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { categories } = useCategories();
   const [pendingCategory, setPendingCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { aiResults, aiLoading, search: aiSearch, clear: aiClear } = useAiServiceSearch();
-
-  const pick = (en: string, ka: string) => locale === 'ka' ? ka : en;
 
   // Resolve AI results to actual service items
   const aiMatchedServices = useMemo(() => {
@@ -155,7 +153,7 @@ export default function JobServicePicker({
           nameKa: svc.nameKa,
           unit: primaryUnit?.unit ?? svc.unit,
           unitKey: primaryUnit?.key,
-          unitName: primaryUnit ? (locale === 'ka' ? primaryUnit.label.ka : primaryUnit.label.en) : svc.unitName,
+          unitName: primaryUnit ? pick({ en: primaryUnit.label.en, ka: primaryUnit.label.ka }) : svc.unitName,
           unitNameKa: primaryUnit?.label.ka ?? svc.unitNameKa,
           quantity: 1,
           budget: 0,
@@ -243,10 +241,10 @@ export default function JobServicePicker({
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-sm font-medium block truncate" style={{ color: 'var(--hm-fg-primary)' }}>
-                      {pick(svc.name, svc.nameKa)}
+                      {pick({ en: svc.name, ka: svc.nameKa })}
                     </span>
                     <span className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
-                      {pick(sub.name, sub.nameKa)}
+                      {pick({ en: sub.name, ka: sub.nameKa })}
                     </span>
                   </div>
                   {svc.basePrice > 0 && (
@@ -279,7 +277,7 @@ export default function JobServicePicker({
             <CategoryIcon type={selectedCategory} className="w-5 h-5" />
           </span>
           <span className="text-sm font-semibold flex-1" style={{ color: 'var(--hm-fg-primary)' }}>
-            {locale === 'ka' ? selectedCategoryData.nameKa : selectedCategoryData.name}
+            {pick({ en: selectedCategoryData.name, ka: selectedCategoryData.nameKa })}
           </span>
           <button
             type="button"
@@ -305,7 +303,7 @@ export default function JobServicePicker({
               <CategoryIcon type={cat.key} className="w-5 h-5" />
             </span>
             <span className="text-xs font-medium leading-tight line-clamp-2">
-              {locale === 'ka' ? cat.nameKa : cat.name}
+              {pick({ en: cat.name, ka: cat.nameKa })}
             </span>
           </button>
         ))}
@@ -356,7 +354,7 @@ export default function JobServicePicker({
                 {/* Subcategory header */}
                 <div className="px-4 py-2.5 bg-[var(--hm-bg-tertiary)]/60 border-b border-[var(--hm-border)]">
                   <span className="text-xs font-semibold text-[var(--hm-fg-secondary)]">
-                    {locale === 'ka' ? subcat.nameKa : subcat.name}
+                    {pick({ en: subcat.name, ka: subcat.nameKa })}
                   </span>
                 </div>
 
@@ -374,10 +372,10 @@ export default function JobServicePicker({
                     const aboveMarket = budget > 0 && budget > marketMax;
                     const belowMarket = budget > 0 && budget < marketMin;
                     const unitLabel = selection
-                      ? (locale === 'ka' ? selection.unitNameKa : selection.unitName)
+                      ? pick({ en: selection.unitName, ka: selection.unitNameKa })
                       : selectedUnit
-                        ? (locale === 'ka' ? selectedUnit.label.ka : selectedUnit.label.en)
-                        : (locale === 'ka' ? svc.unitNameKa : svc.unitName);
+                        ? pick({ en: selectedUnit.label.en, ka: selectedUnit.label.ka })
+                        : pick({ en: svc.unitName, ka: svc.unitNameKa });
 
                     return (
                       <div key={svc.key} className="px-4 py-3">
@@ -401,7 +399,7 @@ export default function JobServicePicker({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap mb-1">
                               <span className="text-sm font-medium text-[var(--hm-fg-primary)]">
-                                {locale === 'ka' ? svc.nameKa : svc.name}
+                                {pick({ en: svc.name, ka: svc.nameKa })}
                               </span>
                               {!isChecked && unitLabel && (
                                 <span className="text-[11px] text-[var(--hm-fg-muted)] bg-[var(--hm-bg-tertiary)] px-1.5 py-0.5 rounded">
@@ -435,7 +433,7 @@ export default function JobServicePicker({
                                                     ...s,
                                                     unit: uo.unit,
                                                     unitKey: uo.key,
-                                                    unitName: locale === 'ka' ? uo.label.ka : uo.label.en,
+                                                    unitName: pick({ en: uo.label.en, ka: uo.label.ka }),
                                                     unitNameKa: uo.label.ka,
                                                     marketMin: uo.defaultPrice,
                                                     marketMax: uo.maxPrice ?? uo.defaultPrice,
@@ -450,7 +448,7 @@ export default function JobServicePicker({
                                           }`}
                                           style={!isActive ? { border: '1px solid var(--hm-border-subtle)' } : undefined}
                                         >
-                                          {locale === 'ka' ? uo.label.ka : uo.label.en}
+                                          {pick({ en: uo.label.en, ka: uo.label.ka })}
                                           {uo.defaultPrice > 0 && (
                                             <span className={`ml-1 ${isActive ? 'opacity-80' : 'opacity-50'}`}>~{uo.defaultPrice}₾</span>
                                           )}
@@ -469,7 +467,7 @@ export default function JobServicePicker({
                                     {/* Quantity */}
                                     <div className="flex items-center gap-1.5">
                                       <span className="text-[11px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>
-                                        {locale === 'ka' ? 'რაოდენობა' : 'Qty'}
+                                        {t('common.qty')}
                                       </span>
                                       <input
                                         type="number"
@@ -490,7 +488,7 @@ export default function JobServicePicker({
                                     {/* Per-unit price */}
                                     <div className="flex items-center gap-1.5 flex-1">
                                       <span className="text-[11px] font-medium shrink-0" style={{ color: 'var(--hm-fg-muted)' }}>
-                                        {locale === 'ka' ? 'ფასი' : 'Price'}/{unitLabel}
+                                        {t('common.price')}/{unitLabel}
                                       </span>
                                       <div className="relative flex-1 max-w-[120px]">
                                         <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
@@ -516,7 +514,7 @@ export default function JobServicePicker({
                                   <div className="flex items-center justify-between">
                                     {budget > 0 && (selection?.quantity ?? 1) > 1 ? (
                                       <span className="text-[11px] font-bold" style={{ color: 'var(--hm-brand-500)' }}>
-                                        = {budget * (selection?.quantity ?? 1)}₾ {locale === 'ka' ? 'ჯამი' : 'total'}
+                                        = {budget * (selection?.quantity ?? 1)}₾ {t('common.total').toLowerCase()}
                                       </span>
                                     ) : <span />}
                                     <div className="flex gap-1.5">
