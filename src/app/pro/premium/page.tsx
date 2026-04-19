@@ -170,7 +170,6 @@ function PremiumCard({
   isSelected,
   billingPeriod,
   currentTier,
-  locale,
   onSelect,
   onChoose,
   index,
@@ -179,12 +178,11 @@ function PremiumCard({
   isSelected: boolean;
   billingPeriod: BillingPeriod;
   currentTier: string;
-  locale: string;
   onSelect: () => void;
   onChoose: () => void;
   index: number;
 }) {
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
   const TierIcon = tier.icon;
   const isElite = tier.id === "elite";
   const price = tier.price[billingPeriod];
@@ -286,14 +284,14 @@ function PremiumCard({
           >
             <TierIcon className="w-7 h-7" style={{ color: tier.accentColor }} />
           </div>
-          <h3 
+          <h3
             className="text-2xl font-bold text-[var(--hm-fg-primary)] mb-2"
             style={{ fontFamily: "var(--font-sans)" }}
           >
-            {tier.name[locale === "ka" ? "ka" : "en"]}
+            {pick({ en: tier.name.en, ka: tier.name.ka })}
           </h3>
           <p className="text-[var(--hm-fg-muted)] text-sm">
-            {tier.tagline[locale === "ka" ? "ka" : "en"]}
+            {pick({ en: tier.tagline.en, ka: tier.tagline.ka })}
           </p>
         </div>
 
@@ -323,7 +321,7 @@ function PremiumCard({
               style={{ background: "#ECFDF5", color: "#059669" }}
             >
               <CheckCircle2 className="w-4 h-4" />
-              {locale === "ka" ? `დაზოგე ₾${tier.price.monthly * 12 - tier.price.yearly}` : `Save ₾${tier.price.monthly * 12 - tier.price.yearly}`}
+              {t('premium.saveAmount', { currency: tier.currency, amount: tier.price.monthly * 12 - tier.price.yearly })}
             </div>
           )}
         </div>
@@ -352,7 +350,7 @@ function PremiumCard({
                   )}
                 </div>
                 <span className={`text-sm ${feature.included ? "text-[var(--hm-fg-muted)]" : "text-[var(--hm-fg-secondary)]"}`}>
-                  {feature.text[locale === "ka" ? "ka" : "en"]}
+                  {pick({ en: feature.text.en, ka: feature.text.ka })}
                 </span>
               </li>
             );
@@ -474,7 +472,7 @@ function TestimonialCard({
         {[...Array(5)].map((_, i) => (
           <Star 
             key={i} 
-            className={`w-4 h-4 ${i < rating ? "fill-amber-400 text-amber-400" : "text-neutral-200"}`} 
+            className={`w-4 h-4 ${i < rating ? "fill-amber-400 text-amber-400" : "text-[var(--hm-border)]"}`}
           />
         ))}
       </div>
@@ -532,7 +530,7 @@ function FAQItem({
 
 export default function PremiumPlansPage() {
   const { user, isAuthenticated } = useAuth();
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const router = useRouter();
   const { trackEvent } = useAnalytics();
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("yearly");
@@ -711,45 +709,22 @@ export default function PremiumPlansPage() {
                 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-[var(--hm-fg-primary)] mb-6 leading-[1.1]"
                 style={{ fontFamily: "var(--font-sans)" }}
               >
-                {locale === "ka" ? (
-                  <>
-                    გახადე შენი ბიზნესი{" "}
-                    <span className="relative inline-block">
-                      <span 
-                        style={{ 
-                          background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.terracotta})`,
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
-                        }}
-                      >
-                        ლეგენდა
-                      </span>
-                      <div 
-                        className="absolute -bottom-2 left-0 right-0 h-1 rounded-full"
-                        style={{ background: `linear-gradient(to right, ${COLORS.gold}, ${COLORS.terracotta})` }}
-                      />
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    Make Your Business{" "}
-                    <span className="relative inline-block">
-                      <span 
-                        style={{ 
-                          background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.terracotta})`,
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
-                        }}
-                      >
-                        Legendary
-                      </span>
-                      <div 
-                        className="absolute -bottom-2 left-0 right-0 h-1 rounded-full"
-                        style={{ background: `linear-gradient(to right, ${COLORS.gold}, ${COLORS.terracotta})` }}
-                      />
-                    </span>
-                  </>
-                )}
+                {t('premium.headlinePrefix')}{" "}
+                <span className="relative inline-block">
+                  <span
+                    style={{
+                      background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.terracotta})`,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}
+                  >
+                    {t('premium.headlineHighlight')}
+                  </span>
+                  <div
+                    className="absolute -bottom-2 left-0 right-0 h-1 rounded-full"
+                    style={{ background: `linear-gradient(to right, ${COLORS.gold}, ${COLORS.terracotta})` }}
+                  />
+                </span>
               </h1>
               <p className="text-lg sm:text-xl text-[var(--hm-fg-muted)] max-w-2xl mx-auto leading-relaxed">
                 {t('premium.joinEliteProfessionalsAndUnlock')}
@@ -808,7 +783,6 @@ export default function PremiumPlansPage() {
                   isSelected={selectedTier === tier.id}
                   billingPeriod={billingPeriod}
                   currentTier={currentTier}
-                  locale={locale}
                   onSelect={() => setSelectedTier(tier.id)}
                   onChoose={() => handleSelectPlan(tier.id)}
                   index={index}
@@ -915,8 +889,8 @@ export default function PremiumPlansPage() {
               {faqs.map((faq, i) => (
                 <FAQItem
                   key={i}
-                  question={faq.q[locale === "ka" ? "ka" : "en"]}
-                  answer={faq.a[locale === "ka" ? "ka" : "en"]}
+                  question={pick({ en: faq.q.en, ka: faq.q.ka })}
+                  answer={pick({ en: faq.a.en, ka: faq.a.ka })}
                   isOpen={openFAQ === i}
                   onToggle={() => setOpenFAQ(openFAQ === i ? null : i)}
                 />

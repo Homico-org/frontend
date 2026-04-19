@@ -249,7 +249,7 @@ export default function CategorySelector({
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                     isSubSelected
                       ? 'bg-[var(--hm-brand-500)] text-white'
-                      : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-neutral-200'
+                      : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]'
                   }`}
                 >
                   {locale === 'ka' ? sub.nameKa : sub.name}
@@ -296,7 +296,7 @@ export default function CategorySelector({
                         className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                           isSubSelected
                             ? 'bg-[var(--hm-brand-500)] text-white'
-                            : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-neutral-200'
+                            : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]'
                         }`}
                       >
                         {locale === 'ka' ? sub.nameKa : sub.name}

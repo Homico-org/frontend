@@ -139,15 +139,18 @@ export default function CriticalNotificationOverlay() {
       {/* Content */}
       <div className="relative w-full max-w-sm animate-scale-in">
         {/* Dismiss button */}
-        <button
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={dismissCurrent}
-          className="absolute -top-2 -right-2 z-10 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+          className="absolute -top-2 -right-2 z-10 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 hover:text-white"
+          aria-label={t('common.close')}
         >
           <X className="w-4 h-4 text-white/70" />
-        </button>
+        </Button>
 
         {/* Card */}
-        <div className="bg-neutral-900 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+        <div className="bg-[var(--hm-n-900)] rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
           {/* Header gradient */}
           <div className={`bg-gradient-to-br ${config.gradient} px-6 pt-8 pb-6 text-center relative`}>
             {/* Countdown timer - top right */}

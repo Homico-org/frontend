@@ -567,7 +567,7 @@ Heating:
                     <span className="text-sm text-[var(--hm-fg-muted)]">{t('tools.analyzer.orTakePhoto')}</span>
                     <button
                       onClick={(e) => e.stopPropagation()}
-                      className="p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-n-200)] transition-colors"
+                      className="p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-border)] transition-colors"
                     >
                       <Camera className="w-5 h-5 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
                     </button>

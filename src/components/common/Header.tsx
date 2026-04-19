@@ -10,7 +10,7 @@ import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useClickOutside } from "@/hooks/useClickOutside";
-import { Bell, Building2, ExternalLink, LogIn, Menu, Plus, UserPlus, X } from "lucide-react";
+import { Bell, Briefcase, Building2, ChevronRight, ExternalLink, LayoutGrid, LogIn, LogOut, Menu, Plus, Search, Shield, SlidersHorizontal, UserPlus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,7 +26,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { flatCategories } = useCategories();
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { unreadCount } = useNotifications();
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -55,9 +55,9 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
           (c.type === "subcategory" || c.type === "subsubcategory"),
       );
       if (!item) return key;
-      return locale === "ka" ? item.nameKa : item.name;
+      return pick({ en: item.name, ka: item.nameKa });
     },
-    [flatCategories, locale],
+    [flatCategories, pick],
   );
 
   // Prevent body scroll when mobile menu is open
@@ -242,25 +242,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                                   background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #D13C14 100%)`,
                                 }}
                               >
-                                <svg
-                                  className="w-4 h-4 text-white"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={1.5}
-                                    d="M5 3l7 4 7-4v11l-7 4-7-4V3z"
-                                  />
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={1.5}
-                                    d="M12 7v10"
-                                  />
-                                </svg>
+                                <Shield className="w-4 h-4 text-white" strokeWidth={1.5} />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <span
@@ -296,32 +278,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                             className="w-8 h-8 rounded-lg flex items-center justify-center"
                             style={{ background: ACCENT_COLOR }}
                           >
-                            <svg
-                              className="w-4 h-4 text-white"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                            >
-                              <rect
-                                x="2"
-                                y="7"
-                                width="20"
-                                height="14"
-                                rx="2"
-                                strokeWidth="1.5"
-                              />
-                              <path
-                                d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                              />
-                              <path
-                                d="M12 11v6M12 11l2.5 2.5M12 11l-2.5 2.5"
-                                strokeWidth="1.75"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
+                            <Briefcase className="w-4 h-4 text-white" strokeWidth={1.5} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <span
@@ -345,46 +302,11 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                           onClick={() => setShowDropdown(false)}
                         >
                           <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
-                            <svg
+                            <LayoutGrid
                               className="w-4 h-4"
                               style={{ color: ACCENT_COLOR }}
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                            >
-                              <rect
-                                x="3"
-                                y="3"
-                                width="7"
-                                height="7"
-                                rx="1.5"
-                                strokeWidth={1.5}
-                              />
-                              <rect
-                                x="14"
-                                y="3"
-                                width="7"
-                                height="7"
-                                rx="1.5"
-                                strokeWidth={1.5}
-                              />
-                              <rect
-                                x="3"
-                                y="14"
-                                width="7"
-                                height="7"
-                                rx="1.5"
-                                strokeWidth={1.5}
-                              />
-                              <rect
-                                x="14"
-                                y="14"
-                                width="7"
-                                height="7"
-                                rx="1.5"
-                                strokeWidth={1.5}
-                              />
-                            </svg>
+                              strokeWidth={1.5}
+                            />
                           </div>
                           <span>{t("header.adminPanel")}</span>
                         </Link>
@@ -397,22 +319,11 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                         onClick={() => { setShowDropdown(false); trackEvent('nav_click', 'settings'); }}
                       >
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
-                          <svg
+                          <SlidersHorizontal
                             className="w-4 h-4"
                             style={{ color: ACCENT_COLOR }}
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeWidth={1.5}
-                              d="M4 6h6M14 6h6M4 12h10M18 12h2M4 18h2M10 18h10"
-                            />
-                            <circle cx="12" cy="6" r="2" strokeWidth={1.5} />
-                            <circle cx="16" cy="12" r="2" strokeWidth={1.5} />
-                            <circle cx="8" cy="18" r="2" strokeWidth={1.5} />
-                          </svg>
+                            strokeWidth={1.5}
+                          />
                         </div>
                         <span>{t("common.settings")}</span>
                       </Link>
@@ -429,31 +340,11 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                         className="group flex items-center gap-3 w-full px-4 py-2.5 text-sm text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] justify-start h-auto rounded-none"
                       >
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
-                          <svg
+                          <LogOut
                             className="w-4 h-4"
                             style={{ color: ACCENT_COLOR }}
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.75}
-                              d="M16 17l5-5-5-5"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeWidth={1.75}
-                              d="M21 12H9"
-                            />
-                          </svg>
+                            strokeWidth={1.5}
+                          />
                         </div>
                         <span>{t("header.signOut")}</span>
                       </Button>
@@ -581,19 +472,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                     {t("header.alreadyHaveAnAccount")}
                   </span>
                 </div>
-                <svg
-                  className="w-5 h-5 text-[var(--hm-fg-muted)]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+                <ChevronRight className="w-5 h-5 text-[var(--hm-fg-muted)]" strokeWidth={2} />
               </Button>
 
               {/* Register Button */}
@@ -617,19 +496,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                     {t("header.createAFreeAccount")}
                   </span>
                 </div>
-                <svg
-                  className="w-5 h-5 text-white/70"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+                <ChevronRight className="w-5 h-5 text-white/70" strokeWidth={2} />
               </Link>
 
               {/* Divider */}
@@ -642,12 +509,13 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
               </div>
 
               {/* Post a Job as Guest - opens login modal */}
-              <button
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowMobileMenu(false);
                   openLoginModal();
                 }}
-                className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl border-2 border-dashed border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] transition-all active:scale-[0.98]"
+                className="flex items-center gap-3 w-full px-4 py-3.5 h-auto rounded-xl border-2 border-dashed border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] active:scale-[0.98] justify-start"
               >
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
                   <Plus className="w-5 h-5 text-[var(--hm-fg-secondary)]" />
@@ -660,7 +528,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                     {t("header.findProfessionals")}
                   </span>
                 </div>
-              </button>
+              </Button>
 
               {/* Browse link */}
               <Link
@@ -668,19 +536,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                 onClick={() => { setShowMobileMenu(false); trackEvent('nav_click', 'browse'); }}
                 className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-[var(--hm-bg-tertiary)]/50 transition-all"
               >
-                <svg
-                  className="w-5 h-5 text-[var(--hm-fg-muted)]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
+                <Search className="w-5 h-5 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />
                 <span className="text-sm text-[var(--hm-fg-secondary)]">
                   {t("header.browseProfessionals")}
                 </span>

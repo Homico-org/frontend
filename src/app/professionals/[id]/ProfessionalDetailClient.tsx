@@ -1634,7 +1634,7 @@ export default function ProfessionalDetailClient({
               variant="ghost"
               size="sm"
               onClick={() => backOrNavigate(router, "/professionals")}
-              className="rounded-xl bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)] transition-all h-9 sm:h-10 px-2.5 sm:px-3"
+              className="rounded-xl bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)] transition-all h-9 sm:h-10 px-2.5 sm:px-3"
               leftIcon={<ChevronLeft className="w-4 h-4" />}
             >
               <span className="hidden sm:inline">{t("common.back")}</span>
@@ -1645,7 +1645,7 @@ export default function ProfessionalDetailClient({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowShareMenu(!showShareMenu)}
-                className="rounded-xl bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)] transition-all h-9 sm:h-10 px-2.5 sm:px-3"
+                className="rounded-xl bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)] transition-all h-9 sm:h-10 px-2.5 sm:px-3"
                 leftIcon={<Share2 className="w-4 h-4" />}
               >
                 <span className="hidden sm:inline">{t("common.share")}</span>

@@ -3,13 +3,11 @@
 import { useProRegistration } from './hooks/useProRegistration';
 import { StepPhone, StepProfile, StepSelectServices, StepComplete } from './steps';
 import AvatarCropper from '@/components/common/AvatarCropper';
-import LanguageSelector from '@/components/common/LanguageSelector';
+import Header from '@/components/common/Header';
+import StepIndicator from './StepIndicator';
 import { Alert } from '@/components/ui/Alert';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ArrowLeft, HelpCircle } from 'lucide-react';
-import Image from 'next/image';
-import HomicoLogo from '@/components/common/HomicoLogo';
-import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 const STEP_CONFIG = {
   phone: { index: 0, titleEn: 'Verify Phone', titleKa: 'ტელეფონის ვერიფიკაცია', titleRu: 'Подтверждение телефона' },
@@ -25,16 +23,6 @@ interface ProRegistrationProps {
 export default function ProRegistration({ onSwitchToClient }: ProRegistrationProps) {
   const reg = useProRegistration();
   const { t, locale } = useLanguage();
-
-  const currentStepConfig = STEP_CONFIG[reg.currentStep];
-  const totalSteps = Object.keys(STEP_CONFIG).length - 1; // Exclude 'complete'
-  const progressPercent = ((currentStepConfig.index) / totalSteps) * 100;
-
-  const getStepTitle = () => {
-    if (locale === 'ka') return currentStepConfig.titleKa;
-    if (locale === 'ru') return currentStepConfig.titleRu;
-    return currentStepConfig.titleEn;
-  };
 
   // Show avatar cropper modal
   if (reg.showAvatarCropper && reg.rawAvatarImage) {
@@ -66,51 +54,35 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
 
   return (
     <div className="min-h-screen bg-[var(--hm-bg-page)] flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[var(--hm-border-subtle)]">
-        <div className="max-w-lg mx-auto px-3 sm:px-4">
-          <div className="h-12 flex items-center justify-between">
-            {reg.currentStep !== 'phone' ? (
-              <button
-                onClick={reg.handleBack}
-                className="flex items-center gap-1.5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors -ml-1 p-1"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="text-xs font-medium">{t('common.back')}</span>
-              </button>
-            ) : (
-              <Link href="/" className="flex items-center gap-2">
-                <HomicoLogo size={22} />
-                <span className="text-sm font-semibold text-[var(--hm-fg-primary)]">Homico</span>
-              </Link>
-            )}
-            <div className="flex items-center gap-2">
-              <LanguageSelector variant="compact" />
-              <Link href="/help" className="text-xs text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors">
-                {t('common.help')}
-              </Link>
-            </div>
-          </div>
+      <Header fixed={false} />
 
-          {/* Segmented progress */}
-          <div className="pb-2">
-            <div className="flex gap-1">
-              {Object.entries(STEP_CONFIG).filter(([k]) => k !== 'complete').map(([key, config]) => (
-                <div
-                  key={key}
-                  className={`flex-1 h-1 rounded-full transition-colors duration-300 ${
-                    config.index < currentStepConfig.index
-                      ? 'bg-[var(--hm-brand-500)]'
-                      : config.index === currentStepConfig.index
-                        ? 'bg-[var(--hm-brand-500)]/40'
-                        : 'bg-neutral-100'
-                  }`}
-                />
-              ))}
-            </div>
+      {/* Registration sub-bar: back button + stepper */}
+      <div className="sticky top-0 z-40 border-b border-[var(--hm-border-subtle)]" style={{ backgroundColor: 'var(--hm-bg-elevated)' }}>
+        <div className="max-w-2xl mx-auto px-3 sm:px-4 py-3 relative flex items-center">
+          {reg.currentStep !== 'phone' && (
+            <button
+              onClick={reg.handleBack}
+              className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors p-1"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-xs font-medium">{t('common.back')}</span>
+            </button>
+          )}
+
+          <div className="flex-1 flex justify-center">
+            <StepIndicator
+              size="sm"
+              steps={Object.entries(STEP_CONFIG)
+                .filter(([k]) => k !== 'complete')
+                .map(([k, c]) => ({
+                  id: k,
+                  title: locale === 'ka' ? c.titleKa : locale === 'ru' ? c.titleRu : c.titleEn,
+                }))}
+              currentStep={reg.currentStep}
+            />
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col">
@@ -182,7 +154,7 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
               <button
                 onClick={reg.handleNext}
                 disabled={reg.selectedServices.length === 0 || reg.isLoading}
-                className="w-full py-2.5 sm:py-3 rounded-xl font-medium text-sm sm:text-base text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--hm-brand-500)] hover:bg-[#A85D47] active:scale-[0.98]"
+                className="w-full py-2.5 sm:py-3 rounded-xl font-medium text-sm sm:text-base text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] active:scale-[0.98]"
               >
                 {reg.isLoading ? (
                   <span className="flex items-center justify-center gap-2">

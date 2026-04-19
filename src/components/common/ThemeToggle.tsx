@@ -12,7 +12,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="flex items-center justify-center h-9 w-9 rounded-xl bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-n-200)] transition-all"
+      className="flex items-center justify-center h-9 w-9 rounded-xl bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-border)] transition-all"
       title={isDark ? t('header.lightMode') : t('header.darkMode')}
       aria-label={isDark ? t('header.lightMode') : t('header.darkMode')}
     >

@@ -185,7 +185,7 @@ export default function AboutTab({
                 setEditBio(bio || '');
                 setIsEditingBio(true);
               }}
-              className="w-8 h-8 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-n-200)] transition-colors"
+              className="w-8 h-8 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)] transition-colors"
             >
               <Edit3 className="w-4 h-4" />
             </button>
@@ -250,7 +250,7 @@ export default function AboutTab({
                 setEditServices(customServices || []);
                 setIsEditingServices(true);
               }}
-              className="w-8 h-8 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-n-200)] transition-colors"
+              className="w-8 h-8 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)] transition-colors"
             >
               <Edit3 className="w-4 h-4" />
             </button>
@@ -353,7 +353,7 @@ export default function AboutTab({
                   });
                   setIsEditingSocial(true);
                 }}
-                className="w-8 h-8 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-n-200)] transition-colors"
+                className="w-8 h-8 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)] transition-colors"
               >
                 <Edit3 className="w-4 h-4" />
               </button>
@@ -560,7 +560,7 @@ export default function AboutTab({
                   href={websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)] transition-colors"
+                  className="w-10 h-10 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)] transition-colors"
                 >
                   <Globe className="w-4 h-4" />
                 </a>

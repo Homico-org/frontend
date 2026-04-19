@@ -2471,7 +2471,7 @@ export default function JobDetailClient() {
                           }}
                           title={t("common.edit")}
                           aria-label={t("common.edit")}
-                          className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-n-200)]"
+                          className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)]"
                         >
                           <Edit3 className="w-4 h-4" />
                         </Button>
@@ -2583,7 +2583,7 @@ export default function JobDetailClient() {
                             onClick={openPropertyEditModal}
                             title={t("common.edit")}
                             aria-label={t("common.edit")}
-                            className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-n-200)]"
+                            className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)]"
                           >
                             <Edit3 className="w-4 h-4" />
                           </Button>
@@ -2679,7 +2679,7 @@ export default function JobDetailClient() {
                             onClick={openWorkTypesEditModal}
                             title={t("common.edit")}
                             aria-label={t("common.edit")}
-                            className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-n-200)]"
+                            className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)]"
                           >
                             <Edit3 className="w-4 h-4" />
                           </Button>
@@ -2725,7 +2725,7 @@ export default function JobDetailClient() {
                             onClick={openRequirementsEditModal}
                             title={t("common.edit")}
                             aria-label={t("common.edit")}
-                            className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-n-200)]"
+                            className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)]"
                           >
                             <Edit3 className="w-4 h-4" />
                           </Button>
@@ -4110,7 +4110,7 @@ export default function JobDetailClient() {
               }}
             />
             {/* Main bar */}
-            <div className="bg-white/95 backdrop-blur-xl border-t border-white/50 shadow-[0_-8px_32px_rgba(0,0,0,0.12)]">
+            <div className="bg-[var(--hm-bg-elevated)]/95 backdrop-blur-xl border-t border-[var(--hm-border)] shadow-[0_-8px_32px_rgba(0,0,0,0.12)]">
               <div className="max-w-6xl mx-auto px-4 py-3.5 sm:py-3 flex items-center gap-4">
                 {/* Desktop: value text with animated dot */}
                 <div className="hidden sm:flex items-center gap-3 flex-1 min-w-0">

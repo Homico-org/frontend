@@ -2,10 +2,11 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import CategoryPickerModal from "@/components/browse/CategoryPickerModal";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useJobsContext } from "@/contexts/JobsContext";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, type Locale } from "@/contexts/LanguageContext";
 import {
   ChevronDown,
   LayoutGrid,
@@ -45,12 +46,12 @@ const SORT_OPTIONS = [
   { value: "budget-low", key: "browse.sort.budgetLow" },
 ];
 
-function getCityLabel(cityValue: string, locale: string): string {
+type PickFn = (values: Partial<Record<Locale, string | undefined>>, fallback?: string) => string;
+
+function getCityLabel(cityValue: string, pick: PickFn): string {
   const city = CITIES.find((c) => c.value === cityValue);
   if (!city) return cityValue;
-  if (locale === "ru") return city.labelRu;
-  if (locale === "en") return city.labelEn;
-  return city.labelKa;
+  return pick({ en: city.labelEn, ka: city.labelKa, ru: city.labelRu }, cityValue);
 }
 
 interface DropdownWrapperProps {
@@ -125,7 +126,7 @@ function ActivePill({ label, onRemove }: { label: string; onRemove: () => void }
 }
 
 export default function JobsFilterBar() {
-  const { t, locale } = useLanguage();
+  const { t, pick } = useLanguage();
   const { categories } = useCategories();
   const { filters, setFilters } = useJobsContext();
 
@@ -137,16 +138,16 @@ export default function JobsFilterBar() {
   // Label lookup from category tree
   const getLabel = useCallback((key: string): string => {
     for (const cat of categories) {
-      if (cat.key === key) return locale === 'ka' ? cat.nameKa : cat.name;
+      if (cat.key === key) return pick({ en: cat.name, ka: cat.nameKa });
       for (const sub of cat.subcategories) {
-        if (sub.key === key) return locale === 'ka' ? sub.nameKa : sub.name;
+        if (sub.key === key) return pick({ en: sub.name, ka: sub.nameKa });
         for (const svc of (sub.services ?? [])) {
-          if (svc.key === key) return locale === 'ka' ? svc.nameKa : svc.name;
+          if (svc.key === key) return pick({ en: svc.name, ka: svc.nameKa });
         }
       }
     }
     return key;
-  }, [categories, locale]);
+  }, [categories, pick]);
 
   const hasActiveFilters =
     (filters.location && filters.location !== "all") ||
@@ -161,7 +162,7 @@ export default function JobsFilterBar() {
   ].filter(Boolean).length;
 
   const locationLabel = filters.location && filters.location !== "all"
-    ? getCityLabel(filters.location, locale)
+    ? getCityLabel(filters.location, pick)
     : t("browse.allCities");
 
   const budgetLabel = filters.budgetMin !== null || filters.budgetMax !== null
@@ -285,7 +286,7 @@ export default function JobsFilterBar() {
                       : "border-[var(--hm-border-subtle)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-brand-500)]/40",
                   ].join(" ")}
                 >
-                  {getCityLabel(v, locale)}
+                  {getCityLabel(v, pick)}
                 </button>
               ))}
             </div>
@@ -314,7 +315,7 @@ export default function JobsFilterBar() {
                       : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]",
                   ].join(" ")}
                 >
-                  {getCityLabel(city.value, locale)}
+                  {getCityLabel(city.value, pick)}
                 </button>
               ))}
             </div>
@@ -349,21 +350,27 @@ export default function JobsFilterBar() {
               ))}
             </div>
             <div className="flex gap-2 items-center">
-              <input
-                type="number"
-                placeholder={t("browse.min")}
-                value={draftMin}
-                onChange={(e) => setDraftMin(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] text-sm text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)]/50"
-              />
+              <div className="flex-1">
+                <Input
+                  type="number"
+                  variant="filled"
+                  inputSize="sm"
+                  placeholder={t("browse.min")}
+                  value={draftMin}
+                  onChange={(e) => setDraftMin(e.target.value)}
+                />
+              </div>
               <span className="text-[var(--hm-fg-muted)] text-sm">—</span>
-              <input
-                type="number"
-                placeholder={t("browse.max")}
-                value={draftMax}
-                onChange={(e) => setDraftMax(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] text-sm text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)] focus:outline-none focus:border-[var(--hm-brand-500)]/50"
-              />
+              <div className="flex-1">
+                <Input
+                  type="number"
+                  variant="filled"
+                  inputSize="sm"
+                  placeholder={t("browse.max")}
+                  value={draftMax}
+                  onChange={(e) => setDraftMax(e.target.value)}
+                />
+              </div>
             </div>
             <div className="flex gap-2">
               <Button variant="ghost" size="sm" onClick={clearBudget} className="flex-1 text-xs">
@@ -373,7 +380,7 @@ export default function JobsFilterBar() {
                 variant="default"
                 size="sm"
                 onClick={applyBudget}
-                className="flex-1 text-xs bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white border-0"
+                className="flex-1 text-xs"
               >
                 {t("browse.applyFilters")}
               </Button>
@@ -440,7 +447,7 @@ export default function JobsFilterBar() {
         <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
           {filters.location && filters.location !== "all" && (
             <ActivePill
-              label={getCityLabel(filters.location, locale)}
+              label={getCityLabel(filters.location, pick)}
               onRemove={() => setFilters({ ...filters, location: "all" })}
             />
           )}
@@ -459,13 +466,14 @@ export default function JobsFilterBar() {
             />
           ))}
           {activeFilterCount >= 2 && (
-            <button
-              type="button"
+            <Button
+              variant="link"
+              size="sm"
               onClick={clearAllFilters}
-              className="text-xs text-[var(--hm-brand-500)] hover:underline font-medium ml-1"
+              className="text-xs ml-1"
             >
               {t("browse.clearAll")}
-            </button>
+            </Button>
           )}
         </div>
       )}

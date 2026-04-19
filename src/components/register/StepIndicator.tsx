@@ -95,7 +95,7 @@ export default function StepIndicator({
                       ? 'bg-[var(--hm-brand-500)] text-white'
                       : isCurrent
                       ? 'bg-[var(--hm-brand-500)] text-white ring-4 ring-[var(--hm-brand-500)]/20'
-                      : 'bg-[var(--hm-bg-tertiary)] text-neutral-400'
+                      : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                   }`}
                 >
                   {isCompleted ? (
@@ -111,7 +111,7 @@ export default function StepIndicator({
                     className={`${sizes.title} font-medium text-center whitespace-nowrap ${
                       isCurrent || isCompleted
                         ? 'text-[var(--hm-fg-primary)]'
-                        : 'text-neutral-400'
+                        : 'text-[var(--hm-fg-muted)]'
                     }`}
                   >
                     {step.title}
@@ -125,7 +125,7 @@ export default function StepIndicator({
                   className={`${sizes.lineWidth} ${sizes.lineHeight} mx-2 sm:mx-3 transition-all duration-300 flex-shrink-0 ${
                     index < currentIndex
                       ? 'bg-[var(--hm-brand-500)]'
-                      : 'bg-neutral-200'
+                      : 'bg-[var(--hm-border-subtle)]'
                   }`}
                 />
               )}
@@ -158,7 +158,7 @@ export default function StepIndicator({
                     ? 'bg-[var(--hm-brand-500)] text-white'
                     : isCurrent
                     ? 'bg-[var(--hm-brand-500)] text-white ring-4 ring-[var(--hm-brand-500)]/20'
-                    : 'bg-[var(--hm-bg-tertiary)] text-neutral-400'
+                    : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
                 } ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
               >
                 {isCompleted ? (
@@ -174,7 +174,7 @@ export default function StepIndicator({
                   className={`w-0.5 h-8 my-1 transition-all duration-300 ${
                     index < currentIndex
                       ? 'bg-[var(--hm-brand-500)]'
-                      : 'bg-neutral-200'
+                      : 'bg-[var(--hm-border-subtle)]'
                   }`}
                 />
               )}
@@ -186,7 +186,7 @@ export default function StepIndicator({
                 className={`${sizes.title} font-medium ${
                   isCurrent || isCompleted
                     ? 'text-[var(--hm-fg-primary)]'
-                    : 'text-neutral-400'
+                    : 'text-[var(--hm-fg-muted)]'
                 }`}
               >
                 {step.title}
@@ -194,7 +194,7 @@ export default function StepIndicator({
               {step.subtitle && (
                 <span
                   className={`${sizes.subtitle} ${
-                    isCurrent ? 'text-neutral-500' : 'text-neutral-400'
+                    isCurrent ? 'text-[var(--hm-fg-secondary)]' : 'text-[var(--hm-fg-muted)]'
                   }`}
                 >
                   {step.subtitle}
@@ -242,7 +242,7 @@ export function StepDots({
               ? 'bg-[var(--hm-brand-500)] scale-125'
               : index < currentStep
               ? 'bg-[var(--hm-brand-500)]/50'
-              : 'bg-neutral-200'
+              : 'bg-[var(--hm-border-subtle)]'
           }`}
         />
       ))}

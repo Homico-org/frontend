@@ -1,17 +1,16 @@
 'use client';
 
 import { Suspense } from 'react';
-import Link from 'next/link';
 import { useRegistration } from '@/components/register/hooks';
 import { StepAccount } from '@/components/register/steps';
-import LanguageSelector from '@/components/common/LanguageSelector';
+import Header from '@/components/common/Header';
 import { OTPInput } from '@/components/ui/OTPInput';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ArrowLeft, HelpCircle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 function ClientRegisterContent() {
@@ -31,15 +30,19 @@ function ClientRegisterContent() {
   if (reg.showVerification) {
     return (
       <div className="min-h-screen flex flex-col bg-[var(--hm-bg-page)]">
-        <header className="px-3 sm:px-4 py-3 sm:py-4 flex items-center">
-          <button
-            onClick={() => reg.setShowVerification(false)}
-            className="flex items-center gap-2 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">{t('common.back')}</span>
-          </button>
-        </header>
+        <Header fixed={false} />
+
+        <div className="sticky top-0 z-40 border-b border-[var(--hm-border-subtle)]" style={{ backgroundColor: 'var(--hm-bg-elevated)' }}>
+          <div className="max-w-lg mx-auto px-3 sm:px-4 py-2.5">
+            <button
+              onClick={() => reg.setShowVerification(false)}
+              className="flex items-center gap-1.5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors -ml-1 p-1"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-xs font-medium">{t('common.back')}</span>
+            </button>
+          </div>
+        </div>
 
         <main className="flex-1 flex items-center justify-center px-4 pb-8">
           <Card className="w-full max-w-sm p-5 sm:p-6 text-center">
@@ -97,25 +100,19 @@ function ClientRegisterContent() {
 
   return (
     <div className="min-h-screen bg-[var(--hm-bg-page)] flex flex-col">
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[var(--hm-border-subtle)]">
-        <div className="max-w-lg mx-auto px-3 sm:px-4">
-          <div className="h-12 flex items-center justify-between">
-            <button
-              onClick={() => router.push('/register')}
-              className="flex items-center gap-1.5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-xs font-medium">{t('common.back')}</span>
-            </button>
-            <div className="flex items-center gap-2">
-              <LanguageSelector variant="compact" />
-              <Link href="/help" className="text-xs text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)] transition-colors">
-                {t('common.help')}
-              </Link>
-            </div>
-          </div>
+      <Header fixed={false} />
+
+      <div className="sticky top-0 z-40 border-b border-[var(--hm-border-subtle)]" style={{ backgroundColor: 'var(--hm-bg-elevated)' }}>
+        <div className="max-w-lg mx-auto px-3 sm:px-4 py-2.5">
+          <button
+            onClick={() => router.push('/register')}
+            className="flex items-center gap-1.5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors -ml-1 p-1"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-xs font-medium">{t('common.back')}</span>
+          </button>
         </div>
-      </header>
+      </div>
 
       <main className="flex-1 py-4 sm:py-6">
         <div className="max-w-lg mx-auto px-3 sm:px-4">

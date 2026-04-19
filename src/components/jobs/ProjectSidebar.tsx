@@ -228,7 +228,7 @@ export function ProjectSidebarMobile({
                 ? "opacity-40 cursor-not-allowed bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]"
                 : isActive
                   ? "text-white shadow-md"
-                  : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)]"
+                  : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]"
               }
             `}
             style={isActive && !isDisabled ? { backgroundColor: ACCENT } : {}}

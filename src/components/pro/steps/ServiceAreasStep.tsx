@@ -137,7 +137,7 @@ export default function ServiceAreasStep({
                         ${
                           isSelected
                             ? "bg-[var(--hm-brand-500)] text-white shadow-md shadow-[var(--hm-brand-500)]/20"
-                            : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-n-200)]"
+                            : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]"
                         }
                       `}
                     >

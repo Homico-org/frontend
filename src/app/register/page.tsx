@@ -1,17 +1,14 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import Header from '@/components/common/Header';
 import HomicoLogo from '@/components/common/HomicoLogo';
-import LanguageSelector from '@/components/common/LanguageSelector';
-import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackEvent } from '@/hooks/useTracker';
-import { ArrowRight, Briefcase, CheckCircle2, Search, Shield, Star, Users } from 'lucide-react';
+import { ArrowRight, Briefcase, Search, Shield, Star, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 function RegisterContent() {
@@ -50,19 +47,7 @@ function RegisterContent() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
-      {/* Header */}
-      <header className="px-4 sm:px-6 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <HomicoLogo size={28} className="h-7 w-7" />
-          <span className="text-[18px] font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>Homico</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <LanguageSelector variant="compact" />
-          <Button variant="outline" size="sm" onClick={() => openLoginModal()}>
-            {pick('Log In', 'შესვლა')}
-          </Button>
-        </div>
-      </header>
+      <Header fixed={false} />
 
       {/* Main */}
       <main className="flex-1 flex items-center justify-center px-4 py-8 sm:py-16">

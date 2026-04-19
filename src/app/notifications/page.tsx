@@ -518,7 +518,7 @@ function NotificationsPageContent() {
                 className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
                   activeFilter === filter.key
                     ? 'bg-[var(--hm-brand-500)] text-white'
-                    : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-neutral-200'
+                    : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]'
                 }`}
               >
                 {filter.label}
