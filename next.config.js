@@ -36,6 +36,12 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns', 'framer-motion'],
   },
+  // Short URL alias for SMS invites: /i/<token> → /invite/<token> (saves 6 chars)
+  async rewrites() {
+    return [
+      { source: '/i/:token', destination: '/invite/:token' },
+    ];
+  },
 }
 
 const nextConfigWithAnalyzer = withBundleAnalyzer(nextConfig);
