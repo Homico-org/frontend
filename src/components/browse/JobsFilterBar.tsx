@@ -3,13 +3,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import CategoryPickerModal from "@/components/browse/CategoryPickerModal";
+import CategoryScroller from "@/components/browse/CategoryScroller";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage, type Locale } from "@/contexts/LanguageContext";
 import {
   ChevronDown,
-  LayoutGrid,
   MapPin,
   Search,
   SlidersHorizontal,
@@ -132,7 +131,6 @@ export default function JobsFilterBar() {
   const { filters, setFilters } = useJobsContext();
 
   const [open, setOpen] = useState<OpenDropdown>(null);
-  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [draftMin, setDraftMin] = useState<string>(filters.budgetMin?.toString() ?? "");
   const [draftMax, setDraftMax] = useState<string>(filters.budgetMax?.toString() ?? "");
   const [localSearch, setLocalSearch] = useState(filters.searchQuery);
@@ -186,27 +184,18 @@ export default function JobsFilterBar() {
       : `${filters.budgetMin ?? 0}-${filters.budgetMax}₾`
     : t("browse.budget");
 
-  const categoryButtonActive = filters.subcategories.length > 0;
-  const categoryButtonLabel = categoryButtonActive
-    ? `${t('browse.category')} (${filters.subcategories.length})`
-    : t('browse.category');
+  function handleSelectCategory(key: string | null) {
+    // Functional updater so back-to-back setFilters calls (category + subs)
+    // from CategoryScroller don't overwrite each other with stale state.
+    setFilters((prev) => ({ ...prev, category: key }));
+  }
 
-  function handleCategoryApply(keys: string[]) {
-    const parentCats = new Set<string>();
-    for (const key of keys) {
-      for (const cat of categories) {
-        const found = cat.subcategories.some(
-          sub => sub.key === key || (sub.services ?? []).some(svc => svc.key === key)
-        );
-        if (found) { parentCats.add(cat.key); break; }
-      }
-    }
-    setFilters({
-      ...filters,
+  function handleSubcategoriesChange(keys: string[]) {
+    setFilters((prev) => ({
+      ...prev,
       subcategories: keys,
       subcategory: keys[0] ?? null,
-      category: parentCats.size === 1 ? Array.from(parentCats)[0] : null,
-    });
+    }));
   }
 
   function applyBudget() {
@@ -251,12 +240,11 @@ export default function JobsFilterBar() {
 
   return (
     <div className="mb-2">
-      <CategoryPickerModal
-        isOpen={categoryModalOpen}
-        onClose={() => setCategoryModalOpen(false)}
-        selectedKeys={filters.subcategories}
-        onApply={handleCategoryApply}
-        activeCategory={filters.category ?? undefined}
+      <CategoryScroller
+        selectedCategory={filters.category}
+        onSelectCategory={handleSelectCategory}
+        selectedSubcategories={filters.subcategories}
+        onSubcategoriesChange={handleSubcategoriesChange}
       />
 
       {/* Desktop filter bar */}
@@ -283,23 +271,6 @@ export default function JobsFilterBar() {
             </button>
           )}
         </div>
-
-        {/* Category */}
-        <button
-          type="button"
-          onClick={() => setCategoryModalOpen(true)}
-          className={[
-            "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all border",
-            "hover:border-[var(--hm-brand-500)]/40",
-            categoryButtonActive
-              ? "border-[var(--hm-brand-500)]/50 text-[var(--hm-brand-500)]"
-              : "border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)]",
-          ].join(" ")}
-          style={categoryButtonActive ? { backgroundColor: "rgba(239, 78, 36, 0.08)" } : undefined}
-        >
-          <span className="opacity-70"><LayoutGrid className="w-3.5 h-3.5" /></span>
-          <span>{categoryButtonLabel}</span>
-        </button>
 
         {/* Location */}
         <DropdownWrapper
@@ -463,22 +434,6 @@ export default function JobsFilterBar() {
         </DropdownWrapper>
       </div>
 
-      {/* Mobile */}
-      <div className="flex lg:hidden items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setCategoryModalOpen(true)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-sm font-medium text-[var(--hm-fg-primary)]"
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          <span>{t("browse.filters")}</span>
-          {activeFilterCount > 0 && (
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--hm-brand-500)] text-white text-[10px] font-bold">
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
-      </div>
 
       {/* Active filter pills */}
       {hasActiveFilters && (

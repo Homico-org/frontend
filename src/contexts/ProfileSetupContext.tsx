@@ -133,6 +133,12 @@ export interface ProfileSetupContextValue {
   selectedCategories: string[];
   selectedSubcategories: string[];
   servicePricing: {
+    // Stable catalog ids — source of truth
+    serviceId?: string;
+    categoryId?: string;
+    subcategoryId?: string;
+    unitId?: string;
+    // Human-readable keys kept for backward compat / display lookup
     serviceKey: string;
     categoryKey: string;
     subcategoryKey: string;
@@ -280,6 +286,10 @@ export function ProfileSetupProvider({
             const activeUnits = s.unitPrices?.filter(u => u.isActive && u.price > 0) || [];
             if (activeUnits.length > 0) {
               return activeUnits.map(u => ({
+                serviceId: s.serviceId,
+                categoryId: s.categoryId,
+                subcategoryId: s.subcategoryId,
+                unitId: u.unitId,
                 serviceKey: s.serviceKey,
                 categoryKey: s.categoryKey,
                 subcategoryKey: s.subcategoryKey,
@@ -291,6 +301,9 @@ export function ProfileSetupProvider({
             // Fallback: single-unit legacy
             if (s.price > 0) {
               return [{
+                serviceId: s.serviceId,
+                categoryId: s.categoryId,
+                subcategoryId: s.subcategoryId,
                 serviceKey: s.serviceKey,
                 categoryKey: s.categoryKey,
                 subcategoryKey: s.subcategoryKey,
@@ -898,15 +911,19 @@ export function ProfileSetupProvider({
 
   // ── Validation ───────────────────────────────────────────────────────────────
 
-  // Require: at least 1 active service with price > 0 across all subcategories
-  const allActiveServices = selectedSubcategoriesWithPricing.flatMap(s => s.services.filter(svc => svc.isActive));
+  // Strict rule: ≥1 active service, AND every active service has a price.
+  // Safe because the services UI auto-seeds the catalog default price when a
+  // service is toggled on — users can't leave an active service with price=0
+  // unless they explicitly zero it out.
   const isServicePriced = (svc: { price: number; unitPrices?: UnitPriceEntry[] }) => {
     const activeUnits = svc.unitPrices?.filter(u => u.isActive && u.price > 0) || [];
     return activeUnits.length > 0 || svc.price > 0;
   };
+  const allActiveServices = selectedSubcategoriesWithPricing.flatMap(s =>
+    s.services.filter(svc => svc.isActive)
+  );
   const allActiveServicesPriced =
-    allActiveServices.length > 0 &&
-    allActiveServices.every(isServicePriced);
+    allActiveServices.length > 0 && allActiveServices.every(isServicePriced);
 
   const validation: ProfileSetupValidation = useMemo(
     () => ({
@@ -915,13 +932,10 @@ export function ProfileSetupProvider({
       experience: selectedSubcategoriesWithPricing.length > 0,
       categories: selectedSubcategoriesWithPricing.length > 0,
       subcategories: selectedSubcategoriesWithPricing.length > 0,
-      pricing:
-        selectedSubcategoriesWithPricing.length > 0
-          ? selectedSubcategoriesWithPricing.every((s) =>
-              s.services.length === 0 ||
-              s.services.filter((svc) => svc.isActive).every(isServicePriced),
-            )
-          : servicePricing.length > 0,
+      // Same strict rule as canProceedFromStep('services') — every active
+      // service must be priced. Auto-seed on toggle keeps this always true
+      // unless the user explicitly zeroes a price.
+      pricing: allActiveServicesPriced,
       serviceAreas: formData.nationwide || formData.serviceAreas.length > 0,
       portfolio: true,
     }),

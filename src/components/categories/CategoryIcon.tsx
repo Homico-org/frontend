@@ -27,6 +27,7 @@ export default function CategoryIcon({ type, className = '' }: CategoryIconProps
       );
 
     case 'architect':
+    case 'architects':
     case 'architecture':
       // Blueprint/Building icon
       return (
@@ -222,6 +223,7 @@ export default function CategoryIcon({ type, className = '' }: CategoryIconProps
       );
 
     case 'painter':
+    case 'painters':
     case 'paint':
       // Paint roller icon
       return (
@@ -287,6 +289,7 @@ export default function CategoryIcon({ type, className = '' }: CategoryIconProps
       );
 
     case 'roofer':
+    case 'roofing':
       // Roof icon
       return (
         <svg className={className} viewBox="0 0 32 32" fill="none">
@@ -443,6 +446,7 @@ export default function CategoryIcon({ type, className = '' }: CategoryIconProps
       );
 
     case 'garden':
+    case 'landscaping':
     case 'landscaper_gardener':
       // Plant/leaf icon
       return (
@@ -468,6 +472,8 @@ export default function CategoryIcon({ type, className = '' }: CategoryIconProps
         </svg>
       );
 
+    case 'pool':
+    case 'pool_spa':
     case 'pool_specialist':
       // Pool/water icon
       return (
@@ -502,6 +508,55 @@ export default function CategoryIcon({ type, className = '' }: CategoryIconProps
           <path d="M10 8V24" stroke="currentColor" strokeWidth="1.5"/>
           <path d="M16 8V24" stroke="currentColor" strokeWidth="1.5"/>
           <path d="M22 8V24" stroke="currentColor" strokeWidth="1.5"/>
+        </svg>
+      );
+
+    case 'movers':
+      // Moving truck icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <path d="M3 10H18V22H3V10Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M18 14H25L29 18V22H18V14Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <circle cx="9" cy="24" r="2.5" stroke="currentColor" strokeWidth="2"/>
+          <circle cx="23" cy="24" r="2.5" stroke="currentColor" strokeWidth="2"/>
+          <path d="M6 13V19M10 13V19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+        </svg>
+      );
+
+    case 'contractor':
+    case 'contractors':
+      // Hard hat icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <path d="M4 22C4 16 8 12 16 12C24 12 28 16 28 22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M3 22H29V25C29 25.5523 28.5523 26 28 26H4C3.44772 26 3 25.5523 3 25V22Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <path d="M13 12V7C13 6.44772 13.4477 6 14 6H18C18.5523 6 19 6.44772 19 7V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M16 12V17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+        </svg>
+      );
+
+    case 'window_door':
+    case 'windows_doors':
+      // Window + door icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <rect x="4" y="4" width="11" height="14" rx="1" stroke="currentColor" strokeWidth="2"/>
+          <path d="M4 11H15M9.5 4V18" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M17 8C17 6.89543 17.8954 6 19 6H26C27.1046 6 28 6.89543 28 8V28H17V8Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+          <circle cx="25" cy="17" r="1" fill="currentColor"/>
+        </svg>
+      );
+
+    case 'mason':
+    case 'concrete_masonry':
+      // Brick wall icon
+      return (
+        <svg className={className} viewBox="0 0 32 32" fill="none">
+          <rect x="4" y="6" width="24" height="20" rx="1" stroke="currentColor" strokeWidth="2"/>
+          <path d="M4 12H28M4 18H28M4 24H28" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M11 6V12M19 6V12" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M8 12V18M16 12V18M24 12V18" stroke="currentColor" strokeWidth="1.5"/>
+          <path d="M11 18V24M19 18V24" stroke="currentColor" strokeWidth="1.5"/>
         </svg>
       );
 

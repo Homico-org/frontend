@@ -15,6 +15,7 @@ export interface SubSubcategory {
 }
 
 export interface CatalogUnitOption {
+  id?: string; // Stable permanent identifier — save selections by id
   key: string;
   unit: string;
   label: { en: string; ka: string; ru: string };
@@ -23,6 +24,7 @@ export interface CatalogUnitOption {
 }
 
 export interface CatalogServiceItem {
+  id?: string; // Stable permanent identifier — save selections by id
   key: string;
   name: string;
   nameKa: string;
@@ -38,6 +40,7 @@ export interface CatalogServiceItem {
 }
 
 export interface Subcategory {
+  id?: string; // Stable permanent identifier — save selections by id
   key: string;
   name: string;
   nameKa: string;
@@ -51,7 +54,7 @@ export interface Subcategory {
 }
 
 export interface Category {
-  id: string;
+  id: string; // Stable permanent identifier — save selections by id
   key: string;
   name: string;
   nameKa: string;
@@ -100,6 +103,7 @@ interface RawSubcategory {
 // Transform raw subcategory to frontend format
 function transformSubcategory(sub: RawSubcategory): Subcategory {
   return {
+    id: sub.id,
     key: sub.key,
     name: sub.name,
     nameKa: sub.nameKa || sub.name,
@@ -116,7 +120,7 @@ function transformSubcategory(sub: RawSubcategory): Subcategory {
 // Transform backend response to frontend format
 function transformCategory(cat: RawCategory): Category {
   return {
-    id: cat._id || cat.id || cat.key,
+    id: cat.id || cat._id || cat.key, // Prefer stable catalog id over Mongo _id
     key: cat.key,
     name: cat.name,
     nameKa: cat.nameKa || cat.name,

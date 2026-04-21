@@ -36,7 +36,7 @@ const DEFAULT_FILTERS: JobFilters = {
 
 interface JobsContextType {
   filters: JobFilters;
-  setFilters: (filters: JobFilters) => void;
+  setFilters: (filters: JobFilters | ((prev: JobFilters) => JobFilters)) => void;
   savedJobIds: Set<string>;
   handleSaveJob: (jobId: string) => void;
   appliedJobIds: Set<string>;
@@ -61,21 +61,27 @@ export function JobsProvider({ children }: { children: ReactNode }) {
     };
   });
 
-  // Wrap setFilters to also sync URL
-  const setFilters = useCallback((f: JobFilters) => {
-    setFiltersRaw(f);
-    // Sync to URL without triggering React re-render
-    if (typeof window !== 'undefined' && window.location.pathname.includes('/jobs')) {
-      const params = new URLSearchParams();
-      if (f.subcategories?.length > 0) params.set('subcategories', f.subcategories.join(','));
-      if (f.budgetMin !== null) params.set('budgetMin', f.budgetMin.toString());
-      if (f.budgetMax !== null) params.set('budgetMax', f.budgetMax.toString());
-      if (f.searchQuery) params.set('search', f.searchQuery);
-      const qs = params.toString();
-      const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
-      window.history.replaceState(null, '', newUrl);
-    }
-  }, []);
+  // Wrap setFilters to accept both a value and an updater fn, and sync URL.
+  const setFilters = useCallback(
+    (update: JobFilters | ((prev: JobFilters) => JobFilters)) => {
+      setFiltersRaw((prev) => {
+        const next = typeof update === 'function' ? update(prev) : update;
+        // Sync URL without triggering React re-render
+        if (typeof window !== 'undefined' && window.location.pathname.includes('/jobs')) {
+          const params = new URLSearchParams();
+          if (next.subcategories?.length > 0) params.set('subcategories', next.subcategories.join(','));
+          if (next.budgetMin !== null) params.set('budgetMin', next.budgetMin.toString());
+          if (next.budgetMax !== null) params.set('budgetMax', next.budgetMax.toString());
+          if (next.searchQuery) params.set('search', next.searchQuery);
+          const qs = params.toString();
+          const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+          window.history.replaceState(null, '', newUrl);
+        }
+        return next;
+      });
+    },
+    [],
+  );
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
   const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set());
   const [isLoadingApplied, setIsLoadingApplied] = useState(true);

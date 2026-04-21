@@ -3,14 +3,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import CategoryPickerModal from "@/components/browse/CategoryPickerModal";
+import CategoryScroller from "@/components/browse/CategoryScroller";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage, type Locale } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import {
   ChevronDown,
-  LayoutGrid,
   MapPin,
   Search,
   SlidersHorizontal,
@@ -177,7 +176,6 @@ export default function BrowseFilterBar() {
   } = useBrowseContext();
 
   const [open, setOpen] = useState<OpenDropdown>(null);
-  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [draftMin, setDraftMin] = useState<string>(budgetMin?.toString() ?? "");
   const [draftMax, setDraftMax] = useState<string>(budgetMax?.toString() ?? "");
   const [localSearch, setLocalSearch] = useState(searchQuery);
@@ -248,38 +246,13 @@ export default function BrowseFilterBar() {
   const isBudgetPresetActive = (min: number, max: number | null) =>
     budgetMin === min && budgetMax === max;
 
-  function handleCategoryApply(keys: string[]) {
-    setSelectedSubcategories(keys);
-    // Derive the parent category if all selected keys belong to one category
-    if (keys.length === 0) {
-      setSelectedCategory(null);
-      return;
-    }
-    const parentCats = new Set<string>();
-    for (const key of keys) {
-      for (const cat of categories) {
-        const found = cat.subcategories.some(
-          sub => sub.key === key || (sub.services ?? []).some(svc => svc.key === key)
-        );
-        if (found) { parentCats.add(cat.key); break; }
-      }
-    }
-    setSelectedCategory(parentCats.size === 1 ? Array.from(parentCats)[0] : null);
-  }
-
-  const categoryButtonActive = selectedSubcategories.length > 0;
-  const categoryButtonLabel = categoryButtonActive
-    ? `${t('browse.category')} (${selectedSubcategories.length})`
-    : t('browse.category');
-
   return (
     <div className="mb-2">
-      <CategoryPickerModal
-        isOpen={categoryModalOpen}
-        onClose={() => setCategoryModalOpen(false)}
-        selectedKeys={selectedSubcategories}
-        onApply={handleCategoryApply}
-        activeCategory={selectedCategory ?? undefined}
+      <CategoryScroller
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+        selectedSubcategories={selectedSubcategories}
+        onSubcategoriesChange={setSelectedSubcategories}
       />
 
       {/* Desktop filter bar */}
@@ -306,23 +279,6 @@ export default function BrowseFilterBar() {
             </button>
           )}
         </div>
-
-        {/* Category picker button */}
-        <button
-          type="button"
-          onClick={() => setCategoryModalOpen(true)}
-          className={[
-            "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all border",
-            "hover:border-[var(--hm-brand-500)]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/30",
-            categoryButtonActive
-              ? "border-[var(--hm-brand-500)]/50 text-[var(--hm-brand-500)]"
-              : "border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)]",
-          ].join(" ")}
-          style={categoryButtonActive ? { backgroundColor: "rgba(239, 78, 36, 0.08)" } : undefined}
-        >
-          <span className="opacity-70"><LayoutGrid className="w-3.5 h-3.5" /></span>
-          <span>{categoryButtonLabel}</span>
-        </button>
 
         {/* City */}
         <DropdownWrapper
@@ -533,23 +489,8 @@ export default function BrowseFilterBar() {
         </DropdownWrapper>
       </div>
 
-      {/* Mobile: sticky filters button */}
+      {/* Mobile: sort only (category handled by scroller above) */}
       <div className="flex lg:hidden items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setCategoryModalOpen(true)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-sm font-medium text-[var(--hm-fg-primary)]"
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          <span>{t("browse.filters")}</span>
-          {activeFilterCount > 0 && (
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--hm-brand-500)] text-white text-[10px] font-bold">
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
-
-        {/* Sort on mobile */}
         <div className="flex-1" />
         <DropdownWrapper
           id="sort"

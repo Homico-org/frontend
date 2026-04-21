@@ -425,13 +425,13 @@ export default function AboutStep({
                 {customServices.map(skill => (
                   <span
                     key={skill}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--hm-success-50)] text-[var(--hm-success-500)] text-sm/30"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--hm-success-50)] text-[var(--hm-success-500)] text-sm"
                   >
                     {skill}
                     <button
                       type="button"
                       onClick={() => removeCustomSkill(skill)}
-                      className="w-4 h-4 rounded-full hover:bg-emerald-200 flex items-center justify-center transition-colors"
+                      className="w-4 h-4 rounded-full hover:bg-[var(--hm-success-100)] flex items-center justify-center transition-colors"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -460,7 +460,7 @@ export default function AboutStep({
                 type="button"
                 onClick={addCustomSkill}
                 disabled={!customSkillInput.trim()}
-                className="px-4 py-2 rounded-xl bg-[var(--hm-success-500)] hover:bg-emerald-600 disabled:bg-[var(--hm-bg-tertiary)] text-white transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-[var(--hm-success-500)] hover:brightness-95 text-white disabled:bg-[var(--hm-bg-tertiary)] disabled:text-[var(--hm-fg-muted)] disabled:hover:brightness-100 transition flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline text-sm font-medium">{t('common.add')}</span>

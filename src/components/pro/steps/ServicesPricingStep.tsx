@@ -9,8 +9,9 @@ import { useCategories } from "@/contexts/CategoriesContext";
 import type { CatalogServiceItem, Subcategory } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAiServiceSearch } from "@/hooks/useAiServiceSearch";
+import AiSearchBar from "@/components/common/AiSearchBar";
 import { useClickOutside } from "@/hooks/useClickOutside";
-import { ArrowLeft, CheckCircle2, ChevronDown, ChevronRight, Plus, Search, Sparkles, X } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 // ─── Exported types ──────────────────────────────────────────────────────────
@@ -21,6 +22,7 @@ export interface DiscountTier {
 }
 
 export interface UnitPriceEntry {
+  unitId?: string; // Stable catalog id — source of truth
   unitKey: string;
   unit: string;
   unitLabel: string;
@@ -32,6 +34,9 @@ export interface UnitPriceEntry {
 }
 
 export interface ServicePriceEntry {
+  serviceId?: string;      // Stable catalog id — source of truth
+  subcategoryId?: string;
+  categoryId?: string;
   serviceKey: string;
   subcategoryKey: string;
   categoryKey: string;
@@ -48,6 +53,8 @@ export interface ServicePriceEntry {
 }
 
 export interface SelectedSubcategoryWithPricing {
+  id?: string;         // Stable catalog id — source of truth
+  categoryId?: string;
   key: string;
   categoryKey: string;
   name: string;
@@ -68,6 +75,7 @@ type PickFn = (values: Partial<Record<"en" | "ka" | "ru", string | undefined>>, 
 function buildServiceEntries(
   sub: Subcategory,
   categoryKey: string,
+  categoryId: string | undefined,
   pick: PickFn
 ): ServicePriceEntry[] {
   if (!sub.services || sub.services.length === 0) return [];
@@ -75,6 +83,7 @@ function buildServiceEntries(
     // Build unit price entries from catalog unitOptions
     const unitPrices: UnitPriceEntry[] = (svc.unitOptions && svc.unitOptions.length > 0)
       ? svc.unitOptions.map((uo, i) => ({
+          unitId: uo.id,
           unitKey: uo.key,
           unit: uo.unit,
           unitLabel: pick({ en: uo.label.en, ka: uo.label.ka }),
@@ -96,6 +105,9 @@ function buildServiceEntries(
         }];
 
     return {
+      serviceId: svc.id,
+      subcategoryId: sub.id,
+      categoryId,
       serviceKey: svc.key,
       subcategoryKey: sub.key,
       categoryKey,
@@ -218,6 +230,7 @@ function ServiceUnitPricing({
                     updateUnit(up.unitKey, { price: val });
                   }}
                   placeholder={up.defaultPrice > 0 ? `${up.defaultPrice}` : "0"}
+                  error={up.price === 0}
                   className="w-18 pl-5 pr-2 text-[13px] font-semibold rounded-md"
                 />
               </div>
@@ -388,21 +401,41 @@ export default function ServicesPricingStep({
   );
 
   const handleToggle = useCallback(
-    (sub: Subcategory, categoryKey: string) => {
+    (sub: Subcategory, categoryKey: string, categoryId?: string) => {
       if (selectedKeys.has(sub.key)) {
         onSelectedSubcategoriesChange(
           selectedSubcategories.filter((s) => s.key !== sub.key)
         );
       } else {
+        // Auto-activate the first service with its catalog default price,
+        // so the user can hit "Continue" immediately and fine-tune later.
+        const services = buildServiceEntries(sub, categoryKey, categoryId, pick);
+        if (services.length > 0) {
+          const first = services[0];
+          first.isActive = true;
+          if (first.unitPrices && first.unitPrices.length > 0) {
+            // Seed primary unit with its catalog defaultPrice
+            first.unitPrices[0] = {
+              ...first.unitPrices[0],
+              price: first.unitPrices[0].defaultPrice,
+              isActive: true,
+            };
+            first.price = first.unitPrices[0].price;
+          } else {
+            first.price = first.basePrice;
+          }
+        }
         onSelectedSubcategoriesChange([
           ...selectedSubcategories,
           {
+            id: sub.id,
+            categoryId,
             key: sub.key,
             categoryKey,
             name: sub.name,
             nameKa: sub.nameKa,
             experience: "3-5",
-            services: buildServiceEntries(sub, categoryKey, pick),
+            services,
           },
         ]);
       }
@@ -427,12 +460,12 @@ export default function ServicesPricingStep({
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return null;
     const q = searchQuery.toLowerCase();
-    const localResults: Array<{ sub: Subcategory; categoryKey: string; catName: string }> = [];
+    const localResults: Array<{ sub: Subcategory; categoryKey: string; categoryId: string; catName: string }> = [];
     for (const cat of categories) {
       const catName = pick({ en: cat.name, ka: cat.nameKa });
       for (const sub of cat.subcategories) {
         if (sub.name.toLowerCase().includes(q) || sub.nameKa.toLowerCase().includes(q)) {
-          localResults.push({ sub, categoryKey: cat.key, catName });
+          localResults.push({ sub, categoryKey: cat.key, categoryId: cat.id, catName });
         }
       }
     }
@@ -440,12 +473,12 @@ export default function ServicesPricingStep({
     // Merge AI results: resolve keys to subcategories
     if (aiResults && aiResults.length > 0) {
       const aiKeySet = new Set(aiResults.map(r => r.key));
-      const aiMatched: Array<{ sub: Subcategory; categoryKey: string; catName: string }> = [];
+      const aiMatched: typeof localResults = [];
       for (const cat of categories) {
         const catName = pick({ en: cat.name, ka: cat.nameKa });
         for (const sub of cat.subcategories) {
           if (aiKeySet.has(sub.key) || (sub.services ?? []).some(s => aiKeySet.has(s.key))) {
-            aiMatched.push({ sub, categoryKey: cat.key, catName });
+            aiMatched.push({ sub, categoryKey: cat.key, categoryId: cat.id, catName });
           }
         }
       }
@@ -496,33 +529,17 @@ export default function ServicesPricingStep({
           </p>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          {aiLoading ? (
-            <Sparkles className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 animate-pulse text-[var(--hm-brand-500)] z-10" />
-          ) : (
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 z-10" style={{ color: 'var(--hm-fg-muted)' }} />
-          )}
-          <Input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); aiSearch(e.target.value); }}
-            placeholder={t("register.filterSubcategories")}
-            className="pl-10 pr-9 py-3 rounded-xl text-sm"
-          />
-          {searchQuery && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => { setSearchQuery(""); aiClear(); }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 [&_svg]:size-3.5"
-              aria-label={t("common.close")}
-            >
-              <X style={{ color: 'var(--hm-fg-muted)' }} />
-            </Button>
-          )}
-        </div>
+        <AiSearchBar
+          value={searchQuery}
+          onChange={(v) => {
+            setSearchQuery(v);
+            if (v) aiSearch(v);
+            else aiClear();
+          }}
+          aiLoading={aiLoading}
+          aiResultsCount={aiResults?.length ?? 0}
+          placeholder={t("register.filterSubcategories")}
+        />
 
         {/* Search results */}
         {searchResults !== null ? (
@@ -532,14 +549,24 @@ export default function ServicesPricingStep({
                 {t("common.noResults")}
               </p>
             ) : (
-              searchResults.map(({ sub, categoryKey, catName }) => {
+              searchResults.map(({ sub, categoryKey, categoryId, catName }) => {
                 const isSelected = selectedKeys.has(sub.key);
                 const subName = pick({ en: sub.name, ka: sub.nameKa });
+                const handleSelectFromSearch = () => {
+                  if (!isSelected) {
+                    handleToggle(sub, categoryKey, categoryId);
+                  }
+                  // Drop out of search and jump into the sub's category panel
+                  // so the user can price the newly-selected service right away.
+                  setSearchQuery("");
+                  aiClear();
+                  goToCategory(categoryKey);
+                };
                 return (
                   <button
                     key={sub.key}
                     type="button"
-                    onClick={() => handleToggle(sub, categoryKey)}
+                    onClick={handleSelectFromSearch}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all"
                     style={{
                       backgroundColor: isSelected ? 'rgba(239,78,36,0.06)' : 'var(--hm-bg-elevated)',
@@ -576,37 +603,48 @@ export default function ServicesPricingStep({
                   key={cat.key}
                   type="button"
                   onClick={() => goToCategory(cat.key)}
-                  className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 hover:shadow-sm active:scale-[0.98]"
+                  className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-2.5 sm:gap-3 p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_6px_16px_-8px_rgba(239,78,36,0.25)] active:scale-[0.98]"
                   style={{
                     backgroundColor: hasSelections ? 'rgba(239,78,36,0.06)' : 'var(--hm-bg-elevated)',
-                    border: `1px solid ${hasSelections ? 'rgba(239,78,36,0.25)' : 'var(--hm-border-subtle)'}`,
+                    border: `1px solid ${hasSelections ? 'rgba(239,78,36,0.35)' : 'var(--hm-border-subtle)'}`,
                   }}
                 >
-                  {/* Icon */}
+                  {/* Icon — always primary color tint */}
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                    className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all group-hover:scale-105"
                     style={{
-                      backgroundColor: hasSelections ? 'rgba(239,78,36,0.12)' : 'var(--hm-bg-tertiary)',
-                      color: hasSelections ? 'var(--hm-brand-500)' : 'var(--hm-fg-secondary)',
+                      backgroundColor: hasSelections ? 'var(--hm-brand-500)' : 'rgba(239,78,36,0.10)',
+                      color: hasSelections ? '#fff' : 'var(--hm-brand-500)',
+                      boxShadow: hasSelections ? '0 2px 8px -2px rgba(239,78,36,0.45)' : 'none',
                     }}
                   >
-                    <CategoryIcon type={cat.key} className="w-5 h-5" />
+                    <CategoryIcon type={cat.icon || cat.key} className="w-5 h-5" />
                   </div>
 
                   {/* Name */}
                   <div className="flex-1 min-w-0">
-                    <span className="text-[12px] sm:text-[13px] font-medium block leading-tight" style={{ color: 'var(--hm-fg-primary)' }}>
+                    <span className="text-[13px] sm:text-[14px] font-semibold block leading-tight" style={{ color: 'var(--hm-fg-primary)' }}>
                       {catName}
                     </span>
-                    {hasSelections && (
-                      <span className="text-[11px] font-medium text-[var(--hm-brand-500)]">
+                    {hasSelections ? (
+                      <span className="text-[11px] font-medium text-[var(--hm-brand-500)] mt-0.5 inline-block">
                         {selectedCount} {t("browse.selectedCount")}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-[var(--hm-fg-muted)] mt-0.5 inline-block">
+                        {cat.subcategories.length} {t("common.options")}
                       </span>
                     )}
                   </div>
 
                   {/* Arrow */}
-                  <ChevronRight className="w-4 h-4 shrink-0 opacity-30 group-hover:opacity-60 transition-opacity hidden sm:block" />
+                  <ChevronRight
+                    className="w-4 h-4 shrink-0 transition-all hidden sm:block"
+                    style={{
+                      color: hasSelections ? 'var(--hm-brand-500)' : 'var(--hm-fg-muted)',
+                      opacity: hasSelections ? 0.9 : 0.4,
+                    }}
+                  />
                 </button>
               );
             })}
@@ -655,12 +693,12 @@ export default function ServicesPricingStep({
                   <Toggle
                     size="sm"
                     checked={isSelected}
-                    onChange={() => handleToggle(sub, activeCategory.key)}
+                    onChange={() => handleToggle(sub, activeCategory.key, activeCategory.id)}
                   />
                   <span
                     className="flex-1 text-sm font-medium truncate cursor-pointer"
                     style={{ color: 'var(--hm-fg-primary)' }}
-                    onClick={() => handleToggle(sub, activeCategory.key)}
+                    onClick={() => handleToggle(sub, activeCategory.key, activeCategory.id)}
                   >
                     {subName}
                   </span>
@@ -712,20 +750,41 @@ export default function ServicesPricingStep({
                             const active = subData.services.filter(s => s.isActive);
                             const filled = active.filter(s => s.price > 0 || s.unitPrices?.some(u => u.isActive && u.price > 0)).length;
                             if (active.length === 0) return null;
+                            const missing = active.length - filled;
+                            if (missing === 0) {
+                              return (
+                                <span className="text-[10px] font-semibold text-[var(--hm-success-500)]">
+                                  {filled}/{active.length} ✓
+                                </span>
+                              );
+                            }
                             return (
-                              <span className={`text-[10px] font-semibold ${filled === active.length ? 'text-[var(--hm-success-500)]' : 'text-[var(--hm-warning-500)]'}`}>
-                                {filled}/{active.length}
+                              <span
+                                className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                                style={{
+                                  background: 'rgba(239,78,36,0.10)',
+                                  color: 'var(--hm-brand-500)',
+                                }}
+                              >
+                                {missing} {t('common.priceMissing')}
                               </span>
                             );
                           })()}
                         </div>
-                        {subData.services.map((svc) => (
+                        {subData.services.map((svc) => {
+                          const hasPricedUnit = (svc.unitPrices ?? []).some(u => u.isActive && u.price > 0) || svc.price > 0;
+                          const needsPrice = svc.isActive && !hasPricedUnit;
+                          return (
                           <div
                             key={svc.serviceKey}
                             className="rounded-xl transition-all"
                             style={{
-                              backgroundColor: svc.isActive ? 'var(--hm-bg-elevated)' : 'var(--hm-bg-page)',
-                              border: `1px solid ${svc.isActive ? 'var(--hm-border-subtle)' : 'var(--hm-border-subtle)'}`,
+                              backgroundColor: needsPrice
+                                ? 'rgba(239, 78, 36, 0.04)'
+                                : svc.isActive
+                                  ? 'var(--hm-bg-elevated)'
+                                  : 'var(--hm-bg-page)',
+                              border: `1px solid ${needsPrice ? 'rgba(239, 78, 36, 0.35)' : 'var(--hm-border-subtle)'}`,
                             }}
                           >
                             {/* Service name + toggle row */}
@@ -736,11 +795,38 @@ export default function ServicesPricingStep({
                                 onChange={() =>
                                   updateSub(sub.key, (s) => ({
                                     ...s,
-                                    services: s.services.map((sv) =>
-                                      sv.serviceKey === svc.serviceKey
-                                        ? { ...sv, isActive: !sv.isActive }
-                                        : sv
-                                    ),
+                                    services: s.services.map((sv) => {
+                                      if (sv.serviceKey !== svc.serviceKey) return sv;
+                                      const turningOn = !sv.isActive;
+                                      if (!turningOn) {
+                                        return { ...sv, isActive: false };
+                                      }
+                                      // Seed primary unit with catalog default price so toggling on
+                                      // always leaves the service in a valid (priced) state.
+                                      if (sv.unitPrices && sv.unitPrices.length > 0) {
+                                        const primary = sv.unitPrices[0];
+                                        const updatedUnits = sv.unitPrices.map((u, i) =>
+                                          i === 0
+                                            ? {
+                                                ...u,
+                                                isActive: true,
+                                                price: u.price > 0 ? u.price : u.defaultPrice,
+                                              }
+                                            : u
+                                        );
+                                        return {
+                                          ...sv,
+                                          isActive: true,
+                                          unitPrices: updatedUnits,
+                                          price: sv.price > 0 ? sv.price : primary.defaultPrice,
+                                        };
+                                      }
+                                      return {
+                                        ...sv,
+                                        isActive: true,
+                                        price: sv.price > 0 ? sv.price : sv.basePrice,
+                                      };
+                                    }),
                                   }))
                                 }
                               />
@@ -799,6 +885,7 @@ export default function ServicesPricingStep({
                                       }));
                                     }}
                                     placeholder={svc.basePrice > 0 ? `${svc.basePrice}` : "0"}
+                                    error={svc.price === 0}
                                     className="w-20 pl-6 pr-2 text-sm font-semibold rounded-lg"
                                   />
                                 </div>
@@ -806,7 +893,8 @@ export default function ServicesPricingStep({
                             )}
 
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
