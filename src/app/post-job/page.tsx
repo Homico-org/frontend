@@ -1130,8 +1130,8 @@ function PostJobPageContent() {
         </div>
       </main>
 
-      {/* Footer Navigation */}
-      <footer className="fixed bottom-14 lg:bottom-0 left-0 right-0 z-40">
+      {/* Footer Navigation — sit above the mobile bottom nav (58px + iOS safe area) */}
+      <footer className="fixed left-0 right-0 z-40 lg:bottom-0 bottom-[calc(58px+env(safe-area-inset-bottom))]">
         <div className="bg-[var(--hm-bg-elevated)] border-t border-[var(--hm-border-subtle)] shadow-[0_-4px_12px_rgba(20,18,14,0.06)]">
           <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center justify-between gap-3">

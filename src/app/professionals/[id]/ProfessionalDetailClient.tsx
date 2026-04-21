@@ -1811,8 +1811,10 @@ export default function ProfessionalDetailClient({
             </div>
           </div>
 
-          {/* Mobile pricing */}
-          {pricingMeta && pricingMeta.valueLabel && (
+          {/* Mobile pricing — ONLY show legacy fixed-price summary when the pro
+              has no per-service pricing. New flow renders in the Services &
+              Pricing block further down. */}
+          {pricingMeta && pricingMeta.valueLabel && (profile?.servicePricing?.length ?? 0) === 0 && (
             <div className="mt-3 pt-3 border-t border-[var(--hm-border-subtle)] flex items-center justify-between">
               <div>
                 <span className="text-[9px] uppercase tracking-wider font-semibold text-[var(--hm-fg-muted)]">
@@ -1836,8 +1838,8 @@ export default function ProfessionalDetailClient({
             </div>
           )}
 
-          {/* Mobile pricing edit */}
-          {canEdit && isEditingPricing && (
+          {/* Mobile pricing edit — also gated on no per-service pricing */}
+          {canEdit && isEditingPricing && (profile?.servicePricing?.length ?? 0) === 0 && (
             <div className="mt-3 space-y-2">
               <Select
                 size="sm"

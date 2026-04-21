@@ -184,11 +184,19 @@ export default function AiChatWidget(): React.ReactElement | null {
   } | null>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
 
-  // Initialize FAB position
+  // Initialize FAB position. On mobile we account for the 58px bottom nav
+  // PLUS the iOS safe-area inset (home-bar) so the FAB never sits under the nav.
   useEffect(() => {
     if (fabPosition === null && typeof window !== "undefined") {
       const isMobile = window.innerWidth < 1024;
-      const bottomOffset = isMobile ? 240 : 160; // extra space on mobile for bottom nav
+      const cssSafeInset = parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue('--sat-bottom') || '0',
+        10,
+      ) || 0;
+      // Fallback — most iOS devices have ~34px home-indicator safe area
+      const iosInset = /iPhone|iPad|iPod/.test(navigator.userAgent) ? 34 : 0;
+      const safeBottom = Math.max(cssSafeInset, iosInset);
+      const bottomOffset = isMobile ? 58 + safeBottom + 100 : 160; // 58 nav + safe + 100 cushion
       setFabPosition({
         x: window.innerWidth - 80,
         y: window.innerHeight - bottomOffset,
