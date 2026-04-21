@@ -1,10 +1,8 @@
 "use client";
 
 import CategoryIcon from "@/components/categories/CategoryIcon";
-import AiSearchBar from "@/components/common/AiSearchBar";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAiServiceSearch } from "@/hooks/useAiServiceSearch";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -21,59 +19,12 @@ export default function CategoryScroller({
   selectedSubcategories,
   onSubcategoriesChange,
 }: CategoryScrollerProps) {
-  const { t, pick } = useLanguage();
+  const { pick } = useLanguage();
   const { categories } = useCategories();
-  const { aiResults, aiLoading, search: aiSearch, clear: aiClear } = useAiServiceSearch();
-
-  const [searchQuery, setSearchQuery] = useState("");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-
-  // Resolve AI + local text matches to (category, sub) pairs
-  const searchMatches = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (q.length === 0) return null;
-
-    type Match = { catKey: string; catName: string; sub: { key: string; name: string; nameKa: string } };
-    const matches: Match[] = [];
-
-    // Local substring match
-    for (const cat of categories) {
-      const catName = pick({ en: cat.name, ka: cat.nameKa });
-      for (const sub of cat.subcategories) {
-        if (sub.name.toLowerCase().includes(q) || sub.nameKa.toLowerCase().includes(q)) {
-          matches.push({ catKey: cat.key, catName, sub });
-        }
-      }
-    }
-
-    // Merge AI results (put AI matches first, dedupe by sub key)
-    if (aiResults && aiResults.length > 0) {
-      const aiKeys = new Set(aiResults.map((r) => r.key));
-      const aiMatched: Match[] = [];
-      for (const cat of categories) {
-        const catName = pick({ en: cat.name, ka: cat.nameKa });
-        for (const sub of cat.subcategories) {
-          if (aiKeys.has(sub.key) || (sub.services ?? []).some((s) => aiKeys.has(s.key))) {
-            aiMatched.push({ catKey: cat.key, catName, sub });
-          }
-        }
-      }
-      const seen = new Set<string>();
-      const merged: Match[] = [];
-      for (const m of [...aiMatched, ...matches]) {
-        if (!seen.has(m.sub.key)) {
-          seen.add(m.sub.key);
-          merged.push(m);
-        }
-      }
-      return merged;
-    }
-
-    return matches.length > 0 ? matches : [];
-  }, [searchQuery, categories, aiResults, pick]);
 
   const updateScrollState = useCallback(() => {
     const el = scrollRef.current;
@@ -123,62 +74,10 @@ export default function CategoryScroller({
     }
   }
 
-  function handleSearchPick(catKey: string, subKey: string) {
-    onSelectCategory(catKey);
-    onSubcategoriesChange([subKey]);
-    setSearchQuery("");
-    aiClear();
-  }
-
   return (
-    <div className="mb-5 space-y-3">
-      {/* AI-assisted search across all services */}
-      <AiSearchBar
-        value={searchQuery}
-        onChange={(v) => {
-          setSearchQuery(v);
-          if (v) aiSearch(v);
-          else aiClear();
-        }}
-        aiLoading={aiLoading}
-        aiResultsCount={aiResults?.length ?? 0}
-      />
-
-      {/* Search results dropdown */}
-      {searchMatches && searchMatches.length > 0 && (
-        <div
-          className="rounded-xl border overflow-hidden divide-y"
-          style={{
-            borderColor: "var(--hm-border-subtle)",
-            background: "var(--hm-bg-elevated)",
-          }}
-        >
-          {searchMatches.slice(0, 8).map(({ catKey, catName, sub }) => (
-            <button
-              key={`${catKey}-${sub.key}`}
-              type="button"
-              onClick={() => handleSearchPick(catKey, sub.key)}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-[var(--hm-bg-tertiary)] transition-colors"
-            >
-              <div className="flex-1 min-w-0">
-                <span className="text-sm font-medium block truncate" style={{ color: "var(--hm-fg-primary)" }}>
-                  {pick({ en: sub.name, ka: sub.nameKa })}
-                </span>
-                <span className="text-[11px]" style={{ color: "var(--hm-fg-muted)" }}>
-                  {catName}
-                </span>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-      {searchMatches && searchMatches.length === 0 && !aiLoading && (
-        <p className="text-sm text-center py-4" style={{ color: "var(--hm-fg-muted)" }}>
-          {t("common.noResults")}
-        </p>
-      )}
-
-      {/* Category tabs — underline nav */}
+    <div className="mb-5">
+      {/* Category tabs — underline nav (the shell layout's top search handles
+          AI category matching, so no duplicate search bar here). */}
       <div className="relative">
         {/* Left fade + chevron */}
         {canScrollLeft && (

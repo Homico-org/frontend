@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import MobileBottomNav from '@/components/common/MobileBottomNav';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -142,5 +143,10 @@ export default function ProfessionalLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      {children}
+      <MobileBottomNav />
+    </>
+  );
 }

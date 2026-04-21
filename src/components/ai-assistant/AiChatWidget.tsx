@@ -162,7 +162,8 @@ export default function AiChatWidget(): React.ReactElement | null {
   const [isOpen, setIsOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [showPulse, setShowPulse] = useState(true);
+  // No attention-grabbing pulse on load — FAB stays quiet until the user taps it.
+  const [showPulse, setShowPulse] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isMobileRef = useRef<boolean>(false);

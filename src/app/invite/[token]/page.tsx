@@ -10,6 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { OTPInput } from '@/components/ui/OTPInput';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import CategoryIcon from '@/components/categories/CategoryIcon';
+import HomicoLogo from '@/components/common/HomicoLogo';
 import axios from 'axios';
 
 interface InviteData {
@@ -149,10 +150,8 @@ export default function InvitePage() {
       {/* Header */}
       <div className="px-6 py-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--hm-brand-500)] to-[#F06B43] flex items-center justify-center">
-            <span className="text-white text-sm font-black">H</span>
-          </div>
-          <span className="font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>Homico</span>
+          <HomicoLogo size={32} className="h-8 w-8" />
+          <span className="font-semibold text-[17px]" style={{ color: 'var(--hm-fg-primary)' }}>Homico</span>
         </div>
       </div>
 
