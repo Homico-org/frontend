@@ -75,9 +75,12 @@ export default function CategoryScroller({
   }
 
   return (
-    <div className="mb-5">
-      {/* Category tabs — underline nav (the shell layout's top search handles
-          AI category matching, so no duplicate search bar here). */}
+    <div
+      className="mb-5 sticky top-0 z-30 -mx-3 px-3 sm:mx-0 sm:px-0"
+      style={{ backgroundColor: 'var(--hm-bg-page)' }}
+    >
+      {/* Category tabs — underline nav. Sticks to the top of the scroll container
+          on mobile so the filter stays accessible while browsing. */}
       <div className="relative">
         {/* Left fade + chevron */}
         {canScrollLeft && (

@@ -1,13 +1,18 @@
-'use client';
+"use client";
 
-import { PortfolioProject } from '@/components/pro/steps/ProjectsStep';
-import { SelectedSubcategoryWithPricing, UnitPriceEntry } from '@/components/pro/steps/ServicesPricingStep';
-import { ExperienceLevel, SelectedService } from '@/components/register/steps/StepSelectServices';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCategories, type Subcategory } from '@/contexts/CategoriesContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { api } from '@/lib/api';
-import { useRouter } from 'next/navigation';
+import { PortfolioProject } from "@/components/pro/steps/ProjectsStep";
+import {
+  SelectedSubcategoryWithPricing,
+  UnitPriceEntry,
+} from "@/components/pro/steps/ServicesPricingStep";
+import {
+  ExperienceLevel,
+  SelectedService,
+} from "@/components/register/steps/StepSelectServices";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCategories, type Subcategory } from "@/contexts/CategoriesContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useRouter } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -16,29 +21,37 @@ import {
   useMemo,
   useRef,
   useState,
-} from 'react';
+} from "react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type ProfileSetupStepSlug = 'about' | 'services' | 'areas' | 'portfolio' | 'review';
+export type ProfileSetupStepSlug =
+  | "about"
+  | "services"
+  | "areas"
+  | "portfolio"
+  | "review";
 
 export const STEP_SLUGS: ProfileSetupStepSlug[] = [
-  'about',
-  'services',
-  'areas',
-  'portfolio',
-  'review',
+  "about",
+  "services",
+  "areas",
+  "portfolio",
+  "review",
 ];
 
 export const STEP_META: {
   slug: ProfileSetupStepSlug;
   title: { en: string; ka: string };
 }[] = [
-  { slug: 'about', title: { en: 'About You', ka: 'შენს შესახებ' } },
-  { slug: 'services', title: { en: 'Services & Prices', ka: 'სერვისები და ფასები' } },
-  { slug: 'areas', title: { en: 'Service Areas', ka: 'სერვისის ზონები' } },
-  { slug: 'portfolio', title: { en: 'Portfolio', ka: 'პორტფოლიო' } },
-  { slug: 'review', title: { en: 'Review', ka: 'გადახედვა' } },
+  { slug: "about", title: { en: "About You", ka: "შენს შესახებ" } },
+  {
+    slug: "services",
+    title: { en: "Services & Prices", ka: "სერვისები და ფასები" },
+  },
+  { slug: "areas", title: { en: "Service Areas", ka: "სერვისის ზონები" } },
+  { slug: "portfolio", title: { en: "Portfolio", ka: "პორტფოლიო" } },
+  { slug: "review", title: { en: "Review", ka: "გადახედვა" } },
 ];
 
 interface FormData {
@@ -52,7 +65,7 @@ interface FormData {
   availability: string[];
   basePrice: string;
   maxPrice: string;
-  pricingModel: 'fixed' | 'range' | 'per_sqm' | 'byAgreement' | '';
+  pricingModel: "fixed" | "range" | "per_sqm" | "byAgreement" | "";
   serviceAreas: string[];
   nationwide: boolean;
   whatsapp: string;
@@ -118,10 +131,14 @@ export interface ProfileSetupContextValue {
   setCustomServices: React.Dispatch<React.SetStateAction<string[]>>;
 
   selectedSubcategoriesWithPricing: SelectedSubcategoryWithPricing[];
-  setSelectedSubcategoriesWithPricing: React.Dispatch<React.SetStateAction<SelectedSubcategoryWithPricing[]>>;
+  setSelectedSubcategoriesWithPricing: React.Dispatch<
+    React.SetStateAction<SelectedSubcategoryWithPricing[]>
+  >;
 
   portfolioProjects: PortfolioProject[];
-  setPortfolioProjects: React.Dispatch<React.SetStateAction<PortfolioProject[]>>;
+  setPortfolioProjects: React.Dispatch<
+    React.SetStateAction<PortfolioProject[]>
+  >;
 
   avatarPreview: string | null;
   setAvatarPreview: React.Dispatch<React.SetStateAction<string | null>>;
@@ -161,10 +178,6 @@ export interface ProfileSetupContextValue {
   isFormValid: boolean;
   canProceedFromStep: (slug: ProfileSetupStepSlug) => boolean;
 
-  // Welcome banner
-  showWelcomeBanner: boolean;
-  dismissWelcomeBanner: () => void;
-
   // Navigation helpers
   currentStepIndex: (slug: ProfileSetupStepSlug) => number;
   goToStep: (slug: ProfileSetupStepSlug) => void;
@@ -178,11 +191,14 @@ export interface ProfileSetupContextValue {
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 
-const ProfileSetupContext = createContext<ProfileSetupContextValue | null>(null);
+const ProfileSetupContext = createContext<ProfileSetupContextValue | null>(
+  null,
+);
 
 export function useProfileSetup() {
   const ctx = useContext(ProfileSetupContext);
-  if (!ctx) throw new Error('useProfileSetup must be used inside ProfileSetupProvider');
+  if (!ctx)
+    throw new Error("useProfileSetup must be used inside ProfileSetupProvider");
   return ctx;
 }
 
@@ -201,47 +217,55 @@ export function ProfileSetupProvider({
 
   // Debug: detect remounts
   useEffect(() => {
-    console.log('[ProfileSetupProvider] MOUNTED');
-    return () => console.log('[ProfileSetupProvider] UNMOUNTED');
+    console.log("[ProfileSetupProvider] MOUNTED");
+    return () => console.log("[ProfileSetupProvider] UNMOUNTED");
   }, []);
   const { categories: allCategories, getCategoryByKey } = useCategories();
 
-  const isAdminEditing = user?.role === 'admin' && !!adminTargetProId;
+  const isAdminEditing = user?.role === "admin" && !!adminTargetProId;
 
   // ── Form state ──────────────────────────────────────────────────────────────
 
-  const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
+  const [selectedServices, setSelectedServices] = useState<SelectedService[]>(
+    [],
+  );
   const [customServices, setCustomServices] = useState<string[]>([]);
-  const [selectedSubcategoriesWithPricing, setSelectedSubcategoriesWithPricing] =
-    useState<SelectedSubcategoryWithPricing[]>([]);
-  const [portfolioProjects, setPortfolioProjects] = useState<PortfolioProject[]>([]);
+  const [
+    selectedSubcategoriesWithPricing,
+    setSelectedSubcategoriesWithPricing,
+  ] = useState<SelectedSubcategoryWithPricing[]>([]);
+  const [portfolioProjects, setPortfolioProjects] = useState<
+    PortfolioProject[]
+  >([]);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
-    title: '',
-    bio: '',
-    yearsExperience: '',
-    avatar: '',
-    portfolioUrl: '',
-    licenseNumber: '',
-    cadastralId: '',
+    title: "",
+    bio: "",
+    yearsExperience: "",
+    avatar: "",
+    portfolioUrl: "",
+    licenseNumber: "",
+    cadastralId: "",
     availability: [],
-    basePrice: '',
-    maxPrice: '',
-    pricingModel: 'range',
+    basePrice: "",
+    maxPrice: "",
+    pricingModel: "range",
     serviceAreas: [],
     nationwide: false,
-    whatsapp: '',
-    telegram: '',
-    instagram: '',
-    facebook: '',
-    linkedin: '',
-    website: '',
+    whatsapp: "",
+    telegram: "",
+    instagram: "",
+    facebook: "",
+    linkedin: "",
+    website: "",
   });
 
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [existingProfileId, setExistingProfileId] = useState<string | null>(null);
+  const [existingProfileId, setExistingProfileId] = useState<string | null>(
+    null,
+  );
   const [isEditMode, setIsEditMode] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
   const [locationData, setLocationData] = useState<LocationData | null>(null);
@@ -252,27 +276,25 @@ export function ProfileSetupProvider({
   const isFirstRender = useRef(true);
   const hasTranslatedServiceAreas = useRef(false);
 
-  const [showWelcomeBanner, setShowWelcomeBanner] = useState(() => {
-    try {
-      return localStorage.getItem('profileSetupWelcomeDismissed') !== 'true';
-    } catch {
-      return true;
-    }
-  });
-
   // ── Derived ─────────────────────────────────────────────────────────────────
 
   const selectedCategories = useMemo(
-    () => selectedSubcategoriesWithPricing.length > 0
-      ? [...new Set(selectedSubcategoriesWithPricing.map((s) => s.categoryKey))]
-      : [...new Set(selectedServices.map((s) => s.categoryKey))],
+    () =>
+      selectedSubcategoriesWithPricing.length > 0
+        ? [
+            ...new Set(
+              selectedSubcategoriesWithPricing.map((s) => s.categoryKey),
+            ),
+          ]
+        : [...new Set(selectedServices.map((s) => s.categoryKey))],
     [selectedServices, selectedSubcategoriesWithPricing],
   );
 
   const selectedSubcategories = useMemo(
-    () => selectedSubcategoriesWithPricing.length > 0
-      ? selectedSubcategoriesWithPricing.map((s) => s.key)
-      : selectedServices.map((s) => s.key),
+    () =>
+      selectedSubcategoriesWithPricing.length > 0
+        ? selectedSubcategoriesWithPricing.map((s) => s.key)
+        : selectedServices.map((s) => s.key),
     [selectedServices, selectedSubcategoriesWithPricing],
   );
 
@@ -283,9 +305,10 @@ export function ProfileSetupProvider({
           .filter((s) => s.isActive)
           .flatMap((s) => {
             // Multi-unit: emit one entry per active unit with price > 0
-            const activeUnits = s.unitPrices?.filter(u => u.isActive && u.price > 0) || [];
+            const activeUnits =
+              s.unitPrices?.filter((u) => u.isActive && u.price > 0) || [];
             if (activeUnits.length > 0) {
-              return activeUnits.map(u => ({
+              return activeUnits.map((u) => ({
                 serviceId: s.serviceId,
                 categoryId: s.categoryId,
                 subcategoryId: s.subcategoryId,
@@ -300,16 +323,18 @@ export function ProfileSetupProvider({
             }
             // Fallback: single-unit legacy
             if (s.price > 0) {
-              return [{
-                serviceId: s.serviceId,
-                categoryId: s.categoryId,
-                subcategoryId: s.subcategoryId,
-                serviceKey: s.serviceKey,
-                categoryKey: s.categoryKey,
-                subcategoryKey: s.subcategoryKey,
-                price: s.price,
-                isActive: true,
-              }];
+              return [
+                {
+                  serviceId: s.serviceId,
+                  categoryId: s.categoryId,
+                  subcategoryId: s.subcategoryId,
+                  serviceKey: s.serviceKey,
+                  categoryKey: s.categoryKey,
+                  subcategoryKey: s.subcategoryKey,
+                  price: s.price,
+                  isActive: true,
+                },
+              ];
             }
             return [];
           }),
@@ -319,14 +344,19 @@ export function ProfileSetupProvider({
 
   const maxExperienceYears = useMemo(() => {
     const expMap: Record<string, number> = {
-      '1-2': 2,
-      '3-5': 5,
-      '5-10': 10,
-      '10+': 15,
+      "1-2": 2,
+      "3-5": 5,
+      "5-10": 10,
+      "10+": 15,
     };
     // Use new pricing flow if available
     if (selectedSubcategoriesWithPricing.length > 0) {
-      return Math.max(0, ...selectedSubcategoriesWithPricing.map((s) => expMap[s.experience] || 0));
+      return Math.max(
+        0,
+        ...selectedSubcategoriesWithPricing.map(
+          (s) => expMap[s.experience] || 0,
+        ),
+      );
     }
     if (selectedServices.length === 0) return 0;
     return Math.max(...selectedServices.map((s) => expMap[s.experience] || 0));
@@ -335,14 +365,17 @@ export function ProfileSetupProvider({
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   const yearsToExperienceLevel = (years: number): ExperienceLevel => {
-    if (years >= 10) return '10+';
-    if (years >= 5) return '5-10';
-    if (years >= 3) return '3-5';
-    return '1-2';
+    if (years >= 10) return "10+";
+    if (years >= 5) return "5-10";
+    if (years >= 3) return "3-5";
+    return "1-2";
   };
 
   const convertToSelectedServices = useCallback(
-    (subcategoryKeys: string[], defaultExperience: ExperienceLevel = '3-5'): SelectedService[] => {
+    (
+      subcategoryKeys: string[],
+      defaultExperience: ExperienceLevel = "3-5",
+    ): SelectedService[] => {
       const services: SelectedService[] = [];
       subcategoryKeys.forEach((subKey) => {
         for (const category of allCategories) {
@@ -392,8 +425,8 @@ export function ProfileSetupProvider({
 
   useEffect(() => {
     try {
-      if (sessionStorage.getItem('proRegistrationData')) return;
-      const raw = sessionStorage.getItem('profileSetupDraft');
+      if (sessionStorage.getItem("proRegistrationData")) return;
+      const raw = sessionStorage.getItem("profileSetupDraft");
       if (!raw) return;
       const draft = JSON.parse(raw) as {
         formData?: Partial<FormData>;
@@ -405,11 +438,18 @@ export function ProfileSetupProvider({
       // Store draft for merging after profile fetch
       draftDataRef.current = draft;
 
-      if (draft.formData) setFormData((prev) => ({ ...prev, ...draft.formData }));
-      if (Array.isArray(draft.selectedServices)) setSelectedServices(draft.selectedServices);
-      if (Array.isArray(draft.customServices)) setCustomServices(draft.customServices);
-      if (Array.isArray(draft.portfolioProjects)) setPortfolioProjects(draft.portfolioProjects);
-      if (Array.isArray(draft.selectedSubcategoriesWithPricing)) setSelectedSubcategoriesWithPricing(draft.selectedSubcategoriesWithPricing);
+      if (draft.formData)
+        setFormData((prev) => ({ ...prev, ...draft.formData }));
+      if (Array.isArray(draft.selectedServices))
+        setSelectedServices(draft.selectedServices);
+      if (Array.isArray(draft.customServices))
+        setCustomServices(draft.customServices);
+      if (Array.isArray(draft.portfolioProjects))
+        setPortfolioProjects(draft.portfolioProjects);
+      if (Array.isArray(draft.selectedSubcategoriesWithPricing))
+        setSelectedSubcategoriesWithPricing(
+          draft.selectedSubcategoriesWithPricing,
+        );
     } catch {
       // corrupt draft — ignore
     }
@@ -425,25 +465,38 @@ export function ProfileSetupProvider({
     }
     try {
       sessionStorage.setItem(
-        'profileSetupDraft',
-        JSON.stringify({ formData, selectedServices, customServices, portfolioProjects, selectedSubcategoriesWithPricing }),
+        "profileSetupDraft",
+        JSON.stringify({
+          formData,
+          selectedServices,
+          customServices,
+          portfolioProjects,
+          selectedSubcategoriesWithPricing,
+        }),
       );
     } catch {
       // quota exceeded — ignore
     }
-  }, [formData, selectedServices, customServices, portfolioProjects, selectedSubcategoriesWithPricing]);
+  }, [
+    formData,
+    selectedServices,
+    customServices,
+    portfolioProjects,
+    selectedSubcategoriesWithPricing,
+  ]);
 
   // ── Avatar init from localStorage ───────────────────────────────────────────
 
   useEffect(() => {
     if (initialAvatarRef.current === null) {
       try {
-        const storedUser = localStorage.getItem('user');
+        const storedUser = localStorage.getItem("user");
         if (storedUser) {
           const parsed = JSON.parse(storedUser) as { avatar?: string };
           if (parsed.avatar) {
             const avatarUrl =
-              parsed.avatar.startsWith('http') || parsed.avatar.startsWith('data:')
+              parsed.avatar.startsWith("http") ||
+              parsed.avatar.startsWith("data:")
                 ? parsed.avatar
                 : `${process.env.NEXT_PUBLIC_API_URL}${parsed.avatar}`;
             initialAvatarRef.current = avatarUrl;
@@ -455,7 +508,7 @@ export function ProfileSetupProvider({
         // ignore
       }
       if (initialAvatarRef.current === null) {
-        initialAvatarRef.current = '';
+        initialAvatarRef.current = "";
       }
     }
   }, []);
@@ -465,7 +518,7 @@ export function ProfileSetupProvider({
   useEffect(() => {
     const fetchExistingProfile = async () => {
       if (hasFetchedProfile.current) return;
-      if (!user || (user.role !== 'pro' && !isAdminEditing)) {
+      if (!user || (user.role !== "pro" && !isAdminEditing)) {
         setProfileLoading(false);
         return;
       }
@@ -473,7 +526,7 @@ export function ProfileSetupProvider({
       hasFetchedProfile.current = true;
 
       // Check sessionStorage for invite registration data first
-      const storedData = sessionStorage.getItem('proRegistrationData');
+      const storedData = sessionStorage.getItem("proRegistrationData");
       if (storedData) {
         try {
           const parsed = JSON.parse(storedData) as {
@@ -498,55 +551,67 @@ export function ProfileSetupProvider({
             setCustomServices(parsed.customServices);
           }
           if (parsed.pinterestLinks?.[0]) {
-            setFormData((prev) => ({ ...prev, portfolioUrl: parsed.pinterestLinks![0] }));
+            setFormData((prev) => ({
+              ...prev,
+              portfolioUrl: parsed.pinterestLinks![0],
+            }));
           }
           if (parsed.cadastralId) {
-            setFormData((prev) => ({ ...prev, cadastralId: parsed.cadastralId! }));
+            setFormData((prev) => ({
+              ...prev,
+              cadastralId: parsed.cadastralId!,
+            }));
           }
-          if (parsed.portfolioProjects && Array.isArray(parsed.portfolioProjects)) {
+          if (
+            parsed.portfolioProjects &&
+            Array.isArray(parsed.portfolioProjects)
+          ) {
             const cleanedProjects = parsed.portfolioProjects.map(
               (p: RawPortfolioProject, idx: number) => ({
                 id: p.id || `project-${Date.now()}-${idx}`,
-                title: p.title || '',
-                description: p.description || '',
+                title: p.title || "",
+                description: p.description || "",
                 images: p.images || [],
                 videos: p.videos || [],
                 location: p.location,
-                beforeAfterPairs: (p.beforeAfter || p.beforeAfterPairs || []).map(
-                  (pair: ApiBeforeAfterPair, pairIdx: number) => ({
-                    id: `pair-${Date.now()}-${pairIdx}`,
-                    beforeImage: pair.before || pair.beforeImage || '',
-                    afterImage: pair.after || pair.afterImage || '',
-                  }),
-                ),
+                beforeAfterPairs: (
+                  p.beforeAfter ||
+                  p.beforeAfterPairs ||
+                  []
+                ).map((pair: ApiBeforeAfterPair, pairIdx: number) => ({
+                  id: `pair-${Date.now()}-${pairIdx}`,
+                  beforeImage: pair.before || pair.beforeImage || "",
+                  afterImage: pair.after || pair.afterImage || "",
+                })),
               }),
             );
             setPortfolioProjects(cleanedProjects);
           }
           if (parsed.avatar) {
             const avatarFullUrl =
-              parsed.avatar.startsWith('http') || parsed.avatar.startsWith('data:')
+              parsed.avatar.startsWith("http") ||
+              parsed.avatar.startsWith("data:")
                 ? parsed.avatar
                 : `${process.env.NEXT_PUBLIC_API_URL}${parsed.avatar}`;
             setFormData((prev) => ({ ...prev, avatar: avatarFullUrl }));
             setAvatarPreview(avatarFullUrl);
           }
-          sessionStorage.removeItem('proRegistrationData');
+          sessionStorage.removeItem("proRegistrationData");
           setProfileLoading(false);
 
           // Invited users with pre-selected subcategories skip to services step
           if (subcategories.length > 0) {
-            router.replace('/pro/profile-setup/services');
+            router.replace("/pro/profile-setup/services");
           }
           return;
         } catch (err) {
-          console.error('Failed to parse registration data:', err);
+          console.error("Failed to parse registration data:", err);
         }
       }
 
       // Fetch existing profile
       try {
-        const token = localStorage.getItem('access_token');
+        const token = localStorage.getItem("access_token");
         const profileUrl = isAdminEditing
           ? `${process.env.NEXT_PUBLIC_API_URL}/users/pros/${adminTargetProId}`
           : `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`;
@@ -555,7 +620,7 @@ export function ProfileSetupProvider({
         });
 
         if (response.ok) {
-          const profile = await response.json() as {
+          const profile = (await response.json()) as {
             _id: string;
             selectedServices?: ApiSelectedService[];
             subcategories?: string[];
@@ -592,16 +657,23 @@ export function ProfileSetupProvider({
           setExistingProfileId(profile._id);
           setIsEditMode(true);
 
-          const draftHasServices = (draftDataRef.current?.selectedSubcategoriesWithPricing?.length ?? 0) > 0
-            || (draftDataRef.current?.selectedServices?.length ?? 0) > 0;
-          if (!draftHasServices && profile.selectedServices && profile.selectedServices.length > 0) {
-            const loadedServices: SelectedService[] = profile.selectedServices.map((s) => ({
-              key: s.key,
-              categoryKey: s.categoryKey,
-              name: s.name,
-              nameKa: s.nameKa,
-              experience: (s.experience || '3-5') as ExperienceLevel,
-            }));
+          const draftHasServices =
+            (draftDataRef.current?.selectedSubcategoriesWithPricing?.length ??
+              0) > 0 ||
+            (draftDataRef.current?.selectedServices?.length ?? 0) > 0;
+          if (
+            !draftHasServices &&
+            profile.selectedServices &&
+            profile.selectedServices.length > 0
+          ) {
+            const loadedServices: SelectedService[] =
+              profile.selectedServices.map((s) => ({
+                key: s.key,
+                categoryKey: s.categoryKey,
+                name: s.name,
+                nameKa: s.nameKa,
+                experience: (s.experience || "3-5") as ExperienceLevel,
+              }));
             setSelectedServices(loadedServices);
           } else {
             let subcategories = profile.subcategories || [];
@@ -615,13 +687,20 @@ export function ProfileSetupProvider({
             const yearsExp = profile.yearsExperience || 3;
             const expLevel = yearsToExperienceLevel(yearsExp);
             if (allCategories.length > 0 && subcategories.length > 0) {
-              const services = convertToSelectedServices(subcategories, expLevel);
+              const services = convertToSelectedServices(
+                subcategories,
+                expLevel,
+              );
               setSelectedServices(services);
             }
           }
 
           // Populate servicePricing → selectedSubcategoriesWithPricing
-          if (!draftHasServices && profile.servicePricing && profile.servicePricing.length > 0) {
+          if (
+            !draftHasServices &&
+            profile.servicePricing &&
+            profile.servicePricing.length > 0
+          ) {
             const grouped: Record<string, typeof profile.servicePricing> = {};
             for (const sp of profile.servicePricing) {
               const key = sp.subcategoryKey || sp.categoryKey;
@@ -632,7 +711,7 @@ export function ProfileSetupProvider({
             for (const [subKey, spEntries] of Object.entries(grouped)) {
               // Find the subcategory in the catalog
               let foundSub: Subcategory | null = null;
-              let foundCatKey = '';
+              let foundCatKey = "";
               for (const cat of allCategories) {
                 for (const sub of cat.subcategories) {
                   if (sub.key === subKey) {
@@ -645,47 +724,67 @@ export function ProfileSetupProvider({
               }
               if (!foundSub) continue;
               // Find experience from selectedServices
-              const selSvc = profile.selectedServices?.find(s => s.key === subKey);
-              const exp = (selSvc?.experience || '3-5') as ExperienceLevel;
+              const selSvc = profile.selectedServices?.find(
+                (s) => s.key === subKey,
+              );
+              const exp = (selSvc?.experience || "3-5") as ExperienceLevel;
               subsWithPricing.push({
                 key: subKey,
                 categoryKey: foundCatKey,
                 name: foundSub.name,
                 nameKa: foundSub.nameKa,
                 experience: exp,
-                services: (foundSub.services || []).map(catSvc => {
+                services: (foundSub.services || []).map((catSvc) => {
                   // Find all stored entries for this service (may have multiple unitKeys)
-                  const matchingEntries = spEntries.filter(sp => sp.serviceKey === catSvc.key);
+                  const matchingEntries = spEntries.filter(
+                    (sp) => sp.serviceKey === catSvc.key,
+                  );
                   const hasAnyEntry = matchingEntries.length > 0;
 
                   // Build unitPrices from catalog unitOptions + stored prices
-                  const unitPrices: UnitPriceEntry[] = (catSvc.unitOptions && catSvc.unitOptions.length > 0)
-                    ? catSvc.unitOptions.map(uo => {
-                        const stored = matchingEntries.find(sp => sp.unitKey === uo.key);
-                        return {
-                          unitKey: uo.key,
-                          unit: uo.unit,
-                          unitLabel: pick({ en: uo.label.en, ka: uo.label.ka }),
-                          defaultPrice: uo.defaultPrice,
-                          maxPrice: uo.maxPrice,
-                          price: stored?.price || 0,
-                          isActive: stored ? (stored.isActive ?? true) : false,
-                          discountTiers: stored?.discountTiers || [],
-                        };
-                      })
-                    : [{
-                        unitKey: catSvc.unit,
-                        unit: catSvc.unit,
-                        unitLabel: pick({ en: catSvc.unitName, ka: catSvc.unitNameKa }),
-                        defaultPrice: catSvc.basePrice,
-                        maxPrice: catSvc.maxPrice,
-                        price: matchingEntries[0]?.price || 0,
-                        isActive: hasAnyEntry,
-                        discountTiers: matchingEntries[0]?.discountTiers || [],
-                      }];
+                  const unitPrices: UnitPriceEntry[] =
+                    catSvc.unitOptions && catSvc.unitOptions.length > 0
+                      ? catSvc.unitOptions.map((uo) => {
+                          const stored = matchingEntries.find(
+                            (sp) => sp.unitKey === uo.key,
+                          );
+                          return {
+                            unitKey: uo.key,
+                            unit: uo.unit,
+                            unitLabel: pick({
+                              en: uo.label.en,
+                              ka: uo.label.ka,
+                            }),
+                            defaultPrice: uo.defaultPrice,
+                            maxPrice: uo.maxPrice,
+                            price: stored?.price || 0,
+                            isActive: stored
+                              ? (stored.isActive ?? true)
+                              : false,
+                            discountTiers: stored?.discountTiers || [],
+                          };
+                        })
+                      : [
+                          {
+                            unitKey: catSvc.unit,
+                            unit: catSvc.unit,
+                            unitLabel: pick({
+                              en: catSvc.unitName,
+                              ka: catSvc.unitNameKa,
+                            }),
+                            defaultPrice: catSvc.basePrice,
+                            maxPrice: catSvc.maxPrice,
+                            price: matchingEntries[0]?.price || 0,
+                            isActive: hasAnyEntry,
+                            discountTiers:
+                              matchingEntries[0]?.discountTiers || [],
+                          },
+                        ];
 
                   // Legacy price = first active unit's price
-                  const firstActive = unitPrices.find(u => u.isActive && u.price > 0);
+                  const firstActive = unitPrices.find(
+                    (u) => u.isActive && u.price > 0,
+                  );
 
                   return {
                     serviceKey: catSvc.key,
@@ -693,11 +792,17 @@ export function ProfileSetupProvider({
                     categoryKey: foundCatKey,
                     label: pick({ en: catSvc.name, ka: catSvc.nameKa }),
                     unit: catSvc.unit,
-                    unitLabel: pick({ en: catSvc.unitName, ka: catSvc.unitNameKa }),
+                    unitLabel: pick({
+                      en: catSvc.unitName,
+                      ka: catSvc.unitNameKa,
+                    }),
                     basePrice: catSvc.basePrice,
                     price: firstActive?.price || matchingEntries[0]?.price || 0,
                     isActive: hasAnyEntry,
-                    discountTiers: firstActive?.discountTiers || matchingEntries[0]?.discountTiers || [],
+                    discountTiers:
+                      firstActive?.discountTiers ||
+                      matchingEntries[0]?.discountTiers ||
+                      [],
                     unitPrices,
                   };
                 }),
@@ -716,45 +821,91 @@ export function ProfileSetupProvider({
           const draft = draftDataRef.current?.formData;
           setFormData((prev) => ({
             ...prev,
-            title: draft?.title || profile.title || prev.title || '',
-            bio: draft?.bio || profile.bio || prev.bio || '',
-            avatar: draft?.avatar || profile.avatar || user?.avatar || prev.avatar || '',
-            portfolioUrl: draft?.portfolioUrl || profile.pinterestLinks?.[0] || prev.portfolioUrl || '',
-            licenseNumber: draft?.licenseNumber || profile.architectLicenseNumber || prev.licenseNumber || '',
-            cadastralId: draft?.cadastralId || profile.cadastralId || prev.cadastralId || '',
-            availability: draft?.availability?.length ? draft.availability : (profile.availability || prev.availability || []),
-            basePrice: draft?.basePrice || profile.basePrice?.toString() || prev.basePrice || '',
-            maxPrice: draft?.maxPrice || profile.maxPrice?.toString() || prev.maxPrice || '',
-            pricingModel: draft?.pricingModel || (profile.pricingModel as FormData['pricingModel']) || prev.pricingModel || '',
-            serviceAreas: draft?.serviceAreas?.length ? draft.serviceAreas : (
-              profile.serviceAreas?.includes('Countrywide') ||
-              profile.serviceAreas?.includes('საქართველოს მასშტაბით')
+            title: draft?.title || profile.title || prev.title || "",
+            bio: draft?.bio || profile.bio || prev.bio || "",
+            avatar:
+              draft?.avatar ||
+              profile.avatar ||
+              user?.avatar ||
+              prev.avatar ||
+              "",
+            portfolioUrl:
+              draft?.portfolioUrl ||
+              profile.pinterestLinks?.[0] ||
+              prev.portfolioUrl ||
+              "",
+            licenseNumber:
+              draft?.licenseNumber ||
+              profile.architectLicenseNumber ||
+              prev.licenseNumber ||
+              "",
+            cadastralId:
+              draft?.cadastralId ||
+              profile.cadastralId ||
+              prev.cadastralId ||
+              "",
+            availability: draft?.availability?.length
+              ? draft.availability
+              : profile.availability || prev.availability || [],
+            basePrice:
+              draft?.basePrice ||
+              profile.basePrice?.toString() ||
+              prev.basePrice ||
+              "",
+            maxPrice:
+              draft?.maxPrice ||
+              profile.maxPrice?.toString() ||
+              prev.maxPrice ||
+              "",
+            pricingModel:
+              draft?.pricingModel ||
+              (profile.pricingModel as FormData["pricingModel"]) ||
+              prev.pricingModel ||
+              "",
+            serviceAreas: draft?.serviceAreas?.length
+              ? draft.serviceAreas
+              : profile.serviceAreas?.includes("Countrywide") ||
+                  profile.serviceAreas?.includes("საქართველოს მასშტაბით")
                 ? []
-                : profile.serviceAreas || prev.serviceAreas || []),
-            nationwide: draft?.nationwide ??
-              (profile.serviceAreas?.includes('Countrywide') ||
-              profile.serviceAreas?.includes('საქართველოს მასშტაბით') ||
-              false),
-            whatsapp: draft?.whatsapp || profile.whatsapp || prev.whatsapp || '',
-            telegram: draft?.telegram || profile.telegram || prev.telegram || '',
-            instagram: draft?.instagram || profile.instagramUrl || prev.instagram || '',
-            facebook: draft?.facebook || profile.facebookUrl || prev.facebook || '',
-            linkedin: draft?.linkedin || profile.linkedinUrl || prev.linkedin || '',
-            website: draft?.website || profile.websiteUrl || prev.website || '',
+                : profile.serviceAreas || prev.serviceAreas || [],
+            nationwide:
+              draft?.nationwide ??
+              (profile.serviceAreas?.includes("Countrywide") ||
+                profile.serviceAreas?.includes("საქართველოს მასშტაბით") ||
+                false),
+            whatsapp:
+              draft?.whatsapp || profile.whatsapp || prev.whatsapp || "",
+            telegram:
+              draft?.telegram || profile.telegram || prev.telegram || "",
+            instagram:
+              draft?.instagram || profile.instagramUrl || prev.instagram || "",
+            facebook:
+              draft?.facebook || profile.facebookUrl || prev.facebook || "",
+            linkedin:
+              draft?.linkedin || profile.linkedinUrl || prev.linkedin || "",
+            website: draft?.website || profile.websiteUrl || prev.website || "",
           }));
 
           // Avatar
           let avatarUrl: string | null = null;
-          if (initialAvatarRef.current && initialAvatarRef.current.startsWith('data:')) {
+          if (
+            initialAvatarRef.current &&
+            initialAvatarRef.current.startsWith("data:")
+          ) {
             avatarUrl = initialAvatarRef.current;
-          } else if (user?.avatar && user.avatar.startsWith('data:')) {
+          } else if (user?.avatar && user.avatar.startsWith("data:")) {
             avatarUrl = user.avatar;
           } else {
             try {
-              const storedUser = localStorage.getItem('user');
+              const storedUser = localStorage.getItem("user");
               if (storedUser) {
-                const parsedUser = JSON.parse(storedUser) as { avatar?: string };
-                if (parsedUser.avatar && parsedUser.avatar.startsWith('data:')) {
+                const parsedUser = JSON.parse(storedUser) as {
+                  avatar?: string;
+                };
+                if (
+                  parsedUser.avatar &&
+                  parsedUser.avatar.startsWith("data:")
+                ) {
                   avatarUrl = parsedUser.avatar;
                 }
               }
@@ -764,11 +915,14 @@ export function ProfileSetupProvider({
           }
           if (!avatarUrl) {
             avatarUrl =
-              profile.avatar || user?.avatar || initialAvatarRef.current || null;
+              profile.avatar ||
+              user?.avatar ||
+              initialAvatarRef.current ||
+              null;
           }
           if (avatarUrl) {
             const fullUrl =
-              avatarUrl.startsWith('http') || avatarUrl.startsWith('data:')
+              avatarUrl.startsWith("http") || avatarUrl.startsWith("data:")
                 ? avatarUrl
                 : `${process.env.NEXT_PUBLIC_API_URL}${avatarUrl}`;
             setAvatarPreview(fullUrl);
@@ -777,22 +931,27 @@ export function ProfileSetupProvider({
 
           // Portfolio projects
           let loadedProjects: PortfolioProject[] = [];
-          if (profile.portfolioProjects && profile.portfolioProjects.length > 0) {
+          if (
+            profile.portfolioProjects &&
+            profile.portfolioProjects.length > 0
+          ) {
             loadedProjects = profile.portfolioProjects.map(
               (p: RawPortfolioProject, idx: number) => ({
                 id: p.id || `project-${Date.now()}-${idx}`,
-                title: p.title || '',
-                description: p.description || '',
+                title: p.title || "",
+                description: p.description || "",
                 images: p.images || [],
                 videos: p.videos || [],
-                location: p.location || '',
-                beforeAfterPairs: (p.beforeAfter || p.beforeAfterPairs || []).map(
-                  (pair: ApiBeforeAfterPair, pairIdx: number) => ({
-                    id: `pair-${Date.now()}-${pairIdx}`,
-                    beforeImage: pair.before || pair.beforeImage || '',
-                    afterImage: pair.after || pair.afterImage || '',
-                  }),
-                ),
+                location: p.location || "",
+                beforeAfterPairs: (
+                  p.beforeAfter ||
+                  p.beforeAfterPairs ||
+                  []
+                ).map((pair: ApiBeforeAfterPair, pairIdx: number) => ({
+                  id: `pair-${Date.now()}-${pairIdx}`,
+                  beforeImage: pair.before || pair.beforeImage || "",
+                  afterImage: pair.after || pair.afterImage || "",
+                })),
               }),
             );
           }
@@ -802,26 +961,32 @@ export function ProfileSetupProvider({
               `${process.env.NEXT_PUBLIC_API_URL}/portfolio/pro/${profile._id}`,
             );
             if (portfolioRes.ok) {
-              const portfolioData = await portfolioRes.json() as RawPortfolioProject[];
+              const portfolioData =
+                (await portfolioRes.json()) as RawPortfolioProject[];
               if (portfolioData && portfolioData.length > 0) {
                 const fetchedProjects = portfolioData.map(
                   (p: RawPortfolioProject, idx: number) => ({
                     id: p.id || p._id || `portfolio-${Date.now()}-${idx}`,
-                    title: p.title || '',
-                    description: p.description || '',
-                    images: p.images || [p.imageUrl].filter(Boolean) as string[],
+                    title: p.title || "",
+                    description: p.description || "",
+                    images:
+                      p.images || ([p.imageUrl].filter(Boolean) as string[]),
                     videos: p.videos || [],
-                    location: p.location || '',
-                    beforeAfterPairs: (p.beforeAfter || p.beforeAfterPairs || []).map(
-                      (pair: ApiBeforeAfterPair, pairIdx: number) => ({
-                        id: `pair-${Date.now()}-${pairIdx}`,
-                        beforeImage: pair.before || pair.beforeImage || '',
-                        afterImage: pair.after || pair.afterImage || '',
-                      }),
-                    ),
+                    location: p.location || "",
+                    beforeAfterPairs: (
+                      p.beforeAfter ||
+                      p.beforeAfterPairs ||
+                      []
+                    ).map((pair: ApiBeforeAfterPair, pairIdx: number) => ({
+                      id: `pair-${Date.now()}-${pairIdx}`,
+                      beforeImage: pair.before || pair.beforeImage || "",
+                      afterImage: pair.after || pair.afterImage || "",
+                    })),
                   }),
                 );
-                const existingTitles = new Set(loadedProjects.map((p) => p.title));
+                const existingTitles = new Set(
+                  loadedProjects.map((p) => p.title),
+                );
                 fetchedProjects.forEach((p) => {
                   if (!existingTitles.has(p.title)) {
                     loadedProjects.push(p);
@@ -842,7 +1007,10 @@ export function ProfileSetupProvider({
             user.selectedSubcategories.length > 0 &&
             allCategories.length > 0
           ) {
-            const services = convertToSelectedServices(user.selectedSubcategories, '3-5');
+            const services = convertToSelectedServices(
+              user.selectedSubcategories,
+              "3-5",
+            );
             setSelectedServices(services);
           }
         }
@@ -856,15 +1024,27 @@ export function ProfileSetupProvider({
     if (allCategories.length > 0) {
       fetchExistingProfile();
     }
-  }, [user, allCategories, isAdminEditing, adminTargetProId, convertToSelectedServices, router]);
+  }, [
+    user,
+    allCategories,
+    isAdminEditing,
+    adminTargetProId,
+    convertToSelectedServices,
+    router,
+  ]);
 
   // ── Avatar from user context ─────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!hasSetAvatarFromUser.current && user?.avatar && !avatarPreview && !profileLoading) {
+    if (
+      !hasSetAvatarFromUser.current &&
+      user?.avatar &&
+      !avatarPreview &&
+      !profileLoading
+    ) {
       hasSetAvatarFromUser.current = true;
       const avatarFullUrl =
-        user.avatar.startsWith('http') || user.avatar.startsWith('data:')
+        user.avatar.startsWith("http") || user.avatar.startsWith("data:")
           ? user.avatar
           : `${process.env.NEXT_PUBLIC_API_URL}${user.avatar}`;
       setFormData((prev) => ({ ...prev, avatar: avatarFullUrl }));
@@ -877,11 +1057,11 @@ export function ProfileSetupProvider({
   useEffect(() => {
     const fetchLocationData = async () => {
       try {
-        const detectedCountry = 'Georgia';
+        const detectedCountry = "Georgia";
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/users/pros/locations?country=${encodeURIComponent(detectedCountry)}&locale=${locale}`,
         );
-        const data = await response.json() as LocationData;
+        const data = (await response.json()) as LocationData;
         setLocationData(data);
       } catch {
         // ignore
@@ -903,7 +1083,7 @@ export function ProfileSetupProvider({
         .map((area) => locationData.cityMapping?.[area] || area)
         .filter((area, index, self) => self.indexOf(area) === index);
 
-      if (translatedAreas.join(',') !== formData.serviceAreas.join(',')) {
+      if (translatedAreas.join(",") !== formData.serviceAreas.join(",")) {
         setFormData((prev) => ({ ...prev, serviceAreas: translatedAreas }));
       }
     }
@@ -915,12 +1095,16 @@ export function ProfileSetupProvider({
   // Safe because the services UI auto-seeds the catalog default price when a
   // service is toggled on — users can't leave an active service with price=0
   // unless they explicitly zero it out.
-  const isServicePriced = (svc: { price: number; unitPrices?: UnitPriceEntry[] }) => {
-    const activeUnits = svc.unitPrices?.filter(u => u.isActive && u.price > 0) || [];
+  const isServicePriced = (svc: {
+    price: number;
+    unitPrices?: UnitPriceEntry[];
+  }) => {
+    const activeUnits =
+      svc.unitPrices?.filter((u) => u.isActive && u.price > 0) || [];
     return activeUnits.length > 0 || svc.price > 0;
   };
-  const allActiveServices = selectedSubcategoriesWithPricing.flatMap(s =>
-    s.services.filter(svc => svc.isActive)
+  const allActiveServices = selectedSubcategoriesWithPricing.flatMap((s) =>
+    s.services.filter((svc) => svc.isActive),
   );
   const allActiveServicesPriced =
     allActiveServices.length > 0 && allActiveServices.every(isServicePriced);
@@ -960,11 +1144,16 @@ export function ProfileSetupProvider({
   const canProceedFromStep = useCallback(
     (slug: ProfileSetupStepSlug): boolean => {
       switch (slug) {
-        case 'about': return validation.avatar && validation.bio;
-        case 'services': return allActiveServicesPriced;
-        case 'areas': return validation.serviceAreas;
-        case 'portfolio': return true;
-        case 'review': return isFormValid;
+        case "about":
+          return validation.avatar && validation.bio;
+        case "services":
+          return allActiveServicesPriced;
+        case "areas":
+          return validation.serviceAreas;
+        case "portfolio":
+          return true;
+        case "review":
+          return isFormValid;
       }
     },
     [validation, allActiveServicesPriced, isFormValid],
@@ -985,15 +1174,6 @@ export function ProfileSetupProvider({
     [updateUser],
   );
 
-  const dismissWelcomeBanner = useCallback(() => {
-    try {
-      localStorage.setItem('profileSetupWelcomeDismissed', 'true');
-    } catch {
-      // ignore
-    }
-    setShowWelcomeBanner(false);
-  }, []);
-
   // ── Navigation ───────────────────────────────────────────────────────────────
 
   const currentStepIndex = useCallback(
@@ -1004,7 +1184,7 @@ export function ProfileSetupProvider({
   const goToStep = useCallback(
     (slug: ProfileSetupStepSlug) => {
       router.push(`/pro/profile-setup/${slug}`);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     },
     [router],
   );
@@ -1013,82 +1193,134 @@ export function ProfileSetupProvider({
   const handleSubmitRef = useRef<() => Promise<void>>();
 
   // Build partial payload for the current step
-  const getStepPayload = useCallback((slug: ProfileSetupStepSlug): Record<string, unknown> => {
-    switch (slug) {
-      case 'about':
-        return {
-          bio: formData.bio,
-          avatar: formData.avatar || user?.avatar,
-          whatsapp: formData.whatsapp || undefined,
-          telegram: formData.telegram || undefined,
-          instagramUrl: formData.instagram || undefined,
-          facebookUrl: formData.facebook || undefined,
-          linkedinUrl: formData.linkedin || undefined,
-          websiteUrl: formData.website || undefined,
-        };
-      case 'services': {
-        const cats = selectedSubcategoriesWithPricing.length > 0
-          ? [...new Set(selectedSubcategoriesWithPricing.map((s) => s.categoryKey))]
-          : selectedCategories;
-        const subs = selectedSubcategoriesWithPricing.length > 0
-          ? selectedSubcategoriesWithPricing.map((s) => s.key)
-          : selectedSubcategories;
-        const svcs = selectedSubcategoriesWithPricing.length > 0
-          ? selectedSubcategoriesWithPricing.map((s) => ({
-              key: s.key, categoryKey: s.categoryKey, name: s.name, nameKa: s.nameKa, experience: s.experience,
-            }))
-          : selectedServices.map((s) => ({
-              key: s.key, categoryKey: s.categoryKey, name: s.name, nameKa: s.nameKa, experience: s.experience,
-            }));
-        const pricing = selectedSubcategoriesWithPricing.flatMap((sub) =>
-          sub.services.filter((s) => s.isActive).flatMap((s) => {
-            const activeUnits = s.unitPrices?.filter(u => u.isActive && u.price > 0) || [];
-            if (activeUnits.length > 0) {
-              return activeUnits.map(u => ({
-                serviceKey: s.serviceKey, categoryKey: sub.categoryKey, subcategoryKey: sub.key,
-                unitKey: u.unitKey, price: u.price, isActive: true,
-                ...(u.discountTiers.length > 0 ? { discountTiers: u.discountTiers } : {}),
-              }));
-            }
-            if (s.price > 0) {
-              return [{ serviceKey: s.serviceKey, categoryKey: sub.categoryKey, subcategoryKey: sub.key,
-                price: s.price, isActive: true,
-                ...(s.discountTiers.length > 0 ? { discountTiers: s.discountTiers } : {}),
-              }];
-            }
-            return [];
-          }),
-        );
-        return {
-          categories: cats.length > 0 ? cats : undefined,
-          subcategories: subs.length > 0 ? subs : undefined,
-          selectedServices: svcs.length > 0 ? svcs : undefined,
-          servicePricing: pricing.length > 0 ? pricing : undefined,
-          yearsExperience: maxExperienceYears > 0 ? maxExperienceYears : undefined,
-          customServices: customServices.length > 0 ? customServices : undefined,
-        };
-      }
-      case 'areas':
-        return {
-          serviceAreas: formData.nationwide && locationData
-            ? [locationData.nationwide]
-            : formData.serviceAreas,
-        };
-      case 'portfolio':
-        return {
-          portfolioProjects: portfolioProjects.map((p) => ({
-            title: p.title, description: p.description, images: p.images,
-            videos: p.videos || [], location: p.location,
-            beforeAfterPairs: (p.beforeAfterPairs || []).map((pair) => ({
-              beforeImage: pair.beforeImage, afterImage: pair.afterImage,
+  const getStepPayload = useCallback(
+    (slug: ProfileSetupStepSlug): Record<string, unknown> => {
+      switch (slug) {
+        case "about":
+          return {
+            bio: formData.bio,
+            avatar: formData.avatar || user?.avatar,
+            whatsapp: formData.whatsapp || undefined,
+            telegram: formData.telegram || undefined,
+            instagramUrl: formData.instagram || undefined,
+            facebookUrl: formData.facebook || undefined,
+            linkedinUrl: formData.linkedin || undefined,
+            websiteUrl: formData.website || undefined,
+          };
+        case "services": {
+          const cats =
+            selectedSubcategoriesWithPricing.length > 0
+              ? [
+                  ...new Set(
+                    selectedSubcategoriesWithPricing.map((s) => s.categoryKey),
+                  ),
+                ]
+              : selectedCategories;
+          const subs =
+            selectedSubcategoriesWithPricing.length > 0
+              ? selectedSubcategoriesWithPricing.map((s) => s.key)
+              : selectedSubcategories;
+          const svcs =
+            selectedSubcategoriesWithPricing.length > 0
+              ? selectedSubcategoriesWithPricing.map((s) => ({
+                  key: s.key,
+                  categoryKey: s.categoryKey,
+                  name: s.name,
+                  nameKa: s.nameKa,
+                  experience: s.experience,
+                }))
+              : selectedServices.map((s) => ({
+                  key: s.key,
+                  categoryKey: s.categoryKey,
+                  name: s.name,
+                  nameKa: s.nameKa,
+                  experience: s.experience,
+                }));
+          const pricing = selectedSubcategoriesWithPricing.flatMap((sub) =>
+            sub.services
+              .filter((s) => s.isActive)
+              .flatMap((s) => {
+                const activeUnits =
+                  s.unitPrices?.filter((u) => u.isActive && u.price > 0) || [];
+                if (activeUnits.length > 0) {
+                  return activeUnits.map((u) => ({
+                    serviceKey: s.serviceKey,
+                    categoryKey: sub.categoryKey,
+                    subcategoryKey: sub.key,
+                    unitKey: u.unitKey,
+                    price: u.price,
+                    isActive: true,
+                    ...(u.discountTiers.length > 0
+                      ? { discountTiers: u.discountTiers }
+                      : {}),
+                  }));
+                }
+                if (s.price > 0) {
+                  return [
+                    {
+                      serviceKey: s.serviceKey,
+                      categoryKey: sub.categoryKey,
+                      subcategoryKey: sub.key,
+                      price: s.price,
+                      isActive: true,
+                      ...(s.discountTiers.length > 0
+                        ? { discountTiers: s.discountTiers }
+                        : {}),
+                    },
+                  ];
+                }
+                return [];
+              }),
+          );
+          return {
+            categories: cats.length > 0 ? cats : undefined,
+            subcategories: subs.length > 0 ? subs : undefined,
+            selectedServices: svcs.length > 0 ? svcs : undefined,
+            servicePricing: pricing.length > 0 ? pricing : undefined,
+            yearsExperience:
+              maxExperienceYears > 0 ? maxExperienceYears : undefined,
+            customServices:
+              customServices.length > 0 ? customServices : undefined,
+          };
+        }
+        case "areas":
+          return {
+            serviceAreas:
+              formData.nationwide && locationData
+                ? [locationData.nationwide]
+                : formData.serviceAreas,
+          };
+        case "portfolio":
+          return {
+            portfolioProjects: portfolioProjects.map((p) => ({
+              title: p.title,
+              description: p.description,
+              images: p.images,
+              videos: p.videos || [],
+              location: p.location,
+              beforeAfterPairs: (p.beforeAfterPairs || []).map((pair) => ({
+                beforeImage: pair.beforeImage,
+                afterImage: pair.afterImage,
+              })),
             })),
-          })),
-        };
-      default:
-        return {};
-    }
-  }, [formData, selectedSubcategoriesWithPricing, selectedCategories, selectedSubcategories,
-      selectedServices, customServices, maxExperienceYears, portfolioProjects, locationData, user]);
+          };
+        default:
+          return {};
+      }
+    },
+    [
+      formData,
+      selectedSubcategoriesWithPricing,
+      selectedCategories,
+      selectedSubcategories,
+      selectedServices,
+      customServices,
+      maxExperienceYears,
+      portfolioProjects,
+      locationData,
+      user,
+    ],
+  );
 
   const goNext = useCallback(
     async (currentSlug: ProfileSetupStepSlug) => {
@@ -1109,12 +1341,18 @@ export function ProfileSetupProvider({
       const payload = getStepPayload(currentSlug);
       if (Object.keys(payload).length > 0) {
         try {
-          const token = localStorage.getItem('access_token');
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify(payload),
-          });
+          const token = localStorage.getItem("access_token");
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(payload),
+            },
+          );
         } catch {
           // Don't block navigation on save failure — data is still in context
         }
@@ -1122,7 +1360,7 @@ export function ProfileSetupProvider({
 
       // Navigate — keep isSaving true so button stays disabled during transition
       router.push(`/pro/profile-setup/${STEP_SLUGS[idx + 1]}`);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
       // Reset after a short delay to cover the route transition
       setTimeout(() => setIsSaving(false), 500);
     },
@@ -1134,7 +1372,7 @@ export function ProfileSetupProvider({
       const idx = STEP_SLUGS.indexOf(currentSlug);
       if (idx > 0) {
         router.push(`/pro/profile-setup/${STEP_SLUGS[idx - 1]}`);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
         router.back();
       }
@@ -1145,29 +1383,32 @@ export function ProfileSetupProvider({
   // ── Submit ────────────────────────────────────────────────────────────────────
 
   const handleSubmit = useCallback(async () => {
-    setError('');
+    setError("");
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem("access_token");
       const categoryInfo =
         getCategoryByKey(selectedCategories[0]) || allCategories[0];
 
-      let pricingModel = formData.pricingModel || 'range';
+      let pricingModel = formData.pricingModel || "range";
 
       const baseRaw = formData.basePrice.trim();
       const maxRaw = formData.maxPrice.trim();
       const baseNum = baseRaw ? Number(baseRaw) : NaN;
       const maxNum = maxRaw ? Number(maxRaw) : NaN;
 
-      const hasServicePricingData =
-        servicePricing.length > 0;
+      const hasServicePricingData = servicePricing.length > 0;
 
       // If user selected services via the new pricing step, skip legacy price validation
       // Even if no prices are set yet, allow submission — pros can set prices later
-      if (!hasServicePricingData && selectedSubcategoriesWithPricing.length === 0 && pricingModel !== 'byAgreement') {
+      if (
+        !hasServicePricingData &&
+        selectedSubcategoriesWithPricing.length === 0 &&
+        pricingModel !== "byAgreement"
+      ) {
         if (!baseRaw || !Number.isFinite(baseNum) || baseNum <= 0) {
-          pricingModel = 'byAgreement'; // fallback — don't block submission
+          pricingModel = "byAgreement"; // fallback — don't block submission
         }
       }
 
@@ -1184,39 +1425,44 @@ export function ProfileSetupProvider({
       }));
 
       const requestBody: Record<string, unknown> = {
-        profileType: 'personal',
+        profileType: "personal",
         title:
           formData.title ||
           pick({ en: categoryInfo?.name, ka: categoryInfo?.nameKa }) ||
-          '',
+          "",
         bio: formData.bio,
         categories:
           selectedSubcategoriesWithPricing.length > 0
-            ? [...new Set(selectedSubcategoriesWithPricing.map((s) => s.categoryKey))]
+            ? [
+                ...new Set(
+                  selectedSubcategoriesWithPricing.map((s) => s.categoryKey),
+                ),
+              ]
             : selectedCategories.length > 0
-            ? selectedCategories
-            : ['interior-design'],
+              ? selectedCategories
+              : ["interior-design"],
         subcategories:
           selectedSubcategoriesWithPricing.length > 0
             ? selectedSubcategoriesWithPricing.map((s) => s.key)
             : selectedSubcategories.length > 0
-            ? selectedSubcategories
-            : user?.selectedSubcategories || [],
-        selectedServices: selectedSubcategoriesWithPricing.length > 0
-          ? selectedSubcategoriesWithPricing.map((s) => ({
-              key: s.key,
-              categoryKey: s.categoryKey,
-              name: s.name,
-              nameKa: s.nameKa,
-              experience: s.experience,
-            }))
-          : selectedServices.map((s) => ({
-              key: s.key,
-              categoryKey: s.categoryKey,
-              name: s.name,
-              nameKa: s.nameKa,
-              experience: s.experience,
-            })),
+              ? selectedSubcategories
+              : user?.selectedSubcategories || [],
+        selectedServices:
+          selectedSubcategoriesWithPricing.length > 0
+            ? selectedSubcategoriesWithPricing.map((s) => ({
+                key: s.key,
+                categoryKey: s.categoryKey,
+                name: s.name,
+                nameKa: s.nameKa,
+                experience: s.experience,
+              }))
+            : selectedServices.map((s) => ({
+                key: s.key,
+                categoryKey: s.categoryKey,
+                name: s.name,
+                nameKa: s.nameKa,
+                experience: s.experience,
+              })),
         customServices: customServices.length > 0 ? customServices : undefined,
         yearsExperience: maxExperienceYears,
         avatar: formData.avatar || user?.avatar,
@@ -1225,7 +1471,9 @@ export function ProfileSetupProvider({
               pricingModel,
               basePrice: baseNum,
               maxPrice:
-                pricingModel === 'fixed' || pricingModel === 'per_sqm' ? null : maxNum,
+                pricingModel === "fixed" || pricingModel === "per_sqm"
+                  ? null
+                  : maxNum,
             }
           : {}),
         serviceAreas:
@@ -1233,14 +1481,16 @@ export function ProfileSetupProvider({
             ? [locationData.nationwide]
             : formData.serviceAreas,
         portfolioProjects: cleanedPortfolioProjects,
-        pinterestLinks: formData.portfolioUrl ? [formData.portfolioUrl] : undefined,
-        architectLicenseNumber: selectedCategories.includes('architecture')
+        pinterestLinks: formData.portfolioUrl
+          ? [formData.portfolioUrl]
+          : undefined,
+        architectLicenseNumber: selectedCategories.includes("architecture")
           ? formData.licenseNumber
           : undefined,
-        cadastralId: selectedCategories.includes('architecture')
+        cadastralId: selectedCategories.includes("architecture")
           ? formData.cadastralId
           : undefined,
-        availability: selectedCategories.includes('home-care')
+        availability: selectedCategories.includes("home-care")
           ? formData.availability
           : undefined,
         whatsapp: formData.whatsapp || undefined,
@@ -1256,28 +1506,36 @@ export function ProfileSetupProvider({
                   .filter((s) => s.isActive)
                   .flatMap((s) => {
                     // Multi-unit: emit one entry per active unit with price > 0
-                    const activeUnits = s.unitPrices?.filter(u => u.isActive && u.price > 0) || [];
+                    const activeUnits =
+                      s.unitPrices?.filter((u) => u.isActive && u.price > 0) ||
+                      [];
                     if (activeUnits.length > 0) {
-                      return activeUnits.map(u => ({
+                      return activeUnits.map((u) => ({
                         serviceKey: s.serviceKey,
                         categoryKey: sub.categoryKey,
                         subcategoryKey: sub.key,
                         unitKey: u.unitKey,
                         price: u.price,
                         isActive: true,
-                        ...(u.discountTiers.length > 0 ? { discountTiers: u.discountTiers } : {}),
+                        ...(u.discountTiers.length > 0
+                          ? { discountTiers: u.discountTiers }
+                          : {}),
                       }));
                     }
                     // Fallback: single-unit legacy
                     if (s.price > 0) {
-                      return [{
-                        serviceKey: s.serviceKey,
-                        categoryKey: sub.categoryKey,
-                        subcategoryKey: sub.key,
-                        price: s.price,
-                        isActive: true,
-                        ...(s.discountTiers.length > 0 ? { discountTiers: s.discountTiers } : {}),
-                      }];
+                      return [
+                        {
+                          serviceKey: s.serviceKey,
+                          categoryKey: sub.categoryKey,
+                          subcategoryKey: sub.key,
+                          price: s.price,
+                          isActive: true,
+                          ...(s.discountTiers.length > 0
+                            ? { discountTiers: s.discountTiers }
+                            : {}),
+                        },
+                      ];
                     }
                     return [];
                   }),
@@ -1286,38 +1544,47 @@ export function ProfileSetupProvider({
       };
 
       // Debug: log what we're about to send
-      console.log('[ProfileSetup] Submit state:', {
-        'formData.bio': formData.bio?.substring(0, 50),
-        'formData.serviceAreas': formData.serviceAreas,
-        'selectedSubcategoriesWithPricing.length': selectedSubcategoriesWithPricing.length,
-        'selectedServices.length': selectedServices.length,
-        'servicePricing.length': servicePricing.length,
-        'requestBody.bio': (requestBody.bio as string)?.substring(0, 50),
-        'requestBody.serviceAreas': requestBody.serviceAreas,
-        'requestBody.categories': requestBody.categories,
-        'requestBody.servicePricing count': (requestBody.servicePricing as unknown[])?.length,
+      console.log("[ProfileSetup] Submit state:", {
+        "formData.bio": formData.bio?.substring(0, 50),
+        "formData.serviceAreas": formData.serviceAreas,
+        "selectedSubcategoriesWithPricing.length":
+          selectedSubcategoriesWithPricing.length,
+        "selectedServices.length": selectedServices.length,
+        "servicePricing.length": servicePricing.length,
+        "requestBody.bio": (requestBody.bio as string)?.substring(0, 50),
+        "requestBody.serviceAreas": requestBody.serviceAreas,
+        "requestBody.categories": requestBody.categories,
+        "requestBody.servicePricing count": (
+          requestBody.servicePricing as unknown[]
+        )?.length,
       });
 
       const url = isAdminEditing
         ? `${process.env.NEXT_PUBLIC_API_URL}/users/pros/${adminTargetProId}/profile`
         : `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`;
-      const method = isEditMode && existingProfileId ? 'PATCH' : 'POST';
+      const method = isEditMode && existingProfileId ? "PATCH" : "POST";
 
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json() as { id?: string; _id?: string; message?: string };
+      const data = (await response.json()) as {
+        id?: string;
+        _id?: string;
+        message?: string;
+      };
 
       if (!response.ok) {
         throw new Error(
           data.message ||
-            (isEditMode ? 'Failed to update profile' : 'Failed to create profile'),
+            (isEditMode
+              ? "Failed to update profile"
+              : "Failed to create profile"),
         );
       }
 
@@ -1325,7 +1592,9 @@ export function ProfileSetupProvider({
         updateUser({
           isProfileCompleted: true,
           selectedCategories:
-            selectedCategories.length > 0 ? selectedCategories : ['interior-design'],
+            selectedCategories.length > 0
+              ? selectedCategories
+              : ["interior-design"],
           selectedSubcategories:
             selectedSubcategories.length > 0
               ? selectedSubcategories
@@ -1342,7 +1611,7 @@ export function ProfileSetupProvider({
       }
 
       try {
-        sessionStorage.removeItem('profileSetupDraft');
+        sessionStorage.removeItem("profileSetupDraft");
       } catch {
         // ignore
       }
@@ -1353,12 +1622,15 @@ export function ProfileSetupProvider({
       if (userId) {
         router.push(`/professionals/${userId}`);
       } else {
-        router.push('/professionals');
+        router.push("/professionals");
       }
     } catch (err) {
       const e = err as { message?: string };
       setError(
-        e.message || (isEditMode ? 'Failed to update profile' : 'Failed to create profile'),
+        e.message ||
+          (isEditMode
+            ? "Failed to update profile"
+            : "Failed to create profile"),
       );
     } finally {
       setIsLoading(false);
@@ -1418,8 +1690,6 @@ export function ProfileSetupProvider({
     validation,
     isFormValid,
     canProceedFromStep,
-    showWelcomeBanner,
-    dismissWelcomeBanner,
     currentStepIndex,
     goToStep,
     goNext,
