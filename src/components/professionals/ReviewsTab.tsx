@@ -280,7 +280,7 @@ export default function ReviewsTab({
                     <Users className="h-5 w-5 text-white" />
                   </div>
                   <div className="text-left">
-                    <h3 className="font-semibold text-[var(--hm-fg-primary)]">
+                    <h3 className="text-sm font-semibold text-[var(--hm-fg-primary)]">
                       {t("reviews.requestReviews")}
                     </h3>
                     <p className="text-xs text-[var(--hm-fg-muted)]">

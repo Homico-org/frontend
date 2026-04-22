@@ -141,7 +141,11 @@ export default function CategoryScroller({
         >
           {/* px-10 keeps the first/last tabs out from under the left/right chevron buttons,
               which are absolutely positioned at the edges with a 36×36 hit target. */}
-          <div ref={scrollRef} className="flex overflow-x-auto scrollbar-hide px-10">
+          <div
+            ref={scrollRef}
+            className="flex overflow-x-auto overflow-y-hidden scrollbar-hide px-10 overscroll-x-contain"
+            style={{ touchAction: "pan-x" }}
+          >
             {categories.map((cat) => {
               const isActive = cat.key === selectedCategory;
               return (
@@ -185,7 +189,10 @@ export default function CategoryScroller({
 
       {/* Subcategory chips */}
       {activeCategory && activeCategory.subcategories.length > 0 && (
-        <div className="mt-3.5 overflow-x-auto scrollbar-hide">
+        <div
+          className="mt-3.5 overflow-x-auto overflow-y-hidden scrollbar-hide overscroll-x-contain"
+          style={{ touchAction: "pan-x" }}
+        >
           <div className="flex items-center gap-1.5 pb-1">
             <Chip
               active={selectedSubcategories.length === 0}

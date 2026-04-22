@@ -599,10 +599,10 @@ export function ProfileSetupProvider({
           sessionStorage.removeItem("proRegistrationData");
           setProfileLoading(false);
 
-          // Invited users with pre-selected subcategories skip to services step
-          if (subcategories.length > 0) {
-            router.replace("/pro/profile-setup/services");
-          }
+          // Note: when subcategories are pre-selected (invite flow), the
+          // invite page navigates the user directly to the services step.
+          // No router.replace here — that used to bounce the route mid-mount
+          // and crashed Next's <Router> with React #310.
           return;
         } catch (err) {
           console.error("Failed to parse registration data:", err);

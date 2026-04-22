@@ -1,6 +1,7 @@
 {
   "common": {
     "save": "შენახვა",
+    "saved": "შენახულია",
     "cancel": "გაუქმება",
     "proposals": "შეთავაზება",
     "change": "შეცვლა",
@@ -225,6 +226,7 @@
     "noProjectsAdded": "პროექტები არ არის",
     "noneSelected": "არცერთი არჩეულია",
     "notAdded": "არ არის",
+    "missingFields": "შესავსებია",
     "of": "-დან",
     "onBrowse": "მთავარზე",
     "onetimePrice": "ერთჯერადი ფასი",
@@ -3512,7 +3514,10 @@
     "passwordTooShort": "პაროლი მინიმუმ 6 სიმბოლო უნდა იყოს",
     "confirmPasswordPlaceholder": "გაიმეორეთ პაროლი",
     "passwordMismatch": "პაროლები არ ემთხვევა",
-    "activateAccount": "ანგარიშის გააქტიურება"
+    "activateAccount": "ანგარიშის გააქტიურება",
+    "resendIn": "ხელახლა გაგზავნა {seconds} წმ-ში",
+    "resendCode": "კოდის ხელახლა გაგზავნა",
+    "resending": "იგზავნება..."
   },
   "ai": {
     "smartAssistant": "ინტელექტუალური ასისტენტი",

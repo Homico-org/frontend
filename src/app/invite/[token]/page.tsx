@@ -46,8 +46,19 @@ export default function InvitePage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [sendingOtp, setSendingOtp] = useState(false);
+  const [resendSecondsLeft, setResendSecondsLeft] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const didInit = useRef(false);
+
+  // 60s cooldown between OTP sends — decrements every second while on the OTP
+  // step. Reset to 60 whenever a new code is sent.
+  useEffect(() => {
+    if (resendSecondsLeft <= 0) return;
+    const id = window.setInterval(() => {
+      setResendSecondsLeft((s) => Math.max(0, s - 1));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [resendSecondsLeft]);
 
   useEffect(() => {
     if (didInit.current) return;
@@ -83,6 +94,17 @@ export default function InvitePage() {
     try {
       await api.post('/verification/send-otp', { identifier: invite.phone, type: 'phone' });
       setState('otp');
+      setResendSecondsLeft(60);
+    } catch { setError(t('invite.otpFailed')); }
+    finally { setSendingOtp(false); }
+  };
+
+  const handleResendOtp = async () => {
+    if (!invite || resendSecondsLeft > 0 || sendingOtp) return;
+    setSendingOtp(true); setError(''); setOtpCode('');
+    try {
+      await api.post('/verification/send-otp', { identifier: invite.phone, type: 'phone' });
+      setResendSecondsLeft(60);
     } catch { setError(t('invite.otpFailed')); }
     finally { setSendingOtp(false); }
   };
@@ -111,7 +133,9 @@ export default function InvitePage() {
           city: invite.city || invite.cityKey,
         }));
       }
-      setTimeout(() => router.push('/pro/profile-setup'), 1500);
+      // Always land on the About step so invited pros fill required basics
+      // (name, bio, experience) before the pre-selected services/pricing.
+      setTimeout(() => router.push('/pro/profile-setup/about'), 1500);
     } catch {
       setError(t('invite.verifyFailed'));
       setState('password');
@@ -277,6 +301,24 @@ export default function InvitePage() {
             <div className="flex justify-center mb-6">
               <OTPInput length={4} value={otpCode} onChange={setOtpCode} onComplete={handleOtpComplete} autoFocus />
             </div>
+
+            <div className="flex items-center justify-center text-sm">
+              {resendSecondsLeft > 0 ? (
+                <span style={{ color: 'var(--hm-fg-muted)' }}>
+                  {t('invite.resendIn', { seconds: resendSecondsLeft })}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={sendingOtp}
+                  className="font-medium text-[var(--hm-brand-500)] hover:text-[var(--hm-brand-600)] disabled:opacity-50 transition-colors"
+                >
+                  {sendingOtp ? t('invite.resending') : t('invite.resendCode')}
+                </button>
+              )}
+            </div>
+
             {error && <p className="text-[var(--hm-error-500)] text-sm mt-4">{error}</p>}
           </div>
         )}

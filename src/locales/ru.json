@@ -1,6 +1,7 @@
 {
   "common": {
     "save": "Сохранить",
+    "saved": "Сохранено",
     "cancel": "Отмена",
     "proposals": "предложения",
     "change": "Изменить",
@@ -224,6 +225,7 @@
     "noProjectsAdded": "Проекты не добавлены",
     "noneSelected": "Ничего не выбрано",
     "notAdded": "Не добавлено",
+    "missingFields": "Нужно заполнить",
     "of": "из",
     "onBrowse": "В обзоре",
     "onetimePrice": "Разовая цена",
@@ -3510,7 +3512,10 @@
     "passwordTooShort": "Пароль должен быть не менее 6 символов",
     "confirmPasswordPlaceholder": "Повторите пароль",
     "passwordMismatch": "Пароли не совпадают",
-    "activateAccount": "Активировать аккаунт"
+    "activateAccount": "Активировать аккаунт",
+    "resendIn": "Отправить повторно через {seconds} сек",
+    "resendCode": "Отправить код повторно",
+    "resending": "Отправка..."
   },
   "ai": {
     "smartAssistant": "Умный ассистент",

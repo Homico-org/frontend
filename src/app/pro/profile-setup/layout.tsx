@@ -2,6 +2,7 @@
 
 import AuthGuard from "@/components/common/AuthGuard";
 import HomicoLogo from "@/components/common/HomicoLogo";
+import ProfileSetupErrorBoundary from "@/components/common/ProfileSetupErrorBoundary";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Stepper } from "@/components/ui/Stepper";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -273,9 +274,11 @@ export default function ProfileSetupLayout({
       <Suspense fallback={null}>
         <AdminProIdReader onChange={setAdminTargetProId} />
       </Suspense>
-      <ProfileSetupProvider adminTargetProId={adminTargetProId}>
-        <ProfileSetupShell>{children}</ProfileSetupShell>
-      </ProfileSetupProvider>
+      <ProfileSetupErrorBoundary>
+        <ProfileSetupProvider adminTargetProId={adminTargetProId}>
+          <ProfileSetupShell>{children}</ProfileSetupShell>
+        </ProfileSetupProvider>
+      </ProfileSetupErrorBoundary>
     </AuthGuard>
   );
 }

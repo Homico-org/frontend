@@ -74,9 +74,15 @@ export default function ReviewStep({
 
   const hasBio = formData.bio.trim().length >= 50;
   const hasAvatar = !!avatarPreview;
+  const hasExperience = !!formData.yearsExperience;
   const hasServices = selectedSubcategoriesWithPricing.length > 0;
   const hasAreas = formData.nationwide || formData.serviceAreas.length > 0;
   const hasPortfolio = portfolioProjects.length > 0;
+
+  const aboutMissing: string[] = [];
+  if (!hasAvatar) aboutMissing.push(t("common.profilePhoto"));
+  if (!hasBio) aboutMissing.push(t("common.aboutYou"));
+  if (!hasExperience) aboutMissing.push(t("common.yearsOfExperience"));
 
   const SectionHeader = ({
     icon: Icon,
@@ -118,7 +124,27 @@ export default function ReviewStep({
     <div className="space-y-4">
       {/* ── About ── */}
       <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border-subtle)] p-4">
-        <SectionHeader icon={User} title={t("common.about")} stepIndex={0} complete={hasBio && hasAvatar} />
+        <SectionHeader
+          icon={User}
+          title={t("common.about")}
+          stepIndex={0}
+          complete={hasBio && hasAvatar && hasExperience}
+        />
+
+        {aboutMissing.length > 0 && (
+          <div className="mb-3 px-3 py-2 rounded-lg text-xs flex flex-wrap items-center gap-1.5 border border-[var(--hm-error-500)]/30 bg-[var(--hm-error-500)]/5 text-[var(--hm-error-500)]">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            <span className="font-medium">{t("common.missingFields")}:</span>
+            {aboutMissing.map((f, i) => (
+              <span
+                key={f}
+                className="px-1.5 py-0.5 rounded bg-[var(--hm-error-500)]/10 font-medium"
+              >
+                {f}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="flex items-start gap-3">
           {avatarPreview ? (

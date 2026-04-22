@@ -1,6 +1,7 @@
 {
   "common": {
     "save": "Save",
+    "saved": "Saved",
     "cancel": "Cancel",
     "proposals": "proposals",
     "change": "Change",
@@ -225,6 +226,7 @@
     "noProjectsAdded": "No Projects Added",
     "noneSelected": "None Selected",
     "notAdded": "Not Added",
+    "missingFields": "Missing",
     "of": "Of",
     "onBrowse": "On Browse",
     "onetimePrice": "Onetime Price",
@@ -3513,7 +3515,10 @@
     "passwordTooShort": "Password must be at least 6 characters",
     "confirmPasswordPlaceholder": "Repeat password",
     "passwordMismatch": "Passwords do not match",
-    "activateAccount": "Activate account"
+    "activateAccount": "Activate account",
+    "resendIn": "Resend code in {seconds}s",
+    "resendCode": "Resend code",
+    "resending": "Sending..."
   },
   "ai": {
     "smartAssistant": "Smart Assistant",

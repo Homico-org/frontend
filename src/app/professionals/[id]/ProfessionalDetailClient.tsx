@@ -27,6 +27,11 @@ import { useToast } from "@/contexts/ToastContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
+import dynamic from "next/dynamic";
+
+const MobileProServicesCard = dynamic(() => import("./MobileProServicesCard"), {
+  ssr: false,
+});
 import type {
   BaseEntity,
   Job,
@@ -235,6 +240,16 @@ export default function ProfessionalDetailClient({
   const [adminVerificationNotes, setAdminVerificationNotes] = useState("");
   const [adminNotifyUser, setAdminNotifyUser] = useState(true);
   const [isAdminSaving, setIsAdminSaving] = useState(false);
+
+  // Client-only mount flag. The desktop sidebar aside has many conditional
+  // buttons (edit icons, booking CTAs, phone reveal, etc.) that depend on
+  // user auth state populated by AuthContext's useEffect. React 18 concurrent
+  // rendering occasionally flushes those setState updates into the hydration
+  // pass, producing "server HTML contains <button>" mismatches. Gating the
+  // aside behind `mounted` skips SSR for the whole subtree — there's nothing
+  // for React to reconcile, so the mismatch can't happen.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // Check if current user is viewing their own profile
   const isOwner = user?.id === profile?.id;
@@ -1774,7 +1789,7 @@ export default function ProfessionalDetailClient({
                 </div>
               ) : (
                 <div className="flex items-center gap-2 mb-0.5">
-                  <h1 className="text-xl sm:text-2xl font-bold text-[var(--hm-fg-primary)] tracking-tight truncate">
+                  <h1 className="text-lg sm:text-2xl font-bold text-[var(--hm-fg-primary)] tracking-tight leading-tight break-words line-clamp-2">
                     {profile.name}
                   </h1>
                   {canEdit && (
@@ -1941,10 +1956,18 @@ export default function ProfessionalDetailClient({
         </div>
       </motion.div>
 
+      {/* ========== MOBILE SERVICES & PRICING CARD ========== */}
+      {/* Client-only mirror of the desktop aside's services block so
+          invited pros and clients actually see per-service prices on phones. */}
+      {(profile?.servicePricing?.length ?? 0) > 0 && (
+        <MobileProServicesCard profile={profile} />
+      )}
+
       {/* ========== MAIN LAYOUT: SIDEBAR + CONTENT ========== */}
       <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 pb-32 sm:pb-32 lg:pb-12">
         <div className="flex gap-6 lg:gap-8">
           {/* ====== DESKTOP SIDEBAR (Behance-style) ====== */}
+          {mounted && (
           <motion.aside
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -2767,6 +2790,7 @@ export default function ProfessionalDetailClient({
               </motion.div>
             </div>
           </motion.aside>
+          )}
 
           {/* ====== CONTENT AREA ====== */}
           <motion.div
