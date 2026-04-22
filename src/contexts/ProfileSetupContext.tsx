@@ -55,6 +55,8 @@ export const STEP_META: {
 ];
 
 interface FormData {
+  firstName: string;
+  lastName: string;
   title: string;
   bio: string;
   yearsExperience: string;
@@ -240,6 +242,8 @@ export function ProfileSetupProvider({
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
+    firstName: "",
+    lastName: "",
     title: "",
     bio: "",
     yearsExperience: "",
@@ -626,6 +630,8 @@ export function ProfileSetupProvider({
             subcategories?: string[];
             customServices?: string[];
             yearsExperience?: number;
+            firstName?: string;
+            lastName?: string;
             title?: string;
             bio?: string;
             avatar?: string;
@@ -821,6 +827,13 @@ export function ProfileSetupProvider({
           const draft = draftDataRef.current?.formData;
           setFormData((prev) => ({
             ...prev,
+            firstName:
+              draft?.firstName ||
+              profile.firstName ||
+              prev.firstName ||
+              "",
+            lastName:
+              draft?.lastName || profile.lastName || prev.lastName || "",
             title: draft?.title || profile.title || prev.title || "",
             bio: draft?.bio || profile.bio || prev.bio || "",
             avatar:
@@ -1134,6 +1147,8 @@ export function ProfileSetupProvider({
   );
 
   const isFormValid =
+    formData.firstName.trim().length >= 2 &&
+    formData.lastName.trim().length >= 2 &&
     validation.avatar &&
     validation.bio &&
     validation.categories &&
@@ -1145,7 +1160,12 @@ export function ProfileSetupProvider({
     (slug: ProfileSetupStepSlug): boolean => {
       switch (slug) {
         case "about":
-          return validation.avatar && validation.bio;
+          return (
+            formData.firstName.trim().length >= 2 &&
+            formData.lastName.trim().length >= 2 &&
+            validation.avatar &&
+            validation.bio
+          );
         case "services":
           return allActiveServicesPriced;
         case "areas":
@@ -1156,7 +1176,13 @@ export function ProfileSetupProvider({
           return isFormValid;
       }
     },
-    [validation, allActiveServicesPriced, isFormValid],
+    [
+      formData.firstName,
+      formData.lastName,
+      validation,
+      allActiveServicesPriced,
+      isFormValid,
+    ],
   );
 
   // ── Handlers ──────────────────────────────────────────────────────────────────
@@ -1198,6 +1224,8 @@ export function ProfileSetupProvider({
       switch (slug) {
         case "about":
           return {
+            firstName: formData.firstName.trim(),
+            lastName: formData.lastName.trim(),
             bio: formData.bio,
             avatar: formData.avatar || user?.avatar,
             whatsapp: formData.whatsapp || undefined,

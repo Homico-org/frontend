@@ -31,6 +31,8 @@ export default function ProfileSetupAboutPage() {
 
       <AboutStep
         formData={{
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           bio: formData.bio,
           yearsExperience: '',
           avatar: formData.avatar,

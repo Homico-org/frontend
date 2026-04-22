@@ -14,6 +14,8 @@ import { useRef, useState } from 'react';
 
 interface AboutStepProps {
   formData: {
+    firstName: string;
+    lastName: string;
     bio: string;
     yearsExperience: string;
     avatar: string;
@@ -240,6 +242,59 @@ export default function AboutStep({
             className="hidden"
           />
         </div>
+
+        {/* First / last name — REQUIRED */}
+        {(() => {
+          const firstValid = formData.firstName.trim().length >= 2;
+          const lastValid = formData.lastName.trim().length >= 2;
+          const bothValid = firstValid && lastValid;
+          return (
+            <div
+              className={`
+                bg-[var(--hm-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm transition-all
+                ${bothValid
+                  ? 'border-2 border-[var(--hm-success-500)]/30'
+                  : 'border-2 border-[var(--hm-border-subtle)]'
+                }
+              `}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-[var(--hm-fg-primary)]">
+                    {t('common.fullName')}
+                    <span className="text-[var(--hm-brand-500)] ml-1">*</span>
+                  </span>
+                </div>
+                {bothValid ? (
+                  <Badge variant="success" size="xs" icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
+                    {t('common.completed')}
+                  </Badge>
+                ) : (
+                  <Badge variant="warning" size="xs" icon={<AlertCircle className="w-3.5 h-3.5" />}>
+                    {t('common.required')}
+                  </Badge>
+                )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Input
+                  value={formData.firstName}
+                  onChange={(e) => onFormChange({ firstName: e.target.value })}
+                  placeholder={t('common.firstName')}
+                  aria-label={t('common.firstName')}
+                />
+                <Input
+                  value={formData.lastName}
+                  onChange={(e) => onFormChange({ lastName: e.target.value })}
+                  placeholder={t('common.lastName')}
+                  aria-label={t('common.lastName')}
+                />
+              </div>
+              <p className="text-xs text-[var(--hm-fg-muted)] mt-2">
+                {t('common.fullNameHint')}
+              </p>
+            </div>
+          );
+        })()}
 
         {/* Years of Experience - REQUIRED (hidden if experience is per-service) */}
         {!hideExperience && (

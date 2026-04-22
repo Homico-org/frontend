@@ -109,6 +109,8 @@ export interface PublicUserProfile {
 export interface ProProfile extends BaseEntity {
   uid?: number;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   phone?: string;
   role: UserRole;

@@ -33,6 +33,8 @@ const EXP_LABELS: Record<string, { en: string; ka: string }> = {
 
 interface ReviewStepProps {
   formData: {
+    firstName: string;
+    lastName: string;
     bio: string;
     yearsExperience: string;
     avatar: string;
@@ -72,6 +74,9 @@ export default function ReviewStep({
   const { t, pick } = useLanguage();
   const { getCategoryByKey } = useCategories();
 
+  const hasName =
+    formData.firstName.trim().length >= 2 &&
+    formData.lastName.trim().length >= 2;
   const hasBio = formData.bio.trim().length >= 50;
   const hasAvatar = !!avatarPreview;
   const hasExperience = !!formData.yearsExperience;
@@ -80,6 +85,7 @@ export default function ReviewStep({
   const hasPortfolio = portfolioProjects.length > 0;
 
   const aboutMissing: string[] = [];
+  if (!hasName) aboutMissing.push(t("common.fullName"));
   if (!hasAvatar) aboutMissing.push(t("common.profilePhoto"));
   if (!hasBio) aboutMissing.push(t("common.aboutYou"));
   if (!hasExperience) aboutMissing.push(t("common.yearsOfExperience"));
@@ -128,7 +134,7 @@ export default function ReviewStep({
           icon={User}
           title={t("common.about")}
           stepIndex={0}
-          complete={hasBio && hasAvatar && hasExperience}
+          complete={hasName && hasBio && hasAvatar && hasExperience}
         />
 
         {aboutMissing.length > 0 && (
@@ -157,6 +163,11 @@ export default function ReviewStep({
             </div>
           )}
           <div className="flex-1 min-w-0">
+            {hasName && (
+              <p className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-1 truncate">
+                {`${formData.firstName} ${formData.lastName}`.trim()}
+              </p>
+            )}
             <p className="text-sm text-[var(--hm-fg-primary)] line-clamp-3">
               {formData.bio || <span className="text-[var(--hm-fg-muted)] italic">{t("common.notAdded")}</span>}
             </p>

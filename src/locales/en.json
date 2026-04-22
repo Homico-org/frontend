@@ -2,6 +2,10 @@
   "common": {
     "save": "Save",
     "saved": "Saved",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "fullName": "Full name",
+    "fullNameHint": "This is how clients will see you on your profile.",
     "cancel": "Cancel",
     "proposals": "proposals",
     "change": "Change",
