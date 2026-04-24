@@ -87,7 +87,7 @@ export default function LanguageSelector({ variant = 'default' }: LanguageSelect
           className={`flex items-center gap-1.5 h-9 px-2.5 rounded-xl transition-all ${
             isOpen
               ? 'bg-[var(--hm-brand-500)]/10 ring-2 ring-[var(--hm-brand-500)]/20'
-              : 'bg-[var(--hm-bg-tertiary)] hover:bg-[var(--hm-border)]'
+              : 'hover:bg-[var(--hm-bg-tertiary)]'
           }`}
           title={t('common.changeLanguage')}
         >

@@ -35,11 +35,10 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   // Check active routes for navigation highlighting
   const isNotificationsActive = pathname === "/notifications";
 
-  const homeHref = !isAuthenticated
-    ? "/"
-    : user?.role === "pro" || user?.role === "admin"
-      ? "/jobs"
-      : "/portfolio";
+  // Logo always goes to the landing (`/`) regardless of auth/role — that
+  // page is the concierge entry and what we want visitors/pros alike to
+  // land on. Pros navigate to `/jobs` via the nav links, not the logo.
+  const homeHref = "/";
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {

@@ -1,94 +1,33 @@
 "use client";
 
+import CategoryIcon from "@/components/categories/CategoryIcon";
+import ConciergeIntakeModal from "@/components/landing/ConciergeIntakeModal";
+import Header, { HeaderSpacer } from "@/components/common/Header";
 import HomicoLogo from "@/components/common/HomicoLogo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { api } from "@/lib/api";
 import {
   ArrowRight,
   Briefcase,
+  Check,
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
+  ClipboardList,
   Clock,
-  FileText,
-  Hammer,
-  Home,
-  Loader2,
+  Mail,
   MessageSquare,
-  MousePointer,
-  Paintbrush,
-  Play,
+  PhoneCall,
   Search,
-  Shield,
   Sparkles,
+  Shield,
   Star,
-  UserCheck,
   Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-
-// Categories - matching actual database structure
-const TOP_CATEGORIES = [
-  { slug: "design", label: "landing.catDesign", icon: Paintbrush },
-  { slug: "renovation", label: "landing.catRenovation", icon: Hammer },
-  { slug: "architecture", label: "landing.catArchitecture", icon: Home },
-  { slug: "services", label: "landing.catServices", icon: Sparkles },
-];
-
-// Features
-const FEATURE_FLOWS = [
-  {
-    id: "post-job",
-    icon: FileText,
-    titleKey: "landing.featurePostJob",
-    descKey: "landing.featurePostJobDesc",
-    mediaUrl: "/features/post-job.mov",
-    isVideo: true,
-    color: "from-blue-500/10 to-indigo-500/10",
-    iconBg: "bg-[var(--hm-info-500)]/10",
-    iconColor: "text-[var(--hm-info-500)]",
-  },
-  {
-    id: "browse-pros",
-    icon: Search,
-    titleKey: "landing.featureBrowsePros",
-    descKey: "landing.featureBrowseProsDesc",
-    mediaUrl: "/features/browse-pros.png",
-    isVideo: false,
-    color: "from-[var(--hm-success-500)]/10 to-[var(--hm-success-400)]/10",
-    iconBg: "bg-[var(--hm-success-500)]/10",
-    iconColor: "text-[var(--hm-success-500)]",
-  },
-  {
-    id: "get-proposals",
-    icon: MessageSquare,
-    titleKey: "landing.featureGetProposals",
-    descKey: "landing.featureGetProposalsDesc",
-    mediaUrl: "/features/get-proposals.png",
-    isVideo: false,
-    color: "from-[var(--hm-warning-500)]/10 to-[var(--hm-warning-400)]/10",
-    iconBg: "bg-[var(--hm-warning-500)]/10",
-    iconColor: "text-[var(--hm-warning-500)]",
-  },
-  {
-    id: "hire-review",
-    icon: UserCheck,
-    titleKey: "landing.featureHireReview",
-    descKey: "landing.featureHireReviewDesc",
-    mediaUrl: "/features/hire-review.png",
-    isVideo: false,
-    color: "from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-400)]/10",
-    iconBg: "bg-[var(--hm-brand-500)]/10",
-    iconColor: "text-[var(--hm-brand-500)]",
-  },
-];
 
 // Live activity names (Georgian names)
 const ACTIVITY_NAMES = [
@@ -121,29 +60,6 @@ function useInView(threshold = 0.1) {
     return () => observer.disconnect();
   }, [threshold]);
   return { ref, isInView };
-}
-
-function useCountUp(end: number, duration = 2000, startOnView = true) {
-  const [count, setCount] = useState(0);
-  const { ref, isInView } = useInView(0.3);
-  const hasStarted = useRef(false);
-
-  useEffect(() => {
-    if (!startOnView || !isInView || hasStarted.current) return;
-    hasStarted.current = true;
-    let start = 0;
-    const increment = end / (duration / 16);
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else setCount(Math.floor(start));
-    }, 16);
-    return () => clearInterval(timer);
-  }, [isInView, end, duration, startOnView]);
-
-  return { count, ref };
 }
 
 function useParallax(speed = 0.5) {
@@ -291,7 +207,13 @@ function LiveActivityFeed({ t }: { t: (key: string) => string }) {
   );
 }
 
-function MobileStickyBar({ t }: { t: (key: string) => string }) {
+function MobileStickyBar({
+  t,
+  onRequest,
+}: {
+  t: (key: string) => string;
+  onRequest: () => void;
+}) {
   const [show, setShow] = useState(false);
   useEffect(() => {
     const handleScroll = () => setShow(window.scrollY > 400);
@@ -303,13 +225,19 @@ function MobileStickyBar({ t }: { t: (key: string) => string }) {
     <div
       className={`fixed bottom-0 left-0 right-0 z-50 sm:hidden transition-all duration-300 ${show ? "translate-y-0" : "translate-y-full"}`}
     >
-      <div className="bg-white/95 backdrop-blur-xl border-t border-[var(--hm-border)] px-4 py-3 flex gap-2">
+      <div
+        className="backdrop-blur-xl border-t border-[var(--hm-border)] px-4 py-3 flex gap-2"
+        style={{
+          backgroundColor:
+            "color-mix(in srgb, var(--hm-bg-elevated) 95%, transparent)",
+        }}
+      >
         <Button
-          asChild
           size="sm"
+          onClick={onRequest}
           className="flex-1 h-10 text-[13px] bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white"
         >
-          <Link href="/post-job">{t("header.postAJob")}</Link>
+          {t("concierge.requestQuote")}
         </Button>
         <Button
           asChild
@@ -331,9 +259,16 @@ function GlassCard({
   children: React.ReactNode;
   className?: string;
 }) {
+  // Theme-aware glass: 70% elevated surface + subtle border so it works in
+  // both light and dark. `color-mix` gives us per-token translucency without
+  // Tailwind arbitrary-opacity gymnastics.
   return (
     <div
-      className={`bg-white/70 backdrop-blur-xl border border-white/30 shadow-xl ${className}`}
+      className={`backdrop-blur-xl shadow-xl border border-[var(--hm-border-subtle)] ${className}`}
+      style={{
+        backgroundColor:
+          "color-mix(in srgb, var(--hm-bg-elevated) 70%, transparent)",
+      }}
     >
       {children}
     </div>
@@ -363,49 +298,25 @@ function MagneticButton({
   );
 }
 
-function StatCounter({
-  value,
-  suffix = "",
-  label,
-}: {
-  value: number;
-  suffix?: string;
-  label: string;
-}) {
-  const { count, ref } = useCountUp(value, 2000);
-  return (
-    <div ref={ref} className="text-center">
-      <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tabular-nums">
-        {count.toLocaleString()}
-        {suffix}
-      </p>
-      <p className="mt-1 text-[11px] sm:text-xs text-[var(--hm-fg-muted)]">
-        {label}
-      </p>
-    </div>
-  );
-}
-
 // ============ MAIN COMPONENT ============
 
 export default function HomePage() {
-  const router = useRouter();
-  const { user, isLoading } = useAuth();
-  const { openLoginModal } = useAuthModal();
-  const { t } = useLanguage();
-  const { getSubcategoriesForCategory } = useCategories();
-  const [activeFeature, setActiveFeature] = useState(0);
-  const [gifErrors, setGifErrors] = useState<Record<string, boolean>>({});
+  const { isLoading } = useAuth();
+  const { t, pick } = useLanguage();
+  const { categories } = useCategories();
+  const [intakeOpen, setIntakeOpen] = useState(false);
+  const [intakeCategory, setIntakeCategory] = useState<string | undefined>(
+    undefined,
+  );
+  const openIntake = useCallback((): void => {
+    setIntakeCategory(undefined);
+    setIntakeOpen(true);
+  }, []);
+  const openIntakeWithCategory = useCallback((key: string): void => {
+    setIntakeCategory(key);
+    setIntakeOpen(true);
+  }, []);
   const [mounted, setMounted] = useState(false);
-  const [stats, setStats] = useState({
-    activePros: 0,
-    projectsCompleted: 0,
-    avgRating: 4.8,
-    avgResponseTime: "<1",
-  });
-  const [featureSliderPaused, setFeatureSliderPaused] = useState(false);
-  const [videoLoading, setVideoLoading] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const parallaxOffset = useParallax(0.3);
   const parallaxOffsetSlow = useParallax(0.15);
 
@@ -413,136 +324,11 @@ export default function HomePage() {
     setMounted(true);
   }, []);
 
-  // Fetch landing page stats from backend
-  useEffect(() => {
-    api
-      .get("/public/stats")
-      .then((res) => setStats(res.data))
-      .catch(() => {
-        // Fallback to defaults if API fails
-        setStats({
-          activePros: 2500,
-          projectsCompleted: 10000,
-          avgRating: 4.8,
-          avgResponseTime: "<1",
-        });
-      });
-  }, []);
+  // Concierge-MVP: everyone sees the landing. Pros/admins can navigate
+  // to their workspace via the header links — no auto-redirect off `/`.
 
-  // Redirect users to the main app
-  useEffect(() => {
-    if (isLoading) return;
-    if (!user) {
-      router.replace("/portfolio");
-      return;
-    }
-    if (user.role === "pro" || user.role === "admin") {
-      router.replace("/jobs");
-      return;
-    }
-    router.replace("/portfolio");
-  }, [router, user, isLoading]);
-
-  // Auto-slide features - restarts fresh when pause state changes
-  useEffect(() => {
-    if (featureSliderPaused) return;
-    const interval = setInterval(() => {
-      setActiveFeature((p) => (p + 1) % FEATURE_FLOWS.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [featureSliderPaused]);
-
-  const handleGifError = (id: string) =>
-    setGifErrors((p) => ({ ...p, [id]: true }));
-
-  const handleVideoFullscreen = async () => {
-    if (videoRef.current) {
-      const video = videoRef.current;
-      setVideoLoading(true);
-
-      // Wait for video to be ready to play
-      const playVideo = async () => {
-        video.muted = false;
-        video.currentTime = 0;
-
-        try {
-          if (video.requestFullscreen) {
-            await video.requestFullscreen();
-          } else if (
-            (video as HTMLVideoElement & { webkitEnterFullscreen?: () => void })
-              .webkitEnterFullscreen
-          ) {
-            // iOS Safari
-            (
-              video as HTMLVideoElement & { webkitEnterFullscreen: () => void }
-            ).webkitEnterFullscreen();
-          } else if (
-            (
-              video as HTMLVideoElement & {
-                webkitRequestFullscreen?: () => void;
-              }
-            ).webkitRequestFullscreen
-          ) {
-            await (
-              video as HTMLVideoElement & {
-                webkitRequestFullscreen: () => Promise<void>;
-              }
-            ).webkitRequestFullscreen();
-          }
-          await video.play();
-        } catch {
-          // Fallback: just play inline if fullscreen fails
-          video.play();
-        }
-        setVideoLoading(false);
-      };
-
-      // If video is ready, play immediately
-      if (video.readyState >= 3) {
-        playVideo();
-      } else {
-        // Wait for video to buffer enough
-        video.addEventListener("canplay", () => playVideo(), { once: true });
-        video.load();
-      }
-
-      // Handle fullscreen exit - pause and reset
-      const handleFullscreenChange = () => {
-        if (!document.fullscreenElement) {
-          video.pause();
-          video.currentTime = 0;
-          video.muted = true;
-          setVideoLoading(false);
-          document.removeEventListener(
-            "fullscreenchange",
-            handleFullscreenChange,
-          );
-          document.removeEventListener(
-            "webkitfullscreenchange",
-            handleFullscreenChange,
-          );
-        }
-      };
-      document.addEventListener("fullscreenchange", handleFullscreenChange);
-      document.addEventListener(
-        "webkitfullscreenchange",
-        handleFullscreenChange,
-      );
-    }
-  };
-
-  const scrollToContent = () => {
-    window.scrollTo({ top: window.innerHeight * 0.8, behavior: "smooth" });
-  };
-
-  // Landing page temporarily disabled - redirect everyone to browse/portfolio
-  // Avoid flash while redirecting
+  // Avoid flash while auth resolves.
   if (isLoading) return null;
-
-  // TEMPORARY: Landing page disabled - always redirect, never show landing
-  // To re-enable: change `false` to `!user` below
-  const showLandingPage = false; // was: !user
-  if (!showLandingPage) return null;
 
   return (
     <div className="min-h-screen bg-[var(--hm-bg-page)] overflow-x-hidden">
@@ -562,56 +348,9 @@ export default function HomePage() {
         />
       </div>
 
-      {/* ========== HEADER - Glassmorphism ========== */}
-      <header className="sticky top-0 z-50">
-        <div className="bg-white/70 backdrop-blur-2xl border-b border-white/30">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5">
-            <nav className="flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-2 group">
-                <HomicoLogo
-                  size={28}
-                  className="h-7 w-7 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6"
-                />
-                <span className="text-base font-bold tracking-tight text-[var(--hm-fg-primary)]">
-                  Homico
-                </span>
-              </Link>
-
-              <div className="hidden md:flex items-center gap-1">
-                {[
-                  { href: "/portfolio", label: t("header.browse") },
-                  { href: "/jobs", label: t("browse.jobs") },
-                ].map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="px-3 py-1.5 text-[13px] font-medium text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] hover:bg-white/50 transition-all"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => openLoginModal()}
-                  className="hidden sm:inline-flex h-8 text-[13px]"
-                >
-                  {t("auth.login")}
-                </Button>
-                <MagneticButton
-                  href="/register"
-                  className="h-8 px-4 text-[13px] font-medium bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white shadow-md shadow-[var(--hm-brand-500)]/20 hover:shadow-lg transition-shadow"
-                >
-                  {t("header.signUp")}
-                </MagneticButton>
-              </div>
-            </nav>
-          </div>
-        </div>
-      </header>
+      {/* Shared app header — consistent with the rest of the product. */}
+      <Header />
+      <HeaderSpacer />
 
       <main>
         {/* ========== HERO ========== */}
@@ -627,17 +366,6 @@ export default function HomePage() {
                   transition: "all 0.8s ease-out",
                 }}
               >
-                {/* Badge */}
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--hm-brand-500)]/10 border border-[var(--hm-brand-500)]/20 mb-4 backdrop-blur-sm">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--hm-brand-500)] opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--hm-brand-500)]" />
-                  </span>
-                  <span className="text-[10px] font-semibold text-[var(--hm-brand-500)] uppercase tracking-wider">
-                    {t("landing.heroTag")}
-                  </span>
-                </div>
-
                 {/* Headline with text reveal */}
                 <h1 className="text-[28px] sm:text-4xl lg:text-[44px] font-bold tracking-tight text-[var(--hm-fg-primary)] leading-[1.15]">
                   <TextReveal text={t("landing.heroTitle")} delay={200} />
@@ -668,14 +396,15 @@ export default function HomePage() {
                     transition: "all 0.6s ease-out 0.8s",
                   }}
                 >
-                  <MagneticButton
-                    href="/post-job"
-                    className="inline-flex items-center justify-center gap-2 h-10 sm:h-11 px-5 text-[13px] sm:text-sm font-medium bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-xl transition-all group"
+                  <Button
+                    size="lg"
+                    onClick={openIntake}
+                    className="h-10 sm:h-11 px-5 text-[13px] sm:text-sm font-medium bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-xl transition-all group"
                   >
-                    <FileText className="w-4 h-4" />
-                    {t("header.postAJob")}
-                    <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-                  </MagneticButton>
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    {t("concierge.requestQuote")}
+                    <ChevronRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
+                  </Button>
                   <Button
                     size="lg"
                     variant="outline"
@@ -741,14 +470,14 @@ export default function HomePage() {
                       transform: `translateY(${parallaxOffset * 0.5}px)`,
                     }}
                   >
-                    <GlassCard className="px-3 py-2">
+                    <GlassCard className="px-3 py-2 rounded-xl">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-[var(--hm-success-500)]/10 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-lg bg-[var(--hm-success-500)]/10 flex items-center justify-center">
                           <Users className="w-4 h-4 text-[var(--hm-success-500)]" />
                         </div>
                         <div>
                           <p className="text-lg font-bold text-[var(--hm-fg-primary)]">
-                            2,500+
+                            100+
                           </p>
                           <p className="text-[10px] text-[var(--hm-fg-muted)] -mt-0.5">
                             {t("landing.statsPros")}
@@ -758,335 +487,106 @@ export default function HomePage() {
                     </GlassCard>
                   </div>
 
-                  <div
-                    className="absolute -bottom-4 -right-4 z-10 animate-float"
-                    style={{
-                      animationDelay: "0.5s",
-                      transform: `translateY(${parallaxOffset * 0.3}px)`,
-                    }}
-                  >
-                    <GlassCard className="px-3 py-2">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-[var(--hm-brand-500)]/10 flex items-center justify-center">
-                          <Star className="w-4 h-4 text-[var(--hm-brand-500)]" />
-                        </div>
-                        <div>
-                          <p className="text-lg font-bold text-[var(--hm-fg-primary)]">
-                            4.8
-                          </p>
-                          <p className="text-[10px] text-[var(--hm-fg-muted)] -mt-0.5">
-                            {t("landing.statsRating")}
-                          </p>
-                        </div>
-                      </div>
-                    </GlassCard>
-                  </div>
-
                   <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image
-                      src="https://res.cloudinary.com/dakcvkodo/image/upload/w_800,h_600,c_fill,q_auto,f_auto/homico/avatars/pro-plumber.png"
-                      alt=""
-                      fill
-                      className="object-cover transition-transform duration-700 hover:scale-105"
-                      priority
-                      sizes="50vw"
+                    {/* PNG poster shows instantly (and as a graceful fallback
+                        if the MP4 is missing); video autoplays muted on loop
+                        per mobile-browser autoplay policies. */}
+                    <video
+                      src="/landing/6474138-uhd_2160_3840_25fps.mp4"
+                      poster="/landing/video-artchitecture.png"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="metadata"
+                      aria-hidden
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                     />
                   </div>
                 </GlassCard>
               </div>
             </div>
 
-            {/* Scroll indicator */}
-            <Button
-              variant="ghost"
-              onClick={scrollToContent}
-              className="absolute bottom-4 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-1 h-auto text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-transparent cursor-pointer animate-bounce-slow"
-              aria-label={t("home.scrollToContent") || "Scroll"}
-            >
-              <MousePointer className="w-4 h-4" />
-              <ChevronDown className="w-4 h-4" />
-            </Button>
           </div>
         </section>
 
-        {/* ========== FEATURES ========== */}
-        <section className="py-10 sm:py-14 lg:py-16 relative">
-          <div className="mx-4 sm:mx-6 lg:mx-auto max-w-6xl">
-            <GlassCard className="rounded-2xl sm:rounded-3xl border-[var(--hm-border-subtle)]">
-              <div
-                className="p-5 sm:p-8 lg:p-10"
-                onMouseEnter={() => setFeatureSliderPaused(true)}
-                onMouseLeave={() => setFeatureSliderPaused(false)}
-              >
-                <AnimatedSection className="text-center max-w-lg mx-auto mb-8">
-                  <h2 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-[var(--hm-fg-primary)]">
-                    {t("landing.featuresTitle")}
-                  </h2>
-                  <p className="mt-2 text-[13px] text-[var(--hm-fg-muted)]">
-                    {t("landing.featuresSubtitle")}
-                  </p>
-                </AnimatedSection>
-
-                {/* Feature tabs */}
-                <AnimatedSection delay={100} className="mb-6 sm:mb-8">
-                  <div className="flex justify-center gap-1.5 flex-wrap">
-                    {FEATURE_FLOWS.map((feature, idx) => {
-                      const Icon = feature.icon;
-                      return (
-                        <Button
-                          key={feature.id}
-                          variant="ghost"
-                          onClick={() => setActiveFeature(idx)}
-                          className={`flex items-center gap-1.5 px-3 py-2 h-auto text-[12px] font-medium ${
-                            activeFeature === idx
-                              ? "bg-[var(--hm-brand-500)] text-white shadow-md shadow-[var(--hm-brand-500)]/25 scale-105 hover:bg-[var(--hm-brand-600)] hover:text-white"
-                              : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]"
-                          }`}
-                        >
-                          <Icon className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">
-                            {t(feature.titleKey)}
-                          </span>
-                        </Button>
-                      );
-                    })}
-                  </div>
-                  {/* Progress dots */}
-                  <div className="flex justify-center gap-1.5 mt-4">
-                    {FEATURE_FLOWS.map((_, idx) => (
-                      <div
-                        key={idx}
-                        className="h-1 rounded-full transition-all duration-500 bg-[var(--hm-bg-tertiary)] overflow-hidden"
-                        style={{ width: idx === activeFeature ? 24 : 6 }}
-                      >
-                        {idx === activeFeature && (
-                          <div className="h-full bg-[var(--hm-brand-500)] animate-progress" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </AnimatedSection>
-
-                {/* Feature content */}
-                <AnimatedSection delay={200}>
-                  <div className="grid lg:grid-cols-2 gap-6 lg:gap-10 items-center">
-                    <div className="order-2 lg:order-1">
-                      <div
-                        className={`relative aspect-[4/3] sm:rounded-2xl overflow-hidden bg-gradient-to-br ${FEATURE_FLOWS[activeFeature].color} border border-[var(--hm-border-subtle)]/30 transition-all duration-500`}
-                      >
-                        {!gifErrors[FEATURE_FLOWS[activeFeature].id] ? (
-                          FEATURE_FLOWS[activeFeature].isVideo ? (
-                            <>
-                              <video
-                                ref={videoRef}
-                                key={FEATURE_FLOWS[activeFeature].id}
-                                src={FEATURE_FLOWS[activeFeature].mediaUrl}
-                                loop
-                                playsInline
-                                preload="auto"
-                                className="absolute inset-0 w-full h-full object-cover"
-                                onError={() =>
-                                  handleGifError(
-                                    FEATURE_FLOWS[activeFeature].id,
-                                  )
-                                }
-                              />
-                              {/* Watch Demo overlay */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-center justify-center">
-                                <Button
-                                  variant="ghost"
-                                  onClick={handleVideoFullscreen}
-                                  disabled={videoLoading}
-                                  className="group flex flex-col items-center gap-3 h-auto p-0 hover:bg-transparent transition-transform hover:scale-105 disabled:opacity-90"
-                                  aria-label={
-                                    t("home.watchDemo") || "Watch demo"
-                                  }
-                                >
-                                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/95 shadow-2xl flex items-center justify-center group-hover:bg-white transition-all">
-                                    {videoLoading ? (
-                                      <Loader2 className="w-7 h-7 sm:w-8 sm:h-8 text-[var(--hm-brand-500)] animate-spin" />
-                                    ) : (
-                                      <Play
-                                        className="w-7 h-7 sm:w-8 sm:h-8 text-[var(--hm-brand-500)] ml-1"
-                                        fill="currentColor"
-                                      />
-                                    )}
-                                  </div>
-                                  <span className="text-white text-sm font-medium px-4 py-1.5 rounded-full bg-black/30 backdrop-blur-sm">
-                                    {videoLoading
-                                      ? t("landing.loading")
-                                      : t("landing.watchDemo")}
-                                  </span>
-                                </Button>
-                              </div>
-                            </>
-                          ) : (
-                            <Image
-                              src={FEATURE_FLOWS[activeFeature].mediaUrl}
-                              alt=""
-                              fill
-                              className="object-cover"
-                              onError={() =>
-                                handleGifError(FEATURE_FLOWS[activeFeature].id)
-                              }
-                              unoptimized
-                            />
-                          )
-                        ) : (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center text-[var(--hm-fg-muted)]">
-                            <div
-                              className={`w-14 h-14 ${FEATURE_FLOWS[activeFeature].iconBg} flex items-center justify-center mb-3`}
-                            >
-                              <Play
-                                className={`w-7 h-7 ${FEATURE_FLOWS[activeFeature].iconColor}`}
-                              />
-                            </div>
-                            <p className="text-xs font-medium">
-                              {t("landing.gifPlaceholder")}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="order-1 lg:order-2">
-                      <div className="flex items-center gap-2.5 mb-3">
-                        <div
-                          className={`w-10 h-10 ${FEATURE_FLOWS[activeFeature].iconBg} flex items-center justify-center transition-all`}
-                        >
-                          {(() => {
-                            const Icon = FEATURE_FLOWS[activeFeature].icon;
-                            return (
-                              <Icon
-                                className={`w-5 h-5 ${FEATURE_FLOWS[activeFeature].iconColor}`}
-                              />
-                            );
-                          })()}
-                        </div>
-                        <span className="text-[11px] font-semibold text-[var(--hm-brand-500)] uppercase tracking-wider">
-                          {t("landing.featureStep")} {activeFeature + 1}
-                        </span>
-                      </div>
-                      <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-[var(--hm-fg-primary)] mb-2">
-                        {t(FEATURE_FLOWS[activeFeature].titleKey)}
-                      </h3>
-                      <p className="text-[13px] text-[var(--hm-fg-secondary)] leading-relaxed mb-5">
-                        {t(FEATURE_FLOWS[activeFeature].descKey)}
-                      </p>
-                      <MagneticButton
-                        href={
-                          activeFeature === 0
-                            ? "/post-job"
-                            : activeFeature === 1
-                              ? "/professionals"
-                              : activeFeature === 2
-                                ? "/portfolio"
-                                : "/register"
-                        }
-                        className="inline-flex items-center gap-1.5 h-9 px-4 text-[13px] font-medium bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white group"
-                      >
-                        {t("landing.tryItNow")}
-                        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-                      </MagneticButton>
-                    </div>
-                  </div>
-                </AnimatedSection>
-              </div>
-            </GlassCard>
-          </div>
-        </section>
-
-        {/* ========== HOW IT WORKS ========== */}
-        <section className="py-10 sm:py-14 lg:py-16">
+        {/* ========== HOW THE CONCIERGE WORKS ========== */}
+        <section className="py-12 sm:py-16 lg:py-20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <AnimatedSection className="max-w-lg mb-8">
-              <h2 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-[var(--hm-fg-primary)]">
-                {t("howItWorks.title")}
+            <AnimatedSection className="max-w-xl mb-10 sm:mb-14">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-serif font-medium text-[var(--hm-fg-primary)] tracking-tight">
+                {t("landing.conciergeFlowTitle")}
               </h2>
-              <p className="mt-1.5 text-[13px] text-[var(--hm-fg-muted)]">
-                {t("howItWorks.subtitle")}
+              <p className="mt-2 text-[14px] text-[var(--hm-fg-muted)]">
+                {t("landing.conciergeFlowSubtitle")}
               </p>
             </AnimatedSection>
 
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="relative grid sm:grid-cols-3 gap-4 sm:gap-5">
+              {/* Desktop-only connector line between the step illustrations. */}
+              <div
+                aria-hidden
+                className="hidden sm:block absolute left-[16.67%] right-[16.67%] top-[52px] h-px"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(to right, var(--hm-border) 0, var(--hm-border) 6px, transparent 6px, transparent 12px)",
+                  backgroundSize: "12px 1px",
+                }}
+              />
+
               {[
                 {
-                  num: 1,
-                  title: t("landing.step1Title"),
-                  desc: t("landing.step1Desc"),
+                  icon: ClipboardList,
+                  kicker: "01",
+                  title: t("landing.conciergeStep1Title"),
+                  desc: t("landing.conciergeStep1Desc"),
                 },
                 {
-                  num: 2,
-                  title: t("landing.step2Title"),
-                  desc: t("landing.step2Desc"),
+                  icon: PhoneCall,
+                  kicker: "02",
+                  title: t("landing.conciergeStep2Title"),
+                  desc: t("landing.conciergeStep2Desc"),
                 },
                 {
-                  num: 3,
-                  title: t("landing.step3Title"),
-                  desc: t("landing.step3Desc"),
+                  icon: CheckCircle2,
+                  kicker: "03",
+                  title: t("landing.conciergeStep3Title"),
+                  desc: t("landing.conciergeStep3Desc"),
                 },
-              ].map((step, i) => (
-                <AnimatedSection key={i} stagger index={i}>
-                  <GlassCard className="group relative p-4 sm:p-5 hover:border-[var(--hm-brand-500)]/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                    <div className="w-9 h-9 bg-[var(--hm-brand-500)]/10 flex items-center justify-center mb-3 group-hover:bg-[var(--hm-brand-500)] group-hover:scale-110 transition-all">
-                      <span className="text-sm font-bold text-[var(--hm-brand-500)] group-hover:text-white">
-                        {step.num}
-                      </span>
-                    </div>
-                    <h3 className="text-[15px] font-semibold text-[var(--hm-fg-primary)] mb-1.5">
-                      {step.title}
-                    </h3>
-                    <p className="text-[12px] text-[var(--hm-fg-muted)] leading-relaxed">
-                      {step.desc}
-                    </p>
-                  </GlassCard>
-                </AnimatedSection>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ========== CATEGORIES ========== */}
-        <section className="py-10 sm:py-14 lg:py-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <AnimatedSection className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-6">
-              <div>
-                <h2 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-[var(--hm-fg-primary)]">
-                  {t("landing.categoriesTitle")}
-                </h2>
-                <p className="mt-1 text-[13px] text-[var(--hm-fg-muted)]">
-                  {t("landing.categoriesSubtitle")}
-                </p>
-              </div>
-              <Link
-                href="/portfolio"
-                className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--hm-brand-500)] hover:text-[var(--hm-brand-600)] group"
-              >
-                {t("common.viewAll")}
-                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            </AnimatedSection>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              {TOP_CATEGORIES.map((cat, i) => {
-                const Icon = cat.icon;
-                const subcats = getSubcategoriesForCategory(cat.slug);
-                const subcatKeys = subcats.map((s) => s.key).join(",");
-                const href = subcatKeys
-                  ? `/portfolio?category=${cat.slug}&subcategories=${subcatKeys}`
-                  : `/portfolio?category=${cat.slug}`;
+              ].map((step, i) => {
+                const Icon = step.icon;
                 return (
-                  <AnimatedSection key={cat.slug} stagger index={i}>
-                    <Link href={href}>
-                      <GlassCard className="group flex items-center gap-3 p-3 hover:border-[var(--hm-brand-500)]/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer">
-                        <div className="w-9 h-9 bg-[var(--hm-bg-tertiary)] flex items-center justify-center group-hover:bg-[var(--hm-brand-500)]/10 transition-colors">
-                          <Icon className="w-4 h-4 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)] transition-colors" />
-                        </div>
-                        <span className="text-[12px] font-medium text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-brand-500)] transition-colors">
-                          {t(cat.label)}
+                  <AnimatedSection key={step.kicker} stagger index={i}>
+                    <GlassCard className="group relative rounded-2xl p-6 sm:p-7 h-full hover:border-[var(--hm-brand-500)]/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                      <div
+                        className="relative w-20 h-20 rounded-full flex items-center justify-center mb-5 mx-auto sm:mx-0 transition-transform duration-300 group-hover:scale-105"
+                        style={{
+                          backgroundColor:
+                            "color-mix(in srgb, var(--hm-brand-500) 10%, transparent)",
+                        }}
+                      >
+                        <Icon
+                          className="w-9 h-9 text-[var(--hm-brand-500)]"
+                          strokeWidth={1.5}
+                        />
+                        <span
+                          className="absolute -bottom-1 -right-1 flex items-center justify-center h-6 min-w-[24px] px-1.5 rounded-full text-[10px] font-bold tracking-wider"
+                          style={{
+                            backgroundColor: "var(--hm-bg-elevated)",
+                            color: "var(--hm-brand-500)",
+                            border: "1px solid var(--hm-border-subtle)",
+                          }}
+                        >
+                          {step.kicker}
                         </span>
-                      </GlassCard>
-                    </Link>
+                      </div>
+                      <h3 className="text-lg font-serif font-medium text-[var(--hm-fg-primary)] mb-2 text-center sm:text-left">
+                        {step.title}
+                      </h3>
+                      <p className="text-[13px] text-[var(--hm-fg-secondary)] leading-relaxed text-center sm:text-left">
+                        {step.desc}
+                      </p>
+                    </GlassCard>
                   </AnimatedSection>
                 );
               })}
@@ -1094,7 +594,93 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ========== STATS with Animated Counters ========== */}
+        {/* ========== CATEGORIES ========== */}
+        <section className="py-12 sm:py-16 lg:py-20">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <AnimatedSection className="max-w-xl mb-8 sm:mb-10">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-serif font-medium text-[var(--hm-fg-primary)] tracking-tight">
+                {t("landing.categoriesTitle")}
+              </h2>
+              <p className="mt-2 text-[14px] text-[var(--hm-fg-muted)]">
+                {t("landing.categoriesTapHint")}
+              </p>
+            </AnimatedSection>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+              {categories.slice(0, 4).map((cat, i) => (
+                <AnimatedSection key={cat.key} stagger index={i}>
+                  <button
+                    type="button"
+                    onClick={() => openIntakeWithCategory(cat.key)}
+                    className="w-full h-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40 rounded-2xl"
+                  >
+                    <GlassCard className="group relative h-full flex flex-col gap-3 p-5 rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer">
+                      <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
+                        style={{
+                          backgroundColor:
+                            "color-mix(in srgb, var(--hm-brand-500) 10%, transparent)",
+                        }}
+                      >
+                        <CategoryIcon
+                          type={cat.icon || cat.key}
+                          className="w-6 h-6 text-[var(--hm-brand-500)]"
+                        />
+                      </div>
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-[14px] font-semibold text-[var(--hm-fg-primary)] leading-snug">
+                          {pick({ en: cat.name, ka: cat.nameKa })}
+                        </span>
+                        <ArrowRight
+                          className="w-4 h-4 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)] group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5"
+                          strokeWidth={1.75}
+                        />
+                      </div>
+                    </GlassCard>
+                  </button>
+                </AnimatedSection>
+              ))}
+
+              {/* "All services" escape hatch for needs outside the top 4 */}
+              <AnimatedSection stagger index={4}>
+                <button
+                  type="button"
+                  onClick={openIntake}
+                  className="w-full h-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40 rounded-2xl"
+                >
+                  <div
+                    className="group relative h-full flex flex-col gap-3 p-5 rounded-2xl border-2 border-dashed hover:border-[var(--hm-brand-500)]/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                    style={{ borderColor: "var(--hm-border)" }}
+                  >
+                    <div
+                      className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
+                      style={{
+                        backgroundColor:
+                          "color-mix(in srgb, var(--hm-brand-500) 6%, transparent)",
+                      }}
+                    >
+                      <Sparkles
+                        className="w-6 h-6 text-[var(--hm-brand-500)]"
+                        strokeWidth={1.75}
+                      />
+                    </div>
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-[14px] font-semibold text-[var(--hm-fg-primary)] leading-snug">
+                        {t("landing.categoriesAllServices")}
+                      </span>
+                      <ArrowRight
+                        className="w-4 h-4 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)] group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5"
+                        strokeWidth={1.75}
+                      />
+                    </div>
+                  </div>
+                </button>
+              </AnimatedSection>
+            </div>
+          </div>
+        </section>
+
+        {/* ========== TRUST BAND ========== */}
         <section className="py-10 sm:py-12 lg:py-14 bg-[var(--hm-n-900)] relative overflow-hidden">
           <div
             className="absolute inset-0 opacity-[0.03]"
@@ -1102,36 +688,43 @@ export default function HomePage() {
               backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
               backgroundSize: "24px 24px",
             }}
+            aria-hidden
           />
           <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
             <AnimatedSection>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                <StatCounter
-                  value={stats.activePros || 2500}
-                  suffix="+"
-                  label={t("landing.statsActivePros")}
-                />
-                <StatCounter
-                  value={stats.projectsCompleted || 10000}
-                  suffix="+"
-                  label={t("landing.statsProjectsCompleted")}
-                />
-                <div className="text-center">
-                  <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[var(--hm-brand-500)]">
-                    {stats.avgRating || 4.8}
-                  </p>
-                  <p className="mt-1 text-[11px] sm:text-xs text-[var(--hm-fg-muted)]">
-                    {t("landing.statsAvgRating")}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
-                    {stats.avgResponseTime || "<1"}h
-                  </p>
-                  <p className="mt-1 text-[11px] sm:text-xs text-[var(--hm-fg-muted)]">
-                    {t("landing.statsAvgResponse")}
-                  </p>
-                </div>
+              <div className="grid grid-cols-3 gap-4 sm:gap-6">
+                {[
+                  {
+                    value: "100+",
+                    label: t("landing.statsActivePros"),
+                    accent: false,
+                  },
+                  {
+                    value: "14",
+                    label: t("landing.statsCategories"),
+                    accent: true,
+                  },
+                  {
+                    value: "0 ₾",
+                    label: t("landing.statsFree"),
+                    accent: false,
+                  },
+                ].map((s) => (
+                  <div key={s.label} className="text-center">
+                    <p
+                      className={`text-2xl sm:text-3xl lg:text-4xl font-bold tabular-nums ${
+                        s.accent
+                          ? "text-[var(--hm-brand-500)]"
+                          : "text-white"
+                      }`}
+                    >
+                      {s.value}
+                    </p>
+                    <p className="mt-1 text-[11px] sm:text-xs text-[var(--hm-fg-muted)]">
+                      {s.label}
+                    </p>
+                  </div>
+                ))}
               </div>
             </AnimatedSection>
 
@@ -1139,104 +732,79 @@ export default function HomePage() {
               delay={200}
               className="mt-10 sm:mt-12 max-w-2xl mx-auto text-center"
             >
-              <blockquote className="text-sm sm:text-base lg:text-lg text-white/90 font-medium leading-relaxed">
-                &ldquo;{t("landing.testimonialQuote")}&rdquo;
-              </blockquote>
-              <div className="mt-4 flex items-center justify-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-[var(--hm-brand-500)]/20 flex items-center justify-center">
-                  <span className="text-sm font-bold text-[var(--hm-brand-500)]">
-                    N
-                  </span>
-                </div>
-                <div className="text-left">
-                  <p className="text-[13px] font-medium text-white">
-                    {t("landing.testimonialName")}
-                  </p>
-                  <p className="text-[11px] text-[var(--hm-fg-muted)]">
-                    {t("landing.testimonialRole")}
-                  </p>
-                </div>
-              </div>
+              <p className="text-sm sm:text-base lg:text-lg text-white/90 font-serif font-medium leading-relaxed">
+                &ldquo;{t("landing.conciergePromise")}&rdquo;
+              </p>
+              <p className="mt-3 text-[11px] uppercase tracking-wider text-[var(--hm-fg-muted)]">
+                {t("landing.conciergePromiseAttribution")}
+              </p>
             </AnimatedSection>
           </div>
         </section>
 
-        {/* ========== DUAL CTA ========== */}
-        <section className="py-10 sm:py-14 lg:py-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="grid md:grid-cols-2 gap-4">
-              <AnimatedSection>
-                <GlassCard className="group sm:rounded-2xlp-5 sm:p-6 hover:border-[var(--hm-brand-500)]/30 transition-all duration-500 hover:shadow-xl">
-                  <div className="w-10 h-10 bg-[var(--hm-brand-500)]/10 flex items-center justify-center mb-4">
-                    <Briefcase className="w-5 h-5 text-[var(--hm-brand-500)]" />
-                  </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-[var(--hm-fg-primary)]">
-                    {t("howItWorks.forClients")}
-                  </h3>
-                  <p className="mt-1.5 text-[12px] text-[var(--hm-fg-muted)] leading-relaxed">
-                    {t("landing.clientsDesc")}
-                  </p>
-                  <ul className="mt-4 space-y-2">
-                    {[
-                      t("landing.clientBenefit1"),
-                      t("landing.clientBenefit2"),
-                      t("landing.clientBenefit3"),
-                    ].map((b, i) => (
-                      <li
-                        key={i}
-                        className="flex items-center gap-2 text-[11px] text-[var(--hm-fg-secondary)]"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[var(--hm-success-500)] flex-shrink-0" />
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
-                  <MagneticButton
-                    href="/post-job"
-                    className="mt-5 w-full h-9 text-[12px] font-medium bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white flex items-center justify-center gap-1.5 group/btn"
-                  >
-                    {t("header.postAJob")}
-                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" />
-                  </MagneticButton>
-                </GlassCard>
-              </AnimatedSection>
-
-              <AnimatedSection delay={100}>
-                <div className="group sm:rounded-2xlp-5 sm:p-6 bg-[var(--hm-n-900)] border border-[var(--hm-n-800)] hover:border-[var(--hm-brand-500)]/30 transition-all duration-500 hover:shadow-xl">
-                  <div className="w-10 h-10 bg-[var(--hm-brand-500)]/20 flex items-center justify-center mb-4">
-                    <Users className="w-5 h-5 text-[var(--hm-brand-500)]" />
-                  </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-white">
-                    {t("howItWorks.forProfessionals")}
-                  </h3>
-                  <p className="mt-1.5 text-[12px] text-[var(--hm-fg-muted)] leading-relaxed">
-                    {t("landing.prosDesc")}
-                  </p>
-                  <ul className="mt-4 space-y-2">
-                    {[
-                      t("landing.proBenefit1"),
-                      t("landing.proBenefit2"),
-                      t("landing.proBenefit3"),
-                    ].map((b, i) => (
-                      <li
-                        key={i}
-                        className="flex items-center gap-2 text-[11px] text-[var(--hm-fg-muted)]"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[var(--hm-brand-500)] flex-shrink-0" />
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
-                  <MagneticButton
-                    href="/register/professional"
-                    className="mt-5 w-full h-9 text-[12px] font-medium border border-[var(--hm-brand-500)] text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)] hover:text-white flex items-center justify-center gap-1.5 transition-colors group/btn"
-                  >
-                    {t("howItWorks.registerAsPro")}
-                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" />
-                  </MagneticButton>
+        {/* ========== CLIENT CTA ========== */}
+        <section className="py-12 sm:py-16 lg:py-20">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6">
+            <AnimatedSection>
+              <GlassCard className="rounded-2xl p-6 sm:p-10 hover:border-[var(--hm-brand-500)]/30 transition-all duration-500 hover:shadow-xl">
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center mb-5"
+                  style={{
+                    backgroundColor:
+                      "color-mix(in srgb, var(--hm-brand-500) 10%, transparent)",
+                  }}
+                >
+                  <Briefcase
+                    className="w-6 h-6 text-[var(--hm-brand-500)]"
+                    strokeWidth={1.75}
+                  />
                 </div>
-              </AnimatedSection>
-            </div>
+                <h3 className="text-2xl sm:text-3xl font-serif font-medium text-[var(--hm-fg-primary)] tracking-tight">
+                  {t("landing.clientCtaTitle")}
+                </h3>
+                <p className="mt-2 text-[14px] sm:text-[15px] text-[var(--hm-fg-secondary)] leading-relaxed">
+                  {t("landing.clientsDesc")}
+                </p>
+                <ul className="mt-6 space-y-3">
+                  {[
+                    t("landing.clientBenefitHigh1"),
+                    t("landing.clientBenefitHigh2"),
+                    t("landing.clientBenefitHigh3"),
+                  ].map((b, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-3 text-[14px] text-[var(--hm-fg-primary)] leading-relaxed"
+                    >
+                      <span
+                        className="shrink-0 flex items-center justify-center w-5 h-5 rounded-full mt-0.5"
+                        style={{
+                          backgroundColor: "var(--hm-brand-500)",
+                        }}
+                      >
+                        <Check
+                          className="w-3 h-3 text-white"
+                          strokeWidth={3}
+                        />
+                      </span>
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-7 flex items-center gap-3">
+                  <Button
+                    size="lg"
+                    onClick={openIntake}
+                    className="h-11 px-6 text-[14px] font-semibold bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white inline-flex items-center gap-2 group/btn"
+                  >
+                    {t("concierge.requestQuote")}
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-0.5" />
+                  </Button>
+                  <span className="text-[12px] text-[var(--hm-fg-muted)]">
+                    {t("landing.clientCtaTrailing")}
+                  </span>
+                </div>
+              </GlassCard>
+            </AnimatedSection>
           </div>
         </section>
 
@@ -1255,22 +823,15 @@ export default function HomePage() {
                 {t("landing.finalCtaTitle")}
               </h2>
               <p className="mt-2 text-[13px] text-white/80 max-w-lg mx-auto">
-                {t("landing.finalCtaSubtitle")}
+                {t("landing.finalCtaSubtitleConcierge")}
               </p>
-              <div className="mt-5 flex flex-col sm:flex-row gap-2.5 justify-center">
-                <MagneticButton
-                  href="/register"
-                  className="h-10 sm:h-11 px-6 text-[13px] font-semibold bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] hover:bg-[var(--hm-bg-tertiary)] shadow-lg flex items-center justify-center"
-                >
-                  {t("register.joinHomico")}
-                </MagneticButton>
+              <div className="mt-5 flex justify-center">
                 <Button
                   size="lg"
-                  variant="outline"
-                  asChild
-                  className="h-10 sm:h-11 px-6 text-[13px] border-white/30 text-white hover:bg-white/10"
+                  onClick={openIntake}
+                  className="h-10 sm:h-11 px-6 text-[13px] font-semibold bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] hover:bg-[var(--hm-bg-tertiary)] shadow-lg flex items-center justify-center"
                 >
-                  <Link href="/portfolio">{t("header.browse")}</Link>
+                  {t("concierge.requestQuote")}
                 </Button>
               </div>
             </div>
@@ -1279,39 +840,124 @@ export default function HomePage() {
       </main>
 
       {/* ========== FOOTER ========== */}
-      <footer className="bg-[var(--hm-n-900)] py-6 sm:py-8 border-t border-[var(--hm-n-800)]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <Link href="/" className="flex items-center gap-2">
-              <HomicoLogo variant="reverse" size={24} className="h-6 w-6" />
-              <span className="text-sm font-bold text-white">Homico</span>
-            </Link>
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-[var(--hm-fg-muted)]">
-              <Link
-                href="/about"
-                className="hover:text-white transition-colors"
-              >
-                {t("footer.aboutUs")}
+      <footer className="bg-[var(--hm-n-900)] border-t border-[var(--hm-n-800)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-10">
+            {/* Brand + tagline */}
+            <div className="md:col-span-5">
+              <Link href="/" className="inline-flex items-center gap-2">
+                <HomicoLogo variant="reverse" size={28} className="h-7 w-7" />
+                <span className="font-serif text-lg font-medium text-white">
+                  Homico
+                </span>
               </Link>
-              <Link href="/help" className="hover:text-white transition-colors">
-                {t("footer.helpCenter")}
-              </Link>
-              <Link
-                href="/privacy"
-                className="hover:text-white transition-colors"
-              >
-                {t("footer.privacyPolicy")}
-              </Link>
-              <Link
-                href="/terms"
-                className="hover:text-white transition-colors"
-              >
-                {t("footer.terms")}
-              </Link>
+              <p className="mt-3 text-[13px] text-[var(--hm-fg-muted)] leading-relaxed max-w-sm">
+                {t("landing.footerTagline")}
+              </p>
+              <div className="mt-5 flex items-center gap-2">
+                <a
+                  href="mailto:info@homico.ge"
+                  className="inline-flex items-center gap-2 text-[13px] text-white/80 hover:text-white transition-colors"
+                >
+                  <Mail className="w-4 h-4" strokeWidth={1.75} />
+                  info@homico.ge
+                </a>
+              </div>
             </div>
+
+            {/* Product */}
+            <div className="md:col-span-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--hm-fg-muted)] mb-3">
+                {t("landing.footerProduct")}
+              </p>
+              <ul className="space-y-2">
+                <li>
+                  <button
+                    type="button"
+                    onClick={openIntake}
+                    className="text-[13px] text-white/70 hover:text-white transition-colors"
+                  >
+                    {t("concierge.requestQuote")}
+                  </button>
+                </li>
+                <li>
+                  <Link
+                    href="/professionals"
+                    className="text-[13px] text-white/70 hover:text-white transition-colors"
+                  >
+                    {t("landing.browsePros")}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/how-it-works"
+                    className="text-[13px] text-white/70 hover:text-white transition-colors"
+                  >
+                    {t("about.howItWorks")}
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div className="md:col-span-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--hm-fg-muted)] mb-3">
+                {t("landing.footerCompany")}
+              </p>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/about"
+                    className="text-[13px] text-white/70 hover:text-white transition-colors"
+                  >
+                    {t("footer.aboutUs")}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/help"
+                    className="text-[13px] text-white/70 hover:text-white transition-colors"
+                  >
+                    {t("footer.helpCenter")}
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div className="md:col-span-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--hm-fg-muted)] mb-3">
+                {t("landing.footerLegal")}
+              </p>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/terms"
+                    className="text-[13px] text-white/70 hover:text-white transition-colors"
+                  >
+                    {t("footer.terms")}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/privacy"
+                    className="text-[13px] text-white/70 hover:text-white transition-colors"
+                  >
+                    {t("footer.privacyPolicy")}
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="mt-10 pt-6 border-t border-[var(--hm-n-800)] flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-[11px] text-[var(--hm-fg-muted)]">
               © {new Date().getFullYear()} {t("landing.footerCopyright")}.{" "}
               {t("landing.footerAllRights")}
+            </p>
+            <p className="text-[11px] text-[var(--hm-fg-muted)]">
+              {t("about.tbilisiGeorgia")}
             </p>
           </div>
         </div>
@@ -1321,7 +967,15 @@ export default function HomePage() {
       <LiveActivityFeed t={t} />
 
       {/* Mobile sticky CTA */}
-      <MobileStickyBar t={t} />
+      <MobileStickyBar t={t} onRequest={openIntake} />
+
+      {/* Concierge intake */}
+      <ConciergeIntakeModal
+        isOpen={intakeOpen}
+        onClose={() => setIntakeOpen(false)}
+        initialCategory={intakeCategory}
+      />
+
 
       {/* Global animations */}
       <style jsx global>{`
@@ -1351,19 +1005,6 @@ export default function HomePage() {
         }
         .animate-pulse-slow {
           animation: pulse-slow 6s ease-in-out infinite;
-        }
-
-        @keyframes bounce-slow {
-          0%,
-          100% {
-            transform: translateY(0) translateX(-50%);
-          }
-          50% {
-            transform: translateY(-6px) translateX(-50%);
-          }
-        }
-        .animate-bounce-slow {
-          animation: bounce-slow 2s ease-in-out infinite;
         }
 
         @keyframes progress {
