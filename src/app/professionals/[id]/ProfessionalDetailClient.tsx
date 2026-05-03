@@ -43,6 +43,7 @@ import { formatGeorgianPhoneDisplay } from "@/utils/validationUtils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
+  ArrowRight,
   BadgeCheck,
   Briefcase,
   Calendar,
@@ -58,6 +59,7 @@ import {
   Phone,
   Play,
   Plus,
+  PlusCircle,
   Settings,
   Share2,
   ShoppingCart,
@@ -737,27 +739,12 @@ export default function ProfessionalDetailClient({
     }
   };
 
+  // Pricing edit now routes to the structured services setup flow instead of
+  // the legacy single-pricing-type inline editor (Fixed / Range / Per sqm).
+  // Pros add specific services with their own prices via /pro/profile-setup/services.
   const openPricingEdit = () => {
-    if (!canEdit || !profile) return;
-    const model =
-      (profile.pricingModel as unknown as string | undefined) || "byAgreement";
-    const normalized: PricingModel =
-      model === "sqm" || model === PricingModel.PER_SQUARE_METER
-        ? PricingModel.PER_SQUARE_METER
-        : model === PricingModel.RANGE
-          ? PricingModel.RANGE
-          : model === PricingModel.BY_AGREEMENT || model === "hourly"
-            ? PricingModel.BY_AGREEMENT
-            : PricingModel.FIXED;
-
-    setEditedPricingModel(normalized);
-    setEditedBasePrice(
-      typeof profile.basePrice === "number" ? String(profile.basePrice) : "",
-    );
-    setEditedMaxPrice(
-      typeof profile.maxPrice === "number" ? String(profile.maxPrice) : "",
-    );
-    setIsEditingPricing(true);
+    if (!canEdit) return;
+    router.push("/pro/profile-setup/services");
   };
 
   const handleSavePricing = async () => {
@@ -2332,7 +2319,8 @@ export default function ProfessionalDetailClient({
 
                 {/* Services & Pricing */}
                 {((profile?.servicePricing?.length ?? 0) > 0 ||
-                  pricingMeta) && (
+                  pricingMeta ||
+                  canEdit) && (
                   <motion.div
                     variants={{
                       hidden: { opacity: 0, y: 12 },
@@ -2532,7 +2520,10 @@ export default function ProfessionalDetailClient({
                           </div>
                         );
                       })()
-                    ) : !canEdit || !isEditingPricing ? (
+                    ) : pricingMeta ? (
+                      // Legacy single-pricing-type display — preserved for pros
+                      // who set up under the old system. Edit routes to the
+                      // structured services flow.
                       <div className="flex items-center justify-between">
                         <div>
                           <span className="text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-fg-muted)]">
@@ -2556,81 +2547,55 @@ export default function ProfessionalDetailClient({
                           </Button>
                         )}
                       </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <Select
-                          size="sm"
-                          value={editedPricingModel}
-                          onChange={(val) =>
-                            setEditedPricingModel(val as PricingModel)
-                          }
-                          options={[
-                            {
-                              value: PricingModel.FIXED,
-                              label: t("common.fixed"),
-                            },
-                            {
-                              value: PricingModel.RANGE,
-                              label: t("common.priceRange"),
-                            },
-                            {
-                              value: PricingModel.PER_SQUARE_METER,
-                              label: t("professional.perSqm"),
-                            },
-                          ]}
-                        />
-                        {editedPricingModel && (
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              inputMode="numeric"
-                              inputSize="sm"
-                              value={editedBasePrice}
-                              onChange={(e) => setEditedBasePrice(e.target.value)}
-                              leftIcon={<span className="text-sm">₾</span>}
-                              placeholder="0"
-                              className="flex-1"
-                            />
-                            {editedPricingModel === PricingModel.RANGE && (
-                              <>
-                                <span className="text-[var(--hm-fg-muted)] text-sm">
-                                  —
-                                </span>
-                                <Input
-                                  type="number"
-                                  inputMode="numeric"
-                                  inputSize="sm"
-                                  value={editedMaxPrice}
-                                  onChange={(e) => setEditedMaxPrice(e.target.value)}
-                                  leftIcon={<span className="text-sm">₾</span>}
-                                  placeholder="0"
-                                  className="flex-1"
-                                />
-                              </>
-                            )}
-                          </div>
-                        )}
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setIsEditingPricing(false)}
-                            disabled={isSaving}
-                          >
-                            <X className="w-3.5 h-3.5 mr-1" />
-                            {t("common.cancel")}
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={handleSavePricing}
-                            loading={isSaving}
-                          >
-                            <Check className="w-3.5 h-3.5 mr-1" />
-                            {t("common.save")}
-                          </Button>
+                    ) : canEdit ? (
+                      // Empty state: pro hasn't added any services yet.
+                      // Primary CTA routes to the services setup flow.
+                      <button
+                        type="button"
+                        onClick={() => router.push("/pro/profile-setup/services")}
+                        className="w-full flex items-start gap-3 p-3 rounded-xl text-left transition-colors hover:bg-[var(--hm-bg-tertiary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
+                      >
+                        <div
+                          className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
+                          style={{
+                            backgroundColor:
+                              "color-mix(in srgb, var(--hm-brand-500) 12%, transparent)",
+                          }}
+                        >
+                          <PlusCircle
+                            className="w-4 h-4 text-[var(--hm-brand-500)]"
+                            strokeWidth={2}
+                          />
                         </div>
-                      </div>
-                    )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-semibold text-[var(--hm-fg-primary)] leading-snug">
+                            {t("professional.servicesEmptyTitle")}
+                          </p>
+                          <p className="mt-0.5 text-[11px] text-[var(--hm-fg-muted)] leading-relaxed">
+                            {t("professional.servicesEmptyDesc")}
+                          </p>
+                        </div>
+                        <ArrowRight
+                          className="shrink-0 w-4 h-4 text-[var(--hm-fg-muted)] mt-1"
+                          strokeWidth={2}
+                        />
+                      </button>
+                    ) : null}
+
+                    {/* Owner shortcut to manage services — visible whenever
+                        the pro is the viewer and there's any pricing surface
+                        to manage (existing list or legacy single price). */}
+                    {canEdit &&
+                      ((profile?.servicePricing?.length ?? 0) > 0 || pricingMeta) && (
+                        <button
+                          type="button"
+                          onClick={() => router.push("/pro/profile-setup/services")}
+                          className="mt-3 w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-medium text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" strokeWidth={2} />
+                          {t("professional.manageServices")}
+                        </button>
+                      )}
                   </motion.div>
                 )}
 

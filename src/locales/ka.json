@@ -1118,7 +1118,10 @@
     "videoTooLargeMax100mb": "ვიდეო ძალიან დიდია. მაქს. 100მბ",
     "whatDidYouDoMaterials": "რა გააკეთეთ, მასალები",
     "writeAMessage": "დაწერე შეტყობინება",
-    "yrs": "წელი"
+    "yrs": "წელი",
+    "manageServices": "სერვისების მართვა",
+    "servicesEmptyTitle": "დაამატე შენი სერვისები",
+    "servicesEmptyDesc": "დაამატე სერვისები ფასებით, რომ კლიენტებმა დაინახონ რას აკეთებ."
   },
   "becomePro": {
     "title": "გახდით ოსტატი",

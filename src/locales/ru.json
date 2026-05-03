@@ -1117,7 +1117,10 @@
     "videoTooLargeMax100mb": "Видео слишком большое. Макс. 100МБ",
     "whatDidYouDoMaterials": "Что вы сделали, материалы",
     "writeAMessage": "Написать сообщение",
-    "yrs": "лет"
+    "yrs": "лет",
+    "manageServices": "Управление услугами",
+    "servicesEmptyTitle": "Добавьте свои услуги",
+    "servicesEmptyDesc": "Добавьте услуги с ценами, чтобы клиенты видели, что вы предлагаете."
   },
   "becomePro": {
     "title": "Стать специалистом",

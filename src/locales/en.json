@@ -1118,7 +1118,10 @@
     "videoTooLargeMax100mb": "Video Too Large Max100mb",
     "whatDidYouDoMaterials": "What Did You Do Materials",
     "writeAMessage": "Write A Message",
-    "yrs": "Yrs"
+    "yrs": "Yrs",
+    "manageServices": "Manage services",
+    "servicesEmptyTitle": "Set up your services",
+    "servicesEmptyDesc": "Add the services you offer with prices so clients can see what you do."
   },
   "becomePro": {
     "title": "Become a Pro",
