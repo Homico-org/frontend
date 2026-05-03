@@ -254,6 +254,14 @@ export default function ProfessionalDetailClient({
   const isAdmin = user?.role === "admin";
   const canEdit = isOwner || isAdmin;
 
+  // When an admin opens the structured services setup for a pro that isn't
+  // themselves, the URL must carry `?proId=` so ProfileSetupContext loads and
+  // saves the targeted pro instead of the admin's own account.
+  const setupServicesHref =
+    isAdmin && !isOwner && profile?.id
+      ? `/pro/profile-setup/services?proId=${encodeURIComponent(profile.id)}`
+      : "/pro/profile-setup/services";
+
   const fetchProfileAbortRef = useRef<AbortController | null>(null);
   const profileFetchInFlightRef = useRef<string | null>(null);
   const profileViewTrackedRef = useRef<string | null>(null);
@@ -742,9 +750,11 @@ export default function ProfessionalDetailClient({
   // Pricing edit now routes to the structured services setup flow instead of
   // the legacy single-pricing-type inline editor (Fixed / Range / Per sqm).
   // Pros add specific services with their own prices via /pro/profile-setup/services.
+  // When the viewer is an admin editing someone else's profile, the helper
+  // appends `?proId=` so the setup page loads/saves the targeted pro.
   const openPricingEdit = () => {
     if (!canEdit) return;
-    router.push("/pro/profile-setup/services");
+    router.push(setupServicesHref);
   };
 
   const handleSavePricing = async () => {
@@ -2552,7 +2562,7 @@ export default function ProfessionalDetailClient({
                       // Primary CTA routes to the services setup flow.
                       <button
                         type="button"
-                        onClick={() => router.push("/pro/profile-setup/services")}
+                        onClick={() => router.push(setupServicesHref)}
                         className="w-full flex items-start gap-3 p-3 rounded-xl text-left transition-colors hover:bg-[var(--hm-bg-tertiary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
                       >
                         <div
@@ -2589,7 +2599,7 @@ export default function ProfessionalDetailClient({
                       ((profile?.servicePricing?.length ?? 0) > 0 || pricingMeta) && (
                         <button
                           type="button"
-                          onClick={() => router.push("/pro/profile-setup/services")}
+                          onClick={() => router.push(setupServicesHref)}
                           className="mt-3 w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-medium text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
                         >
                           <Edit3 className="w-3.5 h-3.5" strokeWidth={2} />
