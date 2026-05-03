@@ -1207,12 +1207,25 @@ export function ProfileSetupProvider({
     [],
   );
 
+  // Step navigation must preserve `?proId=` when an admin is editing another
+  // pro's profile — otherwise the next step's mount loses adminTargetProId
+  // and silently falls back to /me/pro-profile (admin's own account).
+  const buildStepHref = useCallback(
+    (slug: ProfileSetupStepSlug) => {
+      const base = `/pro/profile-setup/${slug}`;
+      return adminTargetProId
+        ? `${base}?proId=${encodeURIComponent(adminTargetProId)}`
+        : base;
+    },
+    [adminTargetProId],
+  );
+
   const goToStep = useCallback(
     (slug: ProfileSetupStepSlug) => {
-      router.push(`/pro/profile-setup/${slug}`);
+      router.push(buildStepHref(slug));
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    [router],
+    [router, buildStepHref],
   );
 
   const [isSaving, setIsSaving] = useState(false);
@@ -1387,25 +1400,25 @@ export function ProfileSetupProvider({
       }
 
       // Navigate — keep isSaving true so button stays disabled during transition
-      router.push(`/pro/profile-setup/${STEP_SLUGS[idx + 1]}`);
+      router.push(buildStepHref(STEP_SLUGS[idx + 1]));
       window.scrollTo({ top: 0, behavior: "smooth" });
       // Reset after a short delay to cover the route transition
       setTimeout(() => setIsSaving(false), 500);
     },
-    [router, getStepPayload, isSaving],
+    [router, getStepPayload, isSaving, buildStepHref],
   );
 
   const goBack = useCallback(
     (currentSlug: ProfileSetupStepSlug) => {
       const idx = STEP_SLUGS.indexOf(currentSlug);
       if (idx > 0) {
-        router.push(`/pro/profile-setup/${STEP_SLUGS[idx - 1]}`);
+        router.push(buildStepHref(STEP_SLUGS[idx - 1]));
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
         router.back();
       }
     },
-    [router],
+    [router, buildStepHref],
   );
 
   // ── Submit ────────────────────────────────────────────────────────────────────
