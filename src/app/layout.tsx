@@ -15,59 +15,74 @@ export const viewport: Viewport = {
 };
 
 export function generateMetadata(): Metadata {
+  // Title is intentionally short + Georgian-first since most traffic is from
+  // Tbilisi. Description mirrors the on-site `landing.positionStatement`.
+  const TITLE = "Homico — სანდო სარემონტო ოსტატები თბილისში";
+  const DESCRIPTION =
+    "Homico ეხმარება თბილისელ მფლობელებს იპოვონ გადამოწმებული სარემონტო ოსტატები — გასაგები ფასები, რეალური შეფასებები, ყოველგვარი დევნის გარეშე.";
+
   return {
     title: {
-      default: "Homico - იპოვე შენი იდეალური სახლის პროფესიონალი",
+      default: TITLE,
       template: "%s | Homico",
     },
-    description:
-      "საქართველოს პირველი პლატფორმა სახლის მომსახურების პროფესიონალების მოსაძებნად. ხელოსნები, ინტერიერის დიზაინერები, არქიტექტორები და სარემონტო პროფესიონალები თბილისში.",
+    description: DESCRIPTION,
     keywords: [
+      // Georgian (primary market)
       "ხელოსანი",
       "სანტექნიკა",
       "ელექტრიკოსი",
       "რემონტი",
       "ინტერიერი",
       "დიზაინერი",
+      "სამშენებლო",
+      "მშენებელი",
+      "ფერმწერელი",
+      "სახლის მომსახურება",
       "თბილისი",
       "საქართველო",
+      // English / Latin (international + diaspora search)
+      "Tbilisi renovation",
+      "Tbilisi handyman",
+      "Tbilisi plumber",
+      "Tbilisi electrician",
+      "Tbilisi interior designer",
+      "Georgia home services",
       "homico",
-      "სახლის მომსახურება",
     ],
-    authors: [{ name: "Homico" }],
+    authors: [{ name: "Homico", url: "https://homico.ge" }],
     creator: "Homico",
     publisher: "Homico",
     metadataBase: new URL("https://homico.ge"),
     alternates: {
       canonical: "/",
-      languages: {
-        "ka-GE": "/ka",
-        "en-US": "/en",
-      },
+      // Note: Homico uses cookie-based locale (no /ka /en URL paths). The
+      // alternates entry below is intentionally a single canonical so we don't
+      // advertise paths that 404 (e.g. /ka, /en used to be listed but those
+      // routes don't exist).
     },
     openGraph: {
       type: "website",
       locale: "ka_GE",
-      alternateLocale: "en_US",
+      alternateLocale: ["en_US", "ru_RU"],
       url: "https://homico.ge",
       siteName: "Homico",
-      title: "Homico - იპოვე შენი იდეალური სახლის პროფესიონალი",
-      description:
-        "საქართველოს პირველი პლატფორმა სახლის მომსახურების პროფესიონალების მოსაძებნად. ხელოსნები, ინტერიერის დიზაინერები, არქიტექტორები.",
+      title: TITLE,
+      description: DESCRIPTION,
       images: [
         {
           url: "https://homico.ge/og-image.png",
           width: 1200,
           height: 630,
-          alt: "Homico - სახლის პროფესიონალების პლატფორმა",
+          alt: "Homico — სანდო სარემონტო ოსტატები თბილისში",
+          type: "image/png",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Homico - იპოვე შენი იდეალური სახლის პროფესიონალი",
-      description:
-        "საქართველოს პირველი პლატფორმა სახლის მომსახურების პროფესიონალების მოსაძებნად.",
+      title: TITLE,
+      description: DESCRIPTION,
       images: ["https://homico.ge/og-image.png"],
     },
     robots: {
@@ -102,14 +117,49 @@ export function generateMetadata(): Metadata {
   };
 }
 
+// Schema.org Organization — site-wide brand context for Google. Tells search
+// engines who Homico is, where to find the logo, and which official URLs to
+// prefer (helps the knowledge panel + sitelinks).
+const ORGANIZATION_JSONLD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Homico",
+  legalName: "Homico",
+  alternateName: "Homico.ge",
+  url: "https://homico.ge",
+  logo: "https://homico.ge/og-image.png",
+  image: "https://homico.ge/og-image.png",
+  description:
+    "Homico helps Tbilisi homeowners find vetted renovation pros — clear quotes, real reviews, no chasing.",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Tbilisi",
+    addressCountry: "GE",
+  },
+  areaServed: { "@type": "City", name: "Tbilisi" },
+  sameAs: [
+    // Add real social URLs here when public profiles exist:
+    // "https://www.facebook.com/homico.ge",
+    // "https://www.instagram.com/homico.ge",
+  ],
+} as const;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ka" suppressHydrationWarning>
       <head>
+        {/* Site-wide Organization schema — improves brand SERP */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(ORGANIZATION_JSONLD),
+          }}
+        />
+
         {/* Homico Design System fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
