@@ -330,7 +330,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
             </>
           ) : (
             <>
-              {/* Desktop: Login/Register buttons with text */}
+              {/* Desktop: Login + Sign up + "Become a pro" outlined CTA on the right rail */}
               <div className="hidden md:flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -339,8 +339,11 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                 >
                   {t("common.login")}
                 </Button>
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild>
                   <Link href="/register" onClick={() => trackEvent('nav_click', 'register')}>{t("header.signUp")}</Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/become-pro" onClick={() => trackEvent('nav_click', 'become_pro')}>{t("header.becomePro")}</Link>
                 </Button>
               </div>
 

@@ -78,6 +78,13 @@ export enum AnalyticsEvent {
   // Error events
   ERROR = 'error',
   API_ERROR = 'api_error',
+
+  // Landing-specific
+  LANDING_VIEW = 'landing_view',
+  LANDING_HERO_SEARCH = 'landing_hero_search',
+  LANDING_CATEGORY_CLICK = 'landing_category_click',
+  LANDING_ASSISTANT_CLICK = 'landing_assistant_click',
+  LANDING_BECOME_PRO_CLICK = 'landing_become_pro_click',
 }
 
 // Event parameters interface

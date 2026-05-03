@@ -22,17 +22,6 @@ export const BRAND = {
   900: '#501301',
 } as const;
 
-/** @deprecated Use BRAND instead */
-export const TERRACOTTA = {
-  primary: BRAND[500],
-  primaryHover: BRAND[600],
-  primaryDark: BRAND[700],
-  light: BRAND[200],
-  warm: BRAND[100],
-  bg: BRAND[50],
-  accent: BRAND[400],
-} as const;
-
 export const NEUTRAL = {
   0:   '#FFFFFF',
   50:  '#FAFAF7',

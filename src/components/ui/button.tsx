@@ -82,12 +82,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={disabled || loading}
+        aria-busy={loading || undefined}
         style={{ transitionDuration: 'var(--hm-dur-base)', transitionTimingFunction: 'var(--hm-ease-standard)' }}
         {...props}
       >
         {loading ? (
           <>
-            <LoadingSpinner size="sm" />
+            <span aria-hidden="true">
+              <LoadingSpinner size="sm" />
+            </span>
             <span>{children}</span>
           </>
         ) : (

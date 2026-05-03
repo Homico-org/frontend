@@ -1,6 +1,5 @@
 "use client";
 
-import AuthGuard from "@/components/common/AuthGuard";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -13,14 +12,13 @@ import {
   ArrowRight,
   Briefcase,
   Camera,
-  CheckCircle2,
+  Check,
   DollarSign,
-  MapPin,
   Shield,
-  Star,
-  Users,
+  Users
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -38,7 +36,7 @@ export default function BecomeProPage() {
     setIsVisible(true);
   }, []);
 
-  // Already a pro — redirect
+  // Already a pro - redirect
   useEffect(() => {
     if (!authLoading && user?.role === "pro") {
       router.replace("/pro/profile-setup");
@@ -72,7 +70,8 @@ export default function BecomeProPage() {
       toast.success(t("becomePro.upgradeSuccess"));
       router.push("/pro/profile-setup");
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const msg = (err as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
       toast.error(msg || t("common.error"));
     } finally {
       setIsUpgrading(false);
@@ -83,66 +82,34 @@ export default function BecomeProPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--hm-bg-page)" }}>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "var(--hm-bg-page)" }}
+      >
         <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
       </div>
     );
   }
 
-  const features = [
+  // 4 most compelling benefits, condensed into single-line pills for the
+  // one-viewport layout. Drop "Get Reviews" and "Choose Your Area" - both
+  // implied by the platform basics and dilute the focal four.
+  const benefits = [
     {
-      icon: <Users className="w-5 h-5" />,
-      title: pick("Find Clients", "მოიძიე კლიენტები", "Найдите клиентов"),
-      desc: pick(
-        "Get matched with clients looking for your services",
-        "დაკავშირდი კლიენტებთან, რომლებსაც შენი სერვისები სჭირდებათ",
-        "Найдите клиентов, которым нужны ваши услуги"
-      ),
+      icon: <Users className="w-4 h-4" strokeWidth={2} />,
+      label: pick("Find clients", "იპოვე კლიენტები", "Найдите клиентов"),
     },
     {
-      icon: <DollarSign className="w-5 h-5" />,
-      title: pick("Set Your Prices", "დააწესე შენი ფასები", "Установите свои цены"),
-      desc: pick(
-        "Set per-service pricing with market insights",
-        "დააყენე ფასი თითოეულ სერვისზე საბაზრო ფასების მიხედვით",
-        "Установите цены с учетом рыночных данных"
-      ),
+      icon: <DollarSign className="w-4 h-4" strokeWidth={2} />,
+      label: pick("Set your prices", "დააწესე ფასები", "Свои цены"),
     },
     {
-      icon: <Camera className="w-5 h-5" />,
-      title: pick("Show Your Work", "აჩვენე ნამუშევრები", "Покажите свою работу"),
-      desc: pick(
-        "Build a portfolio with before/after photos",
-        "შექმენი პორტფოლიო სანამდე/შემდეგ ფოტოებით",
-        "Создайте портфолио с фото до/после"
-      ),
+      icon: <Camera className="w-4 h-4" strokeWidth={2} />,
+      label: pick("Show portfolio", "აჩვენე პორტფოლიო", "Покажите работу"),
     },
     {
-      icon: <Star className="w-5 h-5" />,
-      title: pick("Get Reviews", "მიიღე შეფასებები", "Получайте отзывы"),
-      desc: pick(
-        "Clients review your work after each booking",
-        "კლიენტები აფასებენ შენს მუშაობას ყოველი ჯავშნის შემდეग",
-        "Клиенты оценивают вашу работу после каждого бронирования"
-      ),
-    },
-    {
-      icon: <MapPin className="w-5 h-5" />,
-      title: pick("Choose Your Area", "აირჩიე მომსახურების ზონა", "Выберите зону"),
-      desc: pick(
-        "Set service areas and get local job matches",
-        "მიუთითე მომსახურების ზონები და მიიღე ლოკალური სამუშაოები",
-        "Укажите зоны обслуживания и получайте местные заказы"
-      ),
-    },
-    {
-      icon: <Shield className="w-5 h-5" />,
-      title: pick("Get Verified", "გახდი ვერიფიცირებული", "Пройдите верификацию"),
-      desc: pick(
-        "Verified badge builds trust with clients",
-        "ვერიფიცირებული ბეჯი ზრდის კლიენტების ნდობას",
-        "Значок верификации повышает доверие клиентов"
-      ),
+      icon: <Shield className="w-4 h-4" strokeWidth={2} />,
+      label: pick("Get verified", "გადამოწმდი", "Пройдите проверку"),
     },
   ];
 
@@ -150,140 +117,197 @@ export default function BecomeProPage() {
     <>
       <Header />
       <HeaderSpacer />
-      <div
-        className="min-h-screen"
-        style={{ backgroundColor: "var(--hm-bg-page)" }}
+      {/* Single-viewport hero with photo bg + dark overlay + white text.
+          Matches the landing hero treatment. Photo path is the literal
+          filename on disk ("became-pro" not "become-pro" - keeping as-is to
+          match the asset). */}
+      <section
+        className="relative isolate overflow-hidden flex items-center"
+        style={{ minHeight: "calc(100vh - 64px)" }}
       >
-        <div className="max-w-2xl mx-auto px-4 py-8 sm:py-16">
-          {/* Hero */}
+        {/* Background layers */}
+        <div className="absolute inset-0">
+          {/* Warm-tinted gradient base - visible if photo missing */}
           <div
-            className={`text-center mb-10 transition-all duration-700 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}
-          >
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)] to-[#F06B43] flex items-center justify-center mx-auto mb-5 shadow-lg">
-              <Briefcase className="w-7 h-7 text-white" />
-            </div>
-            <h1
-              className="text-2xl sm:text-3xl font-bold mb-3"
-              style={{ color: "var(--hm-fg-primary)" }}
-            >
-              {pick(
-                "Become a Professional",
-                "გახდი სპეციალისტი",
-                "Станьте специалистом"
-              )}
-            </h1>
-            <p
-              className="text-base sm:text-lg max-w-md mx-auto"
-              style={{ color: "var(--hm-fg-secondary)" }}
-            >
-              {pick(
-                "Join Homico and start finding clients for your services",
-                "შემოგვიერთდი და იპოვე კლიენტები შენი სერვისებისთვის",
-                "Присоединяйтесь и находите клиентов для ваших услуг"
-              )}
-            </p>
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(135deg, var(--hm-brand-50) 0%, var(--hm-bg-elevated) 45%, var(--hm-brand-50) 100%)",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full opacity-50 blur-3xl"
+            style={{
+              background:
+                "radial-gradient(circle, color-mix(in srgb, var(--hm-brand-500) 28%, transparent) 0%, transparent 70%)",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute -bottom-32 -right-24 w-[520px] h-[520px] rounded-full opacity-40 blur-3xl"
+            style={{
+              background:
+                "radial-gradient(circle, color-mix(in srgb, var(--hm-brand-300) 35%, transparent) 0%, transparent 70%)",
+            }}
+          />
+          {/* Pro recruitment photo - drop a sharper / different shot at this
+              path to swap. The misspelled filename matches the asset on disk. */}
+          <Image
+            src="/landing/became-pro.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            quality={75}
+            className="object-cover"
+            aria-hidden="true"
+          />
+          {/* Dark overlay for white-text legibility */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(20,18,14,0.65) 0%, rgba(20,18,14,0.5) 50%, rgba(20,18,14,0.7) 100%)",
+            }}
+          />
+        </div>
+
+        {/* Centered content - sized to fit one viewport without scroll */}
+        <div
+          className={`relative z-10 w-full max-w-2xl mx-auto px-4 sm:px-6 py-8 text-center transition-all duration-700 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+        >
+          {/* Brand-colored icon medallion */}
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--hm-brand-500)] to-[#F06B43] flex items-center justify-center mx-auto mb-4 shadow-xl shadow-[var(--hm-brand-500)]/30">
+            <Briefcase className="w-6 h-6 text-white" strokeWidth={2} />
           </div>
 
-          {/* Features grid */}
-          <div
-            className={`grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10 transition-all duration-700 delay-200 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}
-          >
-            {features.map((f, i) => (
+          <h1 className="text-[28px] sm:text-[40px] lg:text-[48px] font-serif font-medium tracking-[-0.01em] text-white leading-[1.1]">
+            {pick(
+              "Grow your renovation business",
+              "გაზარდეთ თქვენი სარემონტო ბიზნესი",
+              "Развивайте свой ремонтный бизнес",
+            )}
+          </h1>
+
+          <p className="mt-3 sm:mt-4 text-[14px] sm:text-[16px] text-white/85 leading-relaxed max-w-xl mx-auto">
+            {pick(
+              "Get matched with Tbilisi homeowners who need your skills. Free to join - pay only when you take a job.",
+              "დაუკავშირდით სახლის მფლობელებს თბილისში, რომლებსაც თქვენი უნარები სჭირდებათ. უფასო რეგისტრაცია - იხდით მხოლოდ მაშინ, როცა სამუშაოს იღებთ.",
+              "Получайте заказы от владельцев жилья в Тбилиси, которым нужны ваши навыки. Регистрация бесплатна - платите только когда берёте заказ.",
+            )}
+          </p>
+
+          {/* Pricing transparency strip - addresses the #1 pro question */}
+          <div className="mt-5 inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[12px] sm:text-[13px] text-white/85">
+            <span className="inline-flex items-center gap-1.5">
+              <Check
+                className="w-3.5 h-3.5 text-[var(--hm-brand-300)]"
+                strokeWidth={2.5}
+              />
+              {pick(
+                "Free to join",
+                "უფასო რეგისტრაცია",
+                "Бесплатная регистрация",
+              )}
+            </span>
+            <span aria-hidden="true">·</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Check
+                className="w-3.5 h-3.5 text-[var(--hm-brand-300)]"
+                strokeWidth={2.5}
+              />
+              {pick(
+                "No monthly fees",
+                "ყოველთვიური საფასურის გარეშე",
+                "Без ежемесячной платы",
+              )}
+            </span>
+            <span aria-hidden="true">·</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Check
+                className="w-3.5 h-3.5 text-[var(--hm-brand-300)]"
+                strokeWidth={2.5}
+              />
+              {pick(
+                "You keep your prices",
+                "თქვენ ადგენთ ფასებს",
+                "Вы устанавливаете цены",
+              )}
+            </span>
+          </div>
+
+          {/* 4 inline benefit pills - TaskRabbit-style icon row */}
+          <div className="mt-7 sm:mt-8 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 max-w-xl mx-auto">
+            {benefits.map((b, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3 p-4 rounded-xl"
-                style={{
-                  backgroundColor: "var(--hm-bg-elevated)",
-                  border: "1px solid var(--hm-border-subtle)",
-                }}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white/10 backdrop-blur-sm"
               >
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: "rgba(239,78,36,0.1)", color: 'var(--hm-brand-500)' }}
-                >
-                  {f.icon}
+                <div className="w-9 h-9 rounded-full flex items-center justify-center bg-white/95 text-[var(--hm-brand-500)]">
+                  {b.icon}
                 </div>
-                <div>
-                  <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--hm-fg-primary)" }}>
-                    {f.title}
-                  </p>
-                  <p className="text-xs leading-relaxed" style={{ color: "var(--hm-fg-secondary)" }}>
-                    {f.desc}
-                  </p>
-                </div>
+                <span className="text-[11px] sm:text-[12px] font-medium text-white text-center leading-tight">
+                  {b.label}
+                </span>
               </div>
             ))}
           </div>
 
-          {/* How it works */}
-          <div
-            className={`mb-10 transition-all duration-700 delay-300 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}
-          >
-            <h2
-              className="text-lg font-bold text-center mb-5"
-              style={{ color: "var(--hm-fg-primary)" }}
-            >
-              {pick("How it works", "როგორ მუშაობს", "Как это работает")}
-            </h2>
-            <div className="flex flex-col sm:flex-row gap-3">
-              {[
-                { num: "1", text: pick("Upgrade your account", "გააქტიურე ანგარიში", "Активируйте аккаунт") },
-                { num: "2", text: pick("Set up services & prices", "დაამატე სერვისები და ფასები", "Настройте услуги и цены") },
-                { num: "3", text: pick("Start getting bookings", "დაიწყე ჯავშნების მიღება", "Начните получать заказы") },
-              ].map((step) => (
-                <div
-                  key={step.num}
-                  className="flex-1 flex items-center sm:flex-col sm:items-center gap-3 sm:gap-2 p-4 rounded-xl text-center"
-                  style={{
-                    backgroundColor: "var(--hm-bg-elevated)",
-                    border: "1px solid var(--hm-border-subtle)",
-                  }}
+          {/* CTA - register link primary, sign-in secondary */}
+          <div className="mt-7 sm:mt-9">
+            {isAuthenticated ? (
+              <Button
+                size="lg"
+                onClick={handleUpgrade}
+                disabled={isUpgrading}
+                className="px-8 inline-flex items-center gap-2"
+              >
+                {isUpgrading ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <>
+                    {pick("Start setup", "დაწყება", "Начать")}
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </Button>
+            ) : (
+              <div className="flex flex-col items-center gap-3">
+                <Button
+                  size="lg"
+                  asChild
+                  className="px-8 inline-flex items-center gap-2"
                 >
-                  <div className="w-8 h-8 rounded-full bg-[var(--hm-brand-500)] text-white flex items-center justify-center text-sm font-bold shrink-0">
-                    {step.num}
-                  </div>
-                  <p className="text-sm font-medium" style={{ color: "var(--hm-fg-primary)" }}>
-                    {step.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* CTA */}
-          <div
-            className={`text-center transition-all duration-700 delay-400 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}
-          >
-            <button
-              onClick={handleUpgrade}
-              disabled={isUpgrading}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-white text-base font-semibold transition-all hover:shadow-lg active:scale-[0.98] disabled:opacity-60"
-              style={{ backgroundColor: 'var(--hm-brand-500)' }}
-            >
-              {isUpgrading ? (
-                <LoadingSpinner size="sm" />
-              ) : (
-                <>
-                  {isAuthenticated
-                    ? pick("Start Setup →", "დაწყება →", "Начать →")
-                    : pick("Sign In to Start", "შედი დასაწყებად", "Войдите чтобы начать")}
-                </>
-              )}
-            </button>
-            <p className="text-xs mt-3" style={{ color: "var(--hm-fg-muted)" }}>
-              {pick("Free to join. No monthly fees.", "უფასოა. ყოველთვიური გადასახადი არ არის.", "Бесплатно. Без ежемесячных платежей.")}
-            </p>
+                  <Link href="/register/professional">
+                    {pick(
+                      "Create pro account",
+                      "შექმენით ოსტატის ანგარიში",
+                      "Создать аккаунт мастера",
+                    )}
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => openLoginModal()}
+                  className="text-[13px] text-white/85 hover:text-white transition-colors"
+                >
+                  {pick(
+                    "Already have an account? Sign in",
+                    "უკვე გაქვთ ანგარიში? შესვლა",
+                    "Уже есть аккаунт? Войти",
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      </section>
     </>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, InputHTMLAttributes, ReactNode } from 'react';
+import { forwardRef, InputHTMLAttributes, ReactNode, useId } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
@@ -79,11 +79,19 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
     const thumbSize = thumbSizes[size || 'md'];
     const positions = thumbPositions[size || 'md'];
 
+    // Stable id so the visible description is associated to the input via
+    // aria-describedby — screen readers announce the description on focus.
+    const reactId = useId();
+    const descriptionId = description ? `${reactId}-desc` : undefined;
+
     const toggleElement = (
       <label className={cn('relative inline-flex cursor-pointer', disabled && 'cursor-not-allowed')}>
         <input
           ref={ref}
           type="checkbox"
+          role="switch"
+          aria-checked={!!checked}
+          aria-describedby={descriptionId}
           className="sr-only peer"
           checked={checked}
           disabled={disabled}
@@ -91,6 +99,7 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
           {...props}
         />
         <div
+          aria-hidden="true"
           className={cn(
             toggleVariants({ size, variant }),
             checked ? colors.on : colors.off,
@@ -125,7 +134,7 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
             {label}
           </span>
           {description && (
-            <p className="text-xs text-[var(--hm-fg-muted)] mt-0.5">{description}</p>
+            <p id={descriptionId} className="text-xs text-[var(--hm-fg-muted)] mt-0.5">{description}</p>
           )}
         </div>
       </div>

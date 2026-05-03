@@ -6,8 +6,6 @@ import Checkbox from "@/components/ui/Checkbox";
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import Select from "@/components/common/Select";
 import AboutTab from "@/components/professionals/AboutTab";
-import BookingModal from "@/components/professionals/BookingModal";
-import ContactModal from "@/components/professionals/ContactModal";
 import InviteProToJobModal from "@/components/professionals/InviteProToJobModal";
 import PortfolioTab from "@/components/professionals/PortfolioTab";
 import { type ProfileSidebarTab } from "@/components/professionals/ProfileSidebar";
@@ -168,8 +166,6 @@ export default function ProfessionalDetailClient({
   );
   const [isLoading, setIsLoading] = useState(!initialProfile);
   const [error, setError] = useState<string | null>(null);
-  const [showContactModal, setShowContactModal] = useState(false);
-  const [showBookingModal, setShowBookingModal] = useState(false);
   const [showServiceBookingModal, setShowServiceBookingModal] = useState(false);
   const [showSchedulePanel, setShowSchedulePanel] = useState(false);
   const [existingBookings, setExistingBookings] = useState<
@@ -3342,54 +3338,6 @@ export default function ProfessionalDetailClient({
             />
           </div>
         </div>
-      )}
-
-      {/* ========== CONTACT MODAL ========== */}
-      <ContactModal
-        isOpen={showContactModal}
-        onClose={() => setShowContactModal(false)}
-        onSend={async (msg: string) => {
-          if (!user) return;
-          try {
-            const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/conversations/start`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                },
-                body: JSON.stringify({ proId: profile?.id, message: msg }),
-              },
-            );
-            if (!response.ok) {
-              throw new Error("Failed to send message");
-            }
-            setShowContactModal(false);
-            toast.success(t("common.messageSent"));
-            trackEvent(AnalyticsEvent.CONVERSATION_START, {
-              proId: profile?.id,
-              proName: profile?.name,
-            });
-          } catch (err) {
-            console.error("Failed to start conversation:", err);
-            toast.error(t("common.error"));
-          }
-        }}
-        name={profile?.name || ""}
-        title={profile?.title || ""}
-        avatar={avatarUrl}
-        locale={locale as "en" | "ka" | "ru"}
-      />
-
-      {/* ========== BOOKING MODAL ========== */}
-      {features.bookings && profile && (
-        <BookingModal
-          isOpen={showBookingModal}
-          onClose={() => setShowBookingModal(false)}
-          professionalId={profile.id || (profile as any)._id}
-          professionalName={profile.name || ""}
-        />
       )}
 
       {/* ========== SERVICE BOOKING MODAL ========== */}

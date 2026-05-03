@@ -1,7 +1,7 @@
 {
   "adminRequests": {
     "title": "Service requests",
-    "subtitle": "Incoming concierge requests — triage, contact, quote, close.",
+    "subtitle": "Incoming Homico team requests — triage, contact, quote, close.",
     "empty": "No requests match this filter yet.",
     "showing": "Showing",
     "status": {
@@ -121,7 +121,6 @@
     "register": "Register",
     "password": "Password",
     "name": "Name",
-    "fullName": "Full name",
     "uploadImage": "Upload image",
     "uploadFile": "Upload file",
     "uploadFailed": "Upload failed",
@@ -299,7 +298,9 @@
     "shortlisted": "Shortlisted",
     "hire": "Hire",
     "interested": "Interested",
-    "reject": "Reject"
+    "reject": "Reject",
+    "somethingWentWrong": "Something went wrong",
+    "errorBody": "Sorry — that didn't work. Try again, or head back home."
   },
   "nav": {
     "home": "Home",
@@ -2587,7 +2588,7 @@
     "sortOrder": "Sort Order",
     "active": "Active",
     "inactive": "Inactive",
-    "activated": "Activated successfully",
+    "activated": "Activated",
     "deactivated": "Deactivated successfully",
     "nameEn": "Name (English)",
     "nameKa": "Name (Georgian)",
@@ -2631,7 +2632,6 @@
     "totalInvites": "Total Invites",
     "smsSent": "SMS Sent",
     "opened": "Opened",
-    "activated": "Activated",
     "pending": "Pending",
     "resendSms": "Resend SMS",
     "invitePhone": "Phone",
@@ -2845,7 +2845,7 @@
   },
   "about": {
     "aboutUs": "About us",
-    "connectingPeopleWithTheBest": "A concierge for home services in Tbilisi.",
+    "connectingPeopleWithTheBest": "A team that finds trusted home pros for Tbilisi.",
     "heroBlurb": "Tell us what you need. We match you with a trusted local pro and call you back with quotes the same day. Free. No sign-up.",
     "getInTouch": "Get in touch",
     "contactBlurb": "Questions, feedback, or a pro asking to join — we read every message.",
@@ -2871,7 +2871,7 @@
     },
     "values": {
       "trustTransparency": {
-        "title": "A human concierge",
+        "title": "A human team",
         "description": "A real person reads every request, picks the pros, and calls you back. No algorithms, no bidding wars."
       },
       "qualityFirst": {
@@ -2890,7 +2890,7 @@
     "tbilisiGeorgia": "Made in Tbilisi, Georgia",
     "termsOfService": "Terms Of Service",
     "todayHomicoConnectsThousandsOf": "Today we're a small team in Tbilisi, matching clients with the right pro one request at a time. No inflated directories — just humans doing the work.",
-    "weDecidedToCreateA": "We took a different approach. Instead of another marketplace, we built a concierge: you tell us what you need, we talk to our pros, collect quotes, and call you back the same day."
+    "weDecidedToCreateA": "We took a different approach. Instead of another marketplace, we built a team service: you tell us what you need, we talk to our pros, collect quotes, and call you back the same day."
   },
   "forgotPassword": {
     "changeNumber": "Change Number",
@@ -2958,15 +2958,25 @@
   },
   "landing": {
     "searchPlaceholder": "Search Placeholder",
-    "heroTag": "Home-service concierge · Tbilisi",
     "heroTitle": "Tell us what you need.",
     "heroTitleAccent": "3 quotes in 2 hours.",
     "heroSubtitle": "Share a few details. Our team matches you with verified professionals — calls you back the same day. No sign-up. Free.",
     "browsePros": "See professionals",
-    "trustVerified": "100+ verified pros in Tbilisi",
+    "searchAllOption": "All services",
+    "searchSubmit": "Find pros",
+    "askAssistantTitle": "Don't want to search yourself?",
+    "askAssistantBody": "Tell us what you need — our team picks 3 trusted pros and calls you back today.",
+    "askAssistantCta": "Ask Homico →",
+    "trustVerified": "Verified pros in Tbilisi",
+    "trustPillar1Title": "Vetted pros",
+    "trustPillar1Desc": "Every pro is interviewed before being listed.",
+    "trustPillar2Title": "Real reviews",
+    "trustPillar2Desc": "Only clients who hired and finished a job can review.",
+    "trustPillar3Title": "Free for clients",
+    "trustPillar3Desc": "No platform fees — you only pay the pro you choose.",
     "trustSecure": "~2h response",
     "trustFast": "Free to request",
-    "conciergeFlowTitle": "How the concierge works",
+    "conciergeFlowTitle": "How Homico works",
     "conciergeFlowSubtitle": "No sign-ups, no bidding wars. Just a call back.",
     "conciergeStep1Title": "You request",
     "conciergeStep1Desc": "Tell us the service, the work, and your phone — under a minute.",
@@ -2978,21 +2988,13 @@
     "clientBenefitHigh2": "Only pre-vetted pros — we pick, you don't screen.",
     "clientBenefitHigh3": "Tbilisi coverage — we'll say upfront if we can't match.",
     "finalCtaSubtitleConcierge": "Tell us what you need and we'll call you back with quotes today.",
-    "statsPros": "Verified pros",
-    "statsRating": "Avg Rating",
-    "statsActivePros": "Verified pros in Tbilisi",
-    "statsCategories": "Service categories",
-    "statsProjectsCompleted": "Projects Completed",
-    "statsAvgRating": "Average Rating",
-    "statsAvgResponse": "Typical response",
-    "statsFree": "To request a quote",
     "conciergePromise": "One request. A real person picks up. We call you back with quotes.",
-    "conciergePromiseAttribution": "The Homico concierge",
+    "conciergePromiseAttribution": "The Homico team",
     "categoriesTapHint": "Tap a service — we'll start your request pre-filled.",
     "categoriesAllServices": "Something else",
     "clientCtaTitle": "Your home, handled.",
     "clientCtaTrailing": "No sign-up · free",
-    "footerTagline": "A human concierge for home services in Tbilisi. One request, three quotes, you pick.",
+    "footerTagline": "A human team for home services in Tbilisi. One request, three quotes, you pick.",
     "footerProduct": "Product",
     "footerCompany": "Company",
     "footerLegal": "Legal",
@@ -3027,9 +3029,6 @@
     "testimonialName": "Nino Kapanadze",
     "testimonialRole": "Homeowner, Tbilisi",
     "clientsDesc": "Find the perfect professional for your home project. From quick repairs to full renovations.",
-    "clientBenefit1": "Access to 2,500+ verified professionals",
-    "clientBenefit2": "Compare quotes and portfolios easily",
-    "clientBenefit3": "Secure payment protection",
     "prosDesc": "Grow your business with quality leads. Showcase your work and connect with clients actively looking for your services.",
     "proBenefit1": "Free profile and portfolio showcase",
     "proBenefit2": "Direct access to quality job leads",
@@ -3038,15 +3037,8 @@
     "finalCtaSubtitle": "Join thousands of homeowners and professionals already using Homico across Georgia.",
     "footerCopyright": "Homico",
     "footerAllRights": "All rights reserved",
-    "activityHired": "hired a",
-    "activityPosted": "posted a job",
-    "activityReceived": "received proposals",
-    "activityCompleted": "completed a project",
-    "activityDesigner": "designer",
-    "activityElectrician": "electrician",
-    "activityPlumber": "plumber",
-    "activityPainter": "painter",
-    "activityContractor": "contractor"
+    "positionStatement": "Homico helps Tbilisi homeowners find vetted renovation pros — clear quotes, real reviews, no chasing.",
+    "heroIAmAProCta": "I'm a pro →"
   },
   "footer": {
     "aboutUs": "About Us",

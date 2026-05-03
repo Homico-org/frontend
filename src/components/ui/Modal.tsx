@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { X } from 'lucide-react';
-import { ReactNode, useCallback, useEffect } from 'react';
+import { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ACCENT_COLOR, ACCENT_HOVER } from '@/constants/theme';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -93,6 +93,10 @@ interface ModalProps extends VariantProps<typeof modalVariants> {
   showCloseButton?: boolean;
   className?: string;
   preventClose?: boolean;
+  /** Accessible name for the dialog. Falls back to "Dialog". Pass an i18n string. */
+  ariaLabel?: string;
+  /** Accessible label for the close button. Falls back to "Close". */
+  closeLabel?: string;
 }
 
 /**
@@ -108,6 +112,8 @@ export function Modal({
   showCloseButton = false,
   className,
   preventClose = false,
+  ariaLabel = 'Dialog',
+  closeLabel = 'Close',
 }: ModalProps) {
   const handleClose = useCallback(() => {
     if (!preventClose) {
@@ -129,12 +135,16 @@ export function Modal({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, closeOnEscape, handleClose]);
 
-  // Lock body scroll when modal is open
+  // Lock body scroll + return focus to trigger element when modal closes
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (isOpen) {
+      previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      previouslyFocusedRef.current?.focus?.();
+      previouslyFocusedRef.current = null;
     }
     return () => {
       document.body.style.overflow = '';
@@ -150,10 +160,14 @@ export function Modal({
         className="absolute inset-0 animate-fade-backdrop"
         style={{ backgroundColor: 'rgba(21,17,12,0.55)' }}
         onClick={closeOnBackdrop ? handleClose : undefined}
+        aria-hidden="true"
       />
 
       {/* Modal container - Bottom sheet on mobile, centered on desktop */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={ariaLabel}
         className={cn(
           modalVariants({ size }),
           'max-h-[92vh] sm:max-h-[90vh] overflow-y-auto',
@@ -164,16 +178,18 @@ export function Modal({
         style={{ backgroundColor: 'var(--hm-bg-page)' }}
       >
         {/* Drag handle for mobile */}
-        <div className="sm:hidden flex justify-center pt-3 pb-1 sticky top-0 z-20" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
+        <div className="sm:hidden flex justify-center pt-3 pb-1 sticky top-0 z-20" style={{ backgroundColor: 'var(--hm-bg-page)' }} aria-hidden="true">
           <div className="w-12 h-1.5 rounded-full bg-[var(--hm-border-strong)]" />
         </div>
 
         {showCloseButton && !preventClose && (
           <button
+            type="button"
             onClick={handleClose}
+            aria-label={closeLabel}
             className="absolute top-4 sm:top-4 right-4 p-2.5 sm:p-2 hover:bg-[var(--hm-bg-tertiary)] active:bg-[var(--hm-bg-tertiary)] transition-colors z-10"
           >
-            <X className="w-5 h-5 text-[var(--hm-fg-muted)]" />
+            <X className="w-5 h-5 text-[var(--hm-fg-muted)]" aria-hidden="true" />
           </button>
         )}
         {children}

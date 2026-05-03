@@ -212,7 +212,7 @@ export default function Select({
     <>
       {/* Backdrop overlay */}
       <div
-        className="fixed inset-0 z-[9998] bg-black/10 backdrop-blur-[1px]"
+        className="fixed inset-0 z-[9998] bg-black/10"
         onClick={() => {
           setIsOpen(false);
           setSearchQuery('');
@@ -222,7 +222,7 @@ export default function Select({
       {/* Dropdown */}
       <div
         ref={dropdownRef}
-        className={`fixed z-[9999] ${dropdownPosition.showAbove ? 'animate-in fade-in-0 slide-in-from-bottom-2' : 'animate-in fade-in-0 slide-in-from-top-2'} duration-200`}
+        className="fixed z-[9999]"
         style={{
           top: dropdownPosition.top,
           left: dropdownPosition.left,

@@ -68,6 +68,8 @@ export interface AlertProps extends VariantProps<typeof alertVariants> {
   showIcon?: boolean;
   dismissible?: boolean;
   onDismiss?: () => void;
+  /** Accessible label for the dismiss button. Defaults to "Dismiss". */
+  dismissLabel?: string;
   className?: string;
 }
 
@@ -81,6 +83,7 @@ export function Alert({
   showIcon = true,
   dismissible = false,
   onDismiss,
+  dismissLabel = 'Dismiss',
   variant = 'default',
   size = 'md',
   className,
@@ -88,10 +91,19 @@ export function Alert({
   const IconComponent = defaultIcons[variant || 'default'];
   const iconSize = size === 'sm' ? 'w-4 h-4' : size === 'lg' ? 'w-6 h-6' : 'w-5 h-5';
 
+  // Errors must interrupt the screen reader (alert/assertive); other variants
+  // are non-blocking status updates (status/polite). The icon is decorative —
+  // the variant + text already convey severity.
+  const isError = variant === 'error';
+
   return (
-    <div className={cn(alertVariants({ variant, size }), className)}>
+    <div
+      role={isError ? 'alert' : 'status'}
+      aria-live={isError ? 'assertive' : 'polite'}
+      className={cn(alertVariants({ variant, size }), className)}
+    >
       {showIcon && (
-        <div className={cn('flex-shrink-0', iconColors[variant || 'default'])}>
+        <div aria-hidden="true" className={cn('flex-shrink-0', iconColors[variant || 'default'])}>
           {icon || <IconComponent className={iconSize} />}
         </div>
       )}
@@ -110,13 +122,15 @@ export function Alert({
       </div>
       {dismissible && onDismiss && (
         <button
+          type="button"
           onClick={onDismiss}
+          aria-label={dismissLabel}
           className={cn(
             'flex-shrink-0 p-1 rounded-lg hover:bg-black/5 transition-colors',
             iconColors[variant || 'default']
           )}
         >
-          <X className={iconSize} />
+          <X className={iconSize} aria-hidden="true" />
         </button>
       )}
     </div>
