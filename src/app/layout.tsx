@@ -16,10 +16,11 @@ export const viewport: Viewport = {
 
 export function generateMetadata(): Metadata {
   // Title is intentionally short + Georgian-first since most traffic is from
-  // Tbilisi. Description mirrors the on-site `landing.positionStatement`.
+  // Tbilisi. Description mirrors the on-site `landing.positionStatement` —
+  // keep these two in sync if you edit either.
   const TITLE = "Homico — სანდო სარემონტო ოსტატები თბილისში";
   const DESCRIPTION =
-    "Homico ეხმარება თბილისელ მფლობელებს იპოვონ გადამოწმებული სარემონტო ოსტატები — გასაგები ფასები, რეალური შეფასებები, ყოველგვარი დევნის გარეშე.";
+    "Homico — სანდო სარემონტო ოსტატები თბილისში. მკაფიო ფასი, რეალური შეფასებები, უპრობლემოდ.";
 
   return {
     title: {
