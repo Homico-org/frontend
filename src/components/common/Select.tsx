@@ -384,7 +384,11 @@ export default function Select({
         ))}
       </select>
 
-      {/* Custom select trigger */}
+      {/* Custom select trigger.
+          Default variant uses `bg-elevated` (matches Input/PasswordInput) so
+          on warm-paper page backgrounds the dropdown reads as an interactive
+          control, not as static text. The chevron switches to brand color on
+          hover/open to telegraph "click me". */}
       <button
         ref={triggerRef}
         type="button"
@@ -392,7 +396,7 @@ export default function Select({
         onKeyDown={handleKeyDown}
         disabled={disabled}
         className={`
-          w-full flex items-center justify-between gap-2 rounded-xl text-left
+          group w-full flex items-center justify-between gap-2 rounded-xl text-left
           transition-all duration-200 ease-out
           ${sizeClasses[size]}
           ${variant === 'minimal'
@@ -401,14 +405,15 @@ export default function Select({
                 ? 'border-[var(--hm-error-500)]/40 focus:ring-2 focus:ring-[var(--hm-error-500)]/20'
                 : isOpen
                   ? 'border-[var(--hm-brand-500)] ring-2 ring-[var(--hm-brand-500)]/20'
-                  : 'border-[var(--hm-border-subtle)] hover:border-[var(--hm-border)]'
+                  : 'border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/40'
               }`
           }
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-          focus:outline-none
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/30
         `}
         style={{
-          backgroundColor: variant === 'minimal' ? 'transparent' : 'var(--hm-bg-page)',
+          backgroundColor:
+            variant === 'minimal' ? 'transparent' : 'var(--hm-bg-elevated)',
         }}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -422,13 +427,13 @@ export default function Select({
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <svg
-          className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-          style={{ color: 'var(--hm-fg-muted)' }}
+          className={`w-4 h-4 flex-shrink-0 transition-all duration-200 ${isOpen ? 'rotate-180 text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)]'}`}
           fill="none"
           stroke="currentColor"
+          strokeWidth={2.25}
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
