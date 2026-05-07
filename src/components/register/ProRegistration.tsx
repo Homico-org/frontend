@@ -1,7 +1,7 @@
 'use client';
 
 import { useProRegistration } from './hooks/useProRegistration';
-import { StepPhone, StepProfile, StepSelectServices, StepComplete } from './steps';
+import { StepPhone, StepProfile } from './steps';
 import AvatarCropper from '@/components/common/AvatarCropper';
 import Header from '@/components/common/Header';
 import { Alert } from '@/components/ui/Alert';
@@ -10,11 +10,13 @@ import { StepperBars } from '@/components/ui/Stepper';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowLeft } from 'lucide-react';
 
+// Two visible steps now — services + the celebration step were dropped.
+// On profile completion the hook redirects straight into /pro/profile-setup
+// where services (with pricing) are collected as part of the structured
+// 5-step setup wizard.
 const STEP_CONFIG = {
   phone: { index: 0, titleKey: 'register.verifyPhone' },
   profile: { index: 1, titleKey: 'register.yourProfile' },
-  services: { index: 2, titleKey: 'register.yourServices' },
-  complete: { index: 3, titleKey: 'register.complete' },
 } as const;
 
 interface ProRegistrationProps {
@@ -34,21 +36,6 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
         onCancel={reg.handleCropCancel}
         locale={locale}
       />
-    );
-  }
-
-  // Complete screen - full screen success
-  if (reg.currentStep === 'complete') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[var(--hm-bg-elevated)] via-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] flex items-center justify-center p-3 sm:p-4">
-        <StepComplete
-          avatarPreview={reg.avatarPreview}
-          city={reg.city}
-          selectedServices={reg.selectedServices}
-          onGoToProfile={reg.onGoToProfile}
-          onGoToDashboard={reg.onGoToDashboard}
-        />
-      </div>
     );
   }
 
@@ -73,7 +60,7 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
 
           <div className="flex-1 max-w-xs mx-auto">
             <StepperBars
-              total={Object.keys(STEP_CONFIG).length - 1}
+              total={Object.keys(STEP_CONFIG).length}
               currentIndex={STEP_CONFIG[reg.currentStep as keyof typeof STEP_CONFIG]?.index ?? 0}
             />
           </div>
@@ -135,26 +122,6 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
               canProceed={reg.canProceedFromProfile()}
               isLoading={reg.isLoading}
             />
-          )}
-
-          {reg.currentStep === 'services' && (
-            <div className="space-y-4 sm:space-y-6">
-              <StepSelectServices
-                selectedServices={reg.selectedServices}
-                onServicesChange={reg.setSelectedServices}
-              />
-
-              {/* Continue Button for Services Step */}
-              <Button
-                onClick={reg.handleNext}
-                disabled={reg.selectedServices.length === 0 || reg.isLoading}
-                loading={reg.isLoading}
-                size="lg"
-                className="w-full"
-              >
-                {reg.isLoading ? t('common.loading') : t('common.continue')}
-              </Button>
-            </div>
           )}
         </div>
 

@@ -294,6 +294,10 @@ export function useProRegistration(): UseProRegistrationReturn {
           avatar: uploadedAvatarUrl,
           role: 'pro',
           password: password,
+          // Categories + subcategories are now collected later in
+          // /pro/profile-setup/services with full per-service pricing detail.
+          // Send empty arrays here — pre-filling them at registration was
+          // duplicate work since profile-setup overwrites with structured data.
           selectedCategories,
           selectedSubcategories,
           isPhoneVerified: true,
@@ -322,7 +326,10 @@ export function useProRegistration(): UseProRegistrationReturn {
         setRegisteredUserId(data.user._id || data.user.id);
       }
 
-      setCurrentStep('complete');
+      // Skip the celebration step — drop the user straight into profile-setup
+      // so they can fill the structured fields (firstName + lastName, areas,
+      // services with pricing, portfolio) without an interim screen.
+      router.push('/pro/profile-setup/about');
     } catch (err) {
       setError(err instanceof Error ? err.message : pick({ en: 'Registration failed', ka: 'რეგისტრაცია ვერ მოხერხდა' }));
     } finally {
@@ -332,23 +339,21 @@ export function useProRegistration(): UseProRegistrationReturn {
   
   const handleNext = useCallback(async () => {
     setError('');
-    
+
     switch (currentStep) {
       case 'phone':
         // Phone verification handled by sendOtp/verifyOtp
         break;
       case 'profile':
+        // Submit registration directly — services + categories are collected
+        // later in /pro/profile-setup/services with structured per-service
+        // pricing. submitRegistration handles the redirect.
         if (canProceedFromProfile()) {
-          setCurrentStep('services');
-        }
-        break;
-      case 'services':
-        if (canProceedFromServices()) {
           await submitRegistration();
         }
         break;
     }
-  }, [currentStep, canProceedFromProfile, canProceedFromServices, submitRegistration]);
+  }, [currentStep, canProceedFromProfile, submitRegistration]);
   
   const handleBack = useCallback(() => {
     switch (currentStep) {
