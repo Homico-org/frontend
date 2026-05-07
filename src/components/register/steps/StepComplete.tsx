@@ -6,8 +6,11 @@ import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import type { SelectedService } from './StepSelectServices';
 
+// Note: fullName intentionally not part of this card — name is collected in
+// /pro/profile-setup/about (split firstName + lastName) so we don't have it
+// at this point. The success card shows avatar + city + Pro badge + services
+// which is enough to feel celebratory without leaving an empty line.
 interface StepCompleteProps {
-  fullName: string;
   avatarPreview: string | null;
   city: string;
   selectedServices: SelectedService[];
@@ -16,7 +19,6 @@ interface StepCompleteProps {
 }
 
 export default function StepComplete({
-  fullName,
   avatarPreview,
   city,
   selectedServices,
@@ -48,9 +50,9 @@ export default function StepComplete({
       {/* Profile Preview Card */}
       <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border)] p-4 sm:p-6 mb-5 sm:mb-8 text-left">
         <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-          {/* Avatar */}
+          {/* Avatar — always shown (upload was required before this screen) */}
           <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] flex-shrink-0">
-            {avatarPreview ? (
+            {avatarPreview && (
               <Image
                 src={avatarPreview}
                 alt=""
@@ -58,20 +60,16 @@ export default function StepComplete({
                 height={64}
                 className="w-full h-full object-cover"
               />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-[var(--hm-fg-muted)] text-lg sm:text-xl font-bold">
-                {fullName.charAt(0).toUpperCase()}
-              </div>
             )}
           </div>
 
-          {/* Name & Location */}
+          {/* Location only (name is added in profile-setup) */}
           <div className="flex-1 min-w-0">
             <h3 className="text-sm sm:text-base font-bold text-[var(--hm-fg-primary)] truncate">
-              {fullName}
+              {city}
             </h3>
             <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">
-              {city}
+              {t('becomePro.title')}
             </p>
           </div>
 

@@ -246,15 +246,15 @@ export function useProRegistration(): UseProRegistrationReturn {
     setUploadedAvatarUrl(null);
   }, []);
   
-  // Validation
+  // Validation — name is collected later in /pro/profile-setup/about
+  // (split into firstName + lastName), so it's no longer required here.
   const canProceedFromProfile = useCallback(() => {
-    const hasValidName = fullName.trim().length >= 2;
     const hasValidCity = city.trim().length >= 2;
     const hasAvatar = !!uploadedAvatarUrl;
     const hasValidPassword = password.length >= 6;
     const passwordsMatch = password === confirmPassword;
-    return hasValidName && hasValidCity && hasAvatar && hasValidPassword && passwordsMatch;
-  }, [fullName, city, uploadedAvatarUrl, password, confirmPassword]);
+    return hasValidCity && hasAvatar && hasValidPassword && passwordsMatch;
+  }, [city, uploadedAvatarUrl, password, confirmPassword]);
   
   const canProceedFromServices = useCallback(() => {
     return selectedServices.length > 0;
@@ -278,12 +278,18 @@ export function useProRegistration(): UseProRegistrationReturn {
       const selectedCategories = [...new Set(selectedServices.map(s => s.categoryKey))];
       const selectedSubcategories = selectedServices.map(s => s.key);
       
+      // Backend requires non-empty `name` on registration. We no longer
+      // collect it on this screen (it's split into first/last name in
+      // /pro/profile-setup/about), so fall back to the phone number as a
+      // placeholder. profile-setup will overwrite it with the real value.
+      const placeholderName = fullName.trim() || fullPhone;
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone: fullPhone,
-          name: fullName.trim(),
+          name: placeholderName,
           city: city.trim(),
           avatar: uploadedAvatarUrl,
           role: 'pro',

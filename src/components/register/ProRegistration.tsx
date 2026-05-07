@@ -42,7 +42,6 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
     return (
       <div className="min-h-screen bg-gradient-to-br from-[var(--hm-bg-elevated)] via-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] flex items-center justify-center p-3 sm:p-4">
         <StepComplete
-          fullName={reg.fullName}
           avatarPreview={reg.avatarPreview}
           city={reg.city}
           selectedServices={reg.selectedServices}
@@ -121,8 +120,6 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
 
           {reg.currentStep === 'profile' && (
             <StepProfile
-              fullName={reg.fullName}
-              onNameChange={reg.setFullName}
               city={reg.city}
               onCityChange={reg.setCity}
               password={reg.password}
