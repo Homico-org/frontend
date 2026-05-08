@@ -39,8 +39,32 @@ export default function ProCard({
   const [isHovered, setIsHovered] = useState(false);
   const autoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Services and categories
+  // Services and categories — derived in priority order:
+  //   1. `servicePricing` (the structured source the pro detail page renders)
+  //   2. `selectedServices` (mid-migration field with experience data)
+  //   3. legacy `selectedCategories` / `selectedSubcategories` arrays
+  //
+  // Bug previously: when a pro cleared their servicePricing, the legacy
+  // `selectedSubcategories` field stayed populated, so the listing card
+  // showed stale services that the detail page (correctly) didn't.
+  // Trusting an empty servicePricing array as "no services" fixes that —
+  // we only fall through to legacy when servicePricing is undefined.
   const { userCategories, userSubcategories, servicesWithExperience } = useMemo(() => {
+    const sp = profile.servicePricing;
+    if (Array.isArray(sp)) {
+      const active = sp.filter((s) => s.isActive);
+      const categories = [...new Set(active.map((s) => s.categoryKey).filter(Boolean))];
+      // Subcategory keys: dedupe, prefer subcategoryKey, fall back to serviceKey
+      const subcategories = [
+        ...new Set(active.map((s) => s.subcategoryKey || s.serviceKey).filter(Boolean)),
+      ];
+      return {
+        userCategories: categories,
+        userSubcategories: subcategories,
+        servicesWithExperience: null,
+      };
+    }
+
     const selectedServices = profile.selectedServices as Array<{
       key: string;
       name: string;
@@ -50,15 +74,24 @@ export default function ProCard({
     }> | undefined;
 
     if (selectedServices && selectedServices.length > 0) {
-      const categories = [...new Set(selectedServices.map(s => s.categoryKey))];
-      const subcategories = selectedServices.map(s => s.key);
-      return { userCategories: categories, userSubcategories: subcategories, servicesWithExperience: selectedServices };
+      const categories = [...new Set(selectedServices.map((s) => s.categoryKey))];
+      const subcategories = [...new Set(selectedServices.map((s) => s.key))]; // deduped
+      return {
+        userCategories: categories,
+        userSubcategories: subcategories,
+        servicesWithExperience: selectedServices,
+      };
     }
 
     const categories = (profile.selectedCategories?.length ? profile.selectedCategories : profile.categories) || [];
     const subcategories = (profile.selectedSubcategories?.length ? profile.selectedSubcategories : profile.subcategories) || [];
-    return { userCategories: categories, userSubcategories: subcategories, servicesWithExperience: null };
-  }, [profile.selectedServices, profile.selectedCategories, profile.categories, profile.selectedSubcategories, profile.subcategories]);
+    // Dedup legacy arrays defensively (older data sometimes has duplicates)
+    return {
+      userCategories: [...new Set(categories)],
+      userSubcategories: [...new Set(subcategories)],
+      servicesWithExperience: null,
+    };
+  }, [profile.servicePricing, profile.selectedServices, profile.selectedCategories, profile.categories, profile.selectedSubcategories, profile.subcategories]);
 
   const getSubcatsForCategory = useMemo(() => (categoryKey: string) => {
     if (servicesWithExperience) {
@@ -246,6 +279,29 @@ export default function ProCard({
 
   const displaySubcats = allSubcats.slice(0, 3);
   const remainingSubcats = allSubcats.length - 3;
+
+  // Min-price per subcategory key — used to surface a "from N₾" hint next
+  // to each service pill so clients can scan price at a glance. Built from
+  // `servicePricing` (the structured source); falls back to nothing when
+  // the pro hasn't entered structured prices yet.
+  const subcatMinPrice = useMemo(() => {
+    const map = new Map<string, number>();
+    const sp = profile.servicePricing;
+    if (!Array.isArray(sp)) return map;
+    for (const entry of sp) {
+      if (!entry.isActive || typeof entry.price !== "number" || entry.price <= 0) continue;
+      // Index by both subcategoryKey and serviceKey so whichever key the
+      // pill renders with, the lookup hits.
+      for (const key of [entry.subcategoryKey, entry.serviceKey]) {
+        if (!key) continue;
+        const existing = map.get(key);
+        if (existing === undefined || entry.price < existing) {
+          map.set(key, entry.price);
+        }
+      }
+    }
+    return map;
+  }, [profile.servicePricing]);
 
   if (variant === "horizontal") {
     // Keep horizontal variant simple — used in recommendations etc.
@@ -494,16 +550,26 @@ export default function ProCard({
             )}
           </div>
 
-          {/* Service pills */}
+          {/* Service pills — each shows "name · from N₾" when a structured
+              price exists in servicePricing for that subcategory/service. */}
           <div className="flex flex-wrap gap-1 mt-auto">
-            {displaySubcats.map((key) => (
-              <span
-                key={key}
-                className="px-2 py-0.5 text-[10px] font-medium text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)]"
-              >
-                {catalogLabelMap.get(key) || getCategoryLabel(key)}
-              </span>
-            ))}
+            {displaySubcats.map((key) => {
+              const label = catalogLabelMap.get(key) || getCategoryLabel(key);
+              const price = subcatMinPrice.get(key);
+              return (
+                <span
+                  key={key}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)]"
+                >
+                  <span className="truncate max-w-[120px]">{label}</span>
+                  {price !== undefined && (
+                    <span className="font-semibold text-[var(--hm-brand-500)]">
+                      ·&nbsp;{price}₾
+                    </span>
+                  )}
+                </span>
+              );
+            })}
             {remainingSubcats > 0 && (
               <span className="px-2 py-0.5 text-[10px] font-semibold text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10">
                 +{remainingSubcats}
