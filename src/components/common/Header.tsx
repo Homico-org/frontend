@@ -34,6 +34,8 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
 
   // Check active routes for navigation highlighting
   const isNotificationsActive = pathname === "/notifications";
+  const isHomeActive = pathname === "/";
+  const isProfessionalsActive = pathname === "/professionals" || pathname.startsWith("/professionals/");
 
   // Logo always goes to the landing (`/`) regardless of auth/role — that
   // page is the concierge entry and what we want visitors/pros alike to
@@ -72,12 +74,44 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   return (
     <header className={`${fixed ? "fixed top-0 left-0 right-0" : "relative"} z-50 h-14`} style={{ borderBottom: '1px solid var(--hm-border)', backgroundColor: 'var(--hm-bg-elevated)' }}>
       <div className="h-full max-w-[1800px] mx-auto px-4 sm:px-6 flex items-center justify-between">
-        {/* Wordmark */}
-        <Link href={homeHref} className="flex items-center flex-shrink-0">
-          <span className="text-[22px] font-semibold tracking-[-0.02em]" style={{ fontFamily: 'var(--hm-font-display)', color: 'var(--hm-fg-primary)' }}>
-            Homico
-          </span>
-        </Link>
+        {/* Wordmark + primary nav */}
+        <div className="flex items-center gap-6 min-w-0">
+          <Link href={homeHref} className="flex items-center flex-shrink-0">
+            <span className="text-[22px] font-semibold tracking-[-0.02em]" style={{ fontFamily: 'var(--hm-font-display)', color: 'var(--hm-fg-primary)' }}>
+              Homico
+            </span>
+          </Link>
+
+          {/* Primary nav — desktop only. Active route gets brand color. */}
+          <nav className="hidden md:flex items-center gap-1" aria-label="Primary">
+            <Link
+              href="/"
+              onClick={() => trackEvent('nav_click', 'home')}
+              className="inline-flex items-center px-3 h-9 rounded-lg text-[14px] font-medium transition-colors hover:bg-[var(--hm-bg-tertiary)]"
+              style={{
+                color: isHomeActive
+                  ? 'var(--hm-brand-500)'
+                  : 'var(--hm-fg-secondary)',
+              }}
+              aria-current={isHomeActive ? 'page' : undefined}
+            >
+              {t('header.home')}
+            </Link>
+            <Link
+              href="/professionals"
+              onClick={() => trackEvent('nav_click', 'professionals')}
+              className="inline-flex items-center px-3 h-9 rounded-lg text-[14px] font-medium transition-colors hover:bg-[var(--hm-bg-tertiary)]"
+              style={{
+                color: isProfessionalsActive
+                  ? 'var(--hm-brand-500)'
+                  : 'var(--hm-fg-secondary)',
+              }}
+              aria-current={isProfessionalsActive ? 'page' : undefined}
+            >
+              {t('header.professionals')}
+            </Link>
+          </nav>
+        </div>
 
         {/* Right side - Actions + Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 min-w-0">
