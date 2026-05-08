@@ -298,10 +298,11 @@ export default function ProCard({
     <Link ref={cardRef} href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} — ${t('browse.professionals')}`}>
       <div className={`relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] shadow-sm group-hover:border-[var(--hm-brand-500)]/25 transition-all duration-300 group-hover:shadow-lg ${isPremium ? 'ring-1 ring-amber-300/30' : ''}`}>
 
-        {/* Portfolio media carousel */}
+        {/* Portfolio media carousel — wide-and-short aspect so the photo
+            doesn't dominate the card. */}
         {mediaSlides.length > 0 ? (
           <div
-            className="relative aspect-[4/3] bg-[var(--hm-bg-tertiary)] overflow-hidden"
+            className="relative aspect-[2/1] bg-[var(--hm-bg-tertiary)] overflow-hidden"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
@@ -390,7 +391,7 @@ export default function ProCard({
             )}
           </div>
         ) : (
-          <div className="relative aspect-[4/3] bg-gradient-to-br from-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] flex items-center justify-center">
+          <div className="relative aspect-[2/1] bg-gradient-to-br from-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] flex items-center justify-center">
             <div className="text-center">
               <Camera className="w-5 h-5 text-[var(--hm-fg-muted)] mx-auto mb-1" />
               <span className="text-[10px] text-[var(--hm-fg-muted)]">{t('professional.noPortfolioItemsYet')}</span>
@@ -399,31 +400,31 @@ export default function ProCard({
         )}
 
         {/* Avatar overlapping carousel bottom */}
-        <div className="relative -mt-6 ml-3 sm:ml-4 mb-0">
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] ring-3 ring-white shadow-md relative">
+        <div className="relative -mt-4 ml-2 sm:ml-2.5 mb-0">
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] ring-2 ring-white shadow-sm relative">
             {avatarUrl && !imageError ? (
               <Image
                 src={avatarUrl}
                 alt={profile.name}
                 fill
-                sizes="48px"
+                sizes="32px"
                 className="object-cover"
                 onError={() => setImageError(true)}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-base font-bold text-[var(--hm-fg-muted)]">
+              <div className="w-full h-full flex items-center justify-center text-xs font-bold text-[var(--hm-fg-muted)]">
                 {profile.name.charAt(0)}
               </div>
             )}
           </div>
         </div>
 
-        {/* Card body */}
-        <div className="flex-1 flex flex-col px-3 sm:px-4 pb-3 sm:pb-4 pt-1.5">
+        {/* Card body — minimal padding */}
+        <div className="flex-1 flex flex-col px-2 pb-2 pt-1 sm:px-2.5 sm:pb-2.5">
           {/* Pro identity */}
-          <div className="mb-2">
+          <div className="mb-1">
             <div className="flex items-center gap-1.5">
-                <h3 className="font-semibold text-sm text-[var(--hm-fg-primary)] truncate group-hover:text-[var(--hm-brand-500)] transition-colors">
+                <h3 className="font-semibold text-[13px] sm:text-sm text-[var(--hm-fg-primary)] truncate group-hover:text-[var(--hm-brand-500)] transition-colors leading-tight">
                   {profile.name}
                 </h3>
                 {isOnline && (
@@ -456,7 +457,7 @@ export default function ProCard({
           </div>
 
           {/* Stats row */}
-          <div className="flex items-center gap-2 text-[11px] text-[var(--hm-fg-muted)] mb-2.5 flex-wrap">
+          <div className="flex items-center gap-1.5 text-[10px] text-[var(--hm-fg-muted)] mb-1.5 flex-wrap">
             {matchedExperience && (
               <>
                 <span className="flex items-center gap-1">

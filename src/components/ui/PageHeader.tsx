@@ -114,11 +114,11 @@ export function PageHeader({
 
               {/* Title & Subtitle */}
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-[var(--hm-fg-primary)]">
+                <h1 className="text-[13px] sm:text-sm font-semibold text-[var(--hm-fg-primary)] leading-tight">
                   {title}
                 </h1>
                 {subtitle && (
-                  <p className="text-sm text-[var(--hm-fg-muted)]">
+                  <p className="text-[10px] sm:text-[11px] text-[var(--hm-fg-muted)] mt-0.5 leading-snug">
                     {subtitle}
                   </p>
                 )}

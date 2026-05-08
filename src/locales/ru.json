@@ -777,7 +777,8 @@
     "servicesSelected": "услуг выбрано",
     "aboveMarket": "Выше рынка",
     "belowMarket": "Ниже рынка",
-    "switchCategoryConfirm": "Смена категории сбросит выбранные услуги. Продолжить?"
+    "switchCategoryConfirm": "Смена категории сбросит выбранные услуги. Продолжить?",
+    "negotiable": "Договорная"
   },
   "jobComments": {
     "title": "Комментарии",

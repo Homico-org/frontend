@@ -72,22 +72,22 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   }, [showDropdown, showMobileMenu, handleEscKey]);
 
   return (
-    <header className={`${fixed ? "fixed top-0 left-0 right-0" : "relative"} z-50 h-14`} style={{ borderBottom: '1px solid var(--hm-border)', backgroundColor: 'var(--hm-bg-elevated)' }}>
+    <header className={`${fixed ? "fixed top-0 left-0 right-0" : "relative"} z-50 h-12`} style={{ borderBottom: '1px solid var(--hm-border)', backgroundColor: 'var(--hm-bg-elevated)' }}>
       <div className="h-full max-w-[1800px] mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Wordmark + primary nav */}
-        <div className="flex items-center gap-6 min-w-0">
+        <div className="flex items-center gap-5 min-w-0">
           <Link href={homeHref} className="flex items-center flex-shrink-0">
-            <span className="text-[22px] font-semibold tracking-[-0.02em]" style={{ fontFamily: 'var(--hm-font-display)', color: 'var(--hm-fg-primary)' }}>
+            <span className="text-[18px] font-semibold tracking-[-0.02em]" style={{ fontFamily: 'var(--hm-font-display)', color: 'var(--hm-fg-primary)' }}>
               Homico
             </span>
           </Link>
 
           {/* Primary nav — desktop only. Active route gets brand color. */}
-          <nav className="hidden md:flex items-center gap-1" aria-label="Primary">
+          <nav className="hidden md:flex items-center gap-0.5" aria-label="Primary">
             <Link
               href="/"
               onClick={() => trackEvent('nav_click', 'home')}
-              className="inline-flex items-center px-3 h-9 rounded-lg text-[14px] font-medium transition-colors hover:bg-[var(--hm-bg-tertiary)]"
+              className="inline-flex items-center px-2.5 h-8 rounded-lg text-[13px] font-medium transition-colors hover:bg-[var(--hm-bg-tertiary)]"
               style={{
                 color: isHomeActive
                   ? 'var(--hm-brand-500)'
@@ -100,7 +100,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
             <Link
               href="/professionals"
               onClick={() => trackEvent('nav_click', 'professionals')}
-              className="inline-flex items-center px-3 h-9 rounded-lg text-[14px] font-medium transition-colors hover:bg-[var(--hm-bg-tertiary)]"
+              className="inline-flex items-center px-2.5 h-8 rounded-lg text-[13px] font-medium transition-colors hover:bg-[var(--hm-bg-tertiary)]"
               style={{
                 color: isProfessionalsActive
                   ? 'var(--hm-brand-500)'
@@ -574,5 +574,5 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
 
 // Spacer component to prevent content from going under fixed header
 export function HeaderSpacer() {
-  return <div className="h-14 flex-shrink-0" style={{ backgroundColor: 'var(--hm-bg-elevated)' }} />;
+  return <div className="h-12 flex-shrink-0" style={{ backgroundColor: 'var(--hm-bg-elevated)' }} />;
 }

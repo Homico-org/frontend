@@ -38,6 +38,9 @@ const CUSTOM_LAYOUT_PATHS = [
   '/projects/new',
   '/for-business',
   '/invite',
+  // Post-job has its own action footer (Cancel / Continue) — global mobile
+  // bottom nav would stack on top of it.
+  '/post-job',
 ];
 
 interface AppLayoutProps {

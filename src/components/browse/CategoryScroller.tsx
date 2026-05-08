@@ -76,7 +76,7 @@ export default function CategoryScroller({
 
   return (
     <div
-      className="mb-5 sticky top-0 z-30 -mx-3 px-3 sm:mx-0 sm:px-0"
+      className="mb-2 sm:mb-3 sticky top-0 z-30 -mx-3 px-3 sm:mx-0 sm:px-0"
       style={{ backgroundColor: 'var(--hm-bg-page)' }}
     >
       {/* Category tabs — underline nav. Sticks to the top of the scroll container
@@ -153,18 +153,18 @@ export default function CategoryScroller({
                   key={cat.key}
                   type="button"
                   onClick={() => handleCategoryClick(cat.key)}
-                  className="group shrink-0 relative flex flex-col items-center gap-2 px-5 py-3 focus:outline-none focus-visible:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
+                  className="group shrink-0 relative flex flex-col items-center gap-1 px-2.5 py-1.5 sm:px-3 focus:outline-none focus-visible:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
                 >
                   <CategoryIcon
                     type={cat.icon || cat.key}
-                    className={`w-7 h-7 transition-colors ${
+                    className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
                       isActive
                         ? "text-[var(--hm-brand-500)]"
                         : "text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-fg-primary)]"
                     }`}
                   />
                   <span
-                    className={`text-[12.5px] leading-none whitespace-nowrap tracking-tight transition-colors ${
+                    className={`text-[10px] sm:text-[11px] leading-none whitespace-nowrap tracking-tight transition-colors ${
                       isActive
                         ? "font-semibold text-[var(--hm-brand-500)]"
                         : "font-medium text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-fg-primary)]"

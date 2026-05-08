@@ -7,8 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, Minimize2, Send, Trash2, X } from "lucide-react";
-import Image from "next/image";
+import { ChevronLeft, Minimize2, Send, Sparkles, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -473,14 +472,8 @@ export default function AiChatWidget(): React.ReactElement | null {
             aria-label="Show AI Assistant"
           >
             <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-            <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-white/40">
-              <Image
-                src="/AI-mascot.png"
-                alt="AI"
-                width={28}
-                height={28}
-                className="w-full h-full object-cover scale-[1.15]"
-              />
+            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ring-1 ring-white/40 bg-white/15">
+              <Sparkles className="w-3.5 h-3.5 text-white" strokeWidth={2} />
             </div>
           </motion.button>
         )}
@@ -524,23 +517,17 @@ export default function AiChatWidget(): React.ReactElement | null {
               }`}
             />
 
-            {/* Mascot avatar */}
+            {/* Brand-aligned avatar — vermillion circle with white sparkles
+                icon. Replaces the off-brand multi-color mascot image. */}
             <div
-              className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden transition-all duration-200 ${
+              className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-200 ${
                 isDragging
                   ? "ring-2 ring-[var(--hm-brand-500)] shadow-xl shadow-[var(--hm-brand-500)]/30 scale-110"
                   : "ring-2 ring-[var(--hm-bg-elevated)] shadow-lg group-hover:ring-[var(--hm-brand-500)]/60 group-hover:shadow-xl"
               }`}
               style={{ backgroundColor: 'var(--hm-brand-500)' }}
             >
-              <Image
-                src="/AI-mascot.png"
-                alt="Homico AI"
-                width={64}
-                height={64}
-                className="w-full h-full object-cover scale-[1.15]"
-                priority
-              />
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2} />
             </div>
 
             {/* Drag handle dots — visible on hover to hint draggability */}
@@ -628,14 +615,8 @@ export default function AiChatWidget(): React.ReactElement | null {
                 {/* Architectural decorative line */}
                 <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div className="flex items-center gap-3 relative z-10">
-                  <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/30 shadow-md flex-shrink-0 bg-white/15">
-                    <Image
-                      src="/AI-mascot.png"
-                      alt="Homico AI"
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center ring-2 ring-white/30 shadow-md flex-shrink-0 bg-white/20">
+                    <Sparkles className="w-4 h-4 text-white" strokeWidth={2} />
                   </div>
                   <div className="min-w-0">
                     <h2
@@ -688,16 +669,10 @@ export default function AiChatWidget(): React.ReactElement | null {
                 {!isAuthenticated ? (
                   <div className="flex flex-col items-center justify-center h-full text-center px-4">
                     <div
-                      className="w-20 h-20 rounded-full overflow-hidden mb-4 ring-2 ring-[var(--hm-brand-500)]/15 shadow-md"
+                      className="w-16 h-16 rounded-full flex items-center justify-center mb-4 ring-2 ring-[var(--hm-brand-500)]/15 shadow-md"
                       style={{ backgroundColor: 'var(--hm-brand-500)' }}
                     >
-                      <Image
-                        src="/AI-mascot.png"
-                        alt="Homico AI"
-                        width={80}
-                        height={80}
-                        className="w-full h-full object-cover scale-[1.15]"
-                      />
+                      <Sparkles className="w-7 h-7 text-white" strokeWidth={2} />
                     </div>
                     <h3
                       className="text-lg font-semibold mb-1.5 tracking-tight"

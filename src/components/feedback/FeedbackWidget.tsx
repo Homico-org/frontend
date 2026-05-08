@@ -146,12 +146,19 @@ export function FeedbackWidget() {
         </button>
       )}
 
-      {/* Mobile trigger — FAB */}
+      {/* Mobile trigger — FAB. Positioned above the MobileBottomNav (58px tall
+          plus iOS safe-area inset) so it never overlaps the bottom rail. */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed flex sm:hidden bottom-20 right-3 z-[39] w-10 h-10 rounded-full shadow-lg items-center justify-center cursor-pointer"
-          style={{ backgroundColor: ACCENT_COLOR, color: '#fff' }}
+          className="fixed flex sm:hidden right-3 z-[39] w-10 h-10 rounded-full shadow-lg items-center justify-center cursor-pointer"
+          style={{
+            backgroundColor: ACCENT_COLOR,
+            color: '#fff',
+            // 58px nav + iOS safe-area + generous 32px gap — also clears the
+            // shadow halo so the FAB doesn't visually merge with the nav.
+            bottom: 'calc(58px + env(safe-area-inset-bottom) + 32px)',
+          }}
           aria-label={t('feedback.title')}
         >
           <MessageSquare className="w-4 h-4" />

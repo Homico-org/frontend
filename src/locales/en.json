@@ -778,7 +778,8 @@
     "servicesSelected": "services selected",
     "aboveMarket": "Above market",
     "belowMarket": "Below market",
-    "switchCategoryConfirm": "Switching category will clear your selected services. Continue?"
+    "switchCategoryConfirm": "Switching category will clear your selected services. Continue?",
+    "negotiable": "Negotiable"
   },
   "jobComments": {
     "title": "Comments",

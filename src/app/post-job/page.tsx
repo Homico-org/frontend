@@ -43,7 +43,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { backOrNavigate } from "@/utils/navigationUtils";
 
-type Step = "category" | "location" | "details" | "review";
+type Step = "category" | "location" | "review";
 
 interface MediaFile {
   file: File;
@@ -51,7 +51,7 @@ interface MediaFile {
   type: "image" | "video";
 }
 
-const STEP_IDS: Step[] = ["category", "location", "details", "review"];
+const STEP_IDS: Step[] = ["category", "location", "review"];
 
 // Category icons - Custom illustrated style
 function ReviewRow({ label, onEdit, editLabel, children }: { label: string; onEdit: () => void; editLabel: string; children: React.ReactNode }) {
@@ -281,13 +281,32 @@ function PostJobPageContent() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Auto-derive a job title since the title input was removed. Falls back
+  // through service → category → generic so backend always gets a non-empty
+  // title (CreateJobDto still requires it).
+  const deriveJobTitle = (): string => {
+    if (selectedJobServices.length > 0) {
+      const first = selectedJobServices[0];
+      const firstName = pick({ en: first.name, ka: first.nameKa });
+      return selectedJobServices.length === 1
+        ? firstName
+        : `${firstName} +${selectedJobServices.length - 1}`;
+    }
+    if (selectedCategory) {
+      const cat = categories.find((c) => c.key === selectedCategory);
+      if (cat) return pick({ en: cat.name, ka: cat.nameKa });
+    }
+    return formData.title.trim() || 'New job';
+  };
+
   // Step navigation
   const getCurrentStepIndex = () => STEP_IDS.indexOf(currentStep);
   const progressPercent = ((getCurrentStepIndex() + 1) / STEP_IDS.length) * 100;
   const getStepLabel = (step: Step) => t(`postJob.steps.${step}`);
 
   const canProceedFromCategory = () => {
-    if (!formData.title.trim() || !formData.description.trim()) return false;
+    // Title is auto-derived from selected services at submit time, and the
+    // description is now optional — neither blocks the step transition.
     if (!selectedCategory || !formData.propertyType) return false;
     if (selectedJobServices.length === 0) return false;
     // Also validate required category-specific fields shown on this step
@@ -315,10 +334,9 @@ function PostJobPageContent() {
     }
     return true;
   };
-  const canProceedFromDetails = () => {
-    // At least 1 photo required
-    return (existingMedia.length + mediaFiles.length) > 0;
-  };
+  // Photos are optional and live on the location step now — no separate
+  // canProceedFromDetails. Kept here as a no-op for any stale call sites.
+  const canProceedFromDetails = () => true;
 
   const handleNext = () => {
     const stepIndex = getCurrentStepIndex();
@@ -373,7 +391,7 @@ function PostJobPageContent() {
   const handleSubmit = async () => {
     // Prevent double submission using ref (synchronous check)
     if (submittingRef.current) return;
-    if (!canProceedFromCategory() || !canProceedFromLocation() || !canProceedFromDetails()) return;
+    if (!canProceedFromCategory() || !canProceedFromLocation()) return;
 
     submittingRef.current = true;
     setIsSubmitting(true);
@@ -397,7 +415,7 @@ function PostJobPageContent() {
       const deadline = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
       const jobData: Record<string, unknown> = {
-        title: formData.title,
+        title: deriveJobTitle(),
         description: formData.description,
         category: selectedCategory,
         subcategory: selectedSubcategory,
@@ -533,23 +551,14 @@ function PostJobPageContent() {
                 </p>
               </div>
 
-                {/* Title */}
+                {/* Description — optional. Title is auto-derived from the
+                    selected service(s) at submit time, so no name field here. */}
                 <div>
                   <label className="block text-sm font-semibold text-[var(--hm-fg-secondary)] mb-2">
-                    {t('common.title')} <span className="text-[var(--hm-brand-500)]">*</span>
-                  </label>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => updateFormData("title", e.target.value)}
-                    placeholder={t('job.egKitchenPipeRepair')}
-                    className="text-base py-3"
-                  />
-                </div>
-
-                {/* Description */}
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--hm-fg-secondary)] mb-2">
-                    {t('common.description')} <span className="text-[var(--hm-brand-500)]">*</span>
+                    {t('common.description')}{" "}
+                    <span className="text-[11px] font-normal text-[var(--hm-fg-muted)]">
+                      ({t('common.optional')})
+                    </span>
                   </label>
                   <Textarea
                     value={formData.description}
@@ -709,7 +718,7 @@ function PostJobPageContent() {
 
           {/* STEP 2: Location */}
           {currentStep === "location" && (
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto space-y-4">
               <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] p-4 sm:p-5">
                 <h2 className="text-lg font-bold text-[var(--hm-fg-primary)] mb-0.5">
                   {t('job.locationBudget')}
@@ -773,149 +782,111 @@ function PostJobPageContent() {
 
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* STEP 3: Details */}
-          {currentStep === "details" && (
-            <div className="max-w-2xl mx-auto space-y-4">
-              <div>
-                <h1 className="text-lg font-bold text-[var(--hm-fg-primary)] mb-0.5">
-                  {t('job.addPhotos')}
-                </h1>
-                <p className="text-xs text-[var(--hm-fg-muted)]">
-                  {t("postJob.photosRequirementHelp")}
-                </p>
-              </div>
-
-              <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] p-4 space-y-4">
-                {/* Photos - Enhanced with explanation */}
-                <div className={`p-4 sm:p-5 lg:p-6 rounded-2xl border-2 transition-all ${
-                  (existingMedia.length + mediaFiles.length) > 0
-                    ? 'bg-[var(--hm-success-50)]/50 border-[var(--hm-success-100)]'
-                    : 'bg-[var(--hm-warning-50)]/50 border-[var(--hm-warning-100)]'
-                }`}>
-                  <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      (existingMedia.length + mediaFiles.length) > 0
-                        ? 'bg-[var(--hm-success-100)]'
-                        : 'bg-[var(--hm-warning-100)]'
-                    }`}>
-                      <ImageIcon className={`w-5 h-5 sm:w-6 sm:h-6 ${
-                        (existingMedia.length + mediaFiles.length) > 0
-                          ? 'text-[var(--hm-success-500)]'
-                          : 'text-[var(--hm-warning-500)]'
-                      }`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <label className="block text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] mb-1">
-                        {t('job.addPhotos')} <span className="text-[var(--hm-brand-500)]">*</span>
-                      </label>
-                      <p className="text-sm text-[var(--hm-fg-muted)] leading-relaxed">
-                        {t("postJob.photosRequirementHelp")}
-                      </p>
-                    </div>
+              {/* Photos card — optional. Folded into the location step so the
+                  whole flow is 3 steps instead of 4. */}
+              <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] p-4 sm:p-5">
+                <div className="flex items-start gap-3 mb-3 sm:mb-4">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[var(--hm-bg-tertiary)]">
+                    <ImageIcon className="w-5 h-5 text-[var(--hm-fg-secondary)]" />
                   </div>
-
-                  {/* Tips when no photos */}
-                  {(existingMedia.length + mediaFiles.length) === 0 && (
-                    <div className="mb-3 sm:mb-4 flex flex-wrap gap-1.5 sm:gap-2">
-                      {[
-                        { icon: <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4" />, text: t('job.problemArea') },
-                        { icon: <Ruler className="w-3.5 h-3.5 sm:w-4 sm:h-4" />, text: t('job.dimensions') },
-                        { icon: <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4" />, text: t('job.desiredStyle') },
-                      ].map((tip, i) => (
-                        <span key={i} className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[var(--hm-bg-elevated)]/80 border border-[var(--hm-border)] text-xs sm:text-sm text-[var(--hm-fg-secondary)]">
-                          <span className="text-[var(--hm-brand-500)]">{tip.icon}</span>
-                          {tip.text}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Upload area and previews */}
-                  <div className="flex flex-wrap gap-2 sm:gap-3">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={() => fileInputRef.current?.click()}
-                      className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center flex-shrink-0 p-0 shadow-none [&_svg]:size-6 ${
-                        (existingMedia.length + mediaFiles.length) > 0
-                          ? 'border-[var(--hm-success-500)]/20 hover:border-emerald-400 hover:bg-[var(--hm-success-100)]/50 text-[var(--hm-success-500)] hover:text-[var(--hm-success-500)]'
-                          : 'border-[var(--hm-warning-500)]/20 hover:border-amber-400 hover:bg-[var(--hm-warning-100)]/50 text-[var(--hm-warning-500)] hover:text-[var(--hm-warning-500)]'
-                      }`}
-                    >
-                      <span className="flex flex-col items-center gap-1">
-                        <Plus />
-                        <span className="text-xs font-medium">
-                          {t('common.add')}
-                        </span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] mb-0.5">
+                      {t('job.addPhotos')}{" "}
+                      <span className="text-[11px] font-normal text-[var(--hm-fg-muted)]">
+                        ({t('common.optional')})
                       </span>
-                    </Button>
-
-                    {/* Preview - Existing */}
-                    {existingMedia.map((media, idx) => (
-                      <div key={`existing-${idx}`} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-[var(--hm-bg-tertiary)] flex-shrink-0 ring-2 ring-emerald-200 ring-offset-2">
-                        <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="96px" />
-                        <Button
-                          variant="destructive"
-                          size="icon-sm"
-                          onClick={() => removeExistingMedia(idx)}
-                          aria-label={t('common.remove')}
-                          className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/60 hover:bg-[var(--hm-error-500)] shadow-none [&_svg]:size-3.5"
-                        >
-                          <X />
-                        </Button>
-                      </div>
-                    ))}
-
-                    {/* Preview - New */}
-                    {mediaFiles.map((media, idx) => (
-                      <div key={`new-${idx}`} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-[var(--hm-bg-tertiary)] flex-shrink-0 ring-2 ring-emerald-200 ring-offset-2">
-                        <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="96px" unoptimized />
-                        <Button
-                          variant="destructive"
-                          size="icon-sm"
-                          onClick={() => removeMediaFile(idx)}
-                          aria-label={t('common.remove')}
-                          className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/60 hover:bg-[var(--hm-error-500)] shadow-none [&_svg]:size-3.5"
-                        >
-                          <X />
-                        </Button>
-                      </div>
-                    ))}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)] leading-relaxed">
+                      {t("postJob.photosRequirementHelp")}
+                    </p>
                   </div>
-
-                  {/* Success state */}
-                  {(existingMedia.length + mediaFiles.length) > 0 && (
-                    <div className="mt-4 flex items-center gap-2 text-sm text-[var(--hm-success-500)]">
-                      <Check className="w-4 h-4" />
-                      <span>
-                        {t("postJob.photosAddedSuccess", {
-                          count: existingMedia.length + mediaFiles.length,
-                          plural: (existingMedia.length + mediaFiles.length) > 1 ? "s" : "",
-                        })}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Required validation message */}
-                  {(existingMedia.length + mediaFiles.length) === 0 && formData.title.trim() && formData.description.trim() && (
-                    <div className="mt-4 flex items-center gap-2 text-sm text-[var(--hm-warning-500)]">
-                      <AlertTriangle className="w-4 h-4" />
-                      <span>
-                        {t("postJob.addAtLeastOnePhotoToContinue")}
-                      </span>
-                    </div>
-                  )}
                 </div>
+
+                {/* Tip pills — show only before any photo is added */}
+                {(existingMedia.length + mediaFiles.length) === 0 && (
+                  <div className="mb-3 sm:mb-4 flex flex-wrap gap-1.5 sm:gap-2">
+                    {[
+                      { icon: <Camera className="w-3.5 h-3.5" />, text: t('job.problemArea') },
+                      { icon: <Ruler className="w-3.5 h-3.5" />, text: t('job.dimensions') },
+                      { icon: <Palette className="w-3.5 h-3.5" />, text: t('job.desiredStyle') },
+                    ].map((tip, i) => (
+                      <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--hm-bg-tertiary)] text-xs text-[var(--hm-fg-secondary)]">
+                        <span className="text-[var(--hm-brand-500)]">{tip.icon}</span>
+                        {tip.text}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Upload area + previews */}
+                <div className="flex flex-wrap gap-2 sm:gap-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center flex-shrink-0 p-0 shadow-none [&_svg]:size-6 border-[var(--hm-border)] hover:border-[var(--hm-brand-500)]/40 hover:bg-[var(--hm-brand-500)]/5 text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)]"
+                  >
+                    <span className="flex flex-col items-center gap-1">
+                      <Plus />
+                      <span className="text-xs font-medium">
+                        {t('common.add')}
+                      </span>
+                    </span>
+                  </Button>
+
+                  {/* Preview - Existing */}
+                  {existingMedia.map((media, idx) => (
+                    <div key={`existing-${idx}`} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-[var(--hm-bg-tertiary)] flex-shrink-0 ring-1 ring-[var(--hm-border)]">
+                      <Image src={storage.getFileUrl(media.url)} alt="Uploaded media" fill className="object-cover" sizes="96px" />
+                      <Button
+                        variant="destructive"
+                        size="icon-sm"
+                        onClick={() => removeExistingMedia(idx)}
+                        aria-label={t('common.remove')}
+                        className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/60 hover:bg-[var(--hm-error-500)] shadow-none [&_svg]:size-3.5"
+                      >
+                        <X />
+                      </Button>
+                    </div>
+                  ))}
+
+                  {/* Preview - New */}
+                  {mediaFiles.map((media, idx) => (
+                    <div key={`new-${idx}`} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-[var(--hm-bg-tertiary)] flex-shrink-0 ring-1 ring-[var(--hm-border)]">
+                      <Image src={media.preview} alt="Preview" fill className="object-cover" sizes="96px" unoptimized />
+                      <Button
+                        variant="destructive"
+                        size="icon-sm"
+                        onClick={() => removeMediaFile(idx)}
+                        aria-label={t('common.remove')}
+                        className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/60 hover:bg-[var(--hm-error-500)] shadow-none [&_svg]:size-3.5"
+                      >
+                        <X />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Success state — soft confirmation, no required-warning */}
+                {(existingMedia.length + mediaFiles.length) > 0 && (
+                  <div className="mt-4 flex items-center gap-2 text-sm text-[var(--hm-success-500)]">
+                    <Check className="w-4 h-4" />
+                    <span>
+                      {t("postJob.photosAddedSuccess", {
+                        count: existingMedia.length + mediaFiles.length,
+                        plural: (existingMedia.length + mediaFiles.length) > 1 ? "s" : "",
+                      })}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -947,13 +918,15 @@ function PostJobPageContent() {
                   {t('common.edit')}
                 </Button>
 
-                {/* Title */}
+                {/* Title (auto-derived from selected service / category) */}
                 <h2 className="text-base sm:text-lg font-bold pr-16" style={{ color: 'var(--hm-fg-primary)' }}>
-                  {formData.title}
+                  {deriveJobTitle()}
                 </h2>
-                <p className="text-[13px] mt-1 line-clamp-2" style={{ color: 'var(--hm-fg-secondary)' }}>
-                  {formData.description}
-                </p>
+                {formData.description.trim() && (
+                  <p className="text-[13px] mt-2 whitespace-pre-wrap" style={{ color: 'var(--hm-fg-secondary)' }}>
+                    {formData.description}
+                  </p>
+                )}
 
                 {/* Meta pills */}
                 <div className="flex flex-wrap gap-1.5 mt-3">
@@ -1030,13 +1003,15 @@ function PostJobPageContent() {
                         </div>
                       );
                     })}
-                    {/* Total row when multiple services have budgets */}
-                    {serviceBudgetTotal > 0 && selectedJobServices.filter(s => s.budget > 0).length > 1 && (
-                      <div className="flex items-center justify-between px-4 py-2.5" style={{ backgroundColor: 'rgba(239,78,36,0.04)' }}>
-                        <span className="text-[12px] font-semibold" style={{ color: 'var(--hm-fg-secondary)' }}>
+                    {/* Total row — always shown when any budget is set, even
+                        with a single service (user expects to see the total
+                        explicitly stated, not just inferred from the line). */}
+                    {serviceBudgetTotal > 0 && (
+                      <div className="flex items-center justify-between px-4 py-3" style={{ backgroundColor: 'rgba(239,78,36,0.06)' }}>
+                        <span className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--hm-fg-secondary)' }}>
                           {t('common.total')}
                         </span>
-                        <span className="text-[14px] font-bold" style={{ color: 'var(--hm-brand-500)' }}>
+                        <span className="text-[15px] font-bold" style={{ color: 'var(--hm-brand-500)' }}>
                           {serviceBudgetTotal}₾
                         </span>
                       </div>
@@ -1045,50 +1020,145 @@ function PostJobPageContent() {
                 </div>
               )}
 
-              {/* Location + Property card */}
+              {/* Property & Location — full breakdown, label/value rows */}
               <div
-                className="rounded-2xl p-4 flex items-start gap-3"
+                className="rounded-2xl overflow-hidden"
                 style={{ backgroundColor: 'var(--hm-bg-elevated)', border: '1px solid var(--hm-border-subtle)' }}
               >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
-                  <MapPin className="w-4 h-4" style={{ color: 'var(--hm-fg-secondary)' }} />
+                <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: '1px solid var(--hm-border-subtle)' }}>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--hm-fg-muted)' }}>
+                    {t('job.locationBudget')}
+                  </span>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={() => goToStep("location")}
+                    className="text-[11px]"
+                  >
+                    {t('common.edit')}
+                  </Button>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium truncate" style={{ color: 'var(--hm-fg-primary)' }}>
-                    {formData.location}
-                  </p>
-                  <div className="flex flex-wrap gap-1 mt-1.5">
-                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-secondary)' }}>
-                      {formData.propertyType === "apartment" && t('job.apartment')}
-                      {formData.propertyType === "house" && t('job.house')}
-                      {formData.propertyType === "office" && t('job.office')}
-                      {formData.propertyType === "building" && t('job.building')}
-                      {formData.propertyType === "other" && t('common.other')}
-                    </span>
-                    {formData.propertyCondition && (
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]">
+
+                <div className="px-4 py-3 flex items-start gap-3" style={{ borderBottom: '1px solid var(--hm-border-subtle)' }}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
+                    <MapPin className="w-4 h-4" style={{ color: 'var(--hm-fg-secondary)' }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--hm-fg-muted)' }}>
+                      {t('job.jobAddress')}
+                    </p>
+                    <p className="text-[13px] font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
+                      {formData.location}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Property facts grid — only render rows that have values */}
+                <div className="divide-y" style={{ borderColor: 'var(--hm-border-subtle)' }}>
+                  {formData.propertyType && (
+                    <div className="px-4 py-2.5 flex items-center justify-between gap-3">
+                      <span className="text-[12px]" style={{ color: 'var(--hm-fg-muted)' }}>
+                        {t('job.propertyType')}
+                      </span>
+                      <span className="text-[13px] font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
+                        {formData.propertyType === "apartment" && t('job.apartment')}
+                        {formData.propertyType === "house" && t('job.house')}
+                        {formData.propertyType === "office" && t('job.office')}
+                        {formData.propertyType === "building" && t('job.building')}
+                        {formData.propertyType === "other" && t('common.other')}
+                      </span>
+                    </div>
+                  )}
+                  {formData.propertyCondition && (
+                    <div className="px-4 py-2.5 flex items-center justify-between gap-3">
+                      <span className="text-[12px]" style={{ color: 'var(--hm-fg-muted)' }}>
+                        {t('job.condition')}
+                      </span>
+                      <span className="text-[13px] font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
                         {formData.propertyCondition === "shell" && t('job.shell')}
                         {formData.propertyCondition === "black-frame" && t('job.blackFrame')}
                         {formData.propertyCondition === "needs-renovation" && t('job.fullRenovation')}
                         {formData.propertyCondition === "partial-renovation" && t('job.partial')}
                         {formData.propertyCondition === "good" && t('job.good')}
                       </span>
-                    )}
-                    {formData.areaSize && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-secondary)' }}>{formData.areaSize} m²</span>}
-                    {formData.roomCount && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-secondary)' }}>{formData.roomCount} {t('job.rooms')}</span>}
-                  </div>
+                    </div>
+                  )}
+                  {formData.timing && (
+                    <div className="px-4 py-2.5 flex items-center justify-between gap-3">
+                      <span className="text-[12px]" style={{ color: 'var(--hm-fg-muted)' }}>
+                        {t('job.whenDoYouNeedIt')}
+                      </span>
+                      <span className="text-[13px] font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
+                        {formData.timing === "flexible" && t('job.flexible')}
+                        {formData.timing === "asap" && t('job.asap')}
+                        {formData.timing === "this_week" && t('common.thisWeek')}
+                        {formData.timing === "this_month" && t('common.thisMonth')}
+                      </span>
+                    </div>
+                  )}
+                  {/* Budget row — only when not already covered by per-service breakdown */}
+                  {!hasServiceBudgets && formData.budgetType && (
+                    <div className="px-4 py-2.5 flex items-center justify-between gap-3">
+                      <span className="text-[12px]" style={{ color: 'var(--hm-fg-muted)' }}>
+                        {t('common.budget')}
+                      </span>
+                      <span className="text-[13px] font-bold" style={{ color: 'var(--hm-brand-500)' }}>
+                        {formData.budgetType === "negotiable" && t('job.negotiable')}
+                        {formData.budgetType === "fixed" && formData.budgetMin && `${formData.budgetMin}₾`}
+                        {formData.budgetType === "range" && formData.budgetMin && formData.budgetMax && `${formData.budgetMin}–${formData.budgetMax}₾`}
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={() => goToStep("location")}
-                  className="text-[11px] shrink-0"
-                >
-                  {t('common.edit')}
-                </Button>
               </div>
 
-              {/* Photos */}
+              {/* Job details — category-specific fields the user filled in */}
+              {(() => {
+                const filledFields = getActiveFields().filter((f) => {
+                  const v = formData[f.key as keyof typeof formData];
+                  return v !== undefined && v !== null && String(v).trim() !== "";
+                });
+                if (filledFields.length === 0) return null;
+                return (
+                  <div
+                    className="rounded-2xl overflow-hidden"
+                    style={{ backgroundColor: 'var(--hm-bg-elevated)', border: '1px solid var(--hm-border-subtle)' }}
+                  >
+                    <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: '1px solid var(--hm-border-subtle)' }}>
+                      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--hm-fg-muted)' }}>
+                        {t('job.additionalDetails')}
+                      </span>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => goToStep("category")}
+                        className="text-[11px]"
+                      >
+                        {t('common.edit')}
+                      </Button>
+                    </div>
+                    <div className="divide-y" style={{ borderColor: 'var(--hm-border-subtle)' }}>
+                      {filledFields.map((f) => {
+                        const value = String(formData[f.key as keyof typeof formData]);
+                        const suffix = (f as { suffix?: string; suffixKey?: string }).suffix
+                          ?? ((f as { suffixKey?: string }).suffixKey ? t((f as { suffixKey: string }).suffixKey) : '');
+                        return (
+                          <div key={f.key} className="px-4 py-2.5 flex items-center justify-between gap-3">
+                            <span className="text-[12px]" style={{ color: 'var(--hm-fg-muted)' }}>
+                              {t(f.labelKey)}
+                            </span>
+                            <span className="text-[13px] font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
+                              {value}{suffix ? ` ${suffix}` : ''}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Photos — bigger previews when present */}
               {(existingMedia.length > 0 || mediaFiles.length > 0) && (
                 <div
                   className="rounded-2xl p-4"
@@ -1101,21 +1171,21 @@ function PostJobPageContent() {
                     <Button
                       variant="link"
                       size="sm"
-                      onClick={() => goToStep("details")}
+                      onClick={() => goToStep("location")}
                       className="text-[11px]"
                     >
                       {t('common.edit')}
                     </Button>
                   </div>
-                  <div className="flex gap-2 overflow-x-auto pb-1">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {existingMedia.map((media, idx) => (
-                      <div key={`re-${idx}`} className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
-                        <Image src={storage.getFileUrl(media.url)} alt="" fill className="object-cover" sizes="80px" />
+                      <div key={`re-${idx}`} className="relative aspect-square rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
+                        <Image src={storage.getFileUrl(media.url)} alt="" fill className="object-cover" sizes="(max-width: 640px) 33vw, 25vw" />
                       </div>
                     ))}
                     {mediaFiles.map((media, idx) => (
-                      <div key={`rn-${idx}`} className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
-                        <Image src={media.preview} alt="" fill className="object-cover" sizes="80px" unoptimized />
+                      <div key={`rn-${idx}`} className="relative aspect-square rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
+                        <Image src={media.preview} alt="" fill className="object-cover" sizes="(max-width: 640px) 33vw, 25vw" unoptimized />
                       </div>
                     ))}
                   </div>
@@ -1159,8 +1229,7 @@ function PostJobPageContent() {
                 disabled={
                   isSubmitting ||
                   (currentStep === "category" && !canProceedFromCategory()) ||
-                  (currentStep === "location" && !canProceedFromLocation()) ||
-                  (currentStep === "details" && !canProceedFromDetails())
+                  (currentStep === "location" && !canProceedFromLocation())
                 }
                 leftIcon={isSubmitting ? <LoadingSpinner size="xs" color="white" /> : undefined}
                 rightIcon={currentStep === "review" ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}

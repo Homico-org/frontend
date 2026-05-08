@@ -5,7 +5,7 @@ import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { features } from '@/config/features';
-import { Briefcase, Calendar, Home, LayoutDashboard, Plus, Users } from 'lucide-react';
+import { Briefcase, Plus, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MouseEvent, ReactNode } from 'react';
@@ -29,7 +29,6 @@ export default function MobileBottomNav({ extraAction: _extraAction }: MobileBot
   const { user, isLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
 
-  const isPro = user?.role === 'pro' || user?.role === 'admin';
   const isAuthenticated = !!user;
 
   if (isLoading) {
@@ -55,17 +54,6 @@ export default function MobileBottomNav({ extraAction: _extraAction }: MobileBot
 
   const isActive = (prefixes: string[]) => prefixes.some((p) => pathname.startsWith(p));
 
-  const myKey = isPro ? 'mySpace.mySpace' : 'mySpace.mySpace';
-
-  // 5-slot layout with + always in the middle (position 3 of 5).
-  // Unified order: Home · Jobs · +Post · Pros · MySpace.
-  const homeSlot: Slot = {
-    key: 'home',
-    href: '/',
-    labelKey: 'nav.home',
-    icon: Home,
-    isActive: pathname === '/',
-  };
   const jobsSlot: Slot = {
     key: 'jobs',
     href: '/jobs',
@@ -96,28 +84,11 @@ export default function MobileBottomNav({ extraAction: _extraAction }: MobileBot
         isActive: pathname === '/post-job',
         onClick: (e) => { e.preventDefault(); openLoginModal(); },
       };
-  const mySpaceSlot: Slot = {
-    key: 'my-space',
-    href: '/my-space',
-    labelKey: myKey,
-    icon: LayoutDashboard,
-    isActive: isActive(isPro ? ['/my-space', '/my-work', '/my-proposals'] : ['/my-space', '/my-jobs']),
-  };
+  // 3-slot layout: Jobs · `+` · Pros. + is dead-center as the primary CTA.
+  // Home, My Space, and Bookings live in the avatar dropdown / shell sidebar
+  // so the mobile bottom rail stays uncluttered.
 
-  let slots: Slot[] = [homeSlot, jobsSlot, postSlot, prosSlot, mySpaceSlot];
-
-  // If the bookings feature flag is on, prefer Bookings over Home so the 5 slots
-  // still make sense. (Keeps + centered either way.)
-  if (features.bookings) {
-    const bookingsSlot: Slot = {
-      key: 'bookings',
-      href: '/bookings',
-      labelKey: 'nav.bookings',
-      icon: Calendar,
-      isActive: isActive(['/bookings']),
-    };
-    slots = [jobsSlot, bookingsSlot, postSlot, prosSlot, mySpaceSlot];
-  }
+  const slots: Slot[] = [jobsSlot, postSlot, prosSlot];
 
   return (
     <>
@@ -129,9 +100,38 @@ export default function MobileBottomNav({ extraAction: _extraAction }: MobileBot
           boxShadow: 'var(--hm-shadow-md)',
         }}
       >
-        <div className="grid grid-cols-5 items-stretch px-0 pt-2 pb-2.5">
+        <div className="grid grid-cols-3 items-stretch px-0 pt-2 pb-2.5">
           {slots.map((slot) => {
             const Icon = slot.icon;
+            const isPostSlot = slot.key === 'post';
+
+            // The post-job slot is the primary CTA — elevated vermillion pill
+            // with a white plus, distinct from the other tab links.
+            if (isPostSlot) {
+              return (
+                <Link
+                  key={slot.key}
+                  href={slot.href}
+                  onClick={slot.onClick}
+                  className="relative flex flex-col items-center justify-center gap-1 min-w-0 px-1 transition-transform active:scale-95"
+                  aria-label={t(slot.labelKey)}
+                >
+                  <span
+                    className="flex items-center justify-center w-11 h-11 rounded-full text-white shadow-md shadow-[var(--hm-brand-500)]/30"
+                    style={{ backgroundColor: 'var(--hm-brand-500)' }}
+                  >
+                    <Icon className="w-5 h-5" strokeWidth={2.5} />
+                  </span>
+                  <span
+                    className="text-[10px] font-medium tracking-[0.02em] truncate max-w-full"
+                    style={{ color: 'var(--hm-fg-muted)' }}
+                  >
+                    {t(slot.labelKey)}
+                  </span>
+                </Link>
+              );
+            }
+
             return (
               <Link
                 key={slot.key}

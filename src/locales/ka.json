@@ -778,7 +778,8 @@
     "servicesSelected": "სერვისი არჩეულია",
     "aboveMarket": "ბაზარზე მეტი",
     "belowMarket": "ბაზარზე ნაკლები",
-    "switchCategoryConfirm": "კატეგორიის შეცვლა გასუფთავებს შერჩეულ სერვისებს. გავაგრძელოთ?"
+    "switchCategoryConfirm": "კატეგორიის შეცვლა გასუფთავებს შერჩეულ სერვისებს. გავაგრძელოთ?",
+    "negotiable": "შესათანხმებელი"
   },
   "jobComments": {
     "title": "კომენტარები",

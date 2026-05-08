@@ -225,7 +225,7 @@ export default function ProfessionalsPage() {
   );
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-2 sm:space-y-3">
       <BrowseFilterBar />
       {/* CTA: Guest → Register as Pro | Client → Post a Job */}
       {!isLoading && results.length > 0 && (
@@ -233,22 +233,22 @@ export default function ProfessionalsPage() {
           {!isAuthenticated && (
             <Link
               href="/register"
-              className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gradient-to-r from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20 rounded-xl sm:rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all group"
+              className="flex items-center justify-between gap-2.5 px-3 py-2.5 sm:p-4 bg-gradient-to-r from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20 rounded-lg sm:rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all group"
             >
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[var(--hm-brand-500)]/15 flex items-center justify-center flex-shrink-0">
-                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)]" />
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[var(--hm-brand-500)]/15 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[var(--hm-brand-500)]" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate">
+                  <p className="text-[13px] sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate leading-tight">
                     {pick({ en: "Register as a Professional", ka: "დარეგისტრირდი პროფესიონალად" })}
                   </p>
-                  <p className="text-[11px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
+                  <p className="text-[10px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
                     {pick({ en: "Join and start finding clients", ka: "შემოგვიერთდი და იპოვე კლიენტები" })}
                   </p>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[var(--hm-brand-500)] flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           )}
         </>
@@ -258,10 +258,10 @@ export default function ProfessionalsPage() {
         <ProfessionalsSkeleton />
       ) : results.length > 0 ? (
         <>
-        <p className="text-xs mb-2" style={{ color: 'var(--hm-fg-muted)' }}>
+        <p className="text-[11px] mb-1.5" style={{ color: 'var(--hm-fg-muted)' }}>
           {results.length} {t("browse.resultsFound")}
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3 items-stretch">
           {results.map((profile, index) => (
             <div
               key={profile.id || `pro-${index}`}

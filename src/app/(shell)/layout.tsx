@@ -187,7 +187,7 @@ function JobsSearchInput() {
   return (
     <div className="relative w-full">
       <div
-        className={`relative flex items-center w-full h-11 rounded-xl border transition-all ${
+        className={`relative flex items-center w-full h-9 rounded-xl border transition-all ${
           isFocused
             ? "border-[var(--hm-brand-500)]/40 ring-2 ring-[var(--hm-brand-500)]/10"
             : "border-[var(--hm-border)]"
@@ -203,7 +203,7 @@ function JobsSearchInput() {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={t("browse.searchJobs")}
-          className="flex-1 h-10 pr-9 bg-transparent text-sm text-[var(--hm-fg-primary)] placeholder-neutral-400 focus:outline-none pl-10"
+          className="flex-1 h-9 pr-8 bg-transparent text-[13px] text-[var(--hm-fg-primary)] placeholder-neutral-400 focus:outline-none pl-10"
         />
         <AiSearchIndicator isSearching={isSearching} />
         {localSearch ? (
@@ -258,7 +258,7 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
   return (
     <div className="relative w-full">
       <div
-        className={`relative flex items-center w-full h-11 rounded-xl border transition-all ${
+        className={`relative flex items-center w-full h-9 rounded-xl border transition-all ${
           isFocused
             ? "border-[var(--hm-brand-500)]/40 ring-2 ring-[var(--hm-brand-500)]/10"
             : "border-[var(--hm-border)]"
@@ -274,7 +274,7 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
-          className="flex-1 h-10 pr-9 bg-transparent text-sm text-[var(--hm-fg-primary)] placeholder-neutral-400 focus:outline-none pl-10"
+          className="flex-1 h-9 pr-8 bg-transparent text-[13px] text-[var(--hm-fg-primary)] placeholder-neutral-400 focus:outline-none pl-10"
         />
         <AiSearchIndicator isSearching={isSearching} />
         {localSearch ? (
@@ -711,13 +711,13 @@ function ShellContent({ children }: { children: ReactNode }) {
           }}
         >
           {/* Post Job — top of sidebar */}
-          <div className={`pt-4 pb-2 flex-shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}>
+          <div className={`pt-3 pb-1.5 flex-shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}>
             <Link
               href="/post-job"
-              className={`group flex items-center justify-center border transition-all mb-3 ${
+              className={`group flex items-center justify-center border transition-all mb-2 ${
                 isCollapsed
-                  ? "w-10 h-10 mx-auto"
-                  : "w-full gap-2 py-2.5"
+                  ? "w-9 h-9 mx-auto"
+                  : "w-full gap-2 py-1.5"
               } hover:shadow-md`}
               style={{
                 borderColor: 'var(--hm-brand-500)',
@@ -733,7 +733,7 @@ function ShellContent({ children }: { children: ReactNode }) {
               }}
             >
               <Plus className="w-4 h-4 flex-shrink-0 transition-transform group-hover:rotate-90" />
-              {!isCollapsed && <span className="text-sm font-semibold">{t("browse.postAJob")}</span>}
+              {!isCollapsed && <span className="text-[13px] font-semibold">{t("browse.postAJob")}</span>}
             </Link>
 
             {!isCollapsed && (
@@ -751,8 +751,8 @@ function ShellContent({ children }: { children: ReactNode }) {
                   <Link
                     key={tab.key}
                     href={tab.route}
-                    className={`relative flex items-center text-[13.5px] font-medium transition-colors ${
-                      isCollapsed ? "justify-center px-2 py-2.5" : "gap-3 pl-[14px] pr-2 py-2.5"
+                    className={`relative flex items-center text-[12.5px] font-medium transition-colors ${
+                      isCollapsed ? "justify-center px-2 py-2" : "gap-3 pl-[14px] pr-2 py-2"
                     } ${
                       isActive
                         ? "font-semibold text-[var(--hm-fg-primary)]"
@@ -811,8 +811,8 @@ function ShellContent({ children }: { children: ReactNode }) {
                   )}
                   <Link
                     href="/settings"
-                    className={`flex items-center text-[13.5px] font-medium transition-colors ${
-                      isCollapsed ? "justify-center px-2 py-2.5" : "gap-3 pl-[14px] pr-2 py-2.5"
+                    className={`flex items-center text-[12.5px] font-medium transition-colors ${
+                      isCollapsed ? "justify-center px-2 py-2" : "gap-3 pl-[14px] pr-2 py-2"
                     } ${
                       settingsActive
                         ? "font-semibold text-[var(--hm-fg-primary)]"
@@ -849,14 +849,14 @@ function ShellContent({ children }: { children: ReactNode }) {
                 <div className="flex flex-col items-center gap-1.5">
                   <Link
                     href="/help"
-                    className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                     title={t("help.categories.support")}
                   >
                     <HelpCircle className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
                   </Link>
                   <a
                     href="mailto:info@homico.ge"
-                    className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                     aria-label="Email support"
                     title="info@homico.ge"
                   >
@@ -866,7 +866,7 @@ function ShellContent({ children }: { children: ReactNode }) {
                     href="https://www.facebook.com/profile.php?id=61585402505170"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                     aria-label="Facebook"
                     title="Facebook"
                   >
@@ -956,18 +956,19 @@ function ShellContent({ children }: { children: ReactNode }) {
             )}
           </div>
 
-          <div className={isMySpacePage ? "" : "p-3 sm:p-4 lg:p-6"}>
+          <div className={isMySpacePage ? "" : "p-1.5 sm:p-2 lg:p-3"}>
             <div className={`${isMySpacePage ? "" : "max-w-[1600px] mx-auto"} ${mounted ? "animate-fade-in" : "opacity-0"}`}>
               {showHeaderRow && (
                 <PageHeader
                   icon={pageHeader.icon}
+                  iconSize="sm"
                   title={pageHeader.title}
                   subtitle={pageHeader.subtitle}
                   bordered={false}
                   variant="transparent"
                   containerClassName="px-0 py-0"
                   contentClassName="max-w-none"
-                  className="hidden lg:block mb-4 sm:mb-5"
+                  className="hidden lg:block mb-1.5 sm:mb-2"
                 />
               )}
 
