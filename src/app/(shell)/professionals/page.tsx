@@ -258,9 +258,9 @@ export default function ProfessionalsPage() {
         <ProfessionalsSkeleton />
       ) : results.length > 0 ? (
         <>
-        <p className="text-[11px] mb-1.5" style={{ color: 'var(--hm-fg-muted)' }}>
-          {results.length} {t("browse.resultsFound")}
-        </p>
+        {/* Per-page result count intentionally omitted — it counted the
+            currently-loaded slice (12 from infinite scroll), not the true
+            total, so users mistook it for "only 12 pros exist". */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3 items-stretch">
           {results.map((profile, index) => (
             <div
