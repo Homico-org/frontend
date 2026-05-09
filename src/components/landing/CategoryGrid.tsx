@@ -30,15 +30,15 @@ export default function CategoryGrid({ onIntakeOpen }: CategoryGridProps) {
   );
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20">
+    <section className="py-14 sm:py-20 lg:py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <AnimatedSection className="max-w-xl mb-8 sm:mb-10">
-          <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-serif font-medium text-[var(--hm-fg-primary)] tracking-tight">
+        <AnimatedSection className="max-w-xl mb-8 sm:mb-12">
+          <span className="inline-block text-[11px] font-mono font-semibold tracking-[0.18em] uppercase text-[var(--hm-brand-500)] mb-3">
             {t("landing.categoriesTitle")}
-          </h2>
-          <p className="mt-2 text-[14px] text-[var(--hm-fg-muted)]">
+          </span>
+          <h2 className="text-2xl sm:text-3xl lg:text-[40px] font-serif font-medium text-[var(--hm-fg-primary)] tracking-[-0.01em] leading-[1.1]">
             {t("landing.categoriesTapHint")}
-          </p>
+          </h2>
         </AnimatedSection>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">

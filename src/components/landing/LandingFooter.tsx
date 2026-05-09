@@ -125,13 +125,10 @@ export default function LandingFooter({ onIntakeOpen }: LandingFooterProps) {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-10 pt-6 border-t border-[var(--hm-n-800)] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="mt-10 pt-6 border-t border-[var(--hm-n-800)]">
           <p className="text-[11px] text-[var(--hm-fg-muted)]">
             © {new Date().getFullYear()} {t("landing.footerCopyright")}.{" "}
             {t("landing.footerAllRights")}
-          </p>
-          <p className="text-[11px] text-[var(--hm-fg-muted)]">
-            {t("about.tbilisiGeorgia")}
           </p>
         </div>
       </div>

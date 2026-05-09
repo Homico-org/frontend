@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ArrowRight } from "lucide-react";
 
 import { AnimatedSection } from "./_internal";
 
@@ -16,29 +16,51 @@ export default function LandingFooterCta({
 
   return (
     <AnimatedSection>
-      <section className="py-10 sm:py-12 bg-gradient-to-r from-[var(--hm-brand-500)] to-[var(--hm-brand-600)] relative overflow-hidden">
+      <section
+        className="relative py-14 sm:py-20 overflow-hidden"
+        style={{
+          background:
+            "linear-gradient(135deg, var(--hm-brand-500) 0%, var(--hm-brand-700) 100%)",
+        }}
+      >
+        {/* Layered dot texture for depth */}
         <div
-          className="absolute inset-0 opacity-10"
+          aria-hidden
+          className="absolute inset-0 opacity-[0.12]"
           style={{
             backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
             backgroundSize: "32px 32px",
           }}
         />
+        {/* Soft inner glow top */}
+        <div
+          aria-hidden
+          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[800px] h-[480px] rounded-full opacity-30 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(ellipse, white 0%, transparent 70%)",
+          }}
+        />
+
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
+          <h2 className="text-2xl sm:text-3xl lg:text-[40px] font-serif font-medium text-white tracking-[-0.01em] leading-[1.15]">
             {t("landing.finalCtaTitle")}
           </h2>
-          <p className="mt-2 text-[13px] text-white/80 max-w-lg mx-auto">
+          <p className="mt-3 text-[14px] sm:text-[15px] text-white/85 max-w-xl mx-auto leading-relaxed">
             {t("landing.finalCtaSubtitleConcierge")}
           </p>
-          <div className="mt-5 flex justify-center">
-            <Button
-              size="lg"
+          <div className="mt-7 sm:mt-8 flex justify-center">
+            {/* White pill on vermillion ground — pops, doesn't blend.
+                Inline arrow + group-hover translate gives the button a
+                sense of forward motion. */}
+            <button
+              type="button"
               onClick={onIntakeOpen}
-              className="h-10 sm:h-11 px-6 text-[13px] font-semibold bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] hover:bg-[var(--hm-bg-tertiary)] shadow-lg flex items-center justify-center"
+              className="group inline-flex items-center gap-2.5 px-7 py-3.5 sm:px-8 sm:py-4 rounded-full bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] text-[14px] sm:text-[15px] font-semibold shadow-xl shadow-black/10 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-0.5 transition-all"
             >
               {t("concierge.requestQuote")}
-            </Button>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            </button>
           </div>
         </div>
       </section>

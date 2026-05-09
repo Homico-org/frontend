@@ -96,7 +96,7 @@ export default function CategoryScroller({
               type="button"
               onClick={() => scrollBy(-280)}
               aria-label="Previous"
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:shadow-md"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full flex items-center justify-center transition-all hover:shadow-md"
               style={{
                 background: "var(--hm-bg-elevated)",
                 border: "1px solid var(--hm-border-subtle)",
@@ -122,7 +122,7 @@ export default function CategoryScroller({
               type="button"
               onClick={() => scrollBy(280)}
               aria-label="Next"
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full flex items-center justify-center transition-all hover:shadow-md"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full flex items-center justify-center transition-all hover:shadow-md"
               style={{
                 background: "var(--hm-bg-elevated)",
                 border: "1px solid var(--hm-border-subtle)",
@@ -153,18 +153,18 @@ export default function CategoryScroller({
                   key={cat.key}
                   type="button"
                   onClick={() => handleCategoryClick(cat.key)}
-                  className="group shrink-0 relative flex flex-col items-center gap-1 px-2.5 py-1.5 sm:px-3 focus:outline-none focus-visible:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
+                  className="group shrink-0 relative flex items-center gap-1.5 px-3 py-2 focus:outline-none focus-visible:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
                 >
                   <CategoryIcon
                     type={cat.icon || cat.key}
-                    className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
+                    className={`w-3.5 h-3.5 transition-colors ${
                       isActive
                         ? "text-[var(--hm-brand-500)]"
-                        : "text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-fg-primary)]"
+                        : "text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-fg-primary)]"
                     }`}
                   />
                   <span
-                    className={`text-[10px] sm:text-[11px] leading-none whitespace-nowrap tracking-tight transition-colors ${
+                    className={`text-[12px] leading-none whitespace-nowrap tracking-tight transition-colors ${
                       isActive
                         ? "font-semibold text-[var(--hm-brand-500)]"
                         : "font-medium text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-fg-primary)]"
@@ -173,7 +173,7 @@ export default function CategoryScroller({
                     {pick({ en: cat.name, ka: cat.nameKa })}
                   </span>
                   <span
-                    className="absolute left-4 right-4 -bottom-px h-[2.5px] rounded-t-full transition-all duration-200"
+                    className="absolute left-3 right-3 -bottom-px h-[2px] rounded-t-full transition-all duration-200"
                     style={{
                       background: "var(--hm-brand-500)",
                       opacity: isActive ? 1 : 0,

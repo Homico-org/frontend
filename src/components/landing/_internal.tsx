@@ -91,9 +91,11 @@ export function TextReveal({
 export function GlassCard({
   children,
   className = "",
+  style,
 }: {
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   return (
     <div
@@ -101,6 +103,7 @@ export function GlassCard({
       style={{
         backgroundColor:
           "color-mix(in srgb, var(--hm-bg-elevated) 70%, transparent)",
+        ...style,
       }}
     >
       {children}

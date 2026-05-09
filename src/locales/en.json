@@ -463,7 +463,7 @@
   "browse": {
     "title": "Browse",
     "professionals": "Professionals",
-    "professionalsSubtitle": "Find verified pros for your project",
+    "professionalsSubtitle": "Verified pros in Tbilisi",
     "jobs": "Jobs",
     "jobsSubtitle": "Browse open jobs and find your next project",
     "allJobs": "All Jobs",
@@ -2891,7 +2891,6 @@
         "description": "No sign-up, no subscription, no card on file. You only pay the pro you hire."
       }
     },
-    "tbilisiGeorgia": "Made in Tbilisi, Georgia",
     "termsOfService": "Terms Of Service",
     "todayHomicoConnectsThousandsOf": "Today we're a small team in Tbilisi, matching clients with the right pro one request at a time. No inflated directories — just humans doing the work.",
     "weDecidedToCreateA": "We took a different approach. Instead of another marketplace, we built a team service: you tell us what you need, we talk to our pros, collect quotes, and call you back the same day."
@@ -3042,7 +3041,9 @@
     "footerCopyright": "Homico",
     "footerAllRights": "All rights reserved",
     "positionStatement": "Homico — vetted renovation pros in Tbilisi. Clear quotes, real reviews, no chasing.",
-    "heroIAmAProCta": "I'm a pro →"
+    "heroIAmAProCta": "I'm a pro →",
+    "howItWorksEyebrow": "How it works",
+    "trustBandEyebrow": "Why Homico"
   },
   "footer": {
     "aboutUs": "About Us",

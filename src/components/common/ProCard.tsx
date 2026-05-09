@@ -9,7 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { storage } from "@/services/storage";
 import { ProProfile, ProStatus } from "@/types";
-import { Briefcase, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, Play, Sparkles, Star, Wallet, Zap } from "lucide-react";
+import { ArrowUpRight, Briefcase, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, MapPin, Play, Sparkles, Star, Wallet, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -350,13 +350,14 @@ export default function ProCard({
   }
 
   // Default / Compact variant — unified card with portfolio photos
+  const hasMedia = mediaSlides.length > 0;
   return (
     <Link ref={cardRef} href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} — ${t('browse.professionals')}`}>
-      <div className={`relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] shadow-sm group-hover:border-[var(--hm-brand-500)]/25 transition-all duration-300 group-hover:shadow-lg ${isPremium ? 'ring-1 ring-amber-300/30' : ''}`}>
+      <div className={`relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] shadow-sm group-hover:border-[var(--hm-brand-500)]/30 transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-0.5 ${isPremium ? 'ring-1 ring-amber-300/30' : ''}`}>
 
         {/* Portfolio media carousel — wide-and-short aspect so the photo
             doesn't dominate the card. */}
-        {mediaSlides.length > 0 ? (
+        {hasMedia ? (
           <div
             className="relative aspect-[2/1] bg-[var(--hm-bg-tertiary)] overflow-hidden"
             onMouseEnter={() => setIsHovered(true)}
@@ -447,45 +448,63 @@ export default function ProCard({
             )}
           </div>
         ) : (
-          <div className="relative aspect-[2/1] bg-gradient-to-br from-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] flex items-center justify-center">
-            <div className="text-center">
-              <Camera className="w-5 h-5 text-[var(--hm-fg-muted)] mx-auto mb-1" />
-              <span className="text-[10px] text-[var(--hm-fg-muted)]">{t('professional.noPortfolioItemsYet')}</span>
-            </div>
+          // No portfolio: thin tinted band with a subtle dot texture, not a
+          // tall empty gray rectangle. The dotted texture + brand gradient
+          // reads "intentional layout" rather than "missing image" and saves
+          // ~140px of vertical card height vs. the old aspect-[2/1] placeholder.
+          <div
+            aria-hidden
+            className="relative h-7 sm:h-8 overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(135deg, color-mix(in srgb, var(--hm-brand-500) 18%, var(--hm-bg-elevated)) 0%, color-mix(in srgb, var(--hm-brand-500) 6%, var(--hm-bg-elevated)) 100%)",
+            }}
+          >
+            <div
+              className="absolute inset-0 opacity-40"
+              style={{
+                backgroundImage: `radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--hm-brand-500) 35%, transparent) 1px, transparent 0)`,
+                backgroundSize: "10px 10px",
+              }}
+            />
           </div>
         )}
 
-        {/* Avatar overlapping carousel bottom */}
-        <div className="relative -mt-4 ml-2 sm:ml-2.5 mb-0">
-          <div className="w-8 h-8 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] ring-2 ring-white shadow-sm relative">
+        {/* Avatar overlap. Larger when there's no media (it becomes the card's
+            visual anchor). Smaller when overlapping a photo. */}
+        <div className={`relative ${hasMedia ? '-mt-5 ml-3' : '-mt-5 ml-3'} mb-0`}>
+          <div className={`${hasMedia ? 'w-9 h-9 sm:w-10 sm:h-10' : 'w-12 h-12 sm:w-14 sm:h-14'} rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] ring-[3px] ring-[var(--hm-bg-elevated)] shadow-sm relative transition-all`}>
             {avatarUrl && !imageError ? (
               <Image
                 src={avatarUrl}
                 alt={profile.name}
                 fill
-                sizes="32px"
+                sizes="56px"
                 className="object-cover"
                 onError={() => setImageError(true)}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs font-bold text-[var(--hm-fg-muted)]">
+              <div className={`w-full h-full flex items-center justify-center font-bold text-[var(--hm-fg-muted)] ${hasMedia ? 'text-xs' : 'text-lg'}`}>
                 {profile.name.charAt(0)}
               </div>
+            )}
+            {isOnline && (
+              <span
+                className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[var(--hm-success-500)] ring-2 ring-[var(--hm-bg-elevated)]"
+                title="Online"
+              />
             )}
           </div>
         </div>
 
-        {/* Card body — minimal padding */}
-        <div className="flex-1 flex flex-col px-2 pb-2 pt-1 sm:px-2.5 sm:pb-2.5">
+        {/* Card body — comfortable padding */}
+        <div className="flex-1 flex flex-col px-3 pb-3 pt-1.5 sm:px-3.5 sm:pb-3.5">
           {/* Pro identity */}
-          <div className="mb-1">
+          <div className="mb-1.5">
             <div className="flex items-center gap-1.5">
-                <h3 className="font-semibold text-[13px] sm:text-sm text-[var(--hm-fg-primary)] truncate group-hover:text-[var(--hm-brand-500)] transition-colors leading-tight">
+                <h3 className="font-semibold text-[14px] sm:text-[15px] text-[var(--hm-fg-primary)] truncate group-hover:text-[var(--hm-brand-500)] transition-colors leading-tight">
                   {profile.name}
                 </h3>
-                {isOnline && (
-                  <span className="w-2 h-2 rounded-full bg-[var(--hm-success-500)] shrink-0" title="Online" />
-                )}
                 {profile.verificationStatus === 'verified' && (
                   <CheckCircle2 className="w-3.5 h-3.5 text-[var(--hm-success-500)] flex-shrink-0" />
                 )}
@@ -495,8 +514,8 @@ export default function ProCard({
                   </span>
                 )}
             </div>
-            {/* Rating */}
-            <div className="flex items-center gap-1.5 mt-0.5">
+            {/* Rating + city — co-located with subtle separator */}
+            <div className="flex items-center gap-1.5 mt-1 text-[11px] text-[var(--hm-fg-muted)]">
               {(profile.totalReviews || 0) > 0 ? (
                 <StarRating
                   rating={profile.avgRating > 0 ? profile.avgRating : 5.0}
@@ -509,11 +528,20 @@ export default function ProCard({
                   {t('card.new')}
                 </Badge>
               )}
+              {profile.city && (
+                <>
+                  <span className="opacity-50">·</span>
+                  <span className="inline-flex items-center gap-0.5 truncate max-w-[100px]">
+                    <MapPin className="w-3 h-3 shrink-0" strokeWidth={1.75} />
+                    <span className="truncate">{profile.city}</span>
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
           {/* Stats row */}
-          <div className="flex items-center gap-1.5 text-[10px] text-[var(--hm-fg-muted)] mb-1.5 flex-wrap">
+          <div className="flex items-center gap-1.5 text-[11px] text-[var(--hm-fg-muted)] mb-2 flex-wrap">
             {matchedExperience && (
               <>
                 <span className="flex items-center gap-1">
@@ -550,16 +578,17 @@ export default function ProCard({
             )}
           </div>
 
-          {/* Service pills — each shows "name · from N₾" when a structured
-              price exists in servicePricing for that subcategory/service. */}
-          <div className="flex flex-wrap gap-1 mt-auto">
+          {/* Service pills — rounded, subtly bordered. Show "name · N₾" when
+              a structured price exists in servicePricing for that
+              subcategory/service. */}
+          <div className="flex flex-wrap gap-1">
             {displaySubcats.map((key) => {
               const label = catalogLabelMap.get(key) || getCategoryLabel(key);
               const price = subcatMinPrice.get(key);
               return (
                 <span
                   key={key}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)]"
+                  className="inline-flex items-center gap-1 px-2 py-[3px] rounded-md text-[11px] font-medium text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border-subtle)]/50"
                 >
                   <span className="truncate max-w-[120px]">{label}</span>
                   {price !== undefined && (
@@ -571,7 +600,7 @@ export default function ProCard({
               );
             })}
             {remainingSubcats > 0 && (
-              <span className="px-2 py-0.5 text-[10px] font-semibold text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10">
+              <span className="px-2 py-[3px] rounded-md text-[11px] font-semibold text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 border border-[var(--hm-brand-500)]/15">
                 +{remainingSubcats}
               </span>
             )}
@@ -586,6 +615,16 @@ export default function ProCard({
             </div>
           </div>
         )}
+
+        {/* Hover-reveal "open" affordance — sits over the bottom-right
+            corner. Hidden until hover so it doesn't compete with the card
+            content at rest. */}
+        <div
+          aria-hidden
+          className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none"
+        >
+          <ArrowUpRight className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+        </div>
       </div>
     </Link>
   );

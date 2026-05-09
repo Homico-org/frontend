@@ -236,11 +236,6 @@ export default function AboutPage(): React.ReactElement {
             </Button>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-[var(--hm-border-subtle)]">
-            <p className="text-sm text-[var(--hm-fg-muted)]">
-              {t('about.tbilisiGeorgia')}
-            </p>
-          </div>
         </div>
       </section>
 

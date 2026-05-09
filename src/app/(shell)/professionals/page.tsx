@@ -241,10 +241,10 @@ export default function ProfessionalsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-[13px] sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate leading-tight">
-                    {pick({ en: "Register as a Professional", ka: "დარეგისტრირდი პროფესიონალად" })}
+                    {pick({ en: "Register as a Professional", ka: "დარეგისტრირდით პროფესიონალად" })}
                   </p>
                   <p className="text-[10px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
-                    {pick({ en: "Join and start finding clients", ka: "შემოგვიერთდი და იპოვე კლიენტები" })}
+                    {pick({ en: "Join and start finding clients", ka: "შემოგვიერთდით და იპოვეთ კლიენტები" })}
                   </p>
                 </div>
               </div>
@@ -261,11 +261,11 @@ export default function ProfessionalsPage() {
         {/* Per-page result count intentionally omitted — it counted the
             currently-loaded slice (12 from infinite scroll), not the true
             total, so users mistook it for "only 12 pros exist". */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3 items-start">
           {results.map((profile, index) => (
             <div
               key={profile.id || `pro-${index}`}
-              className="animate-stagger h-full"
+              className="animate-stagger"
               style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
             >
               <ProCard

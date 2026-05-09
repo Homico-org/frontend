@@ -20,23 +20,39 @@ export default function ClientCta({ onIntakeOpen }: ClientCtaProps) {
   ];
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20">
+    <section className="py-14 sm:py-20 lg:py-24">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
         <AnimatedSection>
-          <GlassCard className="rounded-2xl p-6 sm:p-10 hover:border-[var(--hm-brand-500)]/30 transition-all duration-500 hover:shadow-xl">
+          <GlassCard
+            className="relative rounded-3xl p-6 sm:p-10 hover:-translate-y-0.5 transition-all duration-500 overflow-hidden"
+            style={{
+              backgroundImage:
+                "linear-gradient(135deg, color-mix(in srgb, var(--hm-brand-500) 6%, var(--hm-bg-elevated)) 0%, var(--hm-bg-elevated) 60%)",
+              borderColor: "color-mix(in srgb, var(--hm-brand-500) 20%, transparent)",
+            }}
+          >
+            {/* Decorative vermillion glow top-right */}
             <div
-              className="w-14 h-14 rounded-full flex items-center justify-center mb-5"
+              aria-hidden
+              className="absolute -top-24 -right-24 w-[280px] h-[280px] rounded-full opacity-25 blur-3xl"
               style={{
-                backgroundColor:
-                  "color-mix(in srgb, var(--hm-brand-500) 10%, transparent)",
+                background:
+                  "radial-gradient(circle, var(--hm-brand-500) 0%, transparent 70%)",
+              }}
+            />
+            <div className="relative">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
+              style={{
+                backgroundColor: "var(--hm-brand-500)",
               }}
             >
               <Briefcase
-                className="w-6 h-6 text-[var(--hm-brand-500)]"
-                strokeWidth={1.75}
+                className="w-6 h-6 text-white"
+                strokeWidth={2}
               />
             </div>
-            <h3 className="text-2xl sm:text-3xl font-serif font-medium text-[var(--hm-fg-primary)] tracking-tight">
+            <h3 className="text-2xl sm:text-3xl lg:text-[34px] font-serif font-medium text-[var(--hm-fg-primary)] tracking-[-0.01em] leading-[1.15]">
               {t("landing.clientCtaTitle")}
             </h3>
             <p className="mt-2 text-[14px] sm:text-[15px] text-[var(--hm-fg-secondary)] leading-relaxed">
@@ -70,6 +86,7 @@ export default function ClientCta({ onIntakeOpen }: ClientCtaProps) {
               <span className="text-[12px] text-[var(--hm-fg-muted)]">
                 {t("landing.clientCtaTrailing")}
               </span>
+            </div>
             </div>
           </GlassCard>
         </AnimatedSection>
