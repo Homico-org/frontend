@@ -58,3 +58,4 @@ public/workbox-*.js
 *storybook.log
 storybook-static
 .playwright-cli/
+public/fallback-*.js

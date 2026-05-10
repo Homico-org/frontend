@@ -1640,26 +1640,28 @@ export default function ProfessionalDetailClient({
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex justify-between items-center">
-            <Button
-              variant="ghost"
-              size="sm"
+            {/* Minimal ghost icon — no pill bg, no border. Hover reveals
+                vermillion hint. Cleaner and less visually intrusive. */}
+            <button
+              type="button"
               onClick={() => backOrNavigate(router, "/professionals")}
-              className="rounded-xl bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)] transition-all h-9 sm:h-10 px-2.5 sm:px-3"
-              leftIcon={<ChevronLeft className="w-4 h-4" />}
+              aria-label={t("common.back")}
+              className="group inline-flex items-center gap-1.5 text-[13px] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors p-1 -ml-1"
             >
-              <span className="hidden sm:inline">{t("common.back")}</span>
-            </Button>
+              <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" strokeWidth={2} />
+              <span className="hidden sm:inline font-medium">{t("common.back")}</span>
+            </button>
 
             <div className="relative">
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
                 onClick={() => setShowShareMenu(!showShareMenu)}
-                className="rounded-xl bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)] transition-all h-9 sm:h-10 px-2.5 sm:px-3"
-                leftIcon={<Share2 className="w-4 h-4" />}
+                aria-label={t("common.share")}
+                className="group inline-flex items-center gap-1.5 text-[13px] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors p-1 -mr-1"
               >
-                <span className="hidden sm:inline">{t("common.share")}</span>
-              </Button>
+                <Share2 className="w-4 h-4" strokeWidth={2} />
+                <span className="hidden sm:inline font-medium">{t("common.share")}</span>
+              </button>
 
               {showShareMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-[var(--hm-bg-elevated)] rounded-xl shadow-xl border border-[var(--hm-border)] py-1.5 sm:py-2 min-w-[160px] sm:min-w-[180px] animate-in fade-in slide-in-from-top-2 duration-200 z-50">
@@ -1729,7 +1731,7 @@ export default function ProfessionalDetailClient({
                   className="cursor-zoom-in group p-0 h-auto hover:bg-transparent"
                   aria-label={t("professional.zoomAvatar")}
                 >
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden ring-4 ring-[var(--hm-bg-elevated)] shadow-xl">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden ring-[3px] ring-[var(--hm-bg-elevated)] shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                     <Image
                       src={avatarSrc}
                       alt={profile.name}
@@ -1740,7 +1742,7 @@ export default function ProfessionalDetailClient({
                   </div>
                 </Button>
               ) : (
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-[var(--hm-brand-500)] to-[#A92B08] ring-4 ring-[var(--hm-bg-elevated)] shadow-xl">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-white text-2xl font-serif font-medium bg-gradient-to-br from-[var(--hm-brand-500)] to-[#A92B08] ring-[3px] ring-[var(--hm-bg-elevated)] shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                   {profile.name.charAt(0)}
                 </div>
               )}
@@ -1782,7 +1784,7 @@ export default function ProfessionalDetailClient({
                 </div>
               ) : (
                 <div className="flex items-center gap-2 mb-0.5">
-                  <h1 className="text-lg sm:text-2xl font-bold text-[var(--hm-fg-primary)] tracking-tight leading-tight break-words line-clamp-2">
+                  <h1 className="text-xl sm:text-3xl font-serif font-medium text-[var(--hm-fg-primary)] tracking-[-0.01em] leading-[1.1] break-words line-clamp-2">
                     {profile.name}
                   </h1>
                   {canEdit && (
@@ -1946,6 +1948,34 @@ export default function ProfessionalDetailClient({
               </div>
             )}
           </div>
+
+          {/* Phone CTA - inline in mobile card so it's always visible for
+              visitors, not dependent on the floating-button scroll trigger
+              which can mis-fire for admin views. */}
+          {!isOwner && (
+            <div className="mt-4 pt-4 border-t border-[var(--hm-border-subtle)]">
+              {phoneRevealed && profile.phone ? (
+                <a
+                  href={`tel:${profile.phone.replace(/\s/g, "")}`}
+                  className="block w-full py-3 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-md shadow-emerald-500/25 text-center"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    {formatGeorgianPhoneDisplay(profile.phone)}
+                  </span>
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleContact}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-[var(--hm-brand-500)] to-[#A92B08] shadow-md shadow-[var(--hm-brand-500)]/25"
+                >
+                  <Phone className="w-4 h-4" />
+                  {t("professional.showPhone")}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -1986,10 +2016,19 @@ export default function ProfessionalDetailClient({
                     show: { opacity: 1, y: 0 },
                   }}
                   transition={{ duration: 0.35 }}
-                  className="p-5 flex flex-col items-center"
+                  className="p-6 flex flex-col items-center relative"
                 >
-                  {/* Avatar */}
-                  <div className="relative mb-3">
+                  {/* Subtle vermillion glow behind avatar - editorial flourish */}
+                  <div
+                    aria-hidden
+                    className="absolute top-0 left-0 right-0 h-32 opacity-60 pointer-events-none"
+                    style={{
+                      background:
+                        "radial-gradient(ellipse 60% 80% at center top, color-mix(in srgb, var(--hm-brand-500) 8%, transparent) 0%, transparent 70%)",
+                    }}
+                  />
+                  {/* Avatar - larger, circular, with refined ring */}
+                  <div className="relative mb-4 z-10">
                     {avatarUrl ? (
                       <Button
                         type="button"
@@ -1998,27 +2037,26 @@ export default function ProfessionalDetailClient({
                         className="cursor-zoom-in group p-0 h-auto hover:bg-transparent"
                         aria-label={t("professional.zoomAvatar")}
                       >
-                        <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-[var(--hm-bg-elevated)] shadow-xl group-hover:shadow-2xl transition-all duration-300">
+                        <div className="w-28 h-28 rounded-full overflow-hidden ring-[3px] ring-[var(--hm-bg-elevated)] shadow-[0_8px_24px_rgba(0,0,0,0.08)] group-hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-all duration-300">
                           <Image
                             src={avatarSrc}
                             alt={profile.name}
-                            width={96}
-                            height={96}
+                            width={112}
+                            height={112}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         </div>
                       </Button>
                     ) : (
-                      <div className="w-24 h-24 rounded-2xl flex items-center justify-center text-white text-3xl font-bold bg-gradient-to-br from-[var(--hm-brand-500)] to-[#A92B08] ring-4 ring-[var(--hm-bg-elevated)] shadow-xl">
+                      <div className="w-28 h-28 rounded-full flex items-center justify-center text-white text-4xl font-serif font-medium bg-gradient-to-br from-[var(--hm-brand-500)] to-[#A92B08] ring-[3px] ring-[var(--hm-bg-elevated)] shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                         {profile.name.charAt(0)}
                       </div>
                     )}
                     {profile.verificationStatus === "verified" && (
-                      <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full bg-[var(--hm-success-500)] border-[3px] border-[var(--hm-bg-elevated)] flex items-center justify-center shadow-lg">
+                      <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[var(--hm-success-500)] border-[3px] border-[var(--hm-bg-elevated)] flex items-center justify-center shadow-md">
                         <BadgeCheck className="w-4 h-4 text-white" />
                       </div>
                     )}
-                    {/* Availability dot removed */}
                   </div>
 
                   {/* Name */}
@@ -2050,8 +2088,8 @@ export default function ProfessionalDetailClient({
                       </Button>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <h1 className="text-lg font-bold text-[var(--hm-fg-primary)] text-center">
+                    <div className="flex items-center gap-1.5 mb-1 z-10">
+                      <h1 className="text-xl font-serif font-medium text-[var(--hm-fg-primary)] text-center tracking-[-0.01em] leading-[1.15]">
                         {profile.name}
                       </h1>
                       {canEdit && (
@@ -2775,14 +2813,19 @@ export default function ProfessionalDetailClient({
               {/* PORTFOLIO SECTION */}
               {(portfolioProjects.length > 0 || isOwner) && (
                 <section>
-                  <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-4 flex items-center gap-2">
-                    {t("professional.portfolio")}
-                    {portfolioProjects.length > 0 && (
-                      <span className="text-xs font-normal text-[var(--hm-fg-muted)]">
-                        {portfolioProjects.length}
-                      </span>
-                    )}
-                  </h2>
+                  <div className="mb-5 flex items-baseline gap-3">
+                    <span className="text-[11px] font-mono font-semibold tracking-[0.2em] text-[var(--hm-brand-500)]">
+                      01
+                    </span>
+                    <h2 className="text-2xl sm:text-[28px] font-serif font-medium text-[var(--hm-fg-primary)] tracking-[-0.01em] leading-[1.1] flex items-baseline gap-2.5">
+                      {t("professional.portfolio")}
+                      {portfolioProjects.length > 0 && (
+                        <span className="text-base font-mono font-normal text-[var(--hm-fg-muted)]">
+                          {portfolioProjects.length}
+                        </span>
+                      )}
+                    </h2>
+                  </div>
                   <PortfolioTab
                     projects={getUnifiedProjects().map((p) => ({
                       id: p.id,
@@ -2827,9 +2870,14 @@ export default function ProfessionalDetailClient({
 
               {/* ABOUT SECTION */}
               <section>
-                <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-4">
-                  {t("professional.about")}
-                </h2>
+                <div className="mb-5 flex items-baseline gap-3">
+                  <span className="text-[11px] font-mono font-semibold tracking-[0.2em] text-[var(--hm-brand-500)]">
+                    {portfolioProjects.length > 0 || isOwner ? '02' : '01'}
+                  </span>
+                  <h2 className="text-2xl sm:text-[28px] font-serif font-medium text-[var(--hm-fg-primary)] tracking-[-0.01em] leading-[1.1]">
+                    {t("professional.about")}
+                  </h2>
+                </div>
                 <AboutTab
                   bio={profile.bio}
                   customServices={profile.customServices}
@@ -2874,14 +2922,19 @@ export default function ProfessionalDetailClient({
 
               {/* REVIEWS SECTION */}
               <section>
-                <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-4 flex items-center gap-2">
-                  {t("professional.reviewsLabel")}
-                  {(reviews.length || profile.totalReviews) > 0 && (
-                    <span className="text-xs font-normal text-[var(--hm-fg-muted)]">
-                      {reviews.length || profile.totalReviews}
-                    </span>
-                  )}
-                </h2>
+                <div className="mb-5 flex items-baseline gap-3">
+                  <span className="text-[11px] font-mono font-semibold tracking-[0.2em] text-[var(--hm-brand-500)]">
+                    {portfolioProjects.length > 0 || isOwner ? '03' : '02'}
+                  </span>
+                  <h2 className="text-2xl sm:text-[28px] font-serif font-medium text-[var(--hm-fg-primary)] tracking-[-0.01em] leading-[1.1] flex items-baseline gap-2.5">
+                    {t("professional.reviewsLabel")}
+                    {(reviews.length || profile.totalReviews) > 0 && (
+                      <span className="text-base font-mono font-normal text-[var(--hm-fg-muted)]">
+                        {reviews.length || profile.totalReviews}
+                      </span>
+                    )}
+                  </h2>
+                </div>
                 <ReviewsTab
                   reviews={reviews}
                   avgRating={profile.avgRating}

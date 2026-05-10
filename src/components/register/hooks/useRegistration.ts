@@ -572,6 +572,9 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         setIsLoading(false);
       }
     },
+    // submitRegistration is declared later in this hook; intentionally omitted
+    // to keep the OTP verifier callback stable across renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [phoneCountry, formData.phone, phoneOtp, pick],
   );
 

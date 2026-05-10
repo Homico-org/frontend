@@ -335,7 +335,7 @@ export function useProRegistration(): UseProRegistrationReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [phone, phoneCountry, fullName, city, password, uploadedAvatarUrl, selectedServices, login, pick]);
+  }, [phone, phoneCountry, fullName, city, password, uploadedAvatarUrl, selectedServices, login, pick, router]);
   
   const handleNext = useCallback(async () => {
     setError('');

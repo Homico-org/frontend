@@ -174,27 +174,24 @@ export default function AboutTab({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Bio */}
-      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-6 shadow-sm border border-[var(--hm-border-subtle)] group relative">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider">
-            {t('professional.about')}
-          </h3>
-          {isOwner && !isEditingBio && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => {
-                setEditBio(bio || '');
-                setIsEditingBio(true);
-              }}
-              className="rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)]"
-              aria-label={t('common.edit')}
-            >
-              <Edit3 className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
+      {/* Bio. The parent section header already says "About" — no need for
+          a duplicate inner label. We keep just the edit affordance for owners,
+          floated to the top-right. */}
+      <div className="bg-[var(--hm-bg-elevated)] rounded-2xl px-6 py-7 sm:px-8 sm:py-9 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-[var(--hm-border-subtle)] group relative">
+        {isOwner && !isEditingBio && (bio || isOwner) && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => {
+              setEditBio(bio || '');
+              setIsEditingBio(true);
+            }}
+            className="absolute top-4 right-4 rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-border)]"
+            aria-label={t('common.edit')}
+          >
+            <Edit3 className="w-4 h-4" />
+          </Button>
+        )}
 
         {isEditingBio ? (
           <div className="space-y-3">
@@ -226,7 +223,7 @@ export default function AboutTab({
             </div>
           </div>
         ) : bio ? (
-          <p className="text-[var(--hm-fg-secondary)] leading-relaxed whitespace-pre-wrap">
+          <p className="text-[15px] sm:text-base text-[var(--hm-fg-secondary)] leading-[1.7] whitespace-pre-wrap">
             {bio}
           </p>
         ) : isOwner ? (
@@ -243,11 +240,16 @@ export default function AboutTab({
         )}
       </div>
 
-      {/* Services Grid */}
+      {/* Custom services (free-text "specialties" the pro types). The
+          structured priced services live in the sidebar / mobile services
+          card, so we suppress this empty state for visitors when no custom
+          services exist - the "Not specified" message reads as broken when
+          they can clearly see priced services elsewhere on the page. */}
+      {(isOwner || (customServices && customServices.length > 0)) && (
       <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-6 shadow-sm border border-[var(--hm-border-subtle)] group relative">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider">
-            {t('professional.services')}
+            {t('professional.specialties')}
           </h3>
           {isOwner && !isEditingServices && (
             <Button
@@ -342,6 +344,7 @@ export default function AboutTab({
           <p className="text-[var(--hm-fg-muted)] italic">{t('professional.noServicesListed')}</p>
         )}
       </div>
+      )}
 
       {/* Social Links - Only visible to owner for editing (visitors see them in hero) */}
       {isOwner && (
