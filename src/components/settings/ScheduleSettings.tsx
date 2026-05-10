@@ -152,7 +152,7 @@ export default function ScheduleSettings() {
                       onChange={(h) => updateDay(dayInfo.dayOfWeek, { startHour: h })}
                       hours={HOURS}
                     />
-                    <span className="text-[var(--hm-fg-muted)] text-xs">–</span>
+                    <span className="text-[var(--hm-fg-muted)] text-xs">-</span>
                     <TimePicker
                       value={day.endHour}
                       onChange={(h) => updateDay(dayInfo.dayOfWeek, { endHour: h })}

@@ -265,6 +265,12 @@ export default function ProfessionalDetailClient({
   const fetchProfileAbortRef = useRef<AbortController | null>(null);
   const profileFetchInFlightRef = useRef<string | null>(null);
   const profileViewTrackedRef = useRef<string | null>(null);
+  // Tracks which paramId we've already done a fresh client fetch for. The
+  // server-rendered `initialProfile` is fetched with `next: { revalidate: 60 }`
+  // and can be up to 60s stale - critical when the pro just finished
+  // profile-setup and lands here expecting their new data. We always run one
+  // client-side refetch on mount (per paramId) to bypass that cache.
+  const freshFetchedForRef = useRef<string | null>(null);
 
   useEffect(() => {
     setIsVisible(true);
@@ -296,12 +302,14 @@ export default function ProfessionalDetailClient({
 
   useEffect(() => {
     if (!paramId) return;
-    // If server already provided the right profile, avoid an extra client fetch.
-    if (
+    // We've already done a fresh client fetch for this paramId in this mount.
+    // Avoids refetching on every parent re-render. Resets when paramId changes
+    // (route change).
+    const matchesProfile =
       profile &&
       (profile.id === paramId ||
-        (profile.uid !== undefined && String(profile.uid) === String(paramId)))
-    ) {
+        (profile.uid !== undefined && String(profile.uid) === String(paramId)));
+    if (freshFetchedForRef.current === paramId && matchesProfile) {
       setIsLoading(false);
       return;
     }
@@ -320,6 +328,7 @@ export default function ProfessionalDetailClient({
         });
         const data = response.data;
         setProfile(data);
+        freshFetchedForRef.current = paramId;
       } catch (err) {
         // Ignore aborts (navigation / StrictMode cleanup)
         if ((err as any)?.name === "CanceledError") return;
@@ -1928,7 +1937,7 @@ export default function ProfessionalDetailClient({
             {profile.avgRating > 0 && (
               <div className="text-center">
                 <p className="text-base font-bold text-[var(--hm-fg-primary)] flex items-center justify-center gap-1">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-[var(--hm-warning-500)]" />
+                  <Star className="w-3.5 h-3.5" strokeWidth={1.75} style={{ fill: 'var(--hm-fg-primary)', color: 'var(--hm-fg-primary)' }} />
                   {profile.avgRating.toFixed(1)}
                 </p>
                 <p className="text-[10px] text-[var(--hm-fg-muted)]">
@@ -2233,42 +2242,25 @@ export default function ProfessionalDetailClient({
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
+                            whileHover={{ y: -1 }}
+                            whileTap={{ scale: 0.98 }}
                             transition={{
                               type: "spring",
                               stiffness: 400,
                               damping: 25,
                             }}
                             onClick={handleContact}
-                            className="relative w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-[var(--hm-brand-500)] via-[#D13C14] to-[#A92B08] shadow-lg shadow-[var(--hm-brand-500)]/25 overflow-hidden"
+                            className="relative w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-semibold text-sm overflow-hidden"
+                            style={{
+                              background: 'var(--hm-brand-500)',
+                              boxShadow: '0 4px 14px -4px rgba(239,78,36,0.40)',
+                            }}
                           >
-                            {/* Shine sweep */}
-                            <motion.div
-                              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
-                              initial={{ x: "-100%" }}
-                              animate={{ x: "200%" }}
-                              transition={{
-                                duration: 1.5,
-                                repeat: Infinity,
-                                repeatDelay: 4,
-                                ease: "easeInOut",
-                              }}
-                            />
                             <span className="relative flex items-center gap-2">
                               {isBasicTier ? (
-                                <motion.span
-                                  animate={{ rotate: [0, -12, 12, -8, 0] }}
-                                  transition={{
-                                    duration: 0.5,
-                                    repeat: Infinity,
-                                    repeatDelay: 5,
-                                  }}
-                                >
-                                  <Phone className="w-4 h-4" />
-                                </motion.span>
+                                <Phone className="w-4 h-4" strokeWidth={2.25} />
                               ) : (
-                                <MessageSquare className="w-4 h-4" />
+                                <MessageSquare className="w-4 h-4" strokeWidth={2.25} />
                               )}
                               {isBasicTier
                                 ? t("professional.showPhone")
@@ -2459,8 +2451,8 @@ export default function ProfessionalDetailClient({
                                       }
                                       return Object.entries(byService).map(([svcKey, entries]) => {
                                         const svcName = svcNameMap[svcKey] || svcKey;
-                                        // Find catalog service for unit labels
-                                        let catalogSvc: { unitOptions?: { key: string; label: { en: string; ka: string } }[] } | undefined;
+                                        // Find catalog service — gives us unit labels, tags, description, etc.
+                                        let catalogSvc: import('@/contexts/CategoriesContext').CatalogServiceItem | undefined;
                                         for (const cat of CATEGORIES) {
                                           for (const sub of cat.subcategories) {
                                             const found = (sub.services || []).find(s => s.key === svcKey);
@@ -2478,85 +2470,164 @@ export default function ProfessionalDetailClient({
                                               border: '1px solid var(--hm-border-subtle)',
                                             }}
                                           >
-                                            {entries.length === 1 ? (
-                                              <>
-                                                {/* Single unit — simple display */}
-                                                <div className="flex items-center justify-between">
-                                                  <span className="text-sm font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
-                                                    {svcName}
-                                                  </span>
-                                                  <span className="text-sm font-bold" style={{ color: 'var(--hm-brand-500)' }}>
-                                                    {entries[0].price}₾
-                                                    {(() => {
-                                                      const unitOpt = catalogSvc?.unitOptions?.find(u => u.key === (entries[0] as Record<string, unknown>).unitKey);
-                                                      const unitLabel = unitOpt ? pick({ en: unitOpt.label.en, ka: unitOpt.label.ka }) : '';
-                                                      return unitLabel ? <span className="text-[10px] font-normal ml-1" style={{ color: 'var(--hm-fg-muted)' }}>/{unitLabel}</span> : null;
-                                                    })()}
-                                                  </span>
-                                                </div>
-                                                {/* Discount tiers */}
-                                                {(() => {
-                                                  const tiers = ((entries[0] as Record<string, unknown>).discountTiers as { minQuantity: number; percent: number }[]) || [];
-                                                  if (tiers.length === 0) return null;
-                                                  return (
-                                                    <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: '1px dashed var(--hm-border-subtle)' }}>
-                                                      {tiers.map((tier, i) => {
-                                                        const discounted = Math.round(entries[0].price * (1 - tier.percent / 100));
-                                                        const savings = entries[0].price - discounted;
-                                                        return (
-                                                          <div key={i} className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg text-[12px]" style={{ backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)' }}>
-                                                            <span className="font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>{tier.minQuantity}+</span>
-                                                            <span style={{ color: 'var(--hm-fg-muted)' }}>{t("professional.unitsShort")}</span>
-                                                            <span className="mx-0.5" style={{ color: 'var(--hm-fg-muted)' }}>→</span>
-                                                            <span className="font-bold text-[var(--hm-success-500)]">{discounted}₾</span>
-                                                            <span className="text-[10px] line-through opacity-40" style={{ color: 'var(--hm-fg-secondary)' }}>{entries[0].price}₾</span>
-                                                            <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--hm-success-100)]/30 text-[var(--hm-success-500)] font-semibold">{t("professional.saveShort")} {savings}₾</span>
-                                                          </div>
-                                                        );
-                                                      })}
-                                                    </div>
-                                                  );
-                                                })()}
-                                              </>
-                                            ) : (
-                                              <>
-                                                {/* Multi-unit — show service name then each unit price */}
-                                                <span className="text-sm font-medium block mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
-                                                  {svcName}
-                                                </span>
-                                                <div className="space-y-1.5">
-                                                  {entries.map((entry) => {
-                                                    const entryAny = entry as Record<string, unknown>;
-                                                    const unitOpt = catalogSvc?.unitOptions?.find(u => u.key === entryAny.unitKey);
-                                                    const unitLabel = unitOpt ? pick({ en: unitOpt.label.en, ka: unitOpt.label.ka }) : (entryAny.unitKey as string || '');
-                                                    const tiers = (entryAny.discountTiers as { minQuantity: number; percent: number }[]) || [];
+                                            {(() => {
+                                              // Range-aware price formatter: emits "X - Y₾" when both
+                                              // priceMin/priceMax are set and meaningfully differ; otherwise
+                                              // falls through to the legacy single-price display.
+                                              const formatPrice = (e: { price: number; priceMin?: number; priceMax?: number }): string => {
+                                                if (
+                                                  e.priceMin !== undefined &&
+                                                  e.priceMax !== undefined &&
+                                                  e.priceMin > 0 &&
+                                                  e.priceMax > 0 &&
+                                                  e.priceMin !== e.priceMax
+                                                ) {
+                                                  return `${e.priceMin} - ${e.priceMax}₾`;
+                                                }
+                                                return `${e.price}₾`;
+                                              };
+                                              const proNote = entries.find((e) => e.notes && e.notes.trim().length > 0)?.notes;
+                                              return entries.length === 1 ? (
+                                                <>
+                                                  {/* Single unit — simple display */}
+                                                  <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
+                                                      {svcName}
+                                                    </span>
+                                                    <span className="text-sm font-bold" style={{ color: 'var(--hm-brand-500)' }}>
+                                                      {formatPrice(entries[0])}
+                                                      {(() => {
+                                                        const unitOpt = catalogSvc?.unitOptions?.find(u => u.key === entries[0].unitKey);
+                                                        const unitLabel = unitOpt ? pick({ en: unitOpt.label.en, ka: unitOpt.label.ka }) : '';
+                                                        return unitLabel ? <span className="text-[10px] font-normal ml-1" style={{ color: 'var(--hm-fg-muted)' }}>/{unitLabel}</span> : null;
+                                                      })()}
+                                                    </span>
+                                                  </div>
+                                                  {/* Discount tiers — applied against the typical/midpoint price */}
+                                                  {(() => {
+                                                    const tiers = entries[0].discountTiers ?? [];
+                                                    if (tiers.length === 0) return null;
                                                     return (
-                                                      <div key={entryAny.unitKey as string || entry.serviceKey}>
-                                                        <div className="flex items-center justify-between py-1 px-2 rounded-lg" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
-                                                          <span className="text-[12px]" style={{ color: 'var(--hm-fg-secondary)' }}>{unitLabel}</span>
-                                                          <span className="text-[13px] font-bold" style={{ color: 'var(--hm-brand-500)' }}>{entry.price}₾</span>
-                                                        </div>
-                                                        {tiers.length > 0 && (
-                                                          <div className="ml-2 mt-1 space-y-0.5">
-                                                            {tiers.map((tier, i) => {
-                                                              const discounted = Math.round(entry.price * (1 - tier.percent / 100));
-                                                              return (
-                                                                <div key={i} className="flex items-center gap-1.5 text-[11px] px-2">
-                                                                  <span className="font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>{tier.minQuantity}+</span>
-                                                                  <span className="mx-0.5" style={{ color: 'var(--hm-fg-muted)' }}>→</span>
-                                                                  <span className="font-bold text-[var(--hm-success-500)]">{discounted}₾</span>
-                                                                  <span className="text-[10px] opacity-40 line-through" style={{ color: 'var(--hm-fg-secondary)' }}>{entry.price}₾</span>
-                                                                </div>
-                                                              );
-                                                            })}
-                                                          </div>
-                                                        )}
+                                                      <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: '1px dashed var(--hm-border-subtle)' }}>
+                                                        {tiers.map((tier, i) => {
+                                                          const discounted = Math.round(entries[0].price * (1 - tier.percent / 100));
+                                                          const savings = entries[0].price - discounted;
+                                                          return (
+                                                            <div key={i} className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg text-[12px]" style={{ backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)' }}>
+                                                              <span className="font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>{tier.minQuantity}+</span>
+                                                              <span style={{ color: 'var(--hm-fg-muted)' }}>{t("professional.unitsShort")}</span>
+                                                              <span className="mx-0.5" style={{ color: 'var(--hm-fg-muted)' }}>→</span>
+                                                              <span className="font-bold text-[var(--hm-success-500)]">{discounted}₾</span>
+                                                              <span className="text-[10px] line-through opacity-40" style={{ color: 'var(--hm-fg-secondary)' }}>{entries[0].price}₾</span>
+                                                              <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--hm-success-100)]/30 text-[var(--hm-success-500)] font-semibold">{t("professional.saveShort")} {savings}₾</span>
+                                                            </div>
+                                                          );
+                                                        })}
                                                       </div>
                                                     );
-                                                  })}
-                                                </div>
-                                              </>
-                                            )}
+                                                  })()}
+                                                  {/* Catalog description — admin-set, neutral context (not pro's note) */}
+                                                  {(() => {
+                                                    const desc = catalogSvc?.description
+                                                      ? pick({ en: catalogSvc.description.en, ka: catalogSvc.description.ka })
+                                                      : '';
+                                                    return desc ? (
+                                                      <p className="mt-1.5 text-[11px] leading-snug" style={{ color: 'var(--hm-fg-secondary)' }}>
+                                                        {desc}
+                                                      </p>
+                                                    ) : null;
+                                                  })()}
+                                                  {/* Catalog tags (urgent, eco, licensed, etc.) */}
+                                                  {catalogSvc?.tags && catalogSvc.tags.length > 0 && (
+                                                    <div className="mt-2 flex flex-wrap gap-1">
+                                                      {catalogSvc.tags.map((tag) => (
+                                                        <span
+                                                          key={tag}
+                                                          className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full"
+                                                          style={{ background: 'rgba(239,78,36,0.10)', color: 'var(--hm-brand-500)' }}
+                                                        >
+                                                          {tag}
+                                                        </span>
+                                                      ))}
+                                                    </div>
+                                                  )}
+                                                  {/* Pro's pricing note */}
+                                                  {proNote && (
+                                                    <p className="mt-2 text-[11px] leading-snug italic" style={{ color: 'var(--hm-fg-muted)' }}>
+                                                      {proNote}
+                                                    </p>
+                                                  )}
+                                                </>
+                                              ) : (
+                                                <>
+                                                  {/* Multi-unit — show service name then each unit price */}
+                                                  <span className="text-sm font-medium block mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
+                                                    {svcName}
+                                                  </span>
+                                                  <div className="space-y-1.5">
+                                                    {entries.map((entry) => {
+                                                      const unitOpt = catalogSvc?.unitOptions?.find(u => u.key === entry.unitKey);
+                                                      const unitLabel = unitOpt ? pick({ en: unitOpt.label.en, ka: unitOpt.label.ka }) : (entry.unitKey ?? '');
+                                                      const tiers = entry.discountTiers ?? [];
+                                                      return (
+                                                        <div key={entry.unitKey ?? entry.serviceKey}>
+                                                          <div className="flex items-center justify-between py-1 px-2 rounded-lg" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
+                                                            <span className="text-[12px]" style={{ color: 'var(--hm-fg-secondary)' }}>{unitLabel}</span>
+                                                            <span className="text-[13px] font-bold" style={{ color: 'var(--hm-brand-500)' }}>{formatPrice(entry)}</span>
+                                                          </div>
+                                                          {tiers.length > 0 && (
+                                                            <div className="ml-2 mt-1 space-y-0.5">
+                                                              {tiers.map((tier, i) => {
+                                                                const discounted = Math.round(entry.price * (1 - tier.percent / 100));
+                                                                return (
+                                                                  <div key={i} className="flex items-center gap-1.5 text-[11px] px-2">
+                                                                    <span className="font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>{tier.minQuantity}+</span>
+                                                                    <span className="mx-0.5" style={{ color: 'var(--hm-fg-muted)' }}>→</span>
+                                                                    <span className="font-bold text-[var(--hm-success-500)]">{discounted}₾</span>
+                                                                    <span className="text-[10px] opacity-40 line-through" style={{ color: 'var(--hm-fg-secondary)' }}>{entry.price}₾</span>
+                                                                  </div>
+                                                                );
+                                                              })}
+                                                            </div>
+                                                          )}
+                                                        </div>
+                                                      );
+                                                    })}
+                                                  </div>
+                                                  {/* Catalog description — admin-set, neutral context (not pro's note) */}
+                                                  {(() => {
+                                                    const desc = catalogSvc?.description
+                                                      ? pick({ en: catalogSvc.description.en, ka: catalogSvc.description.ka })
+                                                      : '';
+                                                    return desc ? (
+                                                      <p className="mt-1.5 text-[11px] leading-snug" style={{ color: 'var(--hm-fg-secondary)' }}>
+                                                        {desc}
+                                                      </p>
+                                                    ) : null;
+                                                  })()}
+                                                  {/* Catalog tags (urgent, eco, licensed, etc.) */}
+                                                  {catalogSvc?.tags && catalogSvc.tags.length > 0 && (
+                                                    <div className="mt-2 flex flex-wrap gap-1">
+                                                      {catalogSvc.tags.map((tag) => (
+                                                        <span
+                                                          key={tag}
+                                                          className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full"
+                                                          style={{ background: 'rgba(239,78,36,0.10)', color: 'var(--hm-brand-500)' }}
+                                                        >
+                                                          {tag}
+                                                        </span>
+                                                      ))}
+                                                    </div>
+                                                  )}
+                                                  {/* Pro's pricing note */}
+                                                  {proNote && (
+                                                    <p className="mt-2 text-[11px] leading-snug italic" style={{ color: 'var(--hm-fg-muted)' }}>
+                                                      {proNote}
+                                                    </p>
+                                                  )}
+                                                </>
+                                              );
+                                            })()}
                                           </div>
                                         );
                                       });
@@ -2658,16 +2729,14 @@ export default function ProfessionalDetailClient({
                 >
                   <div className="grid grid-cols-2 gap-2">
                     <motion.div
-                      whileHover={{
-                        scale: 1.05,
-                        backgroundColor: "rgba(239,78,36,0.06)",
-                      }}
+                      whileHover={{ scale: 1.04, y: -1 }}
                       transition={{
                         type: "spring",
                         stiffness: 400,
                         damping: 25,
                       }}
-                      className="text-center p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)]/50 cursor-default"
+                      className="text-center p-2.5 rounded-xl cursor-default"
+                      style={{ border: '1px solid var(--hm-border-subtle)' }}
                     >
                       <p className="text-base font-bold text-[var(--hm-fg-primary)]">
                         <AnimatedCounter
@@ -2680,19 +2749,17 @@ export default function ProfessionalDetailClient({
                     </motion.div>
                     {profile.avgRating > 0 && (
                       <motion.div
-                        whileHover={{
-                          scale: 1.05,
-                          backgroundColor: "rgba(239,78,36,0.06)",
-                        }}
+                        whileHover={{ scale: 1.04, y: -1 }}
                         transition={{
                           type: "spring",
                           stiffness: 400,
                           damping: 25,
                         }}
-                        className="text-center p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)]/50 cursor-default"
+                        className="text-center p-2.5 rounded-xl cursor-default"
+                        style={{ border: '1px solid var(--hm-border-subtle)' }}
                       >
                         <p className="text-base font-bold text-[var(--hm-fg-primary)] flex items-center justify-center gap-1">
-                          <Star className="w-3.5 h-3.5 fill-amber-400 text-[var(--hm-warning-500)]" />
+                          <Star className="w-3.5 h-3.5" strokeWidth={1.75} style={{ fill: 'var(--hm-fg-primary)', color: 'var(--hm-fg-primary)' }} />
                           <AnimatedCounter
                             value={profile.avgRating}
                             decimals={1}
@@ -2706,16 +2773,14 @@ export default function ProfessionalDetailClient({
                     )}
                     {totalCompletedJobs > 0 && (
                       <motion.div
-                        whileHover={{
-                          scale: 1.05,
-                          backgroundColor: "rgba(239,78,36,0.06)",
-                        }}
+                        whileHover={{ scale: 1.04, y: -1 }}
                         transition={{
                           type: "spring",
                           stiffness: 400,
                           damping: 25,
                         }}
-                        className="text-center p-2.5 rounded-xl bg-[var(--hm-bg-tertiary)]/50 cursor-default"
+                        className="text-center p-2.5 rounded-xl cursor-default"
+                        style={{ border: '1px solid var(--hm-border-subtle)' }}
                       >
                         <p className="text-base font-bold text-[var(--hm-fg-primary)]">
                           <AnimatedCounter value={totalCompletedJobs} />

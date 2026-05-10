@@ -434,6 +434,13 @@ function PostJobPageContent() {
           quantity: svc.quantity || 1,
           unitPrice: svc.budget,
           unit: svc.unit,
+          // Optional flexibility: pass through customer's range and notes when set
+          ...(svc.useRange && svc.budgetMin !== undefined && svc.budgetMax !== undefined
+            ? { budgetMin: svc.budgetMin, budgetMax: svc.budgetMax }
+            : {}),
+          ...(svc.notes && svc.notes.trim().length > 0
+            ? { notes: svc.notes.trim() }
+            : {}),
         }));
         jobData.skills = selectedJobServices.map(s => s.serviceKey);
         const totalBudget = selectedJobServices.reduce((sum, s) => sum + s.budget, 0);

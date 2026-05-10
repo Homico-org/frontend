@@ -1,6 +1,7 @@
 "use client";
 
 import { useCategories } from "@/contexts/CategoriesContext";
+import type { CatalogServiceItem } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { ProProfile } from "@/types/shared";
 import { motion } from "framer-motion";
@@ -27,10 +28,7 @@ export default function MobileProServicesCard({
   const svcNameMap: Record<string, string> = {};
   const subNameMap: Record<string, string> = {};
   const validServiceKeys = new Set<string>();
-  const catalogSvcMap: Record<
-    string,
-    { unitOptions?: { key: string; label: { en: string; ka: string } }[] }
-  > = {};
+  const catalogSvcMap: Record<string, CatalogServiceItem> = {};
   for (const cat of CATEGORIES) {
     for (const sub of cat.subcategories || []) {
       subNameMap[sub.key] = pick({ en: sub.name, ka: sub.nameKa });
@@ -50,6 +48,22 @@ export default function MobileProServicesCard({
       (validServiceKeys.has(s.serviceKey) ||
         validServiceKeys.has(s.subcategoryKey)),
   );
+
+  // Format a single entry's price as either "X₾" or "X - Y₾" depending on whether
+  // a meaningful range was set. A range "exists" when min/max are both present
+  // and differ — otherwise we fall back to the legacy single-price display.
+  const formatPrice = (entry: { price: number; priceMin?: number; priceMax?: number }): string => {
+    if (
+      entry.priceMin !== undefined &&
+      entry.priceMax !== undefined &&
+      entry.priceMin > 0 &&
+      entry.priceMax > 0 &&
+      entry.priceMin !== entry.priceMax
+    ) {
+      return `${entry.priceMin} - ${entry.priceMax}₾`;
+    }
+    return `${entry.price}₾`;
+  };
 
   const grouped: Record<string, typeof active> = {};
   for (const svc of active) {
@@ -123,11 +137,9 @@ export default function MobileProServicesCard({
                                 {svcName}
                               </span>
                               <span className="text-sm font-bold text-[var(--hm-brand-500)]">
-                                {rows[0].price}₾
+                                {formatPrice(rows[0])}
                                 {(() => {
-                                  const unitKey = (
-                                    rows[0] as Record<string, unknown>
-                                  ).unitKey as string | undefined;
+                                  const unitKey = rows[0].unitKey;
                                   const unitOpt = catalogSvc?.unitOptions?.find(
                                     (u) => u.key === unitKey,
                                   );
@@ -152,9 +164,7 @@ export default function MobileProServicesCard({
                               </span>
                               <div className="space-y-1.5">
                                 {rows.map((entry) => {
-                                  const unitKey = (
-                                    entry as Record<string, unknown>
-                                  ).unitKey as string | undefined;
+                                  const unitKey = entry.unitKey;
                                   const unitOpt = catalogSvc?.unitOptions?.find(
                                     (u) => u.key === unitKey,
                                   );
@@ -173,7 +183,7 @@ export default function MobileProServicesCard({
                                         {unitLabel}
                                       </span>
                                       <span className="text-[13px] font-bold text-[var(--hm-brand-500)]">
-                                        {entry.price}₾
+                                        {formatPrice(entry)}
                                       </span>
                                     </div>
                                   );
@@ -181,6 +191,39 @@ export default function MobileProServicesCard({
                               </div>
                             </>
                           )}
+                          {/* Catalog description — admin-set neutral context */}
+                          {(() => {
+                            const desc = catalogSvc?.description
+                              ? pick({ en: catalogSvc.description.en, ka: catalogSvc.description.ka })
+                              : '';
+                            return desc ? (
+                              <p className="mt-1.5 text-[11px] leading-snug text-[var(--hm-fg-secondary)]">
+                                {desc}
+                              </p>
+                            ) : null;
+                          })()}
+                          {/* Catalog tags (urgent, eco, licensed, etc.) */}
+                          {catalogSvc?.tags && catalogSvc.tags.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {catalogSvc.tags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {/* Pro's optional note about pricing factors */}
+                          {(() => {
+                            const note = rows.find((r) => r.notes && r.notes.length > 0)?.notes;
+                            return note ? (
+                              <p className="mt-2 text-[11px] leading-snug text-[var(--hm-fg-muted)] italic">
+                                {note}
+                              </p>
+                            ) : null;
+                          })()}
                         </div>
                       );
                     })}

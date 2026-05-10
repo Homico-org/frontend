@@ -157,9 +157,15 @@ export interface ProProfile extends BaseEntity {
     serviceKey: string;
     categoryKey: string;
     subcategoryKey: string;
+    unitKey?: string;
     price: number;
     isActive: boolean;
     discountTiers?: { minQuantity: number; percent: number }[];
+    // Optional range support (added 2026-05). When both are set and differ,
+    // treat `price` as the typical/midpoint and render `min – max` in UI.
+    priceMin?: number;
+    priceMax?: number;
+    notes?: string;
   }[];
   
   // Location & Availability

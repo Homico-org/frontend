@@ -42,7 +42,9 @@ export default function CategoryGrid({ onIntakeOpen }: CategoryGridProps) {
         </AnimatedSection>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          {categories.slice(0, 8).map((cat, i) => (
+          {categories.slice(0, 8).map((cat, i) => {
+            const accent = cat.color || "var(--hm-brand-500)";
+            return (
             <AnimatedSection key={cat.key} stagger index={i}>
               <Link
                 href={`/professionals?category=${encodeURIComponent(cat.key)}`}
@@ -53,13 +55,13 @@ export default function CategoryGrid({ onIntakeOpen }: CategoryGridProps) {
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
                     style={{
-                      backgroundColor:
-                        "color-mix(in srgb, var(--hm-brand-500) 10%, transparent)",
+                      backgroundColor: `${accent}14`,
+                      color: accent,
                     }}
                   >
                     <CategoryIcon
                       type={cat.icon || cat.key}
-                      className="w-6 h-6 text-[var(--hm-brand-500)]"
+                      className="w-6 h-6"
                     />
                   </div>
                   <div className="flex items-start justify-between gap-2">
@@ -67,14 +69,16 @@ export default function CategoryGrid({ onIntakeOpen }: CategoryGridProps) {
                       {pick({ en: cat.name, ka: cat.nameKa })}
                     </span>
                     <ArrowRight
-                      className="w-4 h-4 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)] group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5"
+                      className="w-4 h-4 text-[var(--hm-fg-muted)] group-hover:translate-x-0.5 transition-all shrink-0 mt-0.5"
+                      style={{ color: undefined }}
                       strokeWidth={1.75}
                     />
                   </div>
                 </GlassCard>
               </Link>
             </AnimatedSection>
-          ))}
+            );
+          })}
 
           {/* "All services" escape hatch for needs outside the top 8 — opens intake instead of search */}
           <AnimatedSection stagger index={8}>

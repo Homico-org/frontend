@@ -9,10 +9,21 @@ import { storage } from '@/services/storage';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
-import { Camera, Eye, MapPin, Sparkles, Star } from 'lucide-react';
+import { Calendar, Camera, Eye, MapPin, Sparkles, Star } from 'lucide-react';
+import { formatDate } from '@/utils/dateUtils';
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from 'react';
+export interface PortfolioProjectService {
+  serviceKey: string;
+  subcategoryKey?: string;
+  label: string;
+  unitLabel?: string;
+  price: number;
+  priceMin?: number;
+  priceMax?: number;
+}
+
 export interface PortfolioProject {
   id: string;
   title: string;
@@ -33,6 +44,9 @@ export interface PortfolioProject {
   category?: string;
   completedDate?: string;
   projectType?: string;
+  // Services performed on this project (with prices). Surfaced as a pills
+  // row below the description so customers see what's included.
+  services?: PortfolioProjectService[];
 }
 
 export interface PortfolioCardProps {
@@ -242,9 +256,9 @@ export default function PortfolioCard({
           </Button>
         )}
 
-        {/* Thumbnail Strip */}
+        {/* Thumbnail Strip — clean elevated bg, no gradient that reads "disabled" */}
         {allImages.length > 1 && (
-          <div className="flex gap-1.5 p-2.5 bg-gradient-to-b from-[var(--hm-bg-page)] to-[var(--hm-bg-elevated)] border-t border-[var(--hm-border-subtle)]">
+          <div className="flex gap-1.5 p-2.5 bg-[var(--hm-bg-elevated)] border-t border-[var(--hm-border-subtle)]">
             {allImages.slice(0, 4).map((img, imgIdx) => {
               const isBaPair = imgIdx >= baStartIndex;
               const baIdx = imgIdx - baStartIndex;
@@ -311,64 +325,156 @@ export default function PortfolioCard({
           </div>
         )}
 
-        {/* Project Info Section */}
-        <div className="p-4 pt-3">
-          <h3 className="font-semibold text-[var(--hm-fg-primary)] text-base line-clamp-1 group-hover:text-[var(--hm-brand-500)] transition-colors duration-300">
+        {/* Project Info Section — shows EVERY available field, no truncation
+            ellipses on title or description. Date and location render
+            independently so customers see the full picture at a glance. */}
+        <div className="p-4 pt-3 flex flex-col gap-2.5">
+          {/* Title — wraps naturally to 2 lines if needed, no ellipsis */}
+          <h3 className="font-semibold text-[var(--hm-fg-primary)] text-base leading-tight group-hover:text-[var(--hm-brand-500)] transition-colors duration-300">
             {svcLabel || project.title}
           </h3>
 
-          {/* Description */}
+          {/* Service category as a small eyebrow when distinct from title */}
+          {svcLabel && project.title && project.title !== svcLabel && (
+            <p className="text-[11px] uppercase tracking-wider font-semibold text-[var(--hm-fg-muted)]">
+              {project.title}
+            </p>
+          )}
+
+          {/* Description — full text, never clamped */}
           {project.description && (
-            <p className="text-sm text-[var(--hm-fg-muted)] line-clamp-2 mt-2 leading-relaxed">
+            <p className="text-sm text-[var(--hm-fg-secondary)] leading-relaxed whitespace-pre-line">
               {project.description}
             </p>
           )}
 
           {/* Review quote */}
           {project.review && (
-            <p className="text-xs text-[var(--hm-fg-muted)] italic mt-2 line-clamp-2 leading-relaxed">
+            <blockquote
+              className="text-[12px] italic leading-relaxed pl-2.5"
+              style={{
+                color: 'var(--hm-fg-muted)',
+                borderLeft: '2px solid var(--hm-border-subtle)',
+              }}
+            >
               &ldquo;{project.review}&rdquo;
-            </p>
+            </blockquote>
           )}
 
-          {/* Bottom row - Client + Rating + Source */}
-          <div className="flex items-center justify-between mt-3 pt-2 border-t border-[var(--hm-border-subtle)]">
-            {/* Client info */}
-            {project.clientName ? (
-              <Link
-                href={project.clientId ? `/professionals/${project.clientId}` : '#'}
-                onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-2 min-w-0 hover:text-[var(--hm-brand-500)] transition-colors"
-              >
-                <Avatar
-                  src={project.clientAvatar}
-                  name={project.clientName}
-                  size="xs"
-                  className="w-5 h-5"
-                />
-                <span className="text-[11px] text-[var(--hm-fg-muted)] truncate hover:underline">{project.clientName}</span>
-              </Link>
-            ) : project.location ? (
-              <div className="flex items-center gap-1.5 text-xs text-[var(--hm-fg-muted)]">
-                <MapPin className="w-3 h-3" />
-                <span>{project.location}</span>
-              </div>
-            ) : <div />}
-
-            <div className="flex items-center gap-2 shrink-0">
-              {project.source === 'homico' && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--hm-success-50)]/20 text-[var(--hm-success-500)] font-medium">
-                  ✓ Homico
+          {/* Meta row 1: location + date — both shown when present */}
+          {(project.location || project.completedDate || project.date) && (
+            <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-[12px] text-[var(--hm-fg-muted)]">
+              {project.location && (
+                <span className="inline-flex items-center gap-1 min-w-0">
+                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                  <span>{project.location}</span>
                 </span>
               )}
-              {project.rating && project.rating > 0 && (
-                <div className="flex items-center gap-0.5 text-xs">
-                  <Star className="w-3 h-3 fill-amber-400 text-[var(--hm-warning-500)]" />
-                  <span className="font-semibold text-[var(--hm-fg-secondary)]">{project.rating.toFixed(1)}</span>
-                </div>
-              )}
+              {(() => {
+                const raw = project.completedDate || project.date;
+                if (!raw) return null;
+                // Tolerant of either ISO timestamps or already-formatted strings.
+                // Falls back to the raw value if Date.parse fails.
+                let display = raw;
+                const parsed = new Date(raw);
+                if (!Number.isNaN(parsed.getTime())) {
+                  display = formatDate(raw, locale as 'en' | 'ka' | 'ru');
+                }
+                return (
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="w-3 h-3 flex-shrink-0" />
+                    <span>{display}</span>
+                  </span>
+                );
+              })()}
             </div>
-          </div>
+          )}
+
+          {/* Services performed on this project — labelled pills with prices */}
+          {project.services && project.services.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {project.services.map((svc) => {
+                const priceLabel =
+                  svc.priceMin !== undefined &&
+                  svc.priceMax !== undefined &&
+                  svc.priceMin > 0 &&
+                  svc.priceMax > 0 &&
+                  svc.priceMin !== svc.priceMax
+                    ? `${svc.priceMin}-${svc.priceMax}₾`
+                    : `${svc.price}₾`;
+                return (
+                  <span
+                    key={svc.serviceKey}
+                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px] font-medium"
+                    style={{
+                      border: '1px solid var(--hm-border-subtle)',
+                      color: 'var(--hm-fg-primary)',
+                    }}
+                  >
+                    <span>{svc.label}</span>
+                    <span
+                      className="font-semibold tabular-nums"
+                      style={{ color: 'var(--hm-brand-500)' }}
+                    >
+                      {priceLabel}
+                    </span>
+                  </span>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Meta row 2: client + source + rating — separated by hairline */}
+          {(project.clientName || project.source === 'homico' || (project.rating && project.rating > 0)) && (
+            <div
+              className="flex items-center justify-between gap-3 pt-2.5 mt-0.5"
+              style={{ borderTop: '1px solid var(--hm-border-subtle)' }}
+            >
+              {/* Client info */}
+              {project.clientName ? (
+                <Link
+                  href={project.clientId ? `/professionals/${project.clientId}` : '#'}
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-2 min-w-0 hover:text-[var(--hm-brand-500)] transition-colors"
+                >
+                  <Avatar
+                    src={project.clientAvatar}
+                    name={project.clientName}
+                    size="xs"
+                    className="w-5 h-5"
+                  />
+                  <span className="text-[12px] font-medium text-[var(--hm-fg-secondary)] truncate hover:underline">{project.clientName}</span>
+                </Link>
+              ) : <div />}
+
+              <div className="flex items-center gap-2 shrink-0">
+                {project.source === 'homico' && (
+                  <span
+                    className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                    style={{
+                      color: 'var(--hm-success-500)',
+                      border: '1px solid rgba(62,143,90,0.20)',
+                    }}
+                  >
+                    ✓ Homico
+                  </span>
+                )}
+                {project.rating && project.rating > 0 && (
+                  <div className="inline-flex items-center gap-1 text-[12px]">
+                    {/* Outlined-stroke star — modern + minimal. The number does
+                        the carrying; the star sits at 1.75 stroke for a
+                        cleaner, less amber-heavy mark. */}
+                    <Star
+                      className="w-3.5 h-3.5"
+                      strokeWidth={1.75}
+                      style={{ color: 'var(--hm-fg-primary)' }}
+                    />
+                    <span className="font-semibold text-[var(--hm-fg-primary)] tabular-nums">{project.rating.toFixed(1)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>

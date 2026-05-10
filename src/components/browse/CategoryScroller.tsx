@@ -134,52 +134,68 @@ export default function CategoryScroller({
           </>
         )}
 
-        {/* Scroll rail */}
-        <div
-          className="border-b"
-          style={{ borderColor: "var(--hm-border-subtle)" }}
-        >
-          {/* px-10 keeps the first/last tabs out from under the left/right chevron buttons,
+        {/* Scroll rail — modern color-tinted pills (each category uses its own
+            catalog color for the icon backplate; active state inverts to a
+            solid vermillion pill with white text + white icon ring). */}
+        <div className="py-1">
+          {/* px-10 keeps the first/last pills out from under the left/right chevron buttons,
               which are absolutely positioned at the edges with a 36×36 hit target. */}
           <div
             ref={scrollRef}
-            className="flex overflow-x-auto overflow-y-hidden scrollbar-hide px-10 overscroll-x-contain"
+            className="flex items-center gap-2 overflow-x-auto overflow-y-hidden scrollbar-hide px-10 py-1 overscroll-x-contain"
             style={{ touchAction: "pan-x" }}
           >
             {categories.map((cat) => {
               const isActive = cat.key === selectedCategory;
+              const accent = cat.color || "var(--hm-brand-500)";
               return (
                 <button
                   key={cat.key}
                   type="button"
                   onClick={() => handleCategoryClick(cat.key)}
-                  className="group shrink-0 relative flex items-center gap-1.5 px-3 py-2 focus:outline-none focus-visible:bg-[var(--hm-bg-tertiary)]/50 transition-colors"
+                  className="group shrink-0 inline-flex items-center gap-2 pl-1.5 pr-3.5 py-1.5 rounded-full transition-all duration-200 hover:-translate-y-px focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
+                  style={
+                    isActive
+                      ? {
+                          background: "var(--hm-brand-500)",
+                          boxShadow:
+                            "0 4px 14px -4px rgba(239,78,36,0.35), 0 1px 2px rgba(0,0,0,0.04)",
+                        }
+                      : {
+                          background: "var(--hm-bg-elevated)",
+                          border: "1px solid var(--hm-border-subtle)",
+                        }
+                  }
                 >
-                  <CategoryIcon
-                    type={cat.icon || cat.key}
-                    className={`w-3.5 h-3.5 transition-colors ${
-                      isActive
-                        ? "text-[var(--hm-brand-500)]"
-                        : "text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-fg-primary)]"
-                    }`}
-                  />
                   <span
-                    className={`text-[12px] leading-none whitespace-nowrap tracking-tight transition-colors ${
+                    className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors"
+                    style={
                       isActive
-                        ? "font-semibold text-[var(--hm-brand-500)]"
-                        : "font-medium text-[var(--hm-fg-secondary)] group-hover:text-[var(--hm-fg-primary)]"
-                    }`}
+                        ? {
+                            background: "rgba(255,255,255,0.18)",
+                            color: "#fff",
+                          }
+                        : {
+                            background: `${accent}14`,
+                            color: accent,
+                          }
+                    }
+                  >
+                    <CategoryIcon
+                      type={cat.icon || cat.key}
+                      className="w-4 h-4"
+                    />
+                  </span>
+                  <span
+                    className="text-[13px] font-semibold whitespace-nowrap leading-none transition-colors"
+                    style={{
+                      color: isActive
+                        ? "#fff"
+                        : "var(--hm-fg-primary)",
+                    }}
                   >
                     {pick({ en: cat.name, ka: cat.nameKa })}
                   </span>
-                  <span
-                    className="absolute left-3 right-3 -bottom-px h-[2px] rounded-t-full transition-all duration-200"
-                    style={{
-                      background: "var(--hm-brand-500)",
-                      opacity: isActive ? 1 : 0,
-                      transform: isActive ? "scaleX(1)" : "scaleX(0.3)",
-                    }}
-                  />
                 </button>
               );
             })}
@@ -241,18 +257,25 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
-      className="shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-medium whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/30"
+      className="shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-medium whitespace-nowrap transition-all hover:-translate-y-px focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/30"
       style={
         active
           ? {
               background: activeBg,
               color: activeFg,
               boxShadow:
-                tone === "primary" ? "0 1px 2px rgba(239,78,36,0.25)" : "none",
+                tone === "primary"
+                  ? "0 4px 14px -4px rgba(239,78,36,0.35), 0 1px 2px rgba(0,0,0,0.04)"
+                  : "none",
+              border:
+                tone === "primary"
+                  ? "1px solid transparent"
+                  : "1px solid rgba(239,78,36,0.18)",
             }
           : {
-              background: "var(--hm-bg-tertiary)",
+              background: "var(--hm-bg-elevated)",
               color: "var(--hm-fg-secondary)",
+              border: "1px solid var(--hm-border-subtle)",
             }
       }
     >

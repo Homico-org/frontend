@@ -262,7 +262,7 @@ function PriceInfoRenderer({
             {t("ai.averagePrice")}
           </p>
           <p className="text-lg font-semibold text-[var(--hm-brand-500)]">
-            ₾{priceInfo.averagePrice.min.toLocaleString()} – ₾
+            ₾{priceInfo.averagePrice.min.toLocaleString()} - ₾
             {priceInfo.averagePrice.max.toLocaleString()}
           </p>
         </div>
@@ -291,7 +291,7 @@ function PriceInfoRenderer({
                 className="text-sm font-medium"
                 style={{ color: "var(--hm-fg-primary)" }}
               >
-                ₾{range.min.toLocaleString()} – ₾{range.max.toLocaleString()}
+                ₾{range.min.toLocaleString()} - ₾{range.max.toLocaleString()}
               </span>
             </div>
           ))}

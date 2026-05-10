@@ -369,11 +369,13 @@ export default function BookingReviewPage() {
                   aria-label={`${star} star${star !== 1 ? 's' : ''}`}
                 >
                   <Star
-                    className={`w-10 h-10 transition-colors ${
+                    className="w-10 h-10 transition-colors"
+                    strokeWidth={1.75}
+                    style={
                       star <= displayRating
-                        ? 'text-[var(--hm-warning-500)] fill-amber-400'
-                        : 'text-neutral-300'
-                    }`}
+                        ? { fill: 'var(--hm-brand-500)', color: 'var(--hm-brand-500)' }
+                        : { fill: 'transparent', color: 'var(--hm-border-strong)' }
+                    }
                   />
                 </button>
               ))}

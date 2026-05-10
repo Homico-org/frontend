@@ -46,6 +46,7 @@ export default function CategorySection({
           const isSelected = selectedCategory === category.key;
           const isHovered = hoveredCategory === category.key;
 
+          const accent = category.color || 'var(--hm-brand-500)';
           return (
             <button
               key={category.key}
@@ -53,35 +54,51 @@ export default function CategorySection({
               onMouseEnter={() => setHoveredCategory(category.key)}
               onMouseLeave={() => setHoveredCategory(null)}
               className={`
-                group relative flex items-center gap-1.5 px-3 py-2
-                rounded-lg font-medium text-xs
+                group relative inline-flex items-center gap-1.5 pl-1 pr-3 py-1
+                rounded-full font-medium text-xs
                 transition-all duration-200 ease-out
-                flex-shrink-0 touch-manipulation
-                ${isSelected
-                  ? 'bg-[var(--hm-brand-500)] text-white shadow-md shadow-[var(--hm-brand-500)]/20'
-                  : 'bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border-subtle)] text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)] hover:border-[var(--hm-brand-500)]/30'
-                }
+                flex-shrink-0 touch-manipulation hover:-translate-y-px
+                ${isSelected ? 'shadow-md' : ''}
               `}
-              style={{
-                animationDelay: `${index * 50}ms`,
-              }}
+              style={
+                isSelected
+                  ? {
+                      background: 'var(--hm-brand-500)',
+                      color: '#fff',
+                      boxShadow:
+                        '0 4px 14px -4px rgba(239,78,36,0.35), 0 1px 2px rgba(0,0,0,0.04)',
+                      animationDelay: `${index * 50}ms`,
+                    }
+                  : {
+                      background: 'var(--hm-bg-elevated)',
+                      border: '1px solid var(--hm-border-subtle)',
+                      color: 'var(--hm-fg-primary)',
+                      animationDelay: `${index * 50}ms`,
+                    }
+              }
             >
-              {/* Icon */}
-              <span className={`
-                w-4 h-4 transition-transform duration-200
-                ${isSelected ? '' : 'group-hover:scale-105'}
-              `}>
-                <CategoryIcon type={category.icon || ''} className="w-full h-full" />
+              {/* Icon — color-tinted backplate using the per-category catalog color */}
+              <span
+                className="flex items-center justify-center w-6 h-6 rounded-full transition-colors"
+                style={
+                  isSelected
+                    ? { background: 'rgba(255,255,255,0.18)', color: '#fff' }
+                    : { background: `${accent}14`, color: accent }
+                }
+              >
+                <CategoryIcon
+                  type={category.icon || ''}
+                  className="w-3.5 h-3.5"
+                />
               </span>
 
-              {/* Label */}
               <span className="font-semibold">
                 {getCategoryLabelStatic(category.key, locale)}
               </span>
 
               {/* Hover glow effect */}
-              {(isHovered && !isSelected) && (
-                <span className="absolute inset-0 rounded-lg bg-[var(--hm-brand-500)]/5 animate-scale-in" />
+              {isHovered && !isSelected && (
+                <span className="absolute inset-0 rounded-full bg-[var(--hm-brand-500)]/4 animate-scale-in pointer-events-none" />
               )}
             </button>
           );

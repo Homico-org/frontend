@@ -114,7 +114,7 @@ export default function BookingModal({
               {t("booking.bookingSuccess")}
             </h3>
             <p className="text-sm text-[var(--hm-fg-muted)]">
-              {selectedDate} · {selectedSlot !== null ? `${formatHour(selectedSlot)} – ${formatHour(selectedSlot + 1)}` : ""}
+              {selectedDate} · {selectedSlot !== null ? `${formatHour(selectedSlot)} - ${formatHour(selectedSlot + 1)}` : ""}
             </p>
             <p className="text-xs text-[var(--hm-fg-muted)] mt-0.5">
               {professionalName}

@@ -23,6 +23,15 @@ export interface CatalogUnitOption {
   maxPrice?: number;
 }
 
+export type CatalogPricingModel = 'fixed' | 'range' | 'from' | 'quote';
+export type CatalogServiceType =
+  | 'installation'
+  | 'repair'
+  | 'maintenance'
+  | 'consultation'
+  | 'emergency'
+  | 'recurring';
+
 export interface CatalogServiceItem {
   id?: string; // Stable permanent identifier — save selections by id
   key: string;
@@ -37,6 +46,16 @@ export interface CatalogServiceItem {
   unitNameKa: string;
   // Multi-unit pricing options
   unitOptions?: CatalogUnitOption[];
+  // Optional flexibility fields (added 2026-05). All optional and
+  // backward-compatible — old documents resolve them to undefined.
+  description?: { en: string; ka: string; ru: string };
+  priceRange?: { min: number; typical?: number; max: number };
+  pricingModel?: CatalogPricingModel;
+  serviceType?: CatalogServiceType;
+  estimatedDurationMin?: number;
+  estimatedDurationMax?: number;
+  tags?: string[];
+  imageUrl?: string;
 }
 
 export interface Subcategory {
@@ -51,6 +70,9 @@ export interface Subcategory {
   children: SubSubcategory[];
   services?: CatalogServiceItem[];
   priceRange?: { min: number; max?: number };
+  // Optional flexibility (added 2026-05)
+  imageUrl?: string;
+  tags?: string[];
 }
 
 export interface Category {
@@ -65,6 +87,13 @@ export interface Category {
   isActive: boolean;
   sortOrder: number;
   subcategories: Subcategory[];
+  // Brand color per category (e.g. "#3B82F6" for plumbing). Drives icon
+  // backplates and accent strips throughout the UI.
+  color?: string;
+  minPrice?: number;
+  // Optional flexibility (added 2026-05)
+  imageUrl?: string;
+  tags?: string[];
 }
 
 // Raw category from API (before transformation)
@@ -81,6 +110,10 @@ interface RawCategory {
   isActive: boolean;
   sortOrder: number;
   subcategories?: RawSubcategory[];
+  color?: string;
+  minPrice?: number;
+  imageUrl?: string;
+  tags?: string[];
 }
 
 interface RawSubcategory {
@@ -98,6 +131,8 @@ interface RawSubcategory {
   children?: SubSubcategory[];
   services?: CatalogServiceItem[];
   priceRange?: { min: number; max?: number };
+  imageUrl?: string;
+  tags?: string[];
 }
 
 // Transform raw subcategory to frontend format
@@ -114,6 +149,8 @@ function transformSubcategory(sub: RawSubcategory): Subcategory {
     children: sub.children || [],
     services: sub.services || [],
     priceRange: sub.priceRange,
+    imageUrl: sub.imageUrl,
+    tags: sub.tags,
   };
 }
 
@@ -131,6 +168,10 @@ function transformCategory(cat: RawCategory): Category {
     isActive: cat.isActive ?? true,
     sortOrder: cat.sortOrder ?? 0,
     subcategories: (cat.subcategories || []).map(transformSubcategory),
+    color: cat.color,
+    minPrice: cat.minPrice,
+    imageUrl: cat.imageUrl,
+    tags: cat.tags,
   };
 }
 
