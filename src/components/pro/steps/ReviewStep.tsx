@@ -213,7 +213,17 @@ export default function ReviewStep({
               const catName = cat ? pick({ en: cat.name, ka: cat.nameKa }) : undefined;
               const expEntry = EXP_LABELS[sub.experience];
               const expLabel = expEntry ? pick({ en: expEntry.en, ka: expEntry.ka }) : sub.experience;
-              const pricedServices = sub.services.filter((s) => s.isActive && s.price > 0);
+              // Include services where either the top-level `price` is set OR
+              // at least one active unit has a valid price (single or range mode).
+              const pricedServices = sub.services.filter((s) => {
+                if (!s.isActive) return false;
+                if (s.price > 0) return true;
+                return (s.unitPrices ?? []).some((u) => {
+                  if (!u.isActive) return false;
+                  if (u.useRange) return (u.priceMin ?? 0) > 0 && (u.priceMax ?? 0) > 0;
+                  return u.price > 0;
+                });
+              });
 
               return (
                 <div key={sub.key} className="border border-[var(--hm-border-subtle)] rounded-lg p-3">
@@ -231,14 +241,35 @@ export default function ReviewStep({
 
                   {pricedServices.length > 0 ? (
                     <div className="space-y-1">
-                      {pricedServices.map((svc) => (
-                        <div key={svc.serviceKey} className="flex items-center justify-between text-xs">
-                          <span className="text-[var(--hm-fg-secondary)]">{svc.label}</span>
-                          <span className="font-medium text-[var(--hm-fg-primary)]">
-                            {svc.price}₾ <span className="text-[var(--hm-fg-muted)] font-normal">/ {svc.unitLabel}</span>
-                          </span>
-                        </div>
-                      ))}
+                      {pricedServices.map((svc) => {
+                        // Compute the displayed price — when any active unit
+                        // is in range mode, render "min-max₾" instead of the
+                        // legacy midpoint single value.
+                        const activeUnits = (svc.unitPrices ?? []).filter((u) => u.isActive);
+                        let lo = Number.POSITIVE_INFINITY;
+                        let hi = Number.NEGATIVE_INFINITY;
+                        if (activeUnits.length > 0) {
+                          for (const u of activeUnits) {
+                            const min = u.useRange ? (u.priceMin ?? u.price) : u.price;
+                            const max = u.useRange ? (u.priceMax ?? u.price) : u.price;
+                            if (min > 0 && min < lo) lo = min;
+                            if (max > 0 && max > hi) hi = max;
+                          }
+                        } else if (svc.price > 0) {
+                          lo = hi = svc.price;
+                        }
+                        const display = lo === hi || !Number.isFinite(lo) || !Number.isFinite(hi)
+                          ? `${Number.isFinite(lo) ? lo : svc.price}₾`
+                          : `${lo}-${hi}₾`;
+                        return (
+                          <div key={svc.serviceKey} className="flex items-center justify-between text-xs">
+                            <span className="text-[var(--hm-fg-secondary)]">{svc.label}</span>
+                            <span className="font-medium text-[var(--hm-fg-primary)] tabular-nums">
+                              {display} <span className="text-[var(--hm-fg-muted)] font-normal">/ {svc.unitLabel}</span>
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-xs text-[var(--hm-fg-muted)] italic">{t("common.negotiable")}</p>

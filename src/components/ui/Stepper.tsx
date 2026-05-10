@@ -80,9 +80,14 @@ export function Stepper({
               {String(index + 1).padStart(2, '0')}
             </span>
 
-            {/* Label */}
+            {/* Label - on mobile only the active step shows a label to avoid
+                crammed 3-line wraps when 5+ steps share a 390px viewport. From
+                sm: up there's room for all labels. */}
             <span
-              className="text-[11.5px] font-medium leading-tight"
+              className={cn(
+                'text-[11.5px] font-medium leading-tight',
+                isActive ? 'inline' : 'hidden sm:inline',
+              )}
               style={{
                 letterSpacing: '-0.005em',
                 color: 'var(--hm-fg-primary)',

@@ -764,7 +764,7 @@ function ShellContent({ children }: { children: ReactNode }) {
                           ? { color: 'var(--hm-brand-500)' }
                           : {
                               borderLeft: '2px solid var(--hm-brand-500)',
-                              background: 'linear-gradient(to right, color-mix(in srgb, var(--hm-brand-500) 6%, transparent), transparent 60%)',
+                              color: 'var(--hm-brand-500)',
                               paddingLeft: '12px',
                             }
                         : isCollapsed
@@ -824,7 +824,7 @@ function ShellContent({ children }: { children: ReactNode }) {
                           ? { color: 'var(--hm-brand-500)' }
                           : {
                               borderLeft: '2px solid var(--hm-brand-500)',
-                              background: 'linear-gradient(to right, color-mix(in srgb, var(--hm-brand-500) 6%, transparent), transparent 60%)',
+                              color: 'var(--hm-brand-500)',
                               paddingLeft: '12px',
                             }
                         : isCollapsed

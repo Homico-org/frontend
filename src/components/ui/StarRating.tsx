@@ -63,19 +63,26 @@ export function StarRating({
   const displayRating = formatRating(rating);
   const displayCount = formatReviewCountCompact(reviewCount);
 
+  // Modern minimal default: a small filled dark-ink star (no amber), paired
+  // with a bold number that does the actual carrying. Callers can still pass
+  // `starColor` to opt back into a tinted star (e.g. amber for hero badges).
+  const starStyle: React.CSSProperties = starColor
+    ? { fill: starColor, color: starColor }
+    : { fill: 'var(--hm-fg-primary)', color: 'var(--hm-fg-primary)' };
   return (
     <div className={cn('inline-flex items-center', config.gap, className)}>
       <Star
-        className={cn(config.star, 'fill-amber-400 text-[var(--hm-warning-500)]')}
-        style={starColor ? { fill: starColor, color: starColor } : undefined}
+        className={config.star}
+        strokeWidth={1.75}
+        style={starStyle}
       />
       {showValue && (
-        <span className={cn(config.text, 'font-semibold text-[var(--hm-fg-primary)]')}>
+        <span className={cn(config.text, 'font-semibold text-[var(--hm-fg-primary)] tabular-nums')}>
           {displayRating}
         </span>
       )}
       {showCount && displayCount && (
-        <span className={cn(config.count, 'text-[var(--hm-fg-muted)]')}>
+        <span className={cn(config.count, 'text-[var(--hm-fg-muted)] tabular-nums')}>
           {displayCount}
         </span>
       )}
@@ -129,12 +136,13 @@ export function StarRatingInput({
           )}
         >
           <Star
-            className={cn(
-              config.star,
+            className={config.star}
+            strokeWidth={1.75}
+            style={
               starValue <= value
-                ? 'fill-amber-400 text-[var(--hm-warning-500)]'
-                : 'fill-neutral-200 text-neutral-200'
-            )}
+                ? { fill: 'var(--hm-brand-500)', color: 'var(--hm-brand-500)' }
+                : { fill: 'transparent', color: 'var(--hm-border-strong)' }
+            }
           />
         </button>
       ))}
@@ -169,19 +177,24 @@ export function MultiStarDisplay({
 
   return (
     <div className={cn('inline-flex items-center gap-0.5', className)}>
-      {Array.from({ length: max }, (_, i) => (
-        <Star
-          key={i}
-          className={cn(
-            config.star,
-            i < Math.floor(rating)
-              ? 'fill-amber-400 text-[var(--hm-warning-500)]'
-              : i < rating
-              ? 'fill-amber-400/50 text-[var(--hm-warning-500)]/50'
-              : 'fill-neutral-200 text-neutral-200'
-          )}
-        />
-      ))}
+      {Array.from({ length: max }, (_, i) => {
+        const isFull = i < Math.floor(rating);
+        const isHalf = !isFull && i < rating;
+        return (
+          <Star
+            key={i}
+            className={config.star}
+            strokeWidth={1.75}
+            style={
+              isFull
+                ? { fill: 'var(--hm-fg-primary)', color: 'var(--hm-fg-primary)' }
+                : isHalf
+                  ? { fill: 'var(--hm-fg-primary)', color: 'var(--hm-fg-primary)', opacity: 0.5 }
+                  : { fill: 'transparent', color: 'var(--hm-border-strong)' }
+            }
+          />
+        );
+      })}
     </div>
   );
 }

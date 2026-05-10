@@ -211,26 +211,30 @@ export default function LandingHero({ onIntakeOpen }: LandingHeroProps) {
             transition: "opacity 0.6s ease-out 0.8s",
           }}
         >
-          {heroCategoryRow.map((cat) => (
-            <Link
-              key={cat.key}
-              href={`/professionals?category=${encodeURIComponent(cat.key)}`}
-              onClick={() => handleCategoryClick(cat.key)}
-              className="group flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-300)]/60"
-            >
-              <div
-                className="w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-200 group-hover:scale-105 bg-white/95"
+          {heroCategoryRow.map((cat) => {
+            const accent = cat.color || "var(--hm-brand-500)";
+            return (
+              <Link
+                key={cat.key}
+                href={`/professionals?category=${encodeURIComponent(cat.key)}`}
+                onClick={() => handleCategoryClick(cat.key)}
+                className="group flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-300)]/60"
               >
-                <CategoryIcon
-                  type={cat.icon || cat.key}
-                  className="w-5 h-5 text-[var(--hm-brand-500)]"
-                />
-              </div>
-              <span className="text-[11px] sm:text-[12px] font-medium text-white leading-tight text-center line-clamp-2">
-                {pick({ en: cat.name, ka: cat.nameKa })}
-              </span>
-            </Link>
-          ))}
+                <div
+                  className="w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-200 group-hover:scale-105 bg-white/95"
+                  style={{ color: accent }}
+                >
+                  <CategoryIcon
+                    type={cat.icon || cat.key}
+                    className="w-5 h-5"
+                  />
+                </div>
+                <span className="text-[11px] sm:text-[12px] font-medium text-white leading-tight text-center line-clamp-2">
+                  {pick({ en: cat.name, ka: cat.nameKa })}
+                </span>
+              </Link>
+            );
+          })}
         </div>
 
         {/* One-line trust strip — earns trust before the action */}

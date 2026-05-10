@@ -6,7 +6,7 @@ import type { CatalogServiceItem, Subcategory } from '@/contexts/CategoriesConte
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAiServiceSearch } from '@/hooks/useAiServiceSearch';
 import AiSearchBar from '@/components/common/AiSearchBar';
-import { Check, X } from 'lucide-react';
+import { ArrowLeft, Check, ChevronRight, Sparkles, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 export interface JobServiceSelection {
@@ -21,6 +21,13 @@ export interface JobServiceSelection {
   budget: number;
   marketMin: number;
   marketMax: number;
+  // Optional flexibility (added 2026-05). When `useRange` is on, treat
+  // `budget` as the typical/midpoint and `budgetMin`/`budgetMax` as the
+  // customer's stated tolerance. `notes` is per-service free text.
+  useRange?: boolean;
+  budgetMin?: number;
+  budgetMax?: number;
+  notes?: string;
 }
 
 interface JobServicePickerProps {
@@ -123,11 +130,18 @@ export default function JobServicePicker({
   };
 
   const confirmCategorySwitch = () => {
-    if (pendingCategory) {
-      onCategoryChange(pendingCategory);
+    if (!pendingCategory) return;
+    if (pendingCategory === '__back__') {
+      // User wants to return to the category grid; drop the active category
+      // along with any selections so we don't keep stale services.
       onServicesChange([]);
+      onCategoryChange('');
       setPendingCategory(null);
+      return;
     }
+    onCategoryChange(pendingCategory);
+    onServicesChange([]);
+    setPendingCategory(null);
   };
 
   const cancelCategorySwitch = () => {
@@ -183,6 +197,56 @@ export default function JobServicePicker({
         s.serviceKey === serviceKey
           ? { ...s, budget: isNaN(num) || num < 0 ? 0 : num }
           : s
+      )
+    );
+  };
+
+  const handleBudgetMinChange = (serviceKey: string, value: string) => {
+    const num = parseFloat(value);
+    const min = isNaN(num) || num < 0 ? 0 : num;
+    onServicesChange(
+      selectedServices.map(s => {
+        if (s.serviceKey !== serviceKey) return s;
+        const max = s.budgetMax ?? 0;
+        const mid = max > 0 ? Math.round((min + max) / 2) : min;
+        return { ...s, budgetMin: min, budget: mid };
+      })
+    );
+  };
+
+  const handleBudgetMaxChange = (serviceKey: string, value: string) => {
+    const num = parseFloat(value);
+    const max = isNaN(num) || num < 0 ? 0 : num;
+    onServicesChange(
+      selectedServices.map(s => {
+        if (s.serviceKey !== serviceKey) return s;
+        const min = s.budgetMin ?? 0;
+        const mid = min > 0 ? Math.round((min + max) / 2) : max;
+        return { ...s, budgetMax: max, budget: mid };
+      })
+    );
+  };
+
+  const toggleRange = (serviceKey: string) => {
+    onServicesChange(
+      selectedServices.map(s => {
+        if (s.serviceKey !== serviceKey) return s;
+        if (s.useRange) {
+          // Collapse → keep midpoint as budget, clear min/max
+          return { ...s, useRange: false, budgetMin: undefined, budgetMax: undefined };
+        }
+        // Expand → seed from market range or current budget
+        const seedMin = s.marketMin > 0 ? s.marketMin : Math.max(1, Math.round((s.budget || 0) * 0.7));
+        const seedMax = s.marketMax > 0 ? s.marketMax : Math.round((s.budget || 0) * 1.3);
+        return { ...s, useRange: true, budgetMin: seedMin, budgetMax: seedMax };
+      })
+    );
+  };
+
+  const setNotes = (serviceKey: string, value: string | undefined) => {
+    onServicesChange(
+      selectedServices.map(s =>
+        s.serviceKey === serviceKey ? { ...s, notes: value } : s
       )
     );
   };
@@ -260,24 +324,64 @@ export default function JobServicePicker({
         </div>
       )}
 
-      {/* Category Grid — only shown when no category is selected */}
-      {!searchQuery && !selectedCategory && <div className="grid grid-cols-2 gap-2">
-        {categories.filter(c => c.isActive).map(cat => (
-          <button
-            key={cat.key}
-            type="button"
-            onClick={() => handleCategoryClick(cat.key)}
-            className="flex items-center gap-3 px-3 py-3 rounded-xl border-2 text-left transition-all border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-brand-500)]/50 hover:bg-[var(--hm-brand-500)]/4"
-          >
-            <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg text-[var(--hm-fg-muted)]">
-              <CategoryIcon type={cat.key} className="w-5 h-5" />
-            </span>
-            <span className="text-xs font-medium leading-tight line-clamp-2">
-              {pick({ en: cat.name, ka: cat.nameKa })}
-            </span>
-          </button>
-        ))}
-      </div>}
+      {/* Category grid — color-tinted cards using catalog `color`, with service count */}
+      {!searchQuery && !selectedCategory && (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
+          {categories.filter(c => c.isActive).map(cat => {
+            const accent = cat.color || 'var(--hm-brand-500)';
+            const subCount = cat.subcategories.filter(s => s.isActive !== false).length;
+            const svcCount = cat.subcategories.reduce(
+              (n, s) => n + ((s.services?.length) ?? 0),
+              0,
+            );
+            return (
+              <button
+                key={cat.key}
+                type="button"
+                onClick={() => handleCategoryClick(cat.key)}
+                className="group relative flex items-center gap-3 px-3.5 py-3.5 sm:px-4 sm:py-4 rounded-2xl text-left transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)] focus-visible:ring-offset-2"
+                style={{
+                  backgroundColor: 'var(--hm-bg-elevated)',
+                  border: '1px solid var(--hm-border-subtle)',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = accent;
+                  e.currentTarget.style.boxShadow = `0 6px 18px -8px ${accent}40, 0 1px 2px rgba(0,0,0,0.04)`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--hm-border-subtle)';
+                  e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.02)';
+                }}
+              >
+                {/* Color-tinted icon backplate — soft tint, real catalog color */}
+                <span
+                  className="flex-shrink-0 flex items-center justify-center rounded-xl w-11 h-11 sm:w-12 sm:h-12 transition-colors"
+                  style={{
+                    background: `${accent}14`,
+                    color: accent,
+                  }}
+                >
+                  <CategoryIcon type={cat.key} className="w-5 h-5 sm:w-6 sm:h-6" />
+                </span>
+                <span className="flex-1 min-w-0 flex flex-col gap-0.5">
+                  <span className="text-[13px] sm:text-sm font-semibold leading-tight text-[var(--hm-fg-primary)] line-clamp-2">
+                    {pick({ en: cat.name, ka: cat.nameKa })}
+                  </span>
+                  {svcCount > 0 && (
+                    <span className="text-[10px] sm:text-[11px] text-[var(--hm-fg-muted)]">
+                      {svcCount} {t('common.services').toLowerCase()}
+                    </span>
+                  )}
+                </span>
+                <ChevronRight
+                  className="w-4 h-4 flex-shrink-0 text-[var(--hm-fg-muted)] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
+                />
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Category switch confirmation */}
       {!searchQuery && pendingCategory && (
@@ -304,27 +408,78 @@ export default function JobServicePicker({
         </div>
       )}
 
-      {/* Services area */}
+      {/* Empty state — visible only when no category and no search query */}
       {!searchQuery && !selectedCategory && (
-        <p className="text-sm text-[var(--hm-fg-muted)] text-center py-4">
-          {t('job.selectCategoryFirst')}
-        </p>
+        <div className="flex flex-col items-center text-center py-2">
+          <Sparkles className="w-4 h-4 text-[var(--hm-brand-500)] mb-1" strokeWidth={1.6} />
+          <p className="text-[13px] font-medium text-[var(--hm-fg-secondary)]">
+            {t('job.selectCategoryFirst')}
+          </p>
+          <p className="mt-1 text-[11px] text-[var(--hm-fg-muted)]">
+            {t('job.searchOrPick')}
+          </p>
+        </div>
       )}
 
-      {!searchQuery && selectedCategoryData && (
+      {!searchQuery && selectedCategoryData && (() => {
+        const accent = selectedCategoryData.color || 'var(--hm-brand-500)';
+        return (
         <div className="space-y-4">
-          <p className="text-xs font-semibold text-[var(--hm-fg-muted)] uppercase tracking-wider">
-            {t('job.selectServices')}
-          </p>
+          {/* Selected category header — shows accent + back link */}
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2.5">
+              <span
+                className="flex items-center justify-center rounded-lg w-8 h-8"
+                style={{ background: `${accent}14`, color: accent }}
+              >
+                <CategoryIcon type={selectedCategoryData.key} className="w-4 h-4" />
+              </span>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-fg-muted)]">
+                  {t('job.selectServices')}
+                </span>
+                <span className="text-sm font-semibold text-[var(--hm-fg-primary)]">
+                  {pick({ en: selectedCategoryData.name, ka: selectedCategoryData.nameKa })}
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (selectedServices.length > 0) {
+                  setPendingCategory('__back__');
+                  return;
+                }
+                onCategoryChange('');
+              }}
+              className="group inline-flex items-center gap-1 text-[12px] font-medium text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
+              {t('job.changeCategory')}
+            </button>
+          </div>
 
           {selectedCategoryData.subcategories
             .filter(sub => sub.isActive && sub.services && sub.services.length > 0)
             .map(subcat => (
-              <div key={subcat.key} className="rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] overflow-hidden">
-                {/* Subcategory header */}
-                <div className="px-4 py-2.5 bg-[var(--hm-bg-tertiary)]/60 border-b border-[var(--hm-border)]">
-                  <span className="text-xs font-semibold text-[var(--hm-fg-secondary)]">
-                    {pick({ en: subcat.name, ka: subcat.nameKa })}
+              <div
+                key={subcat.key}
+                className="rounded-2xl border bg-[var(--hm-bg-elevated)] overflow-hidden"
+                style={{ borderColor: 'var(--hm-border-subtle)' }}
+              >
+                {/* Subcategory header — clean: thin color accent line on the left, neutral bg */}
+                <div
+                  className="flex items-center justify-between px-4 py-3 border-b"
+                  style={{ borderColor: 'var(--hm-border-subtle)' }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="block w-[3px] h-4 rounded-full" style={{ background: accent }} />
+                    <span className="text-[13px] font-semibold text-[var(--hm-fg-primary)]">
+                      {pick({ en: subcat.name, ka: subcat.nameKa })}
+                    </span>
+                  </div>
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--hm-fg-muted)]">
+                    {(subcat.services ?? []).length}
                   </span>
                 </div>
 
@@ -346,23 +501,30 @@ export default function JobServicePicker({
                       : selectedUnit
                         ? pick({ en: selectedUnit.label.en, ka: selectedUnit.label.ka })
                         : pick({ en: svc.unitName, ka: svc.unitNameKa });
+                    // Admin marked this service as quote-only — hide price inputs
+                    // and surface a "Request a quote" indicator instead.
+                    const isQuoteOnly = svc.pricingModel === 'quote';
 
                     return (
-                      <div key={svc.key} className="px-4 py-3">
+                      <div
+                        key={svc.key}
+                        className="px-4 py-3.5"
+                      >
                         <div className="flex items-start gap-3">
-                          {/* Checkbox */}
+                          {/* Checkbox — bumped to 22×22 with brand-tinted hover ring and a check icon that pops in */}
                           <button
                             type="button"
                             onClick={() => handleServiceToggle(svc.key, subcat.key)}
-                            className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center transition-all ${
+                            className={`flex-shrink-0 w-[22px] h-[22px] mt-px rounded-md border-2 flex items-center justify-center transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)] focus-visible:ring-offset-1 ${
                               isChecked
-                                ? 'bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)]'
-                                : 'border-[var(--hm-border-strong)] hover:border-[var(--hm-brand-500)]'
+                                ? 'border-[var(--hm-brand-500)] shadow-sm scale-[1.02]'
+                                : 'border-[var(--hm-border-strong)] hover:border-[var(--hm-brand-500)] hover:scale-[1.02]'
                             }`}
+                            style={isChecked ? { background: 'var(--hm-brand-500)' } : undefined}
                             aria-checked={isChecked}
                             role="checkbox"
                           >
-                            {isChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                            {isChecked && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
                           </button>
 
                           {/* Service info + unit picker + budget input */}
@@ -371,21 +533,41 @@ export default function JobServicePicker({
                               <span className="text-sm font-medium text-[var(--hm-fg-primary)]">
                                 {pick({ en: svc.name, ka: svc.nameKa })}
                               </span>
-                              {!isChecked && unitLabel && (
-                                <span className="text-[11px] text-[var(--hm-fg-muted)] bg-[var(--hm-bg-tertiary)] px-1.5 py-0.5 rounded">
+                              {!isChecked && unitLabel && !isQuoteOnly && (
+                                <span
+                                  className="text-[11px] text-[var(--hm-fg-muted)] px-1.5 py-0.5 rounded"
+                                  style={{ border: '1px solid var(--hm-border-subtle)' }}
+                                >
                                   {unitLabel}
                                 </span>
                               )}
-                              {/* Market price hint */}
-                              {marketMax > 0 && (
+                              {/* Quote-only badge — admin opted out of upfront pricing */}
+                              {isQuoteOnly && (
+                                <span className="text-[10px] font-semibold text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                  {t('job.quoteRequired')}
+                                </span>
+                              )}
+                              {/* Market price hint — suppressed for quote-only services */}
+                              {!isQuoteOnly && marketMax > 0 && (
                                 <span className="text-[11px] text-[var(--hm-fg-muted)]">
-                                  {t('job.marketPrice')}: {marketMin === marketMax ? `${marketMin}₾` : `${marketMin}–${marketMax}₾`}
+                                  {t('job.marketPrice')}: {marketMin === marketMax ? `${marketMin}₾` : `${marketMin}-${marketMax}₾`}
                                 </span>
                               )}
                             </div>
 
-                            {/* Unit picker + Budget input — only when checked */}
-                            {isChecked && (
+                            {/* Unit picker + Budget input — only when checked AND not quote-only */}
+                            {isChecked && isQuoteOnly && (
+                              <div
+                                className="mt-2 rounded-lg px-3 py-2.5 text-[12px]"
+                                style={{
+                                  border: '1px solid var(--hm-border-subtle)',
+                                  color: 'var(--hm-fg-secondary)',
+                                }}
+                              >
+                                {t('job.quoteOnlyExplain')}
+                              </div>
+                            )}
+                            {isChecked && !isQuoteOnly && (
                               <div className="mt-2 space-y-2">
                                 {/* Unit selector — pill buttons for multi-unit services */}
                                 {hasMultipleUnits && (
@@ -431,7 +613,7 @@ export default function JobServicePicker({
                                 {/* Quantity + Per-unit price */}
                                 <div
                                   className="rounded-lg px-3 py-2.5 space-y-2"
-                                  style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}
+                                  style={{ border: '1px solid var(--hm-border-subtle)' }}
                                 >
                                   <div className="flex items-center gap-3">
                                     {/* Quantity */}
@@ -455,30 +637,117 @@ export default function JobServicePicker({
 
                                     <span className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>×</span>
 
-                                    {/* Per-unit price */}
+                                    {/* Per-unit price (single OR min-max range) */}
                                     <div className="flex items-center gap-1.5 flex-1">
                                       <span className="text-[11px] font-medium shrink-0" style={{ color: 'var(--hm-fg-muted)' }}>
                                         {t('common.price')}/{unitLabel}
                                       </span>
-                                      <div className="relative flex-1 max-w-[120px]">
-                                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
-                                        <input
-                                          type="number"
-                                          min="0"
-                                          step="1"
-                                          value={budget === 0 ? '' : budget}
-                                          onChange={e => handleBudgetChange(svc.key, e.target.value)}
-                                          placeholder={`${marketMin}–${marketMax}`}
-                                          className="w-full pl-5 pr-2 py-1 text-[13px] font-semibold rounded-md border outline-none transition-all focus:border-[var(--hm-brand-500)]"
-                                          style={{
-                                            borderColor: 'var(--hm-border-subtle)',
-                                            backgroundColor: 'var(--hm-bg-elevated)',
-                                            color: 'var(--hm-fg-primary)',
-                                          }}
-                                        />
-                                      </div>
+                                      {selection?.useRange ? (
+                                        <div className="flex items-center gap-1 flex-1">
+                                          <div className="relative flex-1 max-w-[64px]">
+                                            <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                                            <input
+                                              type="number"
+                                              min="0"
+                                              step="1"
+                                              value={selection.budgetMin === undefined || selection.budgetMin === 0 ? '' : selection.budgetMin}
+                                              onChange={e => handleBudgetMinChange(svc.key, e.target.value)}
+                                              placeholder={`${marketMin}`}
+                                              aria-label={t('register.priceMin')}
+                                              className="w-full pl-4 pr-1 py-1 text-[12px] font-semibold rounded-md border outline-none transition-all focus:border-[var(--hm-brand-500)]"
+                                              style={{
+                                                borderColor: 'var(--hm-border-subtle)',
+                                                backgroundColor: 'var(--hm-bg-elevated)',
+                                                color: 'var(--hm-fg-primary)',
+                                              }}
+                                            />
+                                          </div>
+                                          <span className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>-</span>
+                                          <div className="relative flex-1 max-w-[64px]">
+                                            <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                                            <input
+                                              type="number"
+                                              min="0"
+                                              step="1"
+                                              value={selection.budgetMax === undefined || selection.budgetMax === 0 ? '' : selection.budgetMax}
+                                              onChange={e => handleBudgetMaxChange(svc.key, e.target.value)}
+                                              placeholder={`${marketMax}`}
+                                              aria-label={t('register.priceMax')}
+                                              className="w-full pl-4 pr-1 py-1 text-[12px] font-semibold rounded-md border outline-none transition-all focus:border-[var(--hm-brand-500)]"
+                                              style={{
+                                                borderColor: 'var(--hm-border-subtle)',
+                                                backgroundColor: 'var(--hm-bg-elevated)',
+                                                color: 'var(--hm-fg-primary)',
+                                              }}
+                                            />
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="relative flex-1 max-w-[120px]">
+                                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            step="1"
+                                            value={budget === 0 ? '' : budget}
+                                            onChange={e => handleBudgetChange(svc.key, e.target.value)}
+                                            placeholder={`${marketMin}-${marketMax}`}
+                                            className="w-full pl-5 pr-2 py-1 text-[13px] font-semibold rounded-md border outline-none transition-all focus:border-[var(--hm-brand-500)]"
+                                            style={{
+                                              borderColor: 'var(--hm-border-subtle)',
+                                              backgroundColor: 'var(--hm-bg-elevated)',
+                                              color: 'var(--hm-fg-primary)',
+                                            }}
+                                          />
+                                        </div>
+                                      )}
+                                      {/* Range toggle */}
+                                      <button
+                                        type="button"
+                                        onClick={() => toggleRange(svc.key)}
+                                        className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--hm-bg-elevated)]"
+                                        aria-label={selection?.useRange ? t('register.useFixedPrice') : t('register.useRangePrice')}
+                                        title={selection?.useRange ? t('register.useFixedPrice') : t('register.useRangePrice')}
+                                      >
+                                        <span className="text-[12px] font-bold" style={{ color: selection?.useRange ? 'var(--hm-brand-500)' : 'var(--hm-fg-muted)' }}>↔</span>
+                                      </button>
                                     </div>
                                   </div>
+
+                                  {/* Optional per-service note */}
+                                  {selection?.notes !== undefined ? (
+                                    <div className="flex items-start gap-1.5">
+                                      <textarea
+                                        value={selection.notes}
+                                        onChange={e => setNotes(svc.key, e.target.value)}
+                                        placeholder={t('register.priceNotePlaceholder')}
+                                        rows={2}
+                                        className="flex-1 text-[11px] rounded-md px-2 py-1.5 resize-none border outline-none focus:border-[var(--hm-brand-500)]"
+                                        style={{
+                                          borderColor: 'var(--hm-border-subtle)',
+                                          backgroundColor: 'var(--hm-bg-elevated)',
+                                          color: 'var(--hm-fg-primary)',
+                                        }}
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => setNotes(svc.key, undefined)}
+                                        className="w-5 h-5 mt-0.5 rounded-full shrink-0 flex items-center justify-center hover:bg-[var(--hm-error-50)]"
+                                        aria-label={t('common.close')}
+                                      >
+                                        <X className="w-3 h-3 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)]" />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => setNotes(svc.key, '')}
+                                      className="text-[10px] font-medium hover:text-[var(--hm-brand-500)]"
+                                      style={{ color: 'var(--hm-fg-muted)' }}
+                                    >
+                                      + {t('register.addNote')}
+                                    </button>
+                                  )}
 
                                   {/* Total line + market warnings */}
                                   <div className="flex items-center justify-between">
@@ -512,17 +781,32 @@ export default function JobServicePicker({
               </div>
             ))}
         </div>
-      )}
+        );
+      })()}
 
-      {/* Summary */}
+      {/* Summary — neutral footer with a vermillion check pill so the count is visible */}
       {selectedServices.length > 0 && (
-        <div className="rounded-xl border border-[var(--hm-brand-500)]/30 bg-[var(--hm-brand-500)]/5 p-4 flex items-center justify-between">
-          <span className="text-sm text-[var(--hm-fg-secondary)]">
-            <span className="font-semibold text-[var(--hm-fg-primary)]">{selectedServices.length}</span>{' '}
-            {t('job.servicesSelected')}
-          </span>
+        <div
+          className="rounded-2xl p-4 flex items-center justify-between gap-4 flex-wrap"
+          style={{
+            border: '1px solid var(--hm-border-subtle)',
+            background: 'var(--hm-bg-elevated)',
+          }}
+        >
+          <div className="flex items-center gap-2.5">
+            <span
+              className="flex items-center justify-center w-7 h-7 rounded-full text-white"
+              style={{ background: 'var(--hm-brand-500)' }}
+            >
+              <Check className="w-3.5 h-3.5" strokeWidth={3} />
+            </span>
+            <span className="text-sm text-[var(--hm-fg-secondary)]">
+              <span className="font-semibold text-[var(--hm-fg-primary)]">{selectedServices.length}</span>{' '}
+              {t('job.servicesSelected')}
+            </span>
+          </div>
           {totalBudget > 0 && (
-            <span className="text-sm font-semibold text-[var(--hm-brand-500)]">
+            <span className="text-sm font-semibold" style={{ color: 'var(--hm-brand-500)' }}>
               {t('job.totalBudget')}: {totalBudget}₾
             </span>
           )}

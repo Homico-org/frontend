@@ -520,11 +520,13 @@ export default function ReviewsTab({
                   className="p-0.5 transition-transform hover:scale-110"
                 >
                   <Star
-                    className={`w-8 h-8 transition-colors ${
+                    className="w-8 h-8 transition-colors"
+                    strokeWidth={1.75}
+                    style={
                       star <= (reviewHoverRating || reviewRating)
-                        ? "text-[var(--hm-warning-500)] fill-amber-400"
-                        : "text-[var(--hm-fg-muted)]"
-                    }`}
+                        ? { fill: 'var(--hm-brand-500)', color: 'var(--hm-brand-500)' }
+                        : { fill: 'transparent', color: 'var(--hm-border-strong)' }
+                    }
                   />
                 </button>
               ))}

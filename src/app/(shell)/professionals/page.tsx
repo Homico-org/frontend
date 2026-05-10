@@ -233,7 +233,7 @@ export default function ProfessionalsPage() {
           {!isAuthenticated && (
             <Link
               href="/register"
-              className="flex items-center justify-between gap-2.5 px-3 py-2.5 sm:p-4 bg-gradient-to-r from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20 rounded-lg sm:rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all group"
+              className="flex items-center justify-between gap-2.5 px-3 py-2.5 sm:p-4 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border-subtle)] rounded-lg sm:rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all group"
             >
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[var(--hm-brand-500)]/15 flex items-center justify-center flex-shrink-0">

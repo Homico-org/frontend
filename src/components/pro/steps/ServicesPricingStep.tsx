@@ -11,7 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAiServiceSearch } from "@/hooks/useAiServiceSearch";
 import AiSearchBar from "@/components/common/AiSearchBar";
 import { useClickOutside } from "@/hooks/useClickOutside";
-import { ArrowLeft, CheckCircle2, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
+import { ArrowLeft, Check, CheckCircle2, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 // ─── Exported types ──────────────────────────────────────────────────────────
@@ -31,6 +31,12 @@ export interface UnitPriceEntry {
   price: number;
   isActive: boolean;
   discountTiers: DiscountTier[];
+  // Optional range mode (added 2026-05). When `useRange` is true, the UI shows
+  // min/max inputs; on save, `price` is set to the midpoint for legacy consumers
+  // and `priceMin`/`priceMax` carry the explicit range.
+  useRange?: boolean;
+  priceMin?: number;
+  priceMax?: number;
 }
 
 export interface ServicePriceEntry {
@@ -50,6 +56,8 @@ export interface ServicePriceEntry {
   discountTiers: DiscountTier[];
   // Multi-unit pricing
   unitPrices?: UnitPriceEntry[];
+  // Pro's free-text explanation, e.g. "Prices vary by floor type" (added 2026-05).
+  notes?: string;
 }
 
 export interface SelectedSubcategoryWithPricing {
@@ -205,36 +213,137 @@ function ServiceUnitPricing({
       {/* Active unit rows — each with its own price + discount */}
       {activeUnits.map((up) => (
         <div key={up.unitKey} className="space-y-1.5">
-          {/* Price row */}
+          {/* Price row - on mobile the label takes its own row so it never
+              truncates; the Fixed|Range tabs + price inputs sit below it.
+              From sm: up everything fits on one line. */}
           <div
-            className="flex items-center gap-2 py-2 px-2.5 rounded-lg"
+            className="flex flex-wrap items-center gap-x-2 gap-y-2 py-2 px-2.5 rounded-lg"
             style={{
-              backgroundColor: 'var(--hm-bg-tertiary)',
               border: '1px solid var(--hm-border-subtle)',
             }}
           >
-            <span className="text-[12px] font-medium flex-1" style={{ color: 'var(--hm-fg-primary)' }}>
+            <span
+              className="text-[12px] font-medium w-full sm:w-auto sm:flex-1 sm:min-w-0"
+              style={{ color: 'var(--hm-fg-primary)' }}
+            >
               {up.unitLabel}
             </span>
+            {/* Mode segmented control — explicit "Fixed | Range" pills so pros
+                immediately see they can switch pricing models. Replaces the
+                tiny ↔ icon that nobody understood. */}
+            <div
+              className="inline-flex items-center rounded-full p-[2px] shrink-0"
+              style={{ background: 'var(--hm-n-100)' }}
+              role="tablist"
+              aria-label={t("register.useRangePrice")}
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={!up.useRange}
+                onClick={() => {
+                  if (up.useRange) {
+                    updateUnit(up.unitKey, { useRange: false, priceMin: undefined, priceMax: undefined });
+                  }
+                }}
+                className="px-2.5 py-[3px] rounded-full text-[11px] font-semibold transition-colors"
+                style={{
+                  background: !up.useRange ? 'var(--hm-bg-elevated)' : 'transparent',
+                  color: !up.useRange ? 'var(--hm-fg-primary)' : 'var(--hm-fg-muted)',
+                  boxShadow: !up.useRange ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
+                }}
+              >
+                {t("register.pricingFixed")}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={!!up.useRange}
+                onClick={() => {
+                  if (!up.useRange) {
+                    const seed = up.price > 0 ? up.price : up.defaultPrice;
+                    const seedMin = Math.max(1, Math.round(seed * 0.7));
+                    const seedMax = up.maxPrice && up.maxPrice > 0 ? up.maxPrice : Math.round(seed * 1.3);
+                    updateUnit(up.unitKey, { useRange: true, priceMin: seedMin, priceMax: seedMax });
+                  }
+                }}
+                className="px-2.5 py-[3px] rounded-full text-[11px] font-semibold transition-colors"
+                style={{
+                  background: up.useRange ? 'var(--hm-bg-elevated)' : 'transparent',
+                  color: up.useRange ? 'var(--hm-brand-500)' : 'var(--hm-fg-muted)',
+                  boxShadow: up.useRange ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
+                }}
+              >
+                {t("register.pricingRange")}
+              </button>
+            </div>
             <div className="flex items-center gap-1.5 shrink-0">
-              <div className="relative">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-medium z-10" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  inputSize="sm"
-                  value={up.price > 0 ? up.price.toString() : ""}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0;
-                    updateUnit(up.unitKey, { price: val });
-                  }}
-                  placeholder={up.defaultPrice > 0 ? `${up.defaultPrice}` : "0"}
-                  error={up.price === 0}
-                  className="w-18 pl-5 pr-2 text-[13px] font-semibold rounded-md"
-                />
-              </div>
-              {up.price === 0 && up.defaultPrice > 0 && (
+              {up.useRange ? (
+                /* Range inputs: min - max */
+                <>
+                  <div className="relative">
+                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-medium z-10" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      inputSize="sm"
+                      value={up.priceMin && up.priceMin > 0 ? up.priceMin.toString() : ""}
+                      onChange={(e) => {
+                        const min = parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0;
+                        const max = up.priceMax ?? 0;
+                        const mid = max > 0 ? Math.round((min + max) / 2) : min;
+                        updateUnit(up.unitKey, { priceMin: min, price: mid });
+                      }}
+                      placeholder={up.defaultPrice > 0 ? `${up.defaultPrice}` : t("register.priceMin")}
+                      error={!up.priceMin || up.priceMin === 0 || ((up.priceMax ?? 0) > 0 && (up.priceMin ?? 0) > (up.priceMax ?? 0))}
+                      className="w-[68px] pl-4 pr-1.5 text-[12px] font-semibold rounded-md"
+                      aria-label={t("register.priceMin")}
+                    />
+                  </div>
+                  <span className="text-[11px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>-</span>
+                  <div className="relative">
+                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-medium z-10" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      inputSize="sm"
+                      value={up.priceMax && up.priceMax > 0 ? up.priceMax.toString() : ""}
+                      onChange={(e) => {
+                        const max = parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0;
+                        const min = up.priceMin ?? 0;
+                        const mid = min > 0 ? Math.round((min + max) / 2) : max;
+                        updateUnit(up.unitKey, { priceMax: max, price: mid });
+                      }}
+                      placeholder={up.maxPrice && up.maxPrice > 0 ? `${up.maxPrice}` : t("register.priceMax")}
+                      error={!up.priceMax || up.priceMax === 0 || (up.priceMin ?? 0) > (up.priceMax ?? 0)}
+                      className="w-[68px] pl-4 pr-1.5 text-[12px] font-semibold rounded-md"
+                      aria-label={t("register.priceMax")}
+                    />
+                  </div>
+                </>
+              ) : (
+                /* Single price input (default) */
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-medium z-10" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    inputSize="sm"
+                    value={up.price > 0 ? up.price.toString() : ""}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0;
+                      updateUnit(up.unitKey, { price: val });
+                    }}
+                    placeholder={up.defaultPrice > 0 ? `${up.defaultPrice}` : "0"}
+                    error={up.price === 0}
+                    className="w-18 pl-5 pr-2 text-[13px] font-semibold rounded-md"
+                  />
+                </div>
+              )}
+              {!up.useRange && up.price === 0 && up.defaultPrice > 0 && (
                 <Button
                   type="button"
                   variant="link"
@@ -260,11 +369,13 @@ function ServiceUnitPricing({
             </div>
           </div>
 
-          {/* Per-unit discount tiers */}
+          {/* Per-unit discount tiers — readable "buy N+ → save X% → final price"
+              flow with labelled inputs and a soft success pill on the right */}
           {up.price > 0 && (
-            <div className="pl-3 space-y-1">
+            <div className="pl-3 space-y-1.5">
               {up.discountTiers.map((tier, tidx) => {
                 const discountedPrice = Math.round(up.price * (1 - tier.percent / 100));
+                const savings = up.price - discountedPrice;
                 const prevQty = tidx > 0 ? up.discountTiers[tidx - 1].minQuantity : 1;
                 const prevPercent = tidx > 0 ? up.discountTiers[tidx - 1].percent : 0;
                 const minQty = prevQty + 1;
@@ -277,7 +388,15 @@ function ServiceUnitPricing({
                   if (Object.keys(fixes).length > 0) updateDiscount(up.unitKey, up.discountTiers, tidx, fixes);
                 };
                 return (
-                  <div key={tidx} className="flex items-center gap-1.5 text-[11px]">
+                  <div
+                    key={tidx}
+                    className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5 px-2.5 py-1.5 rounded-lg text-[11px]"
+                    style={{ border: '1px solid var(--hm-border-subtle)' }}
+                  >
+                    {/* Quantity threshold */}
+                    <span className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: 'var(--hm-fg-muted)' }}>
+                      {t('common.from').toLowerCase()}
+                    </span>
                     <Input
                       type="text"
                       inputMode="numeric"
@@ -286,11 +405,14 @@ function ServiceUnitPricing({
                       onChange={(e) => updateDiscount(up.unitKey, up.discountTiers, tidx, { minQuantity: parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0 })}
                       onBlur={validate}
                       error={tier.minQuantity < minQty}
-                      className="w-9 px-1 py-0.5 text-center rounded font-semibold text-[11px] h-auto"
+                      className="w-10 px-1 py-0.5 text-center rounded font-semibold text-[12px] h-auto"
                     />
-                    <span style={{ color: 'var(--hm-fg-muted)' }}>+</span>
-                    <span style={{ color: 'var(--hm-fg-muted)' }}>→</span>
-                    <span style={{ color: 'var(--hm-fg-secondary)' }}>%</span>
+                    <span className="text-[10px]" style={{ color: 'var(--hm-fg-muted)' }}>{t('common.units').toLowerCase()}</span>
+
+                    {/* Arrow separator */}
+                    <span className="opacity-50" style={{ color: 'var(--hm-fg-muted)' }}>→</span>
+
+                    {/* Discount percent */}
                     <Input
                       type="text"
                       inputMode="numeric"
@@ -299,19 +421,38 @@ function ServiceUnitPricing({
                       onChange={(e) => updateDiscount(up.unitKey, up.discountTiers, tidx, { percent: parseInt(e.target.value.replace(/[^0-9]/g, "")) || 0 })}
                       onBlur={validate}
                       error={tier.percent < minPercent}
-                      className="w-9 px-1 py-0.5 text-center rounded font-semibold text-[11px] h-auto"
+                      className="w-10 px-1 py-0.5 text-center rounded font-semibold text-[12px] h-auto"
                     />
-                    <span className="font-bold text-[var(--hm-success-500)]">= {discountedPrice}₾</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => removeDiscount(up.unitKey, up.discountTiers, tidx)}
-                      className="ml-auto w-5 h-5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] [&_svg]:size-3"
-                      aria-label={t("common.close")}
-                    >
-                      <X />
-                    </Button>
+                    <span className="text-[10px]" style={{ color: 'var(--hm-fg-muted)' }}>%</span>
+
+                    {/* Result pill + remove button - wrap onto a second line on
+                        narrow screens so the pill never gets clipped. The
+                        `ml-auto` pushes them right when there's room on the
+                        first row, but `flex-wrap` lets them drop down cleanly
+                        when not. */}
+                    <div className="flex items-center gap-1 ml-auto">
+                      <span
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap"
+                        style={{
+                          color: 'var(--hm-success-500)',
+                          border: '1px solid rgba(62,143,90,0.25)',
+                        }}
+                      >
+                        {discountedPrice}₾
+                        <span className="text-[9px] opacity-70 font-medium">−{savings}</span>
+                      </span>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => removeDiscount(up.unitKey, up.discountTiers, tidx)}
+                        className="w-5 h-5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] [&_svg]:size-3"
+                        aria-label={t("common.close")}
+                      >
+                        <X />
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
@@ -320,10 +461,14 @@ function ServiceUnitPricing({
                 variant="ghost"
                 size="sm"
                 onClick={() => addDiscount(up.unitKey, up.discountTiers)}
-                className="text-[10px] font-medium hover:text-[var(--hm-brand-500)] h-auto px-0 py-0"
-                style={{ color: 'var(--hm-fg-muted)' }}
+                className="text-[11px] font-medium h-auto px-2 py-1 rounded-full"
+                style={{
+                  color: 'var(--hm-brand-500)',
+                  border: '1px dashed rgba(239,78,36,0.30)',
+                }}
               >
-                + {t("common.discount")}
+                <Plus className="w-3 h-3" />
+                {t("common.discount")}
               </Button>
             </div>
           )}
@@ -348,7 +493,7 @@ function ServiceUnitPricing({
 
           {showUnitPicker && (
             <div
-              className="absolute left-0 top-full mt-1 z-20 rounded-lg shadow-lg py-1 min-w-[180px]"
+              className="absolute left-0 top-full mt-1.5 z-20 rounded-xl shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)] py-1 min-w-[200px] overflow-hidden"
               style={{
                 backgroundColor: 'var(--hm-bg-elevated)',
                 border: '1px solid var(--hm-border-subtle)',
@@ -361,12 +506,12 @@ function ServiceUnitPricing({
                   variant="ghost"
                   size="sm"
                   onClick={() => activateUnit(up.unitKey)}
-                  className="w-full justify-start text-left px-3 py-2 text-[12px] font-medium hover:bg-[rgba(239,78,36,0.06)] rounded-none h-auto"
+                  className="w-full justify-between text-left px-3 py-2 text-[12px] font-medium hover:bg-[var(--hm-bg-tertiary)] rounded-none h-auto"
                   style={{ color: 'var(--hm-fg-primary)' }}
                 >
                   <span>{up.unitLabel}</span>
                   {up.defaultPrice > 0 && (
-                    <span className="ml-2 text-[10px]" style={{ color: 'var(--hm-fg-muted)' }}>
+                    <span className="text-[10px] tabular-nums" style={{ color: 'var(--hm-fg-muted)' }}>
                       ~{up.defaultPrice}₾
                     </span>
                   )}
@@ -586,10 +731,15 @@ export default function ServicesPricingStep({
             )}
           </div>
         ) : (
-          /* Category grid — clean, minimal */
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          /* Category grid — modern color-tinted cards using catalog `color`.
+             Each category gets its own brand color (cleaning=emerald,
+             plumbing=blue, painters=pink, etc.) instead of uniform vermillion.
+             Selected state is signalled by a green check + vermillion count
+             badge, NOT by tinting the entire card peach. */
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {categories.map((cat) => {
               const catName = pick({ en: cat.name, ka: cat.nameKa });
+              const accent = cat.color || 'var(--hm-brand-500)';
               // Only count subcategories that have at least 1 active service with price
               const selectedCount = cat.subcategories.filter((s) => {
                 if (!selectedKeys.has(s.key)) return false;
@@ -603,31 +753,46 @@ export default function ServicesPricingStep({
                   key={cat.key}
                   type="button"
                   onClick={() => goToCategory(cat.key)}
-                  className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-2.5 sm:gap-3 p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_6px_16px_-8px_rgba(239,78,36,0.25)] active:scale-[0.98]"
+                  className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-2.5 sm:gap-3 p-3 sm:p-3.5 rounded-2xl text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
                   style={{
-                    backgroundColor: hasSelections ? 'rgba(239,78,36,0.06)' : 'var(--hm-bg-elevated)',
-                    border: `1px solid ${hasSelections ? 'rgba(239,78,36,0.35)' : 'var(--hm-border-subtle)'}`,
+                    backgroundColor: 'var(--hm-bg-elevated)',
+                    border: `1px solid ${hasSelections ? accent : 'var(--hm-border-subtle)'}`,
+                    boxShadow: hasSelections
+                      ? `0 4px 14px -6px ${accent}40, 0 1px 2px rgba(0,0,0,0.03)`
+                      : '0 1px 2px rgba(0,0,0,0.02)',
                   }}
                 >
-                  {/* Icon — always primary color tint */}
+                  {/* Selected check pill — top-right, vermillion */}
+                  {hasSelections && (
+                    <div
+                      className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
+                      style={{
+                        background: 'var(--hm-brand-500)',
+                        boxShadow: '0 2px 6px -2px rgba(239,78,36,0.45)',
+                      }}
+                    >
+                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                    </div>
+                  )}
+
+                  {/* Icon — color-tinted backplate using the category's real color */}
                   <div
                     className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all group-hover:scale-105"
                     style={{
-                      backgroundColor: hasSelections ? 'var(--hm-brand-500)' : 'rgba(239,78,36,0.10)',
-                      color: hasSelections ? '#fff' : 'var(--hm-brand-500)',
-                      boxShadow: hasSelections ? '0 2px 8px -2px rgba(239,78,36,0.45)' : 'none',
+                      backgroundColor: `${accent}14`,
+                      color: accent,
                     }}
                   >
                     <CategoryIcon type={cat.icon || cat.key} className="w-5 h-5" />
                   </div>
 
-                  {/* Name */}
+                  {/* Name + count */}
                   <div className="flex-1 min-w-0">
                     <span className="text-[13px] sm:text-[14px] font-semibold block leading-tight" style={{ color: 'var(--hm-fg-primary)' }}>
                       {catName}
                     </span>
                     {hasSelections ? (
-                      <span className="text-[11px] font-medium text-[var(--hm-brand-500)] mt-0.5 inline-block">
+                      <span className="text-[11px] font-semibold mt-0.5 inline-block" style={{ color: 'var(--hm-brand-500)' }}>
                         {selectedCount} {t("browse.selectedCount")}
                       </span>
                     ) : (
@@ -637,14 +802,13 @@ export default function ServicesPricingStep({
                     )}
                   </div>
 
-                  {/* Arrow */}
-                  <ChevronRight
-                    className="w-4 h-4 shrink-0 transition-all hidden sm:block"
-                    style={{
-                      color: hasSelections ? 'var(--hm-brand-500)' : 'var(--hm-fg-muted)',
-                      opacity: hasSelections ? 0.9 : 0.4,
-                    }}
-                  />
+                  {/* Arrow — visible only when no selection (replaced by check pill when selected) */}
+                  {!hasSelections && (
+                    <ChevronRight
+                      className="w-4 h-4 shrink-0 transition-all hidden sm:block opacity-0 group-hover:opacity-60 group-hover:translate-x-0.5"
+                      style={{ color: 'var(--hm-fg-muted)' }}
+                    />
+                  )}
                 </button>
               );
             })}
@@ -682,10 +846,13 @@ export default function ServicesPricingStep({
             return (
               <div
                 key={sub.key}
-                className="rounded-xl transition-all"
+                className="rounded-2xl transition-all"
                 style={{
-                  backgroundColor: isSelected ? 'rgba(239,78,36,0.04)' : 'var(--hm-bg-elevated)',
-                  border: `1px solid ${isSelected ? 'rgba(239,78,36,0.2)' : 'var(--hm-border-subtle)'}`,
+                  backgroundColor: 'var(--hm-bg-elevated)',
+                  border: `1px solid ${isSelected ? 'var(--hm-brand-500)' : 'var(--hm-border-subtle)'}`,
+                  boxShadow: isSelected
+                    ? '0 4px 14px -8px rgba(239,78,36,0.30)'
+                    : '0 1px 2px rgba(0,0,0,0.02)',
                 }}
               >
                 {/* Toggle row */}
@@ -779,12 +946,9 @@ export default function ServicesPricingStep({
                             key={svc.serviceKey}
                             className="rounded-xl transition-all"
                             style={{
-                              backgroundColor: needsPrice
-                                ? 'rgba(239, 78, 36, 0.04)'
-                                : svc.isActive
-                                  ? 'var(--hm-bg-elevated)'
-                                  : 'var(--hm-bg-page)',
-                              border: `1px solid ${needsPrice ? 'rgba(239, 78, 36, 0.35)' : 'var(--hm-border-subtle)'}`,
+                              backgroundColor: 'var(--hm-bg-elevated)',
+                              border: `1px solid ${needsPrice ? 'var(--hm-brand-500)' : 'var(--hm-border-subtle)'}`,
+                              opacity: svc.isActive ? 1 : 0.6,
                             }}
                           >
                             {/* Service name + toggle row */}
@@ -831,25 +995,62 @@ export default function ServicesPricingStep({
                                 }
                               />
                               <div className="flex-1 min-w-0">
-                                <span className="text-[13px] font-medium block truncate" style={{ color: 'var(--hm-fg-primary)' }}>
+                                {/* On mobile we let the title wrap to two lines
+                                    instead of truncating, since the screen is
+                                    too narrow for long service names like
+                                    "PVC ფანჯრების მონტაჟი". Desktop keeps
+                                    truncate for the single-line row layout. */}
+                                <span
+                                  className="text-[13px] font-medium block sm:truncate leading-snug"
+                                  style={{ color: 'var(--hm-fg-primary)' }}
+                                >
                                   {svc.label}
                                 </span>
                               </div>
-                              {/* Show price summary when active */}
+                              {/* Show price summary when active. Range-mode
+                                  units expose their (priceMin, priceMax) span
+                                  instead of the midpoint, so the header
+                                  matches what the pro actually entered. */}
                               {svc.isActive && (() => {
-                                const activeUnits = svc.unitPrices?.filter(u => u.isActive && u.price > 0) || [];
+                                // Flag any range-mode unit where min > max so the
+                                // header shows an inline warning instead of a
+                                // misleading "1120-800₾" string.
+                                const hasInvertedRange = (svc.unitPrices ?? []).some((u) => {
+                                  if (!u.isActive || !u.useRange) return false;
+                                  const min = u.priceMin ?? 0;
+                                  const max = u.priceMax ?? 0;
+                                  return min > 0 && max > 0 && min > max;
+                                });
+                                if (hasInvertedRange) return (
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-warning-500)] shrink-0">
+                                    {t("register.invalidRange")}
+                                  </span>
+                                );
+                                const activeUnits = svc.unitPrices?.filter(u => {
+                                  if (!u.isActive) return false;
+                                  if (u.useRange) {
+                                    return (u.priceMin ?? 0) > 0 && (u.priceMax ?? 0) > 0;
+                                  }
+                                  return u.price > 0;
+                                }) || [];
                                 if (activeUnits.length === 0 && svc.price > 0) return (
                                   <span className="text-[13px] font-bold text-[var(--hm-brand-500)] shrink-0">{svc.price}₾</span>
                                 );
                                 if (activeUnits.length === 0) return (
                                   <span className="text-[10px] font-medium text-[var(--hm-warning-500)] shrink-0">{t("register.priceQuestion")}</span>
                                 );
-                                const prices = activeUnits.map(u => u.price);
-                                const min = Math.min(...prices);
-                                const max = Math.max(...prices);
+                                // Use the bounds from range-mode units, fall back to `price` for single-mode.
+                                let lo = Number.POSITIVE_INFINITY;
+                                let hi = Number.NEGATIVE_INFINITY;
+                                for (const u of activeUnits) {
+                                  const min = u.useRange ? (u.priceMin ?? u.price) : u.price;
+                                  const max = u.useRange ? (u.priceMax ?? u.price) : u.price;
+                                  if (min < lo) lo = min;
+                                  if (max > hi) hi = max;
+                                }
                                 return (
                                   <span className="text-[12px] font-bold text-[var(--hm-brand-500)] shrink-0">
-                                    {min === max ? `${min}₾` : `${min}–${max}₾`}
+                                    {lo === hi ? `${lo}₾` : `${lo}-${hi}₾`}
                                   </span>
                                 );
                               })()}
@@ -889,6 +1090,71 @@ export default function ServicesPricingStep({
                                     className="w-20 pl-6 pr-2 text-sm font-semibold rounded-lg"
                                   />
                                 </div>
+                              </div>
+                            )}
+
+                            {/* Optional pro note (e.g. "Price varies by floor type") */}
+                            {svc.isActive && (
+                              <div className="px-3 pb-2.5">
+                                {svc.notes !== undefined ? (
+                                  <div className="flex items-start gap-1.5">
+                                    <textarea
+                                      value={svc.notes}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        updateSub(sub.key, (s) => ({
+                                          ...s,
+                                          services: s.services.map((sv) =>
+                                            sv.serviceKey === svc.serviceKey ? { ...sv, notes: val } : sv
+                                          ),
+                                        }));
+                                      }}
+                                      placeholder={t("register.priceNotePlaceholder")}
+                                      rows={2}
+                                      className="flex-1 text-[11px] rounded-md px-2 py-1.5 resize-none outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 transition-shadow"
+                                      style={{
+                                        backgroundColor: 'var(--hm-bg-elevated)',
+                                        border: '1px solid var(--hm-border-subtle)',
+                                        color: 'var(--hm-fg-primary)',
+                                      }}
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon-sm"
+                                      onClick={() => {
+                                        updateSub(sub.key, (s) => ({
+                                          ...s,
+                                          services: s.services.map((sv) =>
+                                            sv.serviceKey === svc.serviceKey ? { ...sv, notes: undefined } : sv
+                                          ),
+                                        }));
+                                      }}
+                                      className="w-5 h-5 mt-0.5 shrink-0 [&_svg]:size-3"
+                                      aria-label={t("common.close")}
+                                    >
+                                      <X className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)]" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      updateSub(sub.key, (s) => ({
+                                        ...s,
+                                        services: s.services.map((sv) =>
+                                          sv.serviceKey === svc.serviceKey ? { ...sv, notes: "" } : sv
+                                        ),
+                                      }));
+                                    }}
+                                    className="text-[10px] font-medium hover:text-[var(--hm-brand-500)] h-auto px-0 py-0"
+                                    style={{ color: 'var(--hm-fg-muted)' }}
+                                  >
+                                    + {t("register.addNote")}
+                                  </Button>
+                                )}
                               </div>
                             )}
 

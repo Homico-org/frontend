@@ -41,6 +41,25 @@ interface LocalizedText {
   ru: string;
 }
 
+type PricingModel = 'fixed' | 'range' | 'from' | 'quote';
+type ServiceType =
+  | 'installation'
+  | 'repair'
+  | 'maintenance'
+  | 'consultation'
+  | 'emergency'
+  | 'recurring';
+
+const PRICING_MODELS: PricingModel[] = ['fixed', 'range', 'from', 'quote'];
+const SERVICE_TYPES: ServiceType[] = [
+  'installation',
+  'repair',
+  'maintenance',
+  'consultation',
+  'emergency',
+  'recurring',
+];
+
 interface CatalogService {
   key: string;
   label: LocalizedText;
@@ -51,6 +70,14 @@ interface CatalogService {
   unitLabel: LocalizedText;
   maxQuantity?: number;
   discountTiers?: { minQuantity: number; percent: number }[];
+  // Optional flexibility fields (added 2026-05)
+  priceRange?: { min: number; typical?: number; max: number };
+  pricingModel?: PricingModel;
+  serviceType?: ServiceType;
+  estimatedDurationMin?: number;
+  estimatedDurationMax?: number;
+  tags?: string[];
+  imageUrl?: string;
 }
 
 interface CatalogAddon {
@@ -64,14 +91,6 @@ interface CatalogAddon {
   iconName?: string;
 }
 
-interface CatalogVariant {
-  key: string;
-  label: LocalizedText;
-  services: CatalogService[];
-  addons: CatalogAddon[];
-  additionalServices: CatalogService[];
-}
-
 interface CatalogSubcategory {
   key: string;
   label: LocalizedText;
@@ -80,7 +99,6 @@ interface CatalogSubcategory {
   priceRange: { min: number; max?: number };
   sortOrder: number;
   isActive: boolean;
-  variants: CatalogVariant[];
   services: CatalogService[];
   addons: CatalogAddon[];
   additionalServices: CatalogService[];
@@ -116,6 +134,9 @@ type EditingCategory = {
   minPrice: number;
   sortOrder: number;
   isActive: boolean;
+  // Optional flexibility (added 2026-05)
+  imageUrl: string;
+  tagsCsv: string;
 };
 
 type EditingSubcategory = {
@@ -128,6 +149,9 @@ type EditingSubcategory = {
   sortOrder: number;
   isActive: boolean;
   orderDiscountTiers: { minQuantity: number | ''; percent: number | '' }[];
+  // Optional flexibility (added 2026-05)
+  imageUrl: string;
+  tagsCsv: string;
 };
 
 type EditingService = {
@@ -135,6 +159,10 @@ type EditingService = {
   labelEn: string;
   labelKa: string;
   labelRu: string;
+  // Optional service description (3 locales)
+  descEn: string;
+  descKa: string;
+  descRu: string;
   basePrice: number | '';
   maxPrice: number | '';
   unit: string;
@@ -143,6 +171,14 @@ type EditingService = {
   unitLabelRu: string;
   maxQuantity: number | '';
   discountTiers: { minQuantity: number | ''; percent: number | '' }[];
+  // Optional flexibility fields (added 2026-05)
+  pricingModel: PricingModel | '';
+  serviceType: ServiceType | '';
+  priceRangeMin: number | '';
+  priceRangeMax: number | '';
+  estimatedDurationMin: number | '';
+  estimatedDurationMax: number | '';
+  tagsCsv: string; // comma-separated tag input
 };
 
 type EditingAddon = {
@@ -166,6 +202,9 @@ const emptyEditingService = (): EditingService => ({
   labelEn: '',
   labelKa: '',
   labelRu: '',
+  descEn: '',
+  descKa: '',
+  descRu: '',
   basePrice: '',
   maxPrice: '',
   unit: 'piece',
@@ -174,6 +213,13 @@ const emptyEditingService = (): EditingService => ({
   unitLabelRu: '',
   maxQuantity: '',
   discountTiers: [],
+  pricingModel: '',
+  serviceType: '',
+  priceRangeMin: '',
+  priceRangeMax: '',
+  estimatedDurationMin: '',
+  estimatedDurationMax: '',
+  tagsCsv: '',
 });
 
 const emptyEditingAddon = (): EditingAddon => ({
@@ -197,6 +243,9 @@ const serviceToEditing = (s: CatalogService): EditingService => ({
   labelEn: s.label.en,
   labelKa: s.label.ka,
   labelRu: s.label.ru,
+  descEn: s.description?.en ?? '',
+  descKa: s.description?.ka ?? '',
+  descRu: s.description?.ru ?? '',
   basePrice: s.basePrice,
   maxPrice: s.maxPrice ?? '',
   unit: s.unit,
@@ -205,6 +254,13 @@ const serviceToEditing = (s: CatalogService): EditingService => ({
   unitLabelRu: s.unitLabel.ru,
   maxQuantity: s.maxQuantity ?? '',
   discountTiers: (s.discountTiers ?? []).map(t => ({ minQuantity: t.minQuantity, percent: t.percent })),
+  pricingModel: s.pricingModel ?? '',
+  serviceType: s.serviceType ?? '',
+  priceRangeMin: s.priceRange?.min ?? '',
+  priceRangeMax: s.priceRange?.max ?? '',
+  estimatedDurationMin: s.estimatedDurationMin ?? '',
+  estimatedDurationMax: s.estimatedDurationMax ?? '',
+  tagsCsv: (s.tags ?? []).join(', '),
 });
 
 const addonToEditing = (a: CatalogAddon): EditingAddon => ({
@@ -228,6 +284,15 @@ const editingToServicePayload = (e: EditingService): CatalogService => {
     .filter(t => t.minQuantity !== '' && t.percent !== '')
     .map(t => ({ minQuantity: Number(t.minQuantity), percent: Number(t.percent) }))
     .sort((a, b) => a.minQuantity - b.minQuantity);
+  const tags = e.tagsCsv
+    .split(',')
+    .map(t => t.trim())
+    .filter(t => t.length > 0);
+  const hasDescription = !!(e.descEn.trim() || e.descKa.trim() || e.descRu.trim());
+  const hasRange =
+    e.priceRangeMin !== '' &&
+    e.priceRangeMax !== '' &&
+    Number(e.priceRangeMax) > Number(e.priceRangeMin);
   return {
     key: e.key,
     label: { en: e.labelEn, ka: e.labelKa, ru: e.labelRu },
@@ -237,6 +302,26 @@ const editingToServicePayload = (e: EditingService): CatalogService => {
     unitLabel: { en: e.unitLabelEn, ka: e.unitLabelKa, ru: e.unitLabelRu },
     maxQuantity: e.maxQuantity !== '' ? Number(e.maxQuantity) : undefined,
     ...(tiers.length > 0 ? { discountTiers: tiers } : {}),
+    ...(hasDescription
+      ? { description: { en: e.descEn, ka: e.descKa, ru: e.descRu } }
+      : {}),
+    ...(e.pricingModel !== '' ? { pricingModel: e.pricingModel } : {}),
+    ...(e.serviceType !== '' ? { serviceType: e.serviceType } : {}),
+    ...(hasRange
+      ? {
+          priceRange: {
+            min: Number(e.priceRangeMin),
+            max: Number(e.priceRangeMax),
+          },
+        }
+      : {}),
+    ...(e.estimatedDurationMin !== ''
+      ? { estimatedDurationMin: Number(e.estimatedDurationMin) }
+      : {}),
+    ...(e.estimatedDurationMax !== ''
+      ? { estimatedDurationMax: Number(e.estimatedDurationMax) }
+      : {}),
+    ...(tags.length > 0 ? { tags } : {}),
   };
 };
 
@@ -1094,6 +1179,112 @@ function ServiceEditForm({
           </button>
         </div>
       </div>
+      {/* Description (3 locales) — optional, shown on landing/detail pages */}
+      <div>
+        <label style={labelStyle}>{t('admin.description')}</label>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+          <textarea
+            style={{ ...inputStyle, minHeight: 56, resize: 'vertical', fontFamily: 'inherit' }}
+            value={value.descEn}
+            onChange={e => set('descEn', e.target.value)}
+            placeholder="EN"
+          />
+          <textarea
+            style={{ ...inputStyle, minHeight: 56, resize: 'vertical', fontFamily: 'inherit' }}
+            value={value.descKa}
+            onChange={e => set('descKa', e.target.value)}
+            placeholder="KA"
+          />
+          <textarea
+            style={{ ...inputStyle, minHeight: 56, resize: 'vertical', fontFamily: 'inherit' }}
+            value={value.descRu}
+            onChange={e => set('descRu', e.target.value)}
+            placeholder="RU"
+          />
+        </div>
+      </div>
+
+      {/* Flexibility fields (added 2026-05). All optional. */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <div>
+          <label style={labelStyle}>Pricing model</label>
+          <select
+            style={selectStyle}
+            value={value.pricingModel}
+            onChange={e => set('pricingModel', e.target.value as PricingModel | '')}
+          >
+            <option value="">— default (fixed) —</option>
+            {PRICING_MODELS.map(m => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label style={labelStyle}>Service type</label>
+          <select
+            style={selectStyle}
+            value={value.serviceType}
+            onChange={e => set('serviceType', e.target.value as ServiceType | '')}
+          >
+            <option value="">—</option>
+            {SERVICE_TYPES.map(st => (
+              <option key={st} value={st}>{st}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
+        <div>
+          <label style={labelStyle}>Range min</label>
+          <input
+            style={inputStyle}
+            type="number"
+            value={value.priceRangeMin}
+            onChange={e => set('priceRangeMin', e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder="—"
+          />
+        </div>
+        <div>
+          <label style={labelStyle}>Range max</label>
+          <input
+            style={inputStyle}
+            type="number"
+            value={value.priceRangeMax}
+            onChange={e => set('priceRangeMax', e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder="—"
+          />
+        </div>
+        <div>
+          <label style={labelStyle}>Duration min (m)</label>
+          <input
+            style={inputStyle}
+            type="number"
+            value={value.estimatedDurationMin}
+            onChange={e => set('estimatedDurationMin', e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder="—"
+          />
+        </div>
+        <div>
+          <label style={labelStyle}>Duration max (m)</label>
+          <input
+            style={inputStyle}
+            type="number"
+            value={value.estimatedDurationMax}
+            onChange={e => set('estimatedDurationMax', e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder="—"
+          />
+        </div>
+      </div>
+      <div>
+        <label style={labelStyle}>Tags <span style={{ color: THEME.textDim }}>(comma-separated, e.g. urgent, eco, licensed)</span></label>
+        <input
+          style={inputStyle}
+          value={value.tagsCsv}
+          onChange={e => set('tagsCsv', e.target.value)}
+          placeholder="urgent, eco, licensed"
+        />
+      </div>
+
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <button onClick={onCancel} style={{ padding: '6px 14px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 13 }}>
           {t('common.cancel')}
@@ -1209,11 +1400,9 @@ function AddonEditForm({
   );
 }
 
-// ─── Services + Addons panel (shared for subcategory-level and variant-level) ─
+// ─── Services + Addons panel (subcategory-level only) ────────────────────────
 
-type ServiceAddonContext =
-  | { type: 'subcategory'; catKey: string; subKey: string; variantKey?: never }
-  | { type: 'variant'; catKey: string; subKey: string; variantKey: string };
+type ServiceAddonContext = { catKey: string; subKey: string };
 
 function ServiceAddonPanel({
   title,
@@ -1250,15 +1439,9 @@ function ServiceAddonPanel({
   const persistItemOrder = useCallback(async (reordered: (CatalogService | CatalogAddon)[]) => {
     const fieldKey = itemType === 'service' ? 'services' : itemType === 'additionalService' ? 'additionalServices' : 'addons';
     try {
-      if (context.type === 'variant') {
-        await api.put(`/service-catalog/${context.catKey}/subcategories/${context.subKey}/variants/${context.variantKey}`, {
-          [fieldKey]: reordered,
-        });
-      } else {
-        await api.put(`/service-catalog/${context.catKey}/subcategories/${context.subKey}`, {
-          [fieldKey]: reordered,
-        });
-      }
+      await api.put(`/service-catalog/${context.catKey}/subcategories/${context.subKey}`, {
+        [fieldKey]: reordered,
+      });
       toast.success(t('admin.reorderSaved'));
       onReload();
     } catch {
@@ -1273,23 +1456,12 @@ function ServiceAddonPanel({
     reorderTimeoutRef.current = setTimeout(() => persistItemOrder(reordered), 600);
   }, [persistItemOrder]);
 
-  const buildSubcatBody = (payload: CatalogService | CatalogAddon, sub: CatalogSubcategory | null) => {
-    // For subcategory-level, we send the full updated subcategory payload
-    // The api expects a CatalogSubcategory shape
-    return payload;
-  };
-
-  const upsertViaVariant = async (payload: CatalogService | CatalogAddon) => {
-    const { catKey, subKey, variantKey } = context as { catKey: string; subKey: string; variantKey: string };
-    await api.put(`/service-catalog/${catKey}/subcategories/${subKey}/variants/${variantKey}`, {
-      [itemType === 'service' ? 'services' : itemType === 'additionalService' ? 'additionalServices' : 'addons']: [payload],
-    });
-  };
+  const fieldKey = itemType === 'service' ? 'services' : itemType === 'additionalService' ? 'additionalServices' : 'addons';
 
   const upsertViaSubcategory = async (payload: CatalogService | CatalogAddon) => {
     const { catKey, subKey } = context;
     await api.put(`/service-catalog/${catKey}/subcategories/${subKey}`, {
-      [itemType === 'service' ? 'services' : itemType === 'additionalService' ? 'additionalServices' : 'addons']: [payload],
+      [fieldKey]: [payload],
     });
   };
 
@@ -1302,14 +1474,9 @@ function ServiceAddonPanel({
     });
     if (!ok) return;
     try {
-      if (context.type === 'variant') {
-        await api.delete(`/service-catalog/${context.catKey}/subcategories/${context.subKey}/variants/${context.variantKey}`);
-      } else {
-        await api.put(`/service-catalog/${context.catKey}/subcategories/${context.subKey}`, {
-          [itemType === 'service' ? 'services' : itemType === 'additionalService' ? 'additionalServices' : 'addons']:
-            safeItems.filter(i => i.key !== key),
-        });
-      }
+      await api.put(`/service-catalog/${context.catKey}/subcategories/${context.subKey}`, {
+        [fieldKey]: safeItems.filter(i => i.key !== key),
+      });
       onReload();
     } catch {
       toast.error(t('common.error'));
@@ -1320,11 +1487,7 @@ function ServiceAddonPanel({
     setSaving(true);
     try {
       const payload = isAddon ? editingToAddonPayload(newAddon) : editingToServicePayload(newService);
-      if (context.type === 'variant') {
-        await upsertViaVariant(payload);
-      } else {
-        await upsertViaSubcategory(payload);
-      }
+      await upsertViaSubcategory(payload);
       setAddingNew(false);
       setNewService(emptyEditingService());
       setNewAddon(emptyEditingAddon());
@@ -1340,17 +1503,10 @@ function ServiceAddonPanel({
     setSaving(true);
     try {
       const payload = isAddon ? editingToAddonPayload(editAddon) : editingToServicePayload(editService);
-      // Replace the item in the current list and re-PUT the full array
       const updatedItems = safeItems.map(i => i.key === editingKey ? payload : i);
-      if (context.type === 'variant') {
-        await api.put(`/service-catalog/${context.catKey}/subcategories/${context.subKey}/variants/${context.variantKey}`, {
-          [itemType === 'service' ? 'services' : itemType === 'additionalService' ? 'additionalServices' : 'addons']: updatedItems,
-        });
-      } else {
-        await api.put(`/service-catalog/${context.catKey}/subcategories/${context.subKey}`, {
-          [itemType === 'service' ? 'services' : itemType === 'additionalService' ? 'additionalServices' : 'addons']: updatedItems,
-        });
-      }
+      await api.put(`/service-catalog/${context.catKey}/subcategories/${context.subKey}`, {
+        [fieldKey]: updatedItems,
+      });
       setEditingKey(null);
       onReload();
     } catch {
@@ -1476,210 +1632,8 @@ function ServiceAddonPanel({
   );
 }
 
-// ─── Variant panel ────────────────────────────────────────────────────────────
-
-function VariantPanel({
-  variant,
-  catKey,
-  subKey,
-  onReload,
-  onDelete,
-  t,
-}: {
-  variant: CatalogVariant;
-  catKey: string;
-  subKey: string;
-  onReload: () => void;
-  onDelete: () => void;
-  t: (key: string) => string;
-}) {
-  const { locale } = useLanguage();
-  const [expanded, setExpanded] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [editLabel, setEditLabel] = useState<LocalizedText>(variant.label);
-  const [saving, setSaving] = useState(false);
-  const toast = useToast();
-
-  const saveVariant = async () => {
-    setSaving(true);
-    try {
-      await api.put(`/service-catalog/${catKey}/subcategories/${subKey}/variants/${variant.key}`, {
-        label: editLabel,
-      });
-      setEditing(false);
-      onReload();
-    } catch {
-      toast.error(t('common.error'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const context: ServiceAddonContext = { type: 'variant', catKey, subKey, variantKey: variant.key };
-
-  return (
-    <div style={{
-      borderRadius: 0,
-      border: `1px solid ${THEME.border}`,
-      background: THEME.surface,
-      marginBottom: 8,
-      overflow: 'hidden',
-    }}>
-      <div
-        style={{
-          display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px',
-          cursor: 'pointer', background: THEME.surfaceLight,
-        }}
-        onClick={() => setExpanded(p => !p)}
-      >
-        {expanded ? <ChevronDown size={14} color={THEME.textMuted} /> : <ChevronRight size={14} color={THEME.textMuted} />}
-        <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: THEME.text }}>
-          {variant.label?.[locale as 'en' | 'ka' | 'ru'] || variant.label?.en || variant.key} <span style={{ color: THEME.textDim, fontSize: 11 }}>({variant.key})</span>
-        </span>
-        <div style={{ display: 'flex', gap: 6 }} onClick={e => e.stopPropagation()}>
-          <button
-            onClick={() => setEditing(p => !p)}
-            style={{ padding: '3px 8px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.textMuted, fontSize: 12 }}
-          >
-            <Edit2 size={11} />
-          </button>
-          <button
-            onClick={onDelete}
-            style={{ padding: '3px 8px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', cursor: 'pointer', color: THEME.error, fontSize: 12 }}
-          >
-            <Trash2 size={11} />
-          </button>
-        </div>
-      </div>
-
-      {editing && (
-        <div style={{ padding: 12, borderTop: `1px solid ${THEME.border}`, background: THEME.surfaceLight }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
-            <div>
-              <label style={labelStyle}>{t('admin.nameEn')}</label>
-              <input style={inputStyle} value={editLabel.en} onChange={e => setEditLabel(p => ({ ...p, en: e.target.value }))} />
-            </div>
-            <div>
-              <label style={labelStyle}>{t('admin.nameKa')}</label>
-              <input style={inputStyle} value={editLabel.ka} onChange={e => setEditLabel(p => ({ ...p, ka: e.target.value }))} />
-            </div>
-            <div>
-              <label style={labelStyle}>{t('admin.nameRu')}</label>
-              <input style={inputStyle} value={editLabel.ru} onChange={e => setEditLabel(p => ({ ...p, ru: e.target.value }))} />
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <button onClick={() => setEditing(false)} style={{ padding: '5px 12px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 12 }}>
-              {t('common.cancel')}
-            </button>
-            <button onClick={saveVariant} disabled={saving} style={{ padding: '5px 12px', borderRadius: 0, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 12 }}>
-              {t('common.save')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {expanded && (
-        <div style={{ padding: 14 }}>
-          <ServiceAddonPanel
-            title={t('admin.services')}
-            itemType="service"
-            items={variant.services}
-            context={context}
-            onReload={onReload}
-            t={t}
-          />
-          <ServiceAddonPanel
-            title={t('admin.addons')}
-            itemType="addon"
-            items={variant.addons}
-            context={context}
-            onReload={onReload}
-            t={t}
-          />
-          <ServiceAddonPanel
-            title={t('admin.additionalServices')}
-            itemType="additionalService"
-            items={variant.additionalServices}
-            context={context}
-            onReload={onReload}
-            t={t}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Add Variant Form ─────────────────────────────────────────────────────────
-
-function AddVariantForm({
-  catKey,
-  subKey,
-  onDone,
-  onCancel,
-  t,
-}: {
-  catKey: string;
-  subKey: string;
-  onDone: () => void;
-  onCancel: () => void;
-  t: (key: string) => string;
-}) {
-  const toast = useToast();
-  const [key, setKey] = useState('');
-  const [label, setLabel] = useState<LocalizedText>(emptyLocalized());
-  const [saving, setSaving] = useState(false);
-
-  const save = async () => {
-    if (!key.trim()) return;
-    setSaving(true);
-    try {
-      await api.put(`/service-catalog/${catKey}/subcategories/${subKey}/variants/${key}`, {
-        label,
-        services: [],
-        addons: [],
-        additionalServices: [],
-      });
-      onDone();
-    } catch {
-      toast.error(t('common.error'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div style={{ padding: 12, borderRadius: 0, background: THEME.surfaceLight, border: `1px solid ${THEME.borderLight}`, display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div>
-        <label style={labelStyle}>{t('admin.categoryKey')}</label>
-        <input style={inputStyle} value={key} onChange={e => setKey(e.target.value)} placeholder="variant_key" />
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-        <div>
-          <label style={labelStyle}>{t('admin.nameEn')}</label>
-          <input style={inputStyle} value={label.en} onChange={e => setLabel(p => ({ ...p, en: e.target.value }))} />
-        </div>
-        <div>
-          <label style={labelStyle}>{t('admin.nameKa')}</label>
-          <input style={inputStyle} value={label.ka} onChange={e => setLabel(p => ({ ...p, ka: e.target.value }))} />
-        </div>
-        <div>
-          <label style={labelStyle}>{t('admin.nameRu')}</label>
-          <input style={inputStyle} value={label.ru} onChange={e => setLabel(p => ({ ...p, ru: e.target.value }))} />
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <button onClick={onCancel} style={{ padding: '6px 14px', borderRadius: 0, border: `1px solid ${THEME.border}`, background: 'transparent', color: THEME.textMuted, cursor: 'pointer', fontSize: 13 }}>
-          {t('common.cancel')}
-        </button>
-        <button onClick={save} disabled={saving} style={{ padding: '6px 14px', borderRadius: 0, border: 'none', background: THEME.primary, color: 'white', cursor: 'pointer', fontSize: 13 }}>
-          {t('common.save')}
-        </button>
-      </div>
-    </div>
-  );
-}
+// VariantPanel + AddVariantForm were removed in the 2026-05 stabilization
+// pass alongside the variants schema field.
 
 // ─── Subcategory Detail Panel ─────────────────────────────────────────────────
 
@@ -1707,10 +1661,10 @@ function SubcategoryDetail({
     sortOrder: sub.sortOrder ?? 0,
     isActive: sub.isActive ?? true,
     orderDiscountTiers: (sub.orderDiscountTiers ?? []).map(t => ({ minQuantity: t.minQuantity, percent: t.percent })),
+    imageUrl: (sub as CatalogSubcategory & { imageUrl?: string }).imageUrl ?? '',
+    tagsCsv: ((sub as CatalogSubcategory & { tags?: string[] }).tags ?? []).join(', '),
   });
   const [saving, setSaving] = useState(false);
-  const [addingVariant, setAddingVariant] = useState(false);
-  const [activeVariant, setActiveVariant] = useState<string>(sub.variants?.[0]?.key ?? '');
 
   const toggleActive = async () => {
     const newActive = !editing.isActive;
@@ -1732,6 +1686,10 @@ function SubcategoryDetail({
         .filter(t => t.minQuantity !== '' && t.percent !== '')
         .map(t => ({ minQuantity: Number(t.minQuantity), percent: Number(t.percent) }))
         .sort((a, b) => a.minQuantity - b.minQuantity);
+      const tags = editing.tagsCsv
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
       await api.put(`/service-catalog/${catKey}/subcategories/${sub.key}`, {
         label: editing.label,
         description: cleanDescription(editing.description),
@@ -1740,6 +1698,8 @@ function SubcategoryDetail({
         sortOrder: editing.sortOrder,
         isActive: editing.isActive,
         ...(validOrderTiers.length > 0 && { orderDiscountTiers: validOrderTiers }),
+        ...(editing.imageUrl.trim() ? { imageUrl: editing.imageUrl.trim() } : {}),
+        ...(tags.length > 0 ? { tags } : {}),
       });
       toast.success(t('admin.subcategoryUpdated'));
       onReload();
@@ -1750,26 +1710,7 @@ function SubcategoryDetail({
     }
   };
 
-  const deleteVariant = async (varKey: string) => {
-    const ok = await confirm({
-      title: t('admin.deleteVariantConfirmation'),
-      confirmLabel: t('common.delete'),
-      cancelLabel: t('common.cancel'),
-      variant: 'danger',
-    });
-    if (!ok) return;
-    try {
-      await api.delete(`/service-catalog/${catKey}/subcategories/${sub.key}/variants/${varKey}`);
-      toast.success(t('admin.variantDeleted'));
-      onReload();
-    } catch {
-      toast.error(t('common.error'));
-    }
-  };
-
-  const context: ServiceAddonContext = { type: 'subcategory', catKey, subKey: sub.key };
-  const variants = sub.variants ?? [];
-  const currentVariant = variants.find(v => v.key === activeVariant);
+  const context: ServiceAddonContext = { catKey, subKey: sub.key };
 
   return (
     <div>
@@ -1835,7 +1776,28 @@ function SubcategoryDetail({
             <input style={inputStyle} type="number" value={editing.sortOrder} onChange={e => setEditing(p => ({ ...p, sortOrder: Number(e.target.value) }))} />
           </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        {/* Optional flexibility fields (added 2026-05) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
+          <div>
+            <label style={labelStyle}>Image URL <span style={{ color: THEME.textDim }}>(landing hero)</span></label>
+            <input
+              style={inputStyle}
+              value={editing.imageUrl}
+              onChange={e => setEditing(p => ({ ...p, imageUrl: e.target.value }))}
+              placeholder="https://..."
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Tags <span style={{ color: THEME.textDim }}>(comma-separated)</span></label>
+            <input
+              style={inputStyle}
+              value={editing.tagsCsv}
+              onChange={e => setEditing(p => ({ ...p, tagsCsv: e.target.value }))}
+              placeholder="popular, urgent, eco"
+            />
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
           <button
             onClick={saveSubcategory}
             disabled={saving}
@@ -1897,78 +1859,17 @@ function SubcategoryDetail({
         </div>
       </div>
 
-      {/* Variants section */}
-      {variants.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <SectionHeader title={t('admin.variants')} count={variants.length} />
-          {/* Variant tabs */}
-          <div style={{ display: 'flex', gap: 4, marginBottom: 12, flexWrap: 'wrap' }}>
-            {variants.map(v => (
-              <button
-                key={v.key}
-                onClick={() => setActiveVariant(v.key)}
-                style={{
-                  padding: '5px 12px', borderRadius: 0, fontSize: 12, cursor: 'pointer',
-                  background: activeVariant === v.key ? THEME.primary : THEME.surface,
-                  color: activeVariant === v.key ? 'white' : THEME.textMuted,
-                  border: `1px solid ${activeVariant === v.key ? THEME.primary : THEME.border}`,
-                  fontWeight: activeVariant === v.key ? 600 : 400,
-                }}
-              >
-                {v.label?.[locale as 'en' | 'ka' | 'ru'] || v.label?.en || v.key}
-              </button>
-            ))}
-          </div>
-          {currentVariant && (
-            <VariantPanel
-              key={currentVariant.key}
-              variant={currentVariant}
-              catKey={catKey}
-              subKey={sub.key}
-              onReload={onReload}
-              onDelete={() => deleteVariant(currentVariant.key)}
-              t={t}
-            />
-          )}
-        </div>
-      )}
+      {/* Services */}
+      <ServiceAddonPanel
+        title={t('admin.services')}
+        itemType="service"
+        items={sub.services}
+        context={context}
+        onReload={onReload}
+        t={t}
+      />
 
-      {/* Add variant */}
-      {addingVariant ? (
-        <AddVariantForm
-          catKey={catKey}
-          subKey={sub.key}
-          onDone={() => { setAddingVariant(false); onReload(); }}
-          onCancel={() => setAddingVariant(false)}
-          t={t}
-        />
-      ) : (
-        <button
-          onClick={() => setAddingVariant(true)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px',
-            borderRadius: 0, border: `1px dashed ${THEME.border}`, background: 'transparent',
-            color: THEME.textMuted, cursor: 'pointer', fontSize: 12, marginBottom: 20,
-          }}
-        >
-          <Plus size={12} />
-          {t('admin.addVariant')}
-        </button>
-      )}
-
-      {/* Subcategory-level services (when no variants) */}
-      {variants.length === 0 && (
-        <ServiceAddonPanel
-          title={t('admin.services')}
-          itemType="service"
-          items={sub.services}
-          context={context}
-          onReload={onReload}
-          t={t}
-        />
-      )}
-
-      {/* Addons always shown */}
+      {/* Addons */}
       <ServiceAddonPanel
         title={t('admin.addons')}
         itemType="addon"
@@ -1978,16 +1879,15 @@ function SubcategoryDetail({
         t={t}
       />
 
-      {variants.length === 0 && (
-        <ServiceAddonPanel
-          title={t('admin.additionalServices')}
-          itemType="additionalService"
-          items={sub.additionalServices}
-          context={context}
-          onReload={onReload}
-          t={t}
-        />
-      )}
+      {/* Additional services */}
+      <ServiceAddonPanel
+        title={t('admin.additionalServices')}
+        itemType="additionalService"
+        items={sub.additionalServices}
+        context={context}
+        onReload={onReload}
+        t={t}
+      />
     </div>
   );
 }
@@ -2018,6 +1918,8 @@ function CategoryDetail({
     minPrice: category.minPrice,
     sortOrder: category.sortOrder,
     isActive: category.isActive,
+    imageUrl: (category as ServiceCatalogCategory & { imageUrl?: string }).imageUrl ?? '',
+    tagsCsv: ((category as ServiceCatalogCategory & { tags?: string[] }).tags ?? []).join(', '),
   });
   const [saving, setSaving] = useState(false);
   const [selectedSubKey, setSelectedSubKey] = useState<string | null>(null);
@@ -2026,6 +1928,7 @@ function CategoryDetail({
   const [newSub, setNewSub] = useState<EditingSubcategory>({
     key: '', label: emptyLocalized(), description: emptyLocalized(),
     iconName: '', priceRangeMin: 0, priceRangeMax: '', sortOrder: 0, isActive: true, orderDiscountTiers: [],
+    imageUrl: '', tagsCsv: '',
   });
   const [savingNewSub, setSavingNewSub] = useState(false);
   const [orderedSubs, setOrderedSubs] = useState(category.subcategories);
@@ -2070,6 +1973,10 @@ function CategoryDetail({
   const saveCategory = async () => {
     setSaving(true);
     try {
+      const tags = editingCat.tagsCsv
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
       await api.patch(`/service-catalog/${category.key}`, {
         label: editingCat.label,
         description: cleanDescription(editingCat.description),
@@ -2078,6 +1985,8 @@ function CategoryDetail({
         minPrice: editingCat.minPrice,
         sortOrder: editingCat.sortOrder,
         isActive: editingCat.isActive,
+        ...(editingCat.imageUrl.trim() ? { imageUrl: editingCat.imageUrl.trim() } : {}),
+        ...(tags.length > 0 ? { tags } : {}),
       });
       toast.success(t('admin.categoryUpdated'));
       onReload();
@@ -2099,14 +2008,13 @@ function CategoryDetail({
         priceRange: { min: newSub.priceRangeMin, max: newSub.priceRangeMax !== '' ? newSub.priceRangeMax : undefined },
         sortOrder: newSub.sortOrder,
         isActive: newSub.isActive,
-        variants: [],
         services: [],
         addons: [],
         additionalServices: [],
       });
       toast.success(t('admin.subcategoryUpdated'));
       setAddingSubcategory(false);
-      setNewSub({ key: '', label: emptyLocalized(), description: emptyLocalized(), iconName: '', priceRangeMin: 0, priceRangeMax: '', sortOrder: 0, isActive: true, orderDiscountTiers: [] });
+      setNewSub({ key: '', label: emptyLocalized(), description: emptyLocalized(), iconName: '', priceRangeMin: 0, priceRangeMax: '', sortOrder: 0, isActive: true, orderDiscountTiers: [], imageUrl: '', tagsCsv: '' });
       onReload();
     } catch {
       toast.error(t('common.error'));
@@ -2142,11 +2050,11 @@ function CategoryDetail({
     });
   };
 
-  const totalServices = category.subcategories.reduce((acc, sub) => {
-    const direct = (sub.services?.length ?? 0) + (sub.additionalServices?.length ?? 0);
-    const fromVariants = (sub.variants ?? []).reduce((va, v) => va + (v.services?.length ?? 0) + (v.additionalServices?.length ?? 0), 0);
-    return acc + direct + fromVariants;
-  }, 0);
+  const totalServices = category.subcategories.reduce(
+    (acc, sub) =>
+      acc + (sub.services?.length ?? 0) + (sub.additionalServices?.length ?? 0),
+    0,
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0, height: '100%' }}>
@@ -2245,6 +2153,27 @@ function CategoryDetail({
           <div>
             <label style={labelStyle}>{t('admin.sortOrder')}</label>
             <input style={inputStyle} type="number" value={editingCat.sortOrder} onChange={e => setEditingCat(p => ({ ...p, sortOrder: Number(e.target.value) }))} />
+          </div>
+        </div>
+        {/* Optional flexibility fields (added 2026-05) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
+          <div>
+            <label style={labelStyle}>Image URL <span style={{ color: THEME.textDim }}>(browse hero)</span></label>
+            <input
+              style={inputStyle}
+              value={editingCat.imageUrl}
+              onChange={e => setEditingCat(p => ({ ...p, imageUrl: e.target.value }))}
+              placeholder="https://..."
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Tags <span style={{ color: THEME.textDim }}>(comma-separated)</span></label>
+            <input
+              style={inputStyle}
+              value={editingCat.tagsCsv}
+              onChange={e => setEditingCat(p => ({ ...p, tagsCsv: e.target.value }))}
+              placeholder="popular, urgent, eco"
+            />
           </div>
         </div>
       </div>
@@ -2398,6 +2327,7 @@ function AddCategoryForm({
   const [form, setForm] = useState<EditingCategory>({
     key: '', label: emptyLocalized(), description: emptyLocalized(),
     iconName: '', color: 'var(--hm-brand-500)', minPrice: 0, sortOrder: 0, isActive: true,
+    imageUrl: '', tagsCsv: '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -2560,12 +2490,16 @@ function ServiceCatalogPageContent() {
   }, [persistCatOrder]);
 
   const totalSubcategories = categories.reduce((acc, c) => acc + c.subcategories.length, 0);
-  const totalServices = categories.reduce((acc, c) =>
-    acc + (c.subcategories ?? []).reduce((sa, sub) => {
-      const direct = (sub.services?.length ?? 0) + (sub.additionalServices?.length ?? 0);
-      const fromVariants = (sub.variants ?? []).reduce((va, v) => va + (v.services?.length ?? 0) + (v.additionalServices?.length ?? 0), 0);
-      return sa + direct + fromVariants;
-    }, 0), 0);
+  const totalServices = categories.reduce(
+    (acc, c) =>
+      acc +
+      (c.subcategories ?? []).reduce(
+        (sa, sub) =>
+          sa + (sub.services?.length ?? 0) + (sub.additionalServices?.length ?? 0),
+        0,
+      ),
+    0,
+  );
 
   if (isLoading) {
     return (

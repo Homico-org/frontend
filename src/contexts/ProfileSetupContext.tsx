@@ -164,6 +164,11 @@ export interface ProfileSetupContextValue {
     unitKey?: string;
     price: number;
     isActive: boolean;
+    // Optional range support (added 2026-05). When `priceMin`/`priceMax` are
+    // present, treat `price` as the typical/midpoint and surface the range.
+    priceMin?: number;
+    priceMax?: number;
+    notes?: string;
   }[];
   maxExperienceYears: number;
 
@@ -308,9 +313,22 @@ export function ProfileSetupProvider({
         sub.services
           .filter((s) => s.isActive)
           .flatMap((s) => {
-            // Multi-unit: emit one entry per active unit with price > 0
+            // Multi-unit: emit one entry per active unit with a usable value
+            // (single-mode price > 0 OR range mode with min < max).
             const activeUnits =
-              s.unitPrices?.filter((u) => u.isActive && u.price > 0) || [];
+              s.unitPrices?.filter((u) => {
+                if (!u.isActive) return false;
+                if (u.useRange) {
+                  const min = u.priceMin ?? 0;
+                  const max = u.priceMax ?? 0;
+                  // Reject inverted ranges - the validator (`isServicePriced`)
+                  // also rejects them so Save & Continue stays disabled, but
+                  // belt-and-suspenders here keeps a partially-invalid state
+                  // from sneaking into the payload.
+                  return min > 0 && max > 0 && min <= max;
+                }
+                return u.price > 0;
+              }) || [];
             if (activeUnits.length > 0) {
               return activeUnits.map((u) => ({
                 serviceId: s.serviceId,
@@ -323,6 +341,15 @@ export function ProfileSetupProvider({
                 unitKey: u.unitKey,
                 price: u.price,
                 isActive: true,
+                ...(u.useRange && u.priceMin && u.priceMax
+                  ? { priceMin: u.priceMin, priceMax: u.priceMax }
+                  : {}),
+                ...(u.discountTiers && u.discountTiers.length > 0
+                  ? { discountTiers: u.discountTiers }
+                  : {}),
+                ...(s.notes && s.notes.trim().length > 0
+                  ? { notes: s.notes.trim() }
+                  : {}),
               }));
             }
             // Fallback: single-unit legacy
@@ -337,6 +364,12 @@ export function ProfileSetupProvider({
                   subcategoryKey: s.subcategoryKey,
                   price: s.price,
                   isActive: true,
+                  ...(s.discountTiers && s.discountTiers.length > 0
+                    ? { discountTiers: s.discountTiers }
+                    : {}),
+                  ...(s.notes && s.notes.trim().length > 0
+                    ? { notes: s.notes.trim() }
+                    : {}),
                 },
               ];
             }
@@ -570,24 +603,32 @@ export function ProfileSetupProvider({
             parsed.portfolioProjects &&
             Array.isArray(parsed.portfolioProjects)
           ) {
+            // Spread-first preserves rich fields (source/clientName/rating/
+            // review/jobId/services/isVisible/displayOrder/completedDate) so
+            // they survive the load → state → save round-trip and don't get
+            // dropped by the backend's full-array replace on next submit.
             const cleanedProjects = parsed.portfolioProjects.map(
-              (p: RawPortfolioProject, idx: number) => ({
-                id: p.id || `project-${Date.now()}-${idx}`,
-                title: p.title || "",
-                description: p.description || "",
-                images: p.images || [],
-                videos: p.videos || [],
-                location: p.location,
-                beforeAfterPairs: (
-                  p.beforeAfter ||
-                  p.beforeAfterPairs ||
-                  []
-                ).map((pair: ApiBeforeAfterPair, pairIdx: number) => ({
-                  id: `pair-${Date.now()}-${pairIdx}`,
-                  beforeImage: pair.before || pair.beforeImage || "",
-                  afterImage: pair.after || pair.afterImage || "",
-                })),
-              }),
+              (p: RawPortfolioProject, idx: number) => {
+                const { _id, imageUrl, beforeAfter, ...preserved } = p;
+                return {
+                  ...preserved,
+                  id: p.id || _id || `project-${Date.now()}-${idx}`,
+                  title: p.title || "",
+                  description: p.description || "",
+                  images: p.images || (imageUrl ? [imageUrl] : []),
+                  videos: p.videos || [],
+                  location: p.location,
+                  beforeAfterPairs: (
+                    beforeAfter ||
+                    p.beforeAfterPairs ||
+                    []
+                  ).map((pair: ApiBeforeAfterPair, pairIdx: number) => ({
+                    id: `pair-${Date.now()}-${pairIdx}`,
+                    beforeImage: pair.before || pair.beforeImage || "",
+                    afterImage: pair.after || pair.afterImage || "",
+                  })),
+                };
+              },
             );
             setPortfolioProjects(cleanedProjects);
           }
@@ -651,6 +692,10 @@ export function ProfileSetupProvider({
               price: number;
               isActive: boolean;
               discountTiers?: { minQuantity: number; percent: number }[];
+              // Optional range support (added 2026-05)
+              priceMin?: number;
+              priceMax?: number;
+              notes?: string;
             }[];
             portfolioProjects?: RawPortfolioProject[];
             whatsapp?: string;
@@ -747,6 +792,15 @@ export function ProfileSetupProvider({
                   );
                   const hasAnyEntry = matchingEntries.length > 0;
 
+                  // Detect "is this stored entry a range?" — pro had range mode on
+                  // when both priceMin and priceMax are present and meaningfully differ.
+                  const hasRange = (sp: typeof matchingEntries[number]): boolean =>
+                    sp.priceMin !== undefined &&
+                    sp.priceMax !== undefined &&
+                    sp.priceMin > 0 &&
+                    sp.priceMax > 0 &&
+                    sp.priceMin !== sp.priceMax;
+
                   // Build unitPrices from catalog unitOptions + stored prices
                   const unitPrices: UnitPriceEntry[] =
                     catSvc.unitOptions && catSvc.unitOptions.length > 0
@@ -754,6 +808,7 @@ export function ProfileSetupProvider({
                           const stored = matchingEntries.find(
                             (sp) => sp.unitKey === uo.key,
                           );
+                          const useRange = stored ? hasRange(stored) : false;
                           return {
                             unitKey: uo.key,
                             unit: uo.unit,
@@ -768,29 +823,54 @@ export function ProfileSetupProvider({
                               ? (stored.isActive ?? true)
                               : false,
                             discountTiers: stored?.discountTiers || [],
+                            // Round-trip pro's range and notes (added 2026-05)
+                            ...(useRange
+                              ? {
+                                  useRange: true,
+                                  priceMin: stored?.priceMin,
+                                  priceMax: stored?.priceMax,
+                                }
+                              : {}),
                           };
                         })
                       : [
-                          {
-                            unitKey: catSvc.unit,
-                            unit: catSvc.unit,
-                            unitLabel: pick({
-                              en: catSvc.unitName,
-                              ka: catSvc.unitNameKa,
-                            }),
-                            defaultPrice: catSvc.basePrice,
-                            maxPrice: catSvc.maxPrice,
-                            price: matchingEntries[0]?.price || 0,
-                            isActive: hasAnyEntry,
-                            discountTiers:
-                              matchingEntries[0]?.discountTiers || [],
-                          },
+                          (() => {
+                            const stored = matchingEntries[0];
+                            const useRange = stored ? hasRange(stored) : false;
+                            return {
+                              unitKey: catSvc.unit,
+                              unit: catSvc.unit,
+                              unitLabel: pick({
+                                en: catSvc.unitName,
+                                ka: catSvc.unitNameKa,
+                              }),
+                              defaultPrice: catSvc.basePrice,
+                              maxPrice: catSvc.maxPrice,
+                              price: stored?.price || 0,
+                              isActive: hasAnyEntry,
+                              discountTiers: stored?.discountTiers || [],
+                              ...(useRange
+                                ? {
+                                    useRange: true,
+                                    priceMin: stored?.priceMin,
+                                    priceMax: stored?.priceMax,
+                                  }
+                                : {}),
+                            };
+                          })(),
                         ];
 
                   // Legacy price = first active unit's price
                   const firstActive = unitPrices.find(
                     (u) => u.isActive && u.price > 0,
                   );
+
+                  // Pro's note is per-servicePricing entry but semantically per
+                  // service — pick the first non-empty note across this service's
+                  // matching entries.
+                  const storedNote = matchingEntries.find(
+                    (sp) => sp.notes && sp.notes.trim().length > 0,
+                  )?.notes;
 
                   return {
                     serviceKey: catSvc.key,
@@ -810,6 +890,7 @@ export function ProfileSetupProvider({
                       matchingEntries[0]?.discountTiers ||
                       [],
                     unitPrices,
+                    ...(storedNote ? { notes: storedNote } : {}),
                   };
                 }),
               });
@@ -948,24 +1029,33 @@ export function ProfileSetupProvider({
             profile.portfolioProjects &&
             profile.portfolioProjects.length > 0
           ) {
+            // Spread-first preserves rich fields from MongoDB (source,
+            // clientName, clientAvatar, rating, review, jobId, services,
+            // isVisible, displayOrder, completedDate). Without this they were
+            // silently lost on every save - the backend does a full-array
+            // replace and the prior 6-field whitelist dropped everything else.
             loadedProjects = profile.portfolioProjects.map(
-              (p: RawPortfolioProject, idx: number) => ({
-                id: p.id || `project-${Date.now()}-${idx}`,
-                title: p.title || "",
-                description: p.description || "",
-                images: p.images || [],
-                videos: p.videos || [],
-                location: p.location || "",
-                beforeAfterPairs: (
-                  p.beforeAfter ||
-                  p.beforeAfterPairs ||
-                  []
-                ).map((pair: ApiBeforeAfterPair, pairIdx: number) => ({
-                  id: `pair-${Date.now()}-${pairIdx}`,
-                  beforeImage: pair.before || pair.beforeImage || "",
-                  afterImage: pair.after || pair.afterImage || "",
-                })),
-              }),
+              (p: RawPortfolioProject, idx: number) => {
+                const { _id, imageUrl, beforeAfter, ...preserved } = p;
+                return {
+                  ...preserved,
+                  id: p.id || _id || `project-${Date.now()}-${idx}`,
+                  title: p.title || "",
+                  description: p.description || "",
+                  images: p.images || (imageUrl ? [imageUrl] : []),
+                  videos: p.videos || [],
+                  location: p.location || "",
+                  beforeAfterPairs: (
+                    beforeAfter ||
+                    p.beforeAfterPairs ||
+                    []
+                  ).map((pair: ApiBeforeAfterPair, pairIdx: number) => ({
+                    id: `pair-${Date.now()}-${pairIdx}`,
+                    beforeImage: pair.before || pair.beforeImage || "",
+                    afterImage: pair.after || pair.afterImage || "",
+                  })),
+                };
+              },
             );
           }
 
@@ -977,25 +1067,33 @@ export function ProfileSetupProvider({
               const portfolioData =
                 (await portfolioRes.json()) as RawPortfolioProject[];
               if (portfolioData && portfolioData.length > 0) {
+                // Spread-first preserves rich fields from the dedicated
+                // /portfolio/pro/:id endpoint (rating, review, clientName,
+                // jobId, etc.) so the merge into `loadedProjects` doesn't
+                // lose them either.
                 const fetchedProjects = portfolioData.map(
-                  (p: RawPortfolioProject, idx: number) => ({
-                    id: p.id || p._id || `portfolio-${Date.now()}-${idx}`,
-                    title: p.title || "",
-                    description: p.description || "",
-                    images:
-                      p.images || ([p.imageUrl].filter(Boolean) as string[]),
-                    videos: p.videos || [],
-                    location: p.location || "",
-                    beforeAfterPairs: (
-                      p.beforeAfter ||
-                      p.beforeAfterPairs ||
-                      []
-                    ).map((pair: ApiBeforeAfterPair, pairIdx: number) => ({
-                      id: `pair-${Date.now()}-${pairIdx}`,
-                      beforeImage: pair.before || pair.beforeImage || "",
-                      afterImage: pair.after || pair.afterImage || "",
-                    })),
-                  }),
+                  (p: RawPortfolioProject, idx: number) => {
+                    const { _id, imageUrl, beforeAfter, ...preserved } = p;
+                    return {
+                      ...preserved,
+                      id: p.id || _id || `portfolio-${Date.now()}-${idx}`,
+                      title: p.title || "",
+                      description: p.description || "",
+                      images:
+                        p.images || ([imageUrl].filter(Boolean) as string[]),
+                      videos: p.videos || [],
+                      location: p.location || "",
+                      beforeAfterPairs: (
+                        beforeAfter ||
+                        p.beforeAfterPairs ||
+                        []
+                      ).map((pair: ApiBeforeAfterPair, pairIdx: number) => ({
+                        id: `pair-${Date.now()}-${pairIdx}`,
+                        beforeImage: pair.before || pair.beforeImage || "",
+                        afterImage: pair.after || pair.afterImage || "",
+                      })),
+                    };
+                  },
                 );
                 const existingTitles = new Set(
                   loadedProjects.map((p) => p.title),
@@ -1112,15 +1210,50 @@ export function ProfileSetupProvider({
     price: number;
     unitPrices?: UnitPriceEntry[];
   }) => {
+    // A unit counts as priced when:
+    //  - Single-mode: `price > 0`
+    //  - Range-mode: both `priceMin > 0` and `priceMax > 0` AND `priceMin <= priceMax`
+    // Range-mode entries with `min > max` are an explicit invalid state - the
+    // UI surfaces a red border on the max input and Save & Continue stays
+    // disabled until the pro fixes it. Both paths are accepted so toggling
+    // range mode doesn't accidentally disable the Save & Continue button.
     const activeUnits =
-      svc.unitPrices?.filter((u) => u.isActive && u.price > 0) || [];
+      svc.unitPrices?.filter((u) => {
+        if (!u.isActive) return false;
+        if (u.useRange) {
+          const min = u.priceMin ?? 0;
+          const max = u.priceMax ?? 0;
+          return min > 0 && max > 0 && min <= max;
+        }
+        return u.price > 0;
+      }) || [];
     return activeUnits.length > 0 || svc.price > 0;
   };
   const allActiveServices = selectedSubcategoriesWithPricing.flatMap((s) =>
     s.services.filter((svc) => svc.isActive),
   );
+  // Hard-block save when ANY active range-mode unit has `min > max` (with both
+  // sides entered). Unlike unpriced services (which the permissive "some"
+  // rule below tolerates), an inverted range is an explicit user error that
+  // would persist garbage to the backend - so we override the permissive gate.
+  const hasInvalidRange = allActiveServices.some((svc) =>
+    (svc.unitPrices ?? []).some((u) => {
+      if (!u.isActive || !u.useRange) return false;
+      const min = u.priceMin ?? 0;
+      const max = u.priceMax ?? 0;
+      return min > 0 && max > 0 && min > max;
+    }),
+  );
+  // Permissive rule (2026-05): the Save & Continue button unlocks as soon as
+  // the pro has at least ONE priced active service. Unpriced services are
+  // surfaced via the inline "N price missing" badge per-subcategory so the
+  // pro can come back and fix them — they no longer silently disable the
+  // global Save button (which made debugging "why is it disabled?" painful).
+  // Inverted ranges still hard-block via `hasInvalidRange`.
   const allActiveServicesPriced =
-    allActiveServices.length > 0 && allActiveServices.every(isServicePriced);
+    allActiveServices.length > 0 &&
+    allActiveServices.some(isServicePriced) &&
+    !hasInvalidRange;
 
   const validation: ProfileSetupValidation = useMemo(
     () => ({
@@ -1277,42 +1410,11 @@ export function ProfileSetupProvider({
                   nameKa: s.nameKa,
                   experience: s.experience,
                 }));
-          const pricing = selectedSubcategoriesWithPricing.flatMap((sub) =>
-            sub.services
-              .filter((s) => s.isActive)
-              .flatMap((s) => {
-                const activeUnits =
-                  s.unitPrices?.filter((u) => u.isActive && u.price > 0) || [];
-                if (activeUnits.length > 0) {
-                  return activeUnits.map((u) => ({
-                    serviceKey: s.serviceKey,
-                    categoryKey: sub.categoryKey,
-                    subcategoryKey: sub.key,
-                    unitKey: u.unitKey,
-                    price: u.price,
-                    isActive: true,
-                    ...(u.discountTiers.length > 0
-                      ? { discountTiers: u.discountTiers }
-                      : {}),
-                  }));
-                }
-                if (s.price > 0) {
-                  return [
-                    {
-                      serviceKey: s.serviceKey,
-                      categoryKey: sub.categoryKey,
-                      subcategoryKey: sub.key,
-                      price: s.price,
-                      isActive: true,
-                      ...(s.discountTiers.length > 0
-                        ? { discountTiers: s.discountTiers }
-                        : {}),
-                    },
-                  ];
-                }
-                return [];
-              }),
-          );
+          // Single source of truth: reuse the `servicePricing` useMemo above so
+          // range fields (`priceMin`/`priceMax`/`notes`) round-trip on every
+          // save path. Previously this inline serializer silently stripped them
+          // and range pricing never reached the backend.
+          const pricing = servicePricing;
           return {
             categories: cats.length > 0 ? cats : undefined,
             subcategories: subs.length > 0 ? subs : undefined,
@@ -1332,8 +1434,14 @@ export function ProfileSetupProvider({
                 : formData.serviceAreas,
           };
         case "portfolio":
+          // Explicit whitelist matching `PortfolioProjectDto`. Same rationale
+          // as the final-submit path: extra fields would 400 against
+          // `forbidNonWhitelisted: true`, and the User schema doesn't have
+          // `clientName`/`clientAvatar`/`rating`/`review` (those live in the
+          // separate `/portfolios` collection).
           return {
             portfolioProjects: portfolioProjects.map((p) => ({
+              ...(p.id ? { id: p.id } : {}),
               title: p.title,
               description: p.description,
               images: p.images,
@@ -1343,6 +1451,12 @@ export function ProfileSetupProvider({
                 beforeImage: pair.beforeImage,
                 afterImage: pair.afterImage,
               })),
+              ...(p.source ? { source: p.source } : {}),
+              ...(p.jobId ? { jobId: p.jobId } : {}),
+              ...(p.isVisible !== undefined ? { isVisible: p.isVisible } : {}),
+              ...(p.displayOrder !== undefined ? { displayOrder: p.displayOrder } : {}),
+              ...(p.completedDate ? { completedDate: p.completedDate } : {}),
+              ...(p.services && p.services.length > 0 ? { services: p.services } : {}),
             })),
           };
         default:
@@ -1378,12 +1492,19 @@ export function ProfileSetupProvider({
       // Set saving immediately and keep it until navigation completes
       setIsSaving(true);
 
-      // Save current step data to backend
+      // Save current step data to backend.
+      //
+      // Previously we swallowed any error silently and navigated regardless,
+      // so a 400 (validation), 401 (expired token), or 5xx (server down) at
+      // an intermediate step would let the user move on thinking they saved.
+      // The same payload would then fail at final-submit, surfacing the error
+      // at the wrong place. Now we surface the failure inline and BLOCK
+      // navigation - the user can fix the issue or hit back.
       const payload = getStepPayload(currentSlug);
       if (Object.keys(payload).length > 0) {
         try {
           const token = localStorage.getItem("access_token");
-          await fetch(
+          const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`,
             {
               method: "PATCH",
@@ -1394,8 +1515,22 @@ export function ProfileSetupProvider({
               body: JSON.stringify(payload),
             },
           );
+          if (!response.ok) {
+            const data = (await response.json().catch(() => ({}))) as {
+              message?: string | string[];
+            };
+            const msg = Array.isArray(data.message)
+              ? data.message.join("; ")
+              : data.message;
+            setError(msg || `Save failed (${response.status})`);
+            setIsSaving(false);
+            return;
+          }
         } catch {
-          // Don't block navigation on save failure — data is still in context
+          // Network error - surface and block navigation
+          setError("Network error - please check your connection");
+          setIsSaving(false);
+          return;
         }
       }
 
@@ -1453,7 +1588,17 @@ export function ProfileSetupProvider({
         }
       }
 
+      // Explicit whitelist matching `PortfolioProjectDto` on the backend. The
+      // backend uses `forbidNonWhitelisted: true`, so sending extra fields
+      // would 400 the entire save. Specifically `clientName`/`clientAvatar`/
+      // `rating`/`review` live in the separate `/portfolios` collection and
+      // get merged into local state for display only - they must NOT round
+      // back to `user.portfolioProjects` (different schema). Everything else
+      // (`source`/`jobId`/`isVisible`/`displayOrder`/`completedDate`/`services`)
+      // is in both the DTO and the User schema, so we round-trip it here to
+      // stop wiping Homico-job markers on every profile-setup save.
       const cleanedPortfolioProjects = portfolioProjects.map((p) => ({
+        ...(p.id ? { id: p.id } : {}),
         title: p.title,
         description: p.description,
         images: p.images,
@@ -1463,6 +1608,12 @@ export function ProfileSetupProvider({
           beforeImage: pair.beforeImage,
           afterImage: pair.afterImage,
         })),
+        ...(p.source ? { source: p.source } : {}),
+        ...(p.jobId ? { jobId: p.jobId } : {}),
+        ...(p.isVisible !== undefined ? { isVisible: p.isVisible } : {}),
+        ...(p.displayOrder !== undefined ? { displayOrder: p.displayOrder } : {}),
+        ...(p.completedDate ? { completedDate: p.completedDate } : {}),
+        ...(p.services && p.services.length > 0 ? { services: p.services } : {}),
       }));
 
       const requestBody: Record<string, unknown> = {
@@ -1540,48 +1691,10 @@ export function ProfileSetupProvider({
         facebookUrl: formData.facebook || undefined,
         linkedinUrl: formData.linkedin || undefined,
         websiteUrl: formData.website || undefined,
-        servicePricing:
-          selectedSubcategoriesWithPricing.length > 0
-            ? selectedSubcategoriesWithPricing.flatMap((sub) =>
-                sub.services
-                  .filter((s) => s.isActive)
-                  .flatMap((s) => {
-                    // Multi-unit: emit one entry per active unit with price > 0
-                    const activeUnits =
-                      s.unitPrices?.filter((u) => u.isActive && u.price > 0) ||
-                      [];
-                    if (activeUnits.length > 0) {
-                      return activeUnits.map((u) => ({
-                        serviceKey: s.serviceKey,
-                        categoryKey: sub.categoryKey,
-                        subcategoryKey: sub.key,
-                        unitKey: u.unitKey,
-                        price: u.price,
-                        isActive: true,
-                        ...(u.discountTiers.length > 0
-                          ? { discountTiers: u.discountTiers }
-                          : {}),
-                      }));
-                    }
-                    // Fallback: single-unit legacy
-                    if (s.price > 0) {
-                      return [
-                        {
-                          serviceKey: s.serviceKey,
-                          categoryKey: sub.categoryKey,
-                          subcategoryKey: sub.key,
-                          price: s.price,
-                          isActive: true,
-                          ...(s.discountTiers.length > 0
-                            ? { discountTiers: s.discountTiers }
-                            : {}),
-                        },
-                      ];
-                    }
-                    return [];
-                  }),
-              )
-            : undefined,
+        // Use the `servicePricing` useMemo above as the single source of truth -
+        // it correctly carries range fields (`priceMin`/`priceMax`) and per-service
+        // `notes`. A previous inline serializer here silently dropped them.
+        servicePricing: servicePricing.length > 0 ? servicePricing : undefined,
       };
 
       // Debug: log what we're about to send
@@ -1614,15 +1727,22 @@ export function ProfileSetupProvider({
         body: JSON.stringify(requestBody),
       });
 
+      // NestJS class-validator returns `message: string | string[]`. An array
+      // appears when multiple fields fail at once - if we cast it as `string`
+      // and slap it into an error banner, the user sees a comma-jammed mess
+      // like "priceMin must be a number,services.0.label must be a string".
       const data = (await response.json()) as {
         id?: string;
         _id?: string;
-        message?: string;
+        message?: string | string[];
       };
 
       if (!response.ok) {
+        const msg = Array.isArray(data.message)
+          ? data.message.join("; ")
+          : data.message;
         throw new Error(
-          data.message ||
+          msg ||
             (isEditMode
               ? "Failed to update profile"
               : "Failed to create profile"),

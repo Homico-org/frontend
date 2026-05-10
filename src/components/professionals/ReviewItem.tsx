@@ -78,8 +78,11 @@ export default function ReviewItem({
           size="md"
         />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2 min-w-0">
+          {/* On narrow mobile (<sm) the stars drop below the name+badge row so
+              the reviewer's full name remains visible. From sm: up everything
+              fits on one row and the stars sit on the right. */}
+          <div className="flex flex-wrap items-center gap-y-1 sm:justify-between mb-1">
+            <div className="flex items-center gap-2 min-w-0 w-full sm:w-auto">
               <p className="font-semibold text-[var(--hm-fg-primary)] text-sm truncate">
                 {displayName}
               </p>

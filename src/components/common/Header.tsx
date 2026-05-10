@@ -72,27 +72,46 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   }, [showDropdown, showMobileMenu, handleEscKey]);
 
   return (
-    <header className={`${fixed ? "fixed top-0 left-0 right-0" : "relative"} z-50 h-12`} style={{ borderBottom: '1px solid var(--hm-border)', backgroundColor: 'var(--hm-bg-elevated)' }}>
+    <header
+      className={`${fixed ? "fixed top-0 left-0 right-0" : "relative"} z-50 h-14`}
+      style={{
+        borderBottom: '1px solid var(--hm-border-subtle)',
+        backgroundColor: 'rgba(255,255,255,0.85)',
+        backdropFilter: 'saturate(180%) blur(12px)',
+        WebkitBackdropFilter: 'saturate(180%) blur(12px)',
+      }}
+    >
       <div className="h-full max-w-[1800px] mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Wordmark + primary nav */}
-        <div className="flex items-center gap-5 min-w-0">
-          <Link href={homeHref} className="flex items-center flex-shrink-0">
-            <span className="text-[18px] font-semibold tracking-[-0.02em]" style={{ fontFamily: 'var(--hm-font-display)', color: 'var(--hm-fg-primary)' }}>
+        <div className="flex items-center gap-6 min-w-0">
+          <Link href={homeHref} className="flex items-center flex-shrink-0 group">
+            <span
+              className="text-[19px] font-medium tracking-[-0.02em] transition-colors group-hover:text-[var(--hm-brand-500)]"
+              style={{
+                fontFamily: 'var(--hm-font-display)',
+                color: 'var(--hm-fg-primary)',
+              }}
+            >
               Homico
             </span>
           </Link>
 
-          {/* Primary nav — desktop only. Active route gets brand color. */}
+          {/* Primary nav — desktop only. Active route gets a subtle pill bg. */}
           <nav className="hidden md:flex items-center gap-0.5" aria-label="Primary">
             <Link
               href="/"
               onClick={() => trackEvent('nav_click', 'home')}
-              className="inline-flex items-center px-2.5 h-8 rounded-lg text-[13px] font-medium transition-colors hover:bg-[var(--hm-bg-tertiary)]"
-              style={{
-                color: isHomeActive
-                  ? 'var(--hm-brand-500)'
-                  : 'var(--hm-fg-secondary)',
-              }}
+              className="inline-flex items-center px-3 h-8 rounded-full text-[13px] font-medium transition-all"
+              style={
+                isHomeActive
+                  ? {
+                      color: 'var(--hm-brand-500)',
+                      background: 'rgba(239,78,36,0.08)',
+                    }
+                  : {
+                      color: 'var(--hm-fg-secondary)',
+                    }
+              }
               aria-current={isHomeActive ? 'page' : undefined}
             >
               {t('header.home')}
@@ -100,12 +119,17 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
             <Link
               href="/professionals"
               onClick={() => trackEvent('nav_click', 'professionals')}
-              className="inline-flex items-center px-2.5 h-8 rounded-lg text-[13px] font-medium transition-colors hover:bg-[var(--hm-bg-tertiary)]"
-              style={{
-                color: isProfessionalsActive
-                  ? 'var(--hm-brand-500)'
-                  : 'var(--hm-fg-secondary)',
-              }}
+              className="inline-flex items-center px-3 h-8 rounded-full text-[13px] font-medium transition-all"
+              style={
+                isProfessionalsActive
+                  ? {
+                      color: 'var(--hm-brand-500)',
+                      background: 'rgba(239,78,36,0.08)',
+                    }
+                  : {
+                      color: 'var(--hm-fg-secondary)',
+                    }
+              }
               aria-current={isProfessionalsActive ? 'page' : undefined}
             >
               {t('header.professionals')}
@@ -115,8 +139,11 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
 
         {/* Right side - Actions + Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 min-w-0">
-          {/* Theme + Language - hidden on mobile when logged out (shown in burger menu) */}
-          <div className={!isAuthenticated ? "hidden sm:flex items-center gap-1.5 sm:gap-2" : "flex items-center gap-1.5 sm:gap-2"}>
+          {/* Theme + Language - hidden on mobile (logged out: burger menu;
+              logged in: available in profile dropdown). At 320-374px the
+              header would otherwise cram Logo + Theme + Lang + Bell + Avatar
+              and the language selector "ქართ" text would overlap the bell. */}
+          <div className="hidden sm:flex items-center gap-1.5 sm:gap-2">
             <ThemeToggle />
             <LanguageSelector variant="icon" />
           </div>
@@ -320,6 +347,16 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                           <span>{t("header.adminPanel")}</span>
                         </Link>
                       )}
+
+                      {/* Theme + Language - shown only on mobile, since the
+                          desktop header surfaces these in the top bar. Keeps
+                          the mobile top bar uncluttered (Logo + Bell + Avatar
+                          only) while still giving the user a one-tap path to
+                          switch language and theme. */}
+                      <div className="sm:hidden flex items-center gap-2 px-4 py-2">
+                        <ThemeToggle />
+                        <LanguageSelector variant="icon" />
+                      </div>
 
                       {/* Settings */}
                       <Link

@@ -35,7 +35,7 @@ messaging.onBackgroundMessage((payload) => {
   self.registration.showNotification(title, options);
 });
 
-// Handle notification click — open the app at the right page
+// Handle notification click - open the app at the right page
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const link = event.notification.data?.link || '/';

@@ -5,13 +5,16 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const toggleVariants = cva(
-  'relative inline-flex items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+  'relative inline-flex items-center rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
   {
     variants: {
+      // Tighter proportions than before — the previous toggles felt stretched
+      // because the track was much wider than the thumb cleared. New track
+      // width = (thumb diameter + horizontal padding × 2) × 2.
       size: {
-        sm: 'w-8 h-5',
-        md: 'w-11 h-6',
-        lg: 'w-14 h-8',
+        sm: 'w-7 h-[18px]',
+        md: 'w-9 h-[22px]',
+        lg: 'w-12 h-[28px]',
       },
       variant: {
         default: 'focus-visible:ring-[var(--hm-brand-500)]',
@@ -29,23 +32,27 @@ const toggleVariants = cva(
 );
 
 const thumbSizes = {
-  sm: 'w-3 h-3',
-  md: 'w-4 h-4',
+  sm: 'w-3.5 h-3.5',
+  md: 'w-[18px] h-[18px]',
   lg: 'w-6 h-6',
 };
 
+// Thumb start/end positions tuned to the new tighter tracks above.
 const thumbPositions = {
-  sm: { off: 'translate-x-1', on: 'translate-x-4' },
-  md: { off: 'translate-x-1', on: 'translate-x-6' },
-  lg: { off: 'translate-x-1', on: 'translate-x-7' },
+  sm: { off: 'translate-x-[2px]', on: 'translate-x-[12px]' },
+  md: { off: 'translate-x-[2px]', on: 'translate-x-[16px]' },
+  lg: { off: 'translate-x-[2px]', on: 'translate-x-[22px]' },
 };
 
-const bgColors = {
-  default: { on: 'bg-[var(--hm-brand-500)]', off: 'bg-[var(--hm-bg-tertiary)]' },
-  primary: { on: 'bg-[var(--hm-brand-500)]', off: 'bg-[var(--hm-bg-tertiary)]' },
-  success: { on: 'bg-[var(--hm-success-500)]', off: 'bg-[var(--hm-bg-tertiary)]' },
-  violet: { on: 'bg-[var(--hm-brand-500)]', off: 'bg-[var(--hm-bg-tertiary)]' },
-  danger: { on: 'bg-[var(--hm-error-500)]', off: 'bg-[var(--hm-bg-tertiary)]' },
+// Off-state: outlined track with no fill — reads as "not active" via the
+// thumb's resting position, like Vercel/Linear. Eliminates the gray pill feel.
+// On-state: filled brand color.
+const ON_COLORS = {
+  default: 'bg-[var(--hm-brand-500)]',
+  primary: 'bg-[var(--hm-brand-500)]',
+  success: 'bg-[var(--hm-success-500)]',
+  violet: 'bg-[var(--hm-brand-500)]',
+  danger: 'bg-[var(--hm-error-500)]',
 };
 
 export interface ToggleProps
@@ -75,7 +82,7 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
     },
     ref
   ) => {
-    const colors = bgColors[variant || 'default'];
+    const onColor = ON_COLORS[variant || 'default'];
     const thumbSize = thumbSizes[size || 'md'];
     const positions = thumbPositions[size || 'md'];
 
@@ -102,16 +109,29 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
           aria-hidden="true"
           className={cn(
             toggleVariants({ size, variant }),
-            checked ? colors.on : colors.off,
+            checked && onColor,
             className
           )}
+          style={
+            checked
+              ? undefined
+              : {
+                  // Visible cool-gray fill so it reads as a switch surface,
+                  // not an "outlined nothing". White thumb on a gray track
+                  // is the universally recognized switch pattern.
+                  backgroundColor: 'var(--hm-n-200)',
+                }
+          }
         >
           <span
             className={cn(
-              'inline-block rounded-full bg-[var(--hm-bg-elevated)] shadow-sm transition-transform duration-200',
+              'inline-block rounded-full bg-white transition-transform duration-200',
               thumbSize,
               checked ? positions.on : positions.off
             )}
+            style={{
+              boxShadow: '0 1px 3px rgba(0,0,0,0.22), 0 0 0 0.5px rgba(0,0,0,0.04)',
+            }}
           />
         </div>
       </label>

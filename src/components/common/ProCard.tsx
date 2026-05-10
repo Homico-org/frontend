@@ -114,31 +114,49 @@ export default function ProCard({
   const completedJobsCounter = profile.completedJobs || 0;
   const completedJobs = Math.max(completedJobsCounter, portfolioCount, portfolioItemCount, completedProjects, externalJobs);
 
-  // Filter-aware pricing: show price only for the filtered service(s)
+  // Filter-aware pricing: show price only for the filtered service(s).
+  // Range-aware — when an entry has `priceMin`/`priceMax`, use its bounds
+  // instead of the midpoint `price` to show the customer the real range.
   const matchedPricing = useMemo(() => {
     const sp = profile.servicePricing;
     if (!sp || sp.length === 0) return null;
 
+    // Extract the [lo, hi] bounds for a single servicePricing entry
+    const bounds = (e: { price: number; priceMin?: number; priceMax?: number }): [number, number] => {
+      const hasRange =
+        e.priceMin !== undefined &&
+        e.priceMax !== undefined &&
+        e.priceMin > 0 &&
+        e.priceMax > 0;
+      if (hasRange) return [e.priceMin as number, e.priceMax as number];
+      return [e.price, e.price];
+    };
+
+    // Combine a list of entries into one display string
+    const combine = (entries: typeof sp): string => {
+      let lo = Number.POSITIVE_INFINITY;
+      let hi = Number.NEGATIVE_INFINITY;
+      for (const e of entries) {
+        const [l, h] = bounds(e);
+        if (l > 0 && l < lo) lo = l;
+        if (h > 0 && h > hi) hi = h;
+      }
+      if (!Number.isFinite(lo) || !Number.isFinite(hi)) return '';
+      return lo === hi ? `${lo}₾` : `${lo}-${hi}₾`;
+    };
+
     // If user filtered by specific subcategories, find matching service prices
     if (activeSubcategories.length > 0) {
       const matched = sp.filter(s => s.isActive && activeSubcategories.includes(s.serviceKey));
-      if (matched.length === 1) return { value: `${matched[0].price}₾` };
-      if (matched.length > 1) {
-        const min = Math.min(...matched.map(s => s.price));
-        const max = Math.max(...matched.map(s => s.price));
-        return min === max ? { value: `${min}₾` } : { value: `${min}₾ - ${max}₾` };
-      }
+      const value = combine(matched);
+      if (value) return { value };
     }
 
     // If user filtered by category, show price range for that category
     if (activeCategory) {
       const catServices = sp.filter(s => s.isActive && s.categoryKey === activeCategory);
-      if (catServices.length === 1) return { value: `${catServices[0].price}₾` };
-      if (catServices.length > 1) {
-        const min = Math.min(...catServices.map(s => s.price));
-        const max = Math.max(...catServices.map(s => s.price));
-        return min === max ? { value: `${min}₾` } : { value: `${min}₾ - ${max}₾` };
-      }
+      const value = combine(catServices);
+      if (value) return { value };
     }
 
     // No filter — don't show a misleading aggregate price
@@ -277,8 +295,9 @@ export default function ProCard({
     return raw.filter(key => catalogLabelMap.has(key));
   }, [userCategories, getSubcatsForCategory, catalogLabelMap]);
 
-  const displaySubcats = allSubcats.slice(0, 3);
-  const remainingSubcats = allSubcats.length - 3;
+  // Bumped from 3 → 4 since the new pills wrap cleanly and don't truncate.
+  const displaySubcats = allSubcats.slice(0, 4);
+  const remainingSubcats = allSubcats.length - 4;
 
   // Min-price per subcategory key — used to surface a "from N₾" hint next
   // to each service pill so clients can scan price at a glance. Built from
@@ -289,14 +308,24 @@ export default function ProCard({
     const sp = profile.servicePricing;
     if (!Array.isArray(sp)) return map;
     for (const entry of sp) {
-      if (!entry.isActive || typeof entry.price !== "number" || entry.price <= 0) continue;
+      if (!entry.isActive) continue;
+      // When the pro set a range, the floor is `priceMin`; otherwise fall back
+      // to the single `price`. Either way we want the smallest meaningful
+      // number to drive the "from N₾" copy on the browse card.
+      const floor =
+        entry.priceMin !== undefined && entry.priceMin > 0
+          ? entry.priceMin
+          : typeof entry.price === "number" && entry.price > 0
+            ? entry.price
+            : undefined;
+      if (floor === undefined) continue;
       // Index by both subcategoryKey and serviceKey so whichever key the
       // pill renders with, the lookup hits.
       for (const key of [entry.subcategoryKey, entry.serviceKey]) {
         if (!key) continue;
         const existing = map.get(key);
-        if (existing === undefined || entry.price < existing) {
-          map.set(key, entry.price);
+        if (existing === undefined || floor < existing) {
+          map.set(key, floor);
         }
       }
     }
@@ -448,26 +477,19 @@ export default function ProCard({
             )}
           </div>
         ) : (
-          // No portfolio: thin tinted band with a subtle dot texture, not a
-          // tall empty gray rectangle. The dotted texture + brand gradient
-          // reads "intentional layout" rather than "missing image" and saves
-          // ~140px of vertical card height vs. the old aspect-[2/1] placeholder.
+          // No portfolio: thin neutral band acting as a clean spacer for the
+          // overlapping avatar below. The previous version used a vermillion-
+          // tinted gradient + dotted texture that read as a peachy "disabled"
+          // band — replaced with a clean off-white surface and a hairline
+          // bottom divider so the layout still has rhythm.
           <div
             aria-hidden
-            className="relative h-7 sm:h-8 overflow-hidden"
+            className="relative h-7 sm:h-8"
             style={{
-              background:
-                "linear-gradient(135deg, color-mix(in srgb, var(--hm-brand-500) 18%, var(--hm-bg-elevated)) 0%, color-mix(in srgb, var(--hm-brand-500) 6%, var(--hm-bg-elevated)) 100%)",
+              backgroundColor: 'var(--hm-n-50)',
+              borderBottom: '1px solid var(--hm-border-subtle)',
             }}
-          >
-            <div
-              className="absolute inset-0 opacity-40"
-              style={{
-                backgroundImage: `radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--hm-brand-500) 35%, transparent) 1px, transparent 0)`,
-                backgroundSize: "10px 10px",
-              }}
-            />
-          </div>
+          />
         )}
 
         {/* Avatar overlap. Larger when there's no media (it becomes the card's
@@ -578,29 +600,49 @@ export default function ProCard({
             )}
           </div>
 
-          {/* Service pills — rounded, subtly bordered. Show "name · N₾" when
-              a structured price exists in servicePricing for that
-              subcategory/service. */}
-          <div className="flex flex-wrap gap-1">
+          {/* Service pills — clean, no gray fill, no truncation. The label can
+              wrap to a second line when needed; "from N₾" sits to the right
+              tinted in vermillion so the price reads as the value, not the
+              service name. */}
+          <div className="flex flex-wrap gap-1.5">
             {displaySubcats.map((key) => {
               const label = catalogLabelMap.get(key) || getCategoryLabel(key);
               const price = subcatMinPrice.get(key);
               return (
                 <span
                   key={key}
-                  className="inline-flex items-center gap-1 px-2 py-[3px] rounded-md text-[11px] font-medium text-[var(--hm-fg-secondary)] bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border-subtle)]/50"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-[5px] rounded-full text-[11px] font-medium leading-tight"
+                  style={{
+                    border: '1px solid var(--hm-border-subtle)',
+                    color: 'var(--hm-fg-primary)',
+                    background: 'transparent',
+                  }}
                 >
-                  <span className="truncate max-w-[120px]">{label}</span>
+                  <span>{label}</span>
                   {price !== undefined && (
-                    <span className="font-semibold text-[var(--hm-brand-500)]">
-                      ·&nbsp;{price}₾
+                    <span
+                      className="font-semibold"
+                      style={{ color: 'var(--hm-brand-500)' }}
+                    >
+                      {pick({
+                        en: `from ${price}₾`,
+                        ka: `${price}₾-დან`,
+                        ru: `от ${price}₾`,
+                      })}
                     </span>
                   )}
                 </span>
               );
             })}
             {remainingSubcats > 0 && (
-              <span className="px-2 py-[3px] rounded-md text-[11px] font-semibold text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 border border-[var(--hm-brand-500)]/15">
+              <span
+                className="inline-flex items-center px-2.5 py-[5px] rounded-full text-[11px] font-semibold"
+                style={{
+                  color: 'var(--hm-brand-500)',
+                  border: '1px solid rgba(239,78,36,0.20)',
+                  background: 'transparent',
+                }}
+              >
                 +{remainingSubcats}
               </span>
             )}

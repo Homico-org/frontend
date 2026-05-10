@@ -38,6 +38,10 @@ interface ServicePricingItem {
   price: number;
   isActive: boolean;
   discountTiers?: DiscountTier[];
+  // Range-mode pricing (added 2026-05). When set, treat `price` as the
+  // midpoint and surface the explicit `priceMin - priceMax` to the customer.
+  priceMin?: number;
+  priceMax?: number;
 }
 
 export interface ServiceBookingModalProps {
@@ -620,7 +624,7 @@ export default function ServiceBookingModal({
                     {professional.name}
                   </p>
                   <p className="text-xs" style={{ color: 'var(--hm-fg-secondary)' }}>
-                    {selectedDate} · {selectedHour !== null ? `${formatHour(selectedHour)} – ${formatHour(selectedHour + 1)}` : ''}
+                    {selectedDate} · {selectedHour !== null ? `${formatHour(selectedHour)} - ${formatHour(selectedHour + 1)}` : ''}
                   </p>
                 </div>
               </div>
@@ -777,7 +781,7 @@ export default function ServiceBookingModal({
                     {confirmedHour !== null && (
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3 shrink-0" />
-                        {formatHour(confirmedHour)} – {formatHour(confirmedHour + 1)}
+                        {formatHour(confirmedHour)} - {formatHour(confirmedHour + 1)}
                       </span>
                     )}
                   </p>

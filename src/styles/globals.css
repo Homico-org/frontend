@@ -74,18 +74,22 @@
   --hm-brand-800: #7D1E04;
   --hm-brand-900: #501301;
 
-  /* Neutral — Paper & Ink */
+  /* Neutral — Paper & Ink
+     Cooled down (2026-05) so light surfaces read as "clean" not "disabled".
+     The previous warm-beige neutrals (#FAFAF7 / #F2F0EB / #E3DFD6) gave the
+     whole UI a peach/cream cast that looked dull next to the white cards.
+     New values are closer to neutral gray with just a hint of paper warmth. */
   --hm-n-0:   #FFFFFF;
-  --hm-n-50:  #FAFAF7;
-  --hm-n-100: #F2F0EB;
-  --hm-n-200: #E3DFD6;
-  --hm-n-300: #C9C3B5;
-  --hm-n-400: #A69F8E;
-  --hm-n-500: #8A8472;
-  --hm-n-600: #5E594C;
-  --hm-n-700: #3D3930;
-  --hm-n-800: #262218;
-  --hm-n-900: #14120E;
+  --hm-n-50:  #FAFAFA;
+  --hm-n-100: #F4F4F2;
+  --hm-n-200: #E7E6E4;
+  --hm-n-300: #CECCC7;
+  --hm-n-400: #A6A39B;
+  --hm-n-500: #807D75;
+  --hm-n-600: #56544D;
+  --hm-n-700: #36342E;
+  --hm-n-800: #211F1B;
+  --hm-n-900: #11100D;
 
   /* Semantic */
   --hm-success-500: #3E8F5A;  --hm-success-100: #DCEFE2;  --hm-success-50: #EFF8F2;
@@ -104,9 +108,9 @@
   --hm-fg-muted:     var(--hm-n-400);
   --hm-fg-inverse:   var(--hm-n-50);
 
-  /* Borders */
-  --hm-border:        #E3DFD6;
-  --hm-border-subtle: #EEEAE0;
+  /* Borders — derived from cooled neutrals so they don't drift back to beige */
+  --hm-border:        var(--hm-n-200);
+  --hm-border-subtle: #EEEDEA;
   --hm-border-strong: var(--hm-n-300);
 
   /* Typography */
@@ -800,6 +804,25 @@ img:not(.loading) {
 }
 .animate-pulse-subtle { animation: pulse-subtle 2s ease-in-out infinite; }
 .animate-pulse-slow { animation: pulse-subtle 4s ease-in-out infinite; }
+
+/* ============================================================================
+   Number-input spinners — suppress the native browser arrows globally.
+   Customers and pros enter prices, quantities, durations etc. across many
+   surfaces; the default Chrome/Firefox spinner UI is ugly and inconsistent.
+   We hide them and rely on inputMode="numeric" + arrow-key/scroll behavior
+   for power users. Use type="number" if you want number semantics, or
+   inputMode="numeric" + type="text" if you don't.
+   ============================================================================ */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
 
 /* Shimmer for skeleton loading */
 @keyframes shimmer {

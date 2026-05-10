@@ -7,7 +7,9 @@ import { Input, Textarea } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useProfileSetup } from "@/contexts/ProfileSetupContext";
 import {
+  Calendar,
   ChevronLeft,
   ChevronRight,
   Edit3,
@@ -17,18 +19,33 @@ import {
   MapPin,
   Play,
   Plus,
+  Star,
   Trash2,
   Video,
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { StarRating } from "@/components/ui/StarRating";
 
 export interface BeforeAfterPair {
   id: string;
   beforeImage: string;
   afterImage: string;
+}
+
+// Services snapshotted onto a project — pros pick from their own pricing
+// catalog when adding/editing a project, and the chosen services with their
+// prices travel with the project so customers see "this 'TV Mounting' project
+// covered: TV install ₾40, Wall mount ₾30".
+export interface PortfolioProjectService {
+  serviceKey: string;
+  subcategoryKey?: string;
+  label: string;
+  unitLabel?: string;
+  price: number;
+  priceMin?: number;
+  priceMax?: number;
 }
 
 export interface PortfolioProject {
@@ -40,6 +57,9 @@ export interface PortfolioProject {
   videos: string[];
   beforeAfterPairs: BeforeAfterPair[];
   source?: "external" | "homico";
+  // Link to a completed Homico job when `source === 'homico'`. Must round-trip
+  // through profile-setup saves or "homico"-flagged entries become orphaned.
+  jobId?: string;
   clientName?: string;
   clientAvatar?: string;
   rating?: number;
@@ -47,6 +67,9 @@ export interface PortfolioProject {
   completedDate?: string;
   displayOrder?: number;
   isVisible?: boolean; // Whether visible on portfolio page
+  // Services that were performed on this project (and their prices).
+  // Pros pick from their pricing catalog when adding the project.
+  services?: PortfolioProjectService[];
 }
 
 interface ProjectsStepProps {
@@ -176,9 +199,62 @@ export default function ProjectsStep({
   maxProjects = 20,
   maxVisibleInBrowse = 6,
 }: ProjectsStepProps) {
-  const { t, locale } = useLanguage();
+  const { t, locale, pick } = useLanguage();
+  const { selectedSubcategoriesWithPricing } = useProfileSetup();
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+
+  // Flatten the pro's pricing catalog into a list of priced services they
+  // can attach to a project. Range-mode entries surface their (priceMin, priceMax).
+  //
+  // Resilience note: we detect "this unit is a range" from EITHER the explicit
+  // `useRange` flag OR the presence of meaningful `priceMin`/`priceMax`. The
+  // flag is the modern source of truth, but stale data from before the DTO fix
+  // (2026-05) or partial hydration may carry priceMin/priceMax without the
+  // flag — so we fall through to the values themselves to avoid showing the
+  // midpoint as a single price.
+  const availableServicesForProject = useMemo<PortfolioProjectService[]>(() => {
+    const out: PortfolioProjectService[] = [];
+    for (const sub of selectedSubcategoriesWithPricing) {
+      const subName = pick({ en: sub.name, ka: sub.nameKa });
+      for (const svc of sub.services) {
+        if (!svc.isActive) continue;
+        const activeUnits = (svc.unitPrices ?? []).filter((u) => u.isActive);
+        let lo = Number.POSITIVE_INFINITY;
+        let hi = Number.NEGATIVE_INFINITY;
+        let unitLabel = svc.unitLabel;
+        let anyRange = false;
+        for (const u of activeUnits) {
+          const hasExplicitRange =
+            u.priceMin !== undefined &&
+            u.priceMax !== undefined &&
+            u.priceMin > 0 &&
+            u.priceMax > 0 &&
+            u.priceMin !== u.priceMax;
+          const unitIsRange = u.useRange === true || hasExplicitRange;
+          const min = unitIsRange ? (u.priceMin ?? u.price) : u.price;
+          const max = unitIsRange ? (u.priceMax ?? u.price) : u.price;
+          if (unitIsRange) anyRange = true;
+          if (min > 0 && min < lo) lo = min;
+          if (max > 0 && max > hi) hi = max;
+          if (u.unitLabel) unitLabel = u.unitLabel;
+        }
+        if (!Number.isFinite(lo) && svc.price > 0) {
+          lo = hi = svc.price;
+        }
+        if (!Number.isFinite(lo)) continue;
+        out.push({
+          serviceKey: svc.serviceKey,
+          subcategoryKey: svc.subcategoryKey || sub.key,
+          label: svc.label || subName,
+          unitLabel,
+          price: svc.price > 0 ? svc.price : lo,
+          ...(anyRange && lo !== hi ? { priceMin: lo, priceMax: hi } : {}),
+        });
+      }
+    }
+    return out;
+  }, [selectedSubcategoriesWithPricing, pick]);
 
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
@@ -518,22 +594,37 @@ export default function ProjectsStep({
 
   return (
     <div className="space-y-6">
-      {/* Header — only show when there are projects */}
+      {/* Header — count + featured-on-card explanation + add button */}
       {projects.length > 0 && !isAddingProject && (
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-[var(--hm-fg-secondary)]">
-            {projects.length} {t('common.total')}
-          </span>
-          {projects.length < maxProjects && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAddProject}
-            >
-              + {t('common.addProject')}
-            </Button>
-          )}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-sm font-medium text-[var(--hm-fg-secondary)]">
+                {projects.length} {t('common.total')}
+              </span>
+              <span
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full"
+                style={{ background: 'rgba(239,78,36,0.08)', color: 'var(--hm-brand-500)' }}
+              >
+                <Star className="w-3 h-3" />
+                {Math.min(visibleProjects.length, maxVisibleInBrowse)} / {maxVisibleInBrowse} {t('common.onCard')}
+              </span>
+            </div>
+            {projects.length < maxProjects && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddProject}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                {t('common.addProject')}
+              </Button>
+            )}
+          </div>
+          <p className="text-[11px] leading-snug text-[var(--hm-fg-muted)]">
+            {t('common.cardVisibilityHint', { max: maxVisibleInBrowse })}
+          </p>
         </div>
       )}
 
@@ -560,86 +651,178 @@ export default function ProjectsStep({
                   onDrop={(e) => handleDrop(e, project.id)}
                   onTouchStart={(e) => handleTouchStart(e, project.id)}
                   className={`
-                    group relative rounded-2xl overflow-hidden border-2 bg-[var(--hm-bg-elevated)] transition-all duration-300
+                    group relative rounded-2xl overflow-hidden bg-[var(--hm-bg-elevated)] transition-all duration-200
                     ${
                       isHomico
-                        ? "border-[var(--hm-success-500)]/20 bg-gradient-to-r from-emerald-50/50 to-transparent cursor-default"
-                        : "border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/30 cursor-grab active:cursor-grabbing"
+                        ? "cursor-default"
+                        : "hover:-translate-y-0.5 cursor-grab active:cursor-grabbing"
                     }
-                    ${isDragOver ? "border-[var(--hm-brand-500)] border-dashed bg-[var(--hm-brand-500)]/5 transform scale-[1.02]" : ""}
+                    ${isDragOver ? "transform scale-[1.02]" : ""}
                     ${isBeingDragged ? "opacity-50 scale-95" : ""}
-                    ${!isVisible ? "opacity-60" : ""}
                   `}
+                  style={{
+                    border: `1px solid ${
+                      isDragOver
+                        ? 'var(--hm-brand-500)'
+                        : isHomico
+                          ? 'rgba(62,143,90,0.30)'
+                          : 'var(--hm-border-subtle)'
+                    }`,
+                    opacity: !isVisible ? 0.7 : 1,
+                    boxShadow: !isHomico
+                      ? '0 1px 2px rgba(0,0,0,0.02)'
+                      : 'none',
+                  }}
                 >
                   <div className="p-4">
-                    {/* Project Header — number + title + badges + actions */}
-                    <div className="flex items-start justify-between mb-3 gap-2">
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        {/* Number badge */}
+                    {/* Project Header — number badge, status pill, actions all
+                        ALWAYS visible (no more hover-only). Pros immediately
+                        understand what's visible where + how to edit. On
+                        narrow mobile the actions drop to a second row so the
+                        title "TV Mounting" doesn't get squeezed into a 2-line
+                        wrap by three icon buttons fighting for the same row. */}
+                    <div className="flex flex-wrap sm:flex-nowrap items-start justify-between mb-3 gap-3">
+                      <div className="flex items-start gap-2.5 flex-1 min-w-0 w-full sm:w-auto">
+                        {/* Number badge — vermillion when featured on browse card, neutral otherwise */}
                         <div
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
+                          style={
                             willShowInBrowse
-                              ? "bg-[var(--hm-brand-500)] text-white"
-                              : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]"
-                          }`}
+                              ? { background: 'var(--hm-brand-500)', color: '#fff' }
+                              : { background: 'var(--hm-n-100)', color: 'var(--hm-fg-muted)' }
+                          }
                         >
                           {index + 1}
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-semibold text-[var(--hm-fg-primary)] truncate">
-                              {project.title}
-                            </h4>
-                            {willShowInBrowse && (
-                              <Badge variant="warning" size="xs" className="flex-shrink-0">
-                                {t('common.visible')}
-                              </Badge>
+                          <h4 className="font-semibold text-[var(--hm-fg-primary)] leading-tight">
+                            {project.title}
+                          </h4>
+                          {/* Status pills row — VISIBILITY signals always shown */}
+                          <div className="mt-1 flex items-center flex-wrap gap-1.5">
+                            {willShowInBrowse ? (
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider"
+                                style={{ background: 'var(--hm-brand-500)', color: '#fff' }}
+                              >
+                                <Star className="w-3 h-3" />
+                                {t('common.featuredOnCard')}
+                              </span>
+                            ) : isVisible ? (
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider"
+                                style={{
+                                  color: 'var(--hm-fg-secondary)',
+                                  border: '1px solid var(--hm-border-subtle)',
+                                }}
+                              >
+                                <Eye className="w-3 h-3" />
+                                {t('common.profileOnly')}
+                              </span>
+                            ) : (
+                              <span
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider"
+                                style={{
+                                  color: 'var(--hm-fg-muted)',
+                                  border: '1px solid var(--hm-border-subtle)',
+                                }}
+                              >
+                                <EyeOff className="w-3 h-3" />
+                                {t('common.hidden')}
+                              </span>
                             )}
                             {isHomico && (
-                              <Badge variant="success" size="xs" className="flex-shrink-0">
+                              <Badge variant="success" size="xs">
                                 Homico
                               </Badge>
                             )}
-                        </div>
-                        {project.description && (
-                          <p className="text-xs text-[var(--hm-fg-secondary)] mt-1 line-clamp-2">
-                            {project.description}
-                          </p>
-                        )}
-                        {project.location && (
-                          <p className="text-xs text-[var(--hm-fg-muted)] flex items-center gap-1 mt-1">
-                            <MapPin className="w-3 h-3 flex-shrink-0" />
-                            {project.location}
-                          </p>
-                        )}
-                        {/* Homico project extra info */}
-                        {isHomico && project.clientName && (
-                          <div className="flex items-center gap-2 mt-2">
-                            {project.clientAvatar && (
-                              <Image
-                                src={project.clientAvatar}
-                                alt=""
-                                width={20}
-                                height={20}
-                                className="w-5 h-5 rounded-full object-cover"
-                              />
-                            )}
-                            <span className="text-xs text-[var(--hm-success-500)]">
-                              {t('common.client')}{" "}
-                              {project.clientName}
-                            </span>
-                            {project.rating && (
-                              <StarRating rating={project.rating} size="xs" />
-                            )}
                           </div>
-                        )}
-                      </div>
+                          {project.description && (
+                            <p className="text-sm text-[var(--hm-fg-secondary)] mt-2 leading-relaxed">
+                              {project.description}
+                            </p>
+                          )}
+                          {/* Meta row — location + completion date side-by-side */}
+                          {(project.location || project.completedDate) && (
+                            <div className="mt-2 flex items-center flex-wrap gap-x-3 gap-y-1 text-[12px] text-[var(--hm-fg-muted)]">
+                              {project.location && (
+                                <span className="inline-flex items-center gap-1 min-w-0">
+                                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                                  <span>{project.location}</span>
+                                </span>
+                              )}
+                              {project.completedDate && (
+                                <span className="inline-flex items-center gap-1">
+                                  <Calendar className="w-3 h-3 flex-shrink-0" />
+                                  <span>{project.completedDate}</span>
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {/* Services performed — pills with prices */}
+                          {project.services && project.services.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {project.services.map((svc) => {
+                                const priceLabel =
+                                  svc.priceMin !== undefined &&
+                                  svc.priceMax !== undefined &&
+                                  svc.priceMin > 0 &&
+                                  svc.priceMax > 0 &&
+                                  svc.priceMin !== svc.priceMax
+                                    ? `${svc.priceMin}-${svc.priceMax}₾`
+                                    : `${svc.price}₾`;
+                                return (
+                                  <span
+                                    key={svc.serviceKey}
+                                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium"
+                                    style={{
+                                      border: '1px solid var(--hm-border-subtle)',
+                                      color: 'var(--hm-fg-primary)',
+                                    }}
+                                  >
+                                    <span>{svc.label}</span>
+                                    <span
+                                      className="font-semibold tabular-nums"
+                                      style={{ color: 'var(--hm-brand-500)' }}
+                                    >
+                                      {priceLabel}
+                                    </span>
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {/* Homico project extra info */}
+                          {isHomico && project.clientName && (
+                            <div className="flex items-center gap-2 mt-2">
+                              {project.clientAvatar && (
+                                <Image
+                                  src={project.clientAvatar}
+                                  alt=""
+                                  width={20}
+                                  height={20}
+                                  className="w-5 h-5 rounded-full object-cover"
+                                />
+                              )}
+                              <span className="text-xs text-[var(--hm-success-500)]">
+                                {t('common.client')}{" "}
+                                {project.clientName}
+                              </span>
+                              {project.rating && (
+                                <StarRating rating={project.rating} size="xs" />
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Actions (only for external projects) */}
+                      {/* Actions (only for external projects) — ALWAYS visible.
+                          `w-full sm:w-auto` + `justify-end` drops the actions
+                          to a right-aligned second row on narrow mobile so the
+                          title gets its full row. */}
                       {!isHomico && (
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1 shrink-0 w-full sm:w-auto justify-end">
                           <Button
                             type="button"
                             variant="ghost"
@@ -647,18 +830,18 @@ export default function ProjectsStep({
                             onClick={() => toggleVisibility(project.id)}
                             className={
                               isVisible
-                                ? "text-[var(--hm-warning-500)] hover:bg-[var(--hm-warning-50)]"
-                                : "text-[var(--hm-fg-muted)] hover:bg-[var(--hm-bg-tertiary)]"
+                                ? "text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] hover:bg-[var(--hm-bg-tertiary)]"
+                                : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] hover:bg-[var(--hm-bg-tertiary)]"
                             }
                             aria-label={
                               isVisible
-                                ? "Hide from portfolio"
-                                : "Show in portfolio"
+                                ? t('common.hideProject')
+                                : t('common.showProject')
                             }
                             title={
                               isVisible
-                                ? "Hide from portfolio"
-                                : "Show in portfolio"
+                                ? t('common.hideProject')
+                                : t('common.showProject')
                             }
                           >
                             {isVisible ? (
@@ -672,7 +855,7 @@ export default function ProjectsStep({
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => handleEditProject(project)}
-                            className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/10"
+                            className="text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/10"
                             aria-label={t('common.edit')}
                           >
                             <Edit3 className="w-4 h-4" />
@@ -859,6 +1042,80 @@ export default function ProjectsStep({
                 textareaSize="sm"
               />
             </div>
+
+            {/* Services performed on this project — pulled from the pro's
+                pricing catalog so the picker shows real prices the pro set */}
+            {availableServicesForProject.length > 0 && (
+              <div>
+                <label className="block text-xs font-medium text-[var(--hm-fg-secondary)] mb-1.5">
+                  {t('common.servicesUsed')}
+                  <span className="text-[var(--hm-fg-muted)] font-normal ml-1">
+                    ({t('common.optional')})
+                  </span>
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {availableServicesForProject.map((svc) => {
+                    const selected = (currentProject.services ?? []).some(
+                      (s) => s.serviceKey === svc.serviceKey,
+                    );
+                    const priceLabel =
+                      svc.priceMin !== undefined &&
+                      svc.priceMax !== undefined &&
+                      svc.priceMin > 0 &&
+                      svc.priceMax > 0 &&
+                      svc.priceMin !== svc.priceMax
+                        ? `${svc.priceMin}-${svc.priceMax}₾`
+                        : `${svc.price}₾`;
+                    return (
+                      <button
+                        key={svc.serviceKey}
+                        type="button"
+                        onClick={() => {
+                          setCurrentProject((prev) => {
+                            const list = prev.services ?? [];
+                            const next = selected
+                              ? list.filter((s) => s.serviceKey !== svc.serviceKey)
+                              : [...list, svc];
+                            return { ...prev, services: next };
+                          });
+                        }}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[12px] font-medium transition-all hover:-translate-y-px"
+                        style={
+                          selected
+                            ? {
+                                background: 'var(--hm-brand-500)',
+                                color: '#fff',
+                                boxShadow: '0 2px 6px -2px rgba(239,78,36,0.30)',
+                              }
+                            : {
+                                background: 'var(--hm-bg-elevated)',
+                                color: 'var(--hm-fg-primary)',
+                                border: '1px solid var(--hm-border-subtle)',
+                              }
+                        }
+                      >
+                        <span>{svc.label}</span>
+                        <span
+                          className="text-[11px] font-semibold tabular-nums"
+                          style={{
+                            color: selected
+                              ? 'rgba(255,255,255,0.85)'
+                              : 'var(--hm-brand-500)',
+                          }}
+                        >
+                          {priceLabel}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {(currentProject.services?.length ?? 0) > 0 && (
+                  <p className="mt-1.5 text-[11px] text-[var(--hm-fg-muted)]">
+                    {currentProject.services!.length} {t('common.servicesSelected')}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Media Section */}
             <div className="space-y-4">

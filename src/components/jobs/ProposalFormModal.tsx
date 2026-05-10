@@ -103,7 +103,7 @@ export default function ProposalFormModal({
       if (total > 0) return `${formatNumberWithSpaces(total.toString())}₾`;
     }
     if (job.budgetMin && job.budgetMax && job.budgetMin !== job.budgetMax) {
-      return `${formatNumberWithSpaces(job.budgetMin.toString())}–${formatNumberWithSpaces(job.budgetMax.toString())}₾`;
+      return `${formatNumberWithSpaces(job.budgetMin.toString())}-${formatNumberWithSpaces(job.budgetMax.toString())}₾`;
     }
     if (job.budgetMin) return `${formatNumberWithSpaces(job.budgetMin.toString())}₾`;
     return t('common.negotiable');

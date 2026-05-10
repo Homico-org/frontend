@@ -236,54 +236,44 @@ export default function ConciergeIntakeModal({
                 <div className="grid grid-cols-2 gap-2.5">
                   {categories.map((cat) => {
                     const active = category === cat.key;
+                    const accent = cat.color || "var(--hm-brand-500)";
                     return (
-                      <button
-                        key={cat.key}
-                        type="button"
-                        onClick={() => {
-                          setCategory(cat.key);
-                          setStep(2);
-                        }}
-                        className="group relative flex flex-col items-center gap-2 p-3 rounded-xl border text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
-                        style={{
-                          borderColor: active
-                            ? "var(--hm-brand-500)"
-                            : "var(--hm-border-subtle)",
-                          backgroundColor: active
-                            ? "color-mix(in srgb, var(--hm-brand-500) 8%, transparent)"
-                            : "transparent",
-                        }}
-                      >
-                        <span
-                          className="flex items-center justify-center w-10 h-10 rounded-full transition-colors"
+                        <button
+                          key={cat.key}
+                          type="button"
+                          onClick={() => {
+                            setCategory(cat.key);
+                            setStep(2);
+                          }}
+                          className="group relative flex flex-col items-center gap-2 p-3 rounded-xl border text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
                           style={{
-                            backgroundColor: active
-                              ? "var(--hm-brand-500)"
-                              : "color-mix(in srgb, var(--hm-brand-500) 8%, transparent)",
+                            borderColor: active ? accent : "var(--hm-border-subtle)",
+                            backgroundColor: active ? `${accent}10` : "transparent",
                           }}
                         >
-                          <CategoryIcon
-                            type={cat.icon || cat.key}
-                            className={`w-5 h-5 ${
-                              active
-                                ? "text-white"
-                                : "text-[var(--hm-brand-500)]"
-                            }`}
-                          />
-                        </span>
-                        <span
-                          className="text-[12px] font-medium leading-tight"
-                          style={{
-                            color: active
-                              ? "var(--hm-brand-500)"
-                              : "var(--hm-fg-primary)",
-                          }}
-                        >
-                          {pick({ en: cat.name, ka: cat.nameKa })}
-                        </span>
-                      </button>
-                    );
-                  })}
+                          <span
+                            className="flex items-center justify-center w-10 h-10 rounded-full transition-colors"
+                            style={{
+                              backgroundColor: active ? accent : `${accent}14`,
+                              color: active ? "white" : accent,
+                            }}
+                          >
+                            <CategoryIcon
+                              type={cat.icon || cat.key}
+                              className="w-5 h-5"
+                            />
+                          </span>
+                          <span
+                            className="text-[12px] font-medium leading-tight"
+                            style={{
+                              color: active ? accent : "var(--hm-fg-primary)",
+                            }}
+                          >
+                            {pick({ en: cat.name, ka: cat.nameKa })}
+                          </span>
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
             )}
