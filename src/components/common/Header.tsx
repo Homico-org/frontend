@@ -76,7 +76,12 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
       className={`${fixed ? "fixed top-0 left-0 right-0" : "relative"} z-50 h-14`}
       style={{
         borderBottom: '1px solid var(--hm-border-subtle)',
-        backgroundColor: 'rgba(255,255,255,0.85)',
+        // Theme-aware translucent background. The previous `rgba(255,255,255,0.85)`
+        // was hardcoded white and made the header look "inverted" in dark mode -
+        // a bright bar sitting on top of the dark page. `color-mix` keeps the
+        // frosted feel by blending the elevated surface with transparency, and
+        // it picks up whichever theme is active.
+        backgroundColor: 'color-mix(in srgb, var(--hm-bg-elevated) 85%, transparent)',
         backdropFilter: 'saturate(180%) blur(12px)',
         WebkitBackdropFilter: 'saturate(180%) blur(12px)',
       }}
