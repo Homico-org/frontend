@@ -478,15 +478,15 @@ export default function ProCard({
           </div>
         ) : (
           // No portfolio: thin neutral band acting as a clean spacer for the
-          // overlapping avatar below. The previous version used a vermillion-
-          // tinted gradient + dotted texture that read as a peachy "disabled"
-          // band — replaced with a clean off-white surface and a hairline
-          // bottom divider so the layout still has rhythm.
+          // overlapping avatar below. Uses `--hm-bg-tertiary` (theme-aware) so
+          // it shows as off-white in light mode and a subtle elevated dark in
+          // dark mode - previously hardcoded `--hm-n-50` rendered as bright
+          // white in both modes, creating a "white strip on a dark card" look.
           <div
             aria-hidden
             className="relative h-7 sm:h-8"
             style={{
-              backgroundColor: 'var(--hm-n-50)',
+              backgroundColor: 'var(--hm-bg-tertiary)',
               borderBottom: '1px solid var(--hm-border-subtle)',
             }}
           />
