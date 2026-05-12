@@ -9,7 +9,8 @@ import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useClickOutside } from "@/hooks/useClickOutside";
-import { Bell, Briefcase, ChevronRight, ExternalLink, LayoutGrid, LogIn, LogOut, Menu, Plus, Search, Shield, SlidersHorizontal, UserPlus, X } from "lucide-react";
+import { useSupportUnread } from "@/hooks/useSupportUnread";
+import { Bell, Briefcase, ChevronRight, ExternalLink, HelpCircle, LayoutGrid, LogIn, LogOut, Menu, Plus, Search, Shield, SlidersHorizontal, UserPlus, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -23,6 +24,10 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   const { openLoginModal } = useAuthModal();
   const { t } = useLanguage();
   const { unreadCount } = useNotifications();
+  // Support-reply unread count. Polls every 60s + on tab refocus. Used to
+  // surface a "support wrote back" indicator on both the Bell area (small
+  // dot) and the profile-dropdown Help row (count badge).
+  const { count: unreadSupportCount, firstUnreadId: firstUnreadSupportId } = useSupportUnread();
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -177,7 +182,12 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowDropdown(!showDropdown)}
-                  className="p-0 hover:bg-transparent"
+                  className="p-0 hover:bg-transparent relative"
+                  aria-label={
+                    unreadSupportCount > 0
+                      ? `Profile menu - ${unreadSupportCount} new support replies`
+                      : 'Profile menu'
+                  }
                 >
                   <Avatar
                     src={user.avatar}
@@ -186,6 +196,16 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                     rounded="xl"
                     className="w-9 h-9 ring-2 ring-[var(--hm-border)] hover:ring-[var(--hm-border-strong)] transition-all duration-300"
                   />
+                  {/* Compact dot indicator on the avatar when support has
+                      replied. Sits without count to keep the avatar clean -
+                      the full count lives inside the dropdown next to Help. */}
+                  {unreadSupportCount > 0 && (
+                    <span
+                      className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full ring-2 ring-[var(--hm-bg-elevated)]"
+                      style={{ background: 'var(--hm-brand-500)' }}
+                      aria-hidden
+                    />
+                  )}
                 </Button>
 
                 {showDropdown && (
@@ -362,6 +382,47 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                         <ThemeToggle />
                         <LanguageSelector variant="icon" />
                       </div>
+
+                      {/* Help / Support - with unread reply badge when
+                          support team has answered a ticket. Tapping deep-
+                          links into the first unread ticket so the user gets
+                          to the reply in one click. */}
+                      <Link
+                        href={
+                          unreadSupportCount > 0 && firstUnreadSupportId
+                            ? `/help/ticket/${firstUnreadSupportId}`
+                            : '/help'
+                        }
+                        className="group flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] transition-all duration-200 relative"
+                        onClick={() => { setShowDropdown(false); trackEvent('nav_click', 'help'); }}
+                      >
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--hm-bg-tertiary)] relative">
+                          <HelpCircle
+                            className="w-4 h-4"
+                            style={{ color: ACCENT_COLOR }}
+                            strokeWidth={1.5}
+                          />
+                          {unreadSupportCount > 0 && (
+                            <span
+                              className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-1 ring-2 ring-[var(--hm-bg-elevated)]"
+                              style={{ background: 'var(--hm-brand-500)', color: '#fff' }}
+                            >
+                              {unreadSupportCount > 9 ? '9+' : unreadSupportCount}
+                            </span>
+                          )}
+                        </div>
+                        <span className="flex-1">{t("help.title") || 'Help'}</span>
+                        {unreadSupportCount > 0 && (
+                          <span
+                            className="text-[10px] font-semibold uppercase tracking-wider"
+                            style={{ color: 'var(--hm-brand-500)' }}
+                          >
+                            {unreadSupportCount === 1
+                              ? t('help.unreadOne') || '1 new reply'
+                              : (t('help.unreadMany') || '{count} new replies').replace('{count}', String(unreadSupportCount))}
+                          </span>
+                        )}
+                      </Link>
 
                       {/* Settings */}
                       <Link
