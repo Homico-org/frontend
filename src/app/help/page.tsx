@@ -14,8 +14,9 @@ import { Tabs } from '@/components/ui/Tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSupportUnread } from '@/hooks/useSupportUnread';
 import { formatDateShort } from '@/utils/dateUtils';
-import { ChevronRight, Clock, Mail, MessageCircle, Plus, Send } from 'lucide-react';
+import { ChevronRight, Clock, Mail, MessageCircle, Plus, Send, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
@@ -38,6 +39,9 @@ export default function HelpPage() {
   const { t } = useLanguage();
   const { isAuthenticated, token, user } = useAuth();
   const { openLoginModal } = useAuthModal();
+  // Surface unread support replies prominently on the help page itself - this
+  // is the same hook the header dropdown uses, so the count stays in sync.
+  const { count: unreadSupportCount, firstUnreadId: firstUnreadSupportId } = useSupportUnread();
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [contactForm, setContactForm] = useState({
     type: 'general' as 'account_issue' | 'general' | 'feedback',
@@ -226,6 +230,41 @@ export default function HelpPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
+
+        {/* Unread support replies banner. Shown at the top of /help so any
+            user landing here immediately sees that support has answered.
+            Tapping the CTA deep-links straight into the first unread ticket. */}
+        {isAuthenticated && unreadSupportCount > 0 && firstUnreadSupportId && (
+          <Link
+            href={`/help/ticket/${firstUnreadSupportId}`}
+            className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 rounded-2xl transition-all hover:-translate-y-0.5"
+            style={{
+              background: 'linear-gradient(135deg, var(--hm-brand-500) 0%, var(--hm-brand-700) 100%)',
+              boxShadow: '0 4px 12px -2px rgba(239,78,36,0.35)',
+            }}
+          >
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-white" strokeWidth={2} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm sm:text-[15px] font-semibold text-white leading-snug">
+                {unreadSupportCount === 1
+                  ? t('help.unreadBannerOne')
+                  : t('help.unreadBannerMany').replace('{count}', String(unreadSupportCount))}
+              </p>
+              <p className="text-[11px] sm:text-xs text-white/75 mt-0.5">
+                {unreadSupportCount === 1
+                  ? t('help.unreadOne')
+                  : t('help.unreadMany').replace('{count}', String(unreadSupportCount))}
+              </p>
+            </div>
+            <span className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-white">
+              {t('help.viewReply')}
+              <ChevronRight className="w-4 h-4" />
+            </span>
+            <ChevronRight className="sm:hidden w-5 h-5 text-white flex-shrink-0" />
+          </Link>
+        )}
 
         {/* Support Tickets */}
         {isAuthenticated && (

@@ -153,7 +153,13 @@ export default function TicketDetailPage() {
   };
 
   const getCategoryLabel = (category: string) => {
-    return t(`helpPage.ticketCategories.${category}`) || category;
+    // The translations live under `help.ticketCategories.*` - the old key
+    // `helpPage.ticketCategories.*` doesn't exist (only `helpPage.status` does)
+    // and i18next falls back to the raw key string, which is why users were
+    // seeing "helpPage.ticketCategories.feedback" on the page.
+    const key = `help.ticketCategories.${category}`;
+    const translated = t(key);
+    return translated && translated !== key ? translated : category;
   };
 
   // Group messages by date
@@ -221,30 +227,34 @@ export default function TicketDetailPage() {
       <Header />
       <HeaderSpacer />
 
-      <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+      <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Back Link & Header */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Link
             href="/help"
-            className="inline-flex items-center gap-2 text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-n-800)] transition-colors mb-4"
+            className="inline-flex items-center gap-2 text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-n-800)] transition-colors mb-3 sm:mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             {t('help.ticketDetail.backToHelp')}
           </Link>
 
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start justify-between gap-3 sm:gap-4">
             <div className="min-w-0">
-              <h1 className="text-xl font-serif font-medium text-[var(--hm-fg-primary)] mb-2 truncate">
+              <h1 className="text-lg sm:text-xl font-serif font-medium text-[var(--hm-fg-primary)] mb-1.5 sm:mb-2 truncate">
                 {ticket.subject}
               </h1>
-              <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--hm-fg-muted)]">
+              <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-[var(--hm-fg-muted)]">
                 <span>{getCategoryLabel(ticket.category)}</span>
                 <span className="w-1 h-1 rounded-full bg-[var(--hm-border-strong)]" />
                 <span>{formatDateLong(ticket.createdAt, locale)}</span>
               </div>
             </div>
             <Badge variant={getStatusVariant(ticket.status)} size="sm" className="flex-shrink-0">
-              {t(`helpPage.status.${ticket.status}`)}
+              {(() => {
+                const key = `helpPage.status.${ticket.status}`;
+                const v = t(key);
+                return v && v !== key ? v : ticket.status;
+              })()}
             </Badge>
           </div>
         </div>
@@ -265,34 +275,40 @@ export default function TicketDetailPage() {
                 </div>
 
                 {/* Messages for this date */}
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {group.messages.map((msg, msgIndex) => (
                     <div
                       key={msgIndex}
                       className={`flex ${!msg.isAdmin ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className={`flex items-end gap-2 max-w-[85%] ${!msg.isAdmin ? 'flex-row-reverse' : ''}`}>
-                        {/* Avatar */}
+                      <div className={`flex items-end gap-2 max-w-[88%] sm:max-w-[78%] ${!msg.isAdmin ? 'flex-row-reverse' : ''}`}>
+                        {/* Avatar - shield for admin messages, identifies who's talking */}
                         {msg.isAdmin && (
-                          <div className="w-8 h-8 rounded-full bg-[var(--hm-n-800)] flex items-center justify-center flex-shrink-0 mb-1">
-                            <ShieldAlert className="w-4 h-4 text-white" />
+                          <div
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 mb-1 shadow-sm"
+                            style={{ background: 'linear-gradient(135deg, var(--hm-brand-500) 0%, var(--hm-brand-700) 100%)' }}
+                          >
+                            <ShieldAlert className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" strokeWidth={2} />
                           </div>
                         )}
 
                         {/* Message Bubble */}
                         <div
-                          className={`px-4 py-3 ${
+                          className={
                             !msg.isAdmin
-                              ? 'bg-[var(--hm-n-800)] text-white rounded-2xl rounded-br-md'
-                              : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-primary)] rounded-2xl rounded-bl-md'
-                          }`}
+                              ? 'px-3.5 py-2.5 sm:px-4 sm:py-3 bg-[var(--hm-n-800)] text-white rounded-2xl rounded-br-md shadow-sm'
+                              : 'px-3.5 py-2.5 sm:px-4 sm:py-3 bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-primary)] rounded-2xl rounded-bl-md border border-[var(--hm-border-subtle)]'
+                          }
                         >
                           {msg.isAdmin && (
-                            <p className="text-xs font-medium text-[var(--hm-n-800)] mb-1">
+                            <p
+                              className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider mb-1"
+                              style={{ color: 'var(--hm-brand-500)' }}
+                            >
                               {t('help.ticketDetail.supportTeam')}
                             </p>
                           )}
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
                           <p className={`text-[10px] mt-1.5 ${!msg.isAdmin ? 'text-white/60' : 'text-[var(--hm-fg-muted)]'}`}>
                             {formatMessageTime(msg.createdAt)}
                           </p>
