@@ -75,6 +75,7 @@ interface FormData {
   instagram: string;
   facebook: string;
   linkedin: string;
+  tiktok: string;
   website: string;
 }
 
@@ -267,6 +268,7 @@ export function ProfileSetupProvider({
     instagram: "",
     facebook: "",
     linkedin: "",
+    tiktok: "",
     website: "",
   });
 
@@ -703,6 +705,7 @@ export function ProfileSetupProvider({
             instagramUrl?: string;
             facebookUrl?: string;
             linkedinUrl?: string;
+            tiktokUrl?: string;
             websiteUrl?: string;
           };
           setExistingProfileId(profile._id);
@@ -977,6 +980,8 @@ export function ProfileSetupProvider({
               draft?.facebook || profile.facebookUrl || prev.facebook || "",
             linkedin:
               draft?.linkedin || profile.linkedinUrl || prev.linkedin || "",
+            tiktok:
+              draft?.tiktok || profile.tiktokUrl || prev.tiktok || "",
             website: draft?.website || profile.websiteUrl || prev.website || "",
           }));
 
@@ -1379,6 +1384,7 @@ export function ProfileSetupProvider({
             instagramUrl: formData.instagram || undefined,
             facebookUrl: formData.facebook || undefined,
             linkedinUrl: formData.linkedin || undefined,
+            tiktokUrl: formData.tiktok || undefined,
             websiteUrl: formData.website || undefined,
           };
         case "services": {
@@ -1690,6 +1696,7 @@ export function ProfileSetupProvider({
         instagramUrl: formData.instagram || undefined,
         facebookUrl: formData.facebook || undefined,
         linkedinUrl: formData.linkedin || undefined,
+        tiktokUrl: formData.tiktok || undefined,
         websiteUrl: formData.website || undefined,
         // Use the `servicePricing` useMemo above as the single source of truth -
         // it correctly carries range fields (`priceMin`/`priceMax`) and per-service

@@ -21,29 +21,39 @@ export default function MobileStickyBar({ onIntakeOpen }: MobileStickyBarProps) 
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-50 sm:hidden transition-all duration-300 ${show ? "translate-y-0" : "translate-y-full"}`}
+      className={`fixed bottom-0 left-0 right-0 z-[55] sm:hidden transition-all duration-300 ${show ? "translate-y-0" : "translate-y-full"}`}
     >
       <div
-        className="backdrop-blur-xl border-t border-[var(--hm-border)] px-4 py-3 flex gap-2"
+        className="backdrop-blur-xl border-t border-[var(--hm-border)] px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex gap-2"
         style={{
           backgroundColor:
             "color-mix(in srgb, var(--hm-bg-elevated) 95%, transparent)",
         }}
       >
+        {/* Dedicated short sticky-bar labels (`landing.stickyQuote`,
+            `landing.stickyBrowse`). The longer fully-spelled labels used
+            elsewhere ("შეთავაზების მოთხოვნა", "პროფესიონალების ნახვა")
+            don't fit a half-row on narrow Georgian/Russian phones - both
+            were truncating to "შე..." / "...ნახ" in the prior screenshot.
+            Brief action-nouns sized for buttons (ka: "შეთავაზება",
+            "ხელოსნები"; ru: "Запросить", "Мастера"; en: "Get quote",
+            "See pros"). */}
         <Button
           size="sm"
           onClick={onIntakeOpen}
-          className="flex-1"
+          className="flex-1 min-w-0 px-3"
         >
-          {t("concierge.requestQuote")}
+          <span className="truncate">{t("landing.stickyQuote")}</span>
         </Button>
         <Button
           asChild
           size="sm"
           variant="outline"
-          className="flex-1"
+          className="flex-1 min-w-0 px-3"
         >
-          <Link href="/professionals">{t("landing.browsePros")}</Link>
+          <Link href="/professionals" className="truncate">
+            {t("landing.stickyBrowse")}
+          </Link>
         </Button>
       </div>
     </div>

@@ -212,6 +212,7 @@ export interface ProProfile extends BaseEntity {
   facebookUrl?: string;
   instagramUrl?: string;
   linkedinUrl?: string;
+  tiktokUrl?: string;
   websiteUrl?: string;
   whatsapp?: string;
   telegram?: string;

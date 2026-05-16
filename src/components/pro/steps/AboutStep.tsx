@@ -24,6 +24,7 @@ interface AboutStepProps {
     instagram?: string;
     facebook?: string;
     linkedin?: string;
+    tiktok?: string;
     website?: string;
   };
   avatarPreview: string | null;
@@ -433,96 +434,13 @@ export default function AboutStep({
           )}
         </div>
 
-        {/* Custom Skills - OPTIONAL */}
-        {onCustomServicesChange && (
-          <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm border-2 border-[var(--hm-border-subtle)]">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-[var(--hm-brand-500)]" />
-                <span className="font-semibold text-[var(--hm-fg-primary)]">
-                  {t('common.customSkills')}
-                </span>
-              </div>
-              <span className="text-xs font-medium text-[var(--hm-fg-muted)] bg-[var(--hm-bg-tertiary)] px-2.5 py-1 rounded-full">
-                {t('common.optional')}
-              </span>
-            </div>
-            <p className="text-sm text-[var(--hm-fg-secondary)] mb-3">
-              {getLocalizedField(subcatConfig.skills.description, locale)}
-            </p>
-
-            {/* Suggested skills */}
-            {subcatConfig.skills.suggestions.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {subcatConfig.skills.suggestions
-                  .filter((s) => !customServices.includes(s))
-                  .slice(0, 6)
-                  .map((suggestion) => (
-                    <button
-                      key={suggestion}
-                      type="button"
-                      onClick={() => {
-                        if (onCustomServicesChange && !customServices.includes(suggestion)) {
-                          onCustomServicesChange([...customServices, suggestion]);
-                        }
-                      }}
-                      className="px-2.5 py-1 rounded-full text-xs font-medium transition-all border border-dashed border-[var(--hm-border-subtle)] text-[var(--hm-fg-muted)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/5"
-                    >
-                      + {suggestion}
-                    </button>
-                  ))}
-              </div>
-            )}
-
-            {/* Custom skills list */}
-            {customServices.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {customServices.map(skill => (
-                  <span
-                    key={skill}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--hm-success-50)] text-[var(--hm-success-500)] text-sm"
-                  >
-                    {skill}
-                    <button
-                      type="button"
-                      onClick={() => removeCustomSkill(skill)}
-                      className="w-4 h-4 rounded-full hover:bg-[var(--hm-success-100)] flex items-center justify-center transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Add custom skill input */}
-            <div className="flex gap-2">
-              <Input
-                value={customSkillInput}
-                onChange={(e) => setCustomSkillInput(e.target.value)}
-                variant="filled"
-                inputSize="default"
-                placeholder={getLocalizedField(subcatConfig.skills.placeholder, locale)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addCustomSkill();
-                  }
-                }}
-                className="flex-1"
-              />
-              <button
-                type="button"
-                onClick={addCustomSkill}
-                disabled={!customSkillInput.trim()}
-                className="px-4 py-2 rounded-xl bg-[var(--hm-success-500)] hover:brightness-95 text-white disabled:bg-[var(--hm-bg-tertiary)] disabled:text-[var(--hm-fg-muted)] disabled:hover:brightness-100 transition flex items-center gap-1.5"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline text-sm font-medium">{t('common.add')}</span>
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Custom Skills section removed from profile-setup (2026-05-16).
+            The data model still carries `customServices` and the field is
+            editable on the customer-facing pro detail page (the owner-mode
+            CustomSkills card in ProfessionalDetailClient). Removing it here
+            keeps profile-setup focused on the required basics; refinement
+            of niche skills happens later, on the actual profile, where the
+            pro can see how it'll look to customers. */}
 
         {/* Contact & Social Media - OPTIONAL */}
         <div className="bg-[var(--hm-bg-elevated)] rounded-2xl p-4 sm:p-6 shadow-sm border-2 border-[var(--hm-border-subtle)]">
@@ -607,6 +525,26 @@ export default function AboutStep({
                 inputSize="default"
                 placeholder="facebook.com/username"
                 leftIcon={<Facebook className="w-4 h-4 text-[#1877F2]" />}
+              />
+            </div>
+
+            {/* TikTok - inline SVG since Lucide doesn't ship a TikTok glyph */}
+            <div>
+              <label className="block text-xs font-medium text-[var(--hm-fg-secondary)] mb-1.5">
+                TikTok
+              </label>
+              <Input
+                type="text"
+                value={formData.tiktok || ''}
+                onChange={(e) => onFormChange({ tiktok: e.target.value })}
+                variant="filled"
+                inputSize="default"
+                placeholder="tiktok.com/@username"
+                leftIcon={
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4" style={{ color: '#010101' }}>
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.84-.1Z" />
+                  </svg>
+                }
               />
             </div>
 

@@ -548,6 +548,7 @@ function AdminDashboardPageContent() {
             { label: t('admin.activityLogs'), icon: ActivityIcon, href: '/admin/activity-logs', color: THEME.success },
             { label: t('admin.businessQuotes'), icon: Building2, href: '/admin/business-quotes', color: '#8B5CF6' },
             { label: t('admin.serviceCatalog'), icon: LayoutList, href: '/admin/service-catalog', color: '#06B6D4' },
+            { label: t('admin.aiIndex'), icon: Zap, href: '/admin/ai-index', color: '#A855F7' },
             { label: t('admin.invites'), icon: Send, href: '/admin/invites', color: 'var(--hm-brand-500)', count: undefined },
             { label: t('admin.requests'), icon: MessageSquare, href: '/admin/requests', color: '#EF4E24', count: undefined },
           ].map((action, index) => (

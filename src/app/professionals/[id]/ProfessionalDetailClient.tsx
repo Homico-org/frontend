@@ -1990,9 +1990,16 @@ export default function ProfessionalDetailClient({
 
       {/* ========== MOBILE SERVICES & PRICING CARD ========== */}
       {/* Client-only mirror of the desktop aside's services block so
-          invited pros and clients actually see per-service prices on phones. */}
-      {(profile?.servicePricing?.length ?? 0) > 0 && (
-        <MobileProServicesCard profile={profile} />
+          invited pros and clients actually see per-service prices on phones.
+          Also rendered (with an empty-state CTA) when the owner is viewing
+          their own profile and hasn't added pricing yet - they had no other
+          way to reach the services-setup flow on mobile. */}
+      {((profile?.servicePricing?.length ?? 0) > 0 || canEdit) && (
+        <MobileProServicesCard
+          profile={profile}
+          canEdit={canEdit}
+          editServicesHref={setupServicesHref}
+        />
       )}
 
       {/* ========== MAIN LAYOUT: SIDEBAR + CONTENT ========== */}
@@ -2956,6 +2963,7 @@ export default function ProfessionalDetailClient({
                   facebookUrl={profile.facebookUrl}
                   instagramUrl={profile.instagramUrl}
                   linkedinUrl={profile.linkedinUrl}
+                  tiktokUrl={profile.tiktokUrl}
                   websiteUrl={profile.websiteUrl}
                   locale={locale as "en" | "ka" | "ru"}
                   isAuthenticated={!!user}
