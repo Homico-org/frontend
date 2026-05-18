@@ -80,7 +80,7 @@ import {
   Ruler,
   Send,
   Share2,
-  Sparkles,
+  Box,
   Star,
   Trash2,
   UserPlus,
@@ -1043,6 +1043,9 @@ export default function JobDetailClient() {
       .then(res => setProposals(res.data?.data || res.data || []))
       .catch(() => {})
       .finally(() => setProposalsLoading(false));
+    // `job` excluded - we only need to re-fetch when the id or
+    // ownership flag changes, not on every job-object mutation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job?.id, isOwner]);
 
   // Helper to get event icon and color
@@ -1209,7 +1212,7 @@ export default function JobDetailClient() {
       case "stage_changed":
         const fromLabel = STAGES.find((s) => s.key === meta?.fromStage);
         const toLabel = STAGES.find((s) => s.key === meta?.toStage);
-        return `${{ ka: fromLabel?.labelKa, en: fromLabel?.label, ru: fromLabel?.label }[locale] ?? meta?.fromStage ?? "—"} → ${{ ka: toLabel?.labelKa, en: toLabel?.label, ru: toLabel?.label }[locale] ?? meta?.toStage ?? "—"}`;
+        return `${{ ka: fromLabel?.labelKa, en: fromLabel?.label, ru: fromLabel?.label }[locale] ?? meta?.fromStage ?? "-"} → ${{ ka: toLabel?.labelKa, en: toLabel?.label, ru: toLabel?.label }[locale] ?? meta?.toStage ?? "-"}`;
       case "poll_created":
         return `"${meta?.pollTitle}"`;
       case "poll_voted":
@@ -1920,7 +1923,7 @@ export default function JobDetailClient() {
                     <Edit3 className="w-4 h-4" />
                   </Link>
                 )}
-                {/* Main Image — capped height on desktop to keep everything in viewport */}
+                {/* Main Image - capped height on desktop to keep everything in viewport */}
                 <Button
                   variant="ghost"
                   onClick={() => setSelectedMediaIndex(activeImageIndex)}
@@ -2144,7 +2147,7 @@ export default function JobDetailClient() {
                 )}
               </div>
 
-              {/* Budget + Quick Specs — compact inline row */}
+              {/* Budget + Quick Specs - compact inline row */}
               <div className="flex flex-wrap items-center gap-3 text-sm pt-1">
                 {!(job.services && job.services.length > 0) && (
                   <span className="font-bold text-base" style={{ color: ACCENT }}>
@@ -2750,7 +2753,7 @@ export default function JobDetailClient() {
                         )}
                         {job.visualizationNeeded && (
                           <RequirementBadge
-                            icon={<Sparkles className="w-4 h-4" />}
+                            icon={<Box className="w-4 h-4" />}
                             text={t("jobDetail.3dVisualization")}
                           />
                         )}
@@ -2786,7 +2789,7 @@ export default function JobDetailClient() {
                         {t("jobDetail.references")}
                       </h2>
 
-                      {/* Reference Images — grid with lightbox preview */}
+                      {/* Reference Images - grid with lightbox preview */}
                       {refImages.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-3">
                           {refImages.map((ref, idx) => (
@@ -2825,7 +2828,7 @@ export default function JobDetailClient() {
                           >
                             <div className="w-10 h-10 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0">
                               {ref.type === "pinterest" ? (
-                                /* Pinterest brand mark — not available in lucide-react */
+                                /* Pinterest brand mark - not available in lucide-react */
                                 <svg
                                   className="w-5 h-5"
                                   style={{ color: "#E60023" }}
@@ -3293,7 +3296,7 @@ export default function JobDetailClient() {
             {/* Sidebar - visible on all screens, stacked on mobile */}
             <div className="lg:col-span-1 order-first lg:order-last">
               <div className="lg:sticky lg:top-24 space-y-4 sm:space-y-6">
-                {/* Client Card — hidden when hired pro sees the job (avoid duplicate with hired banner below) */}
+                {/* Client Card - hidden when hired pro sees the job (avoid duplicate with hired banner below) */}
                 {!(isHired && isHiredPro) && (
                   <ClientCard
                     client={{
@@ -4053,7 +4056,7 @@ export default function JobDetailClient() {
               className="p-4 rounded-xl border border-[var(--hm-border)] hover:bg-[var(--hm-bg-tertiary)]/50 transition-colors w-full"
             >
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-[var(--hm-fg-muted)]" />
+                <Box className="w-5 h-5 text-[var(--hm-fg-muted)]" />
                 <span className="text-[var(--hm-fg-primary)]">
                   {t("jobDetail.3dVisualization")}
                 </span>
@@ -4116,7 +4119,7 @@ export default function JobDetailClient() {
         </div>
       </Modal>
 
-      {/* Guest Sticky CTA — non-authenticated visitors from Facebook / shared links */}
+      {/* Guest Sticky CTA - non-authenticated visitors from Facebook / shared links */}
       {!user && job && (
         <div className="fixed bottom-0 left-0 right-0 z-50 animate-slide-up safe-area-bottom">
           {/* Glassmorphism backdrop */}

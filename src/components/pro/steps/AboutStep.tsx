@@ -9,7 +9,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { aiService } from '@/services/ai';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { AlertCircle, Camera, CheckCircle2, Clock, FileText, Globe, Instagram, Facebook, Linkedin, MessageCircle, Send, Sparkles, Plus, X, Wand2 } from 'lucide-react';
+import { AlertCircle, Camera, CheckCircle2, Clock, FileText, Globe, Instagram, Facebook, Linkedin, MessageCircle, Send, Plus, X, Wand2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 interface AboutStepProps {
@@ -200,6 +200,7 @@ export default function AboutStep({
               </button>
             ) : (
               <div className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
                 <img
                   src={avatarPreview}
                   alt=""
@@ -244,7 +245,7 @@ export default function AboutStep({
           />
         </div>
 
-        {/* First / last name — REQUIRED */}
+        {/* First / last name - REQUIRED */}
         {(() => {
           const firstValid = formData.firstName.trim().length >= 2;
           const lastValid = formData.lastName.trim().length >= 2;

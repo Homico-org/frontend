@@ -7,7 +7,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { cn } from '@/lib/utils';
 import { storage } from '@/services/storage';
-import { Image, Plus, Trash2, Type, Upload, X } from 'lucide-react';
+import { Image as ImageIcon, Plus, Trash2, Type, Upload, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -164,7 +164,7 @@ export default function CreatePollModal({
         title={t('polls.newPoll')}
         description={t('polls.createAPollForClient')}
         variant="accent"
-        icon={<Image className="w-6 h-6 text-[var(--hm-brand-500)]" />}
+        icon={<ImageIcon className="w-6 h-6 text-[var(--hm-brand-500)]" />}
       />
 
       <ModalBody className="max-h-[45vh] overflow-y-auto">
@@ -213,7 +213,7 @@ export default function CreatePollModal({
                   'flex-1',
                   optionType === 'image' && 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)]'
                 )}
-                leftIcon={<Image className="w-4 h-4" />}
+                leftIcon={<ImageIcon className="w-4 h-4" />}
               >
                 {t('polls.image')}
               </Button>
@@ -260,6 +260,7 @@ export default function CreatePollModal({
                     <div className="aspect-[4/3] rounded-lg border-2 border-dashed border-[var(--hm-border-strong)] overflow-hidden relative">
                       {option.imageUrl || option.imagePreview ? (
                         <>
+                          {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
                           <img
                             src={option.imagePreview || storage.getFileUrl(option.imageUrl || '')}
                             alt=""

@@ -1,6 +1,6 @@
 'use client';
 
-import { Hammer, PaintBucket, Sparkles, HardHat, Wrench, Check } from 'lucide-react';
+import { Hammer, PaintBucket, Home, HardHat, Wrench, Check } from 'lucide-react';
 import { ReactNode } from 'react';
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -63,7 +63,7 @@ const allConditions: ConditionOption[] = [
     labelKa: 'კარგ მდგომარეობაში',
     descEn: 'Minor updates or additions',
     descKa: 'მცირე განახლებები ან დამატებები',
-    icon: <Sparkles className="w-5 h-5" />,
+    icon: <Home className="w-5 h-5" />,
   },
 ];
 

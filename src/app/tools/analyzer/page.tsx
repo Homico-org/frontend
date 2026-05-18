@@ -15,7 +15,9 @@ import {
   ChevronRight,
   Download,
   RefreshCw,
-  Sparkles,
+  Gift,
+  Lightbulb,
+  Wand2,
   Shield,
   BarChart3,
   Check,
@@ -426,7 +428,7 @@ Heating:
   };
 
   const formatCurrency = (amount: number | null | undefined) =>
-    amount != null ? amount.toLocaleString() + '₾' : '—';
+    amount != null ? amount.toLocaleString() + '₾' : '-';
 
   const itemsByCategory = analysis?.items.reduce(
     (acc, item) => {
@@ -438,7 +440,7 @@ Heating:
   );
 
   const featureItems = [
-    { icon: Sparkles, label: t('tools.analyzer.features.free') },
+    { icon: Gift, label: t('tools.analyzer.features.free') },
     { icon: BarChart3, label: t('tools.analyzer.features.compare') },
     { icon: Shield, label: t('tools.analyzer.features.missing') },
   ];
@@ -509,7 +511,7 @@ Heating:
                     disabled={!estimateText.trim()}
                     className="w-full px-6 py-3.5 h-auto rounded-xl font-semibold"
                   >
-                    <Sparkles className="w-4 h-4 mr-2" strokeWidth={1.5} />
+                    <Wand2 className="w-4 h-4 mr-2" strokeWidth={1.5} />
                     {t('tools.analyzer.analyzeButton')}
                   </Button>
                 </div>
@@ -807,7 +809,7 @@ Heating:
               {aiAnalysis.recommendations.length > 0 && (
                 <div className="bg-[var(--hm-bg-tertiary)] rounded-2xl p-5 border border-[var(--hm-border)]">
                   <h3 className="font-semibold text-[var(--hm-n-800)] mb-4 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5" strokeWidth={1.5} />
+                    <Lightbulb className="w-5 h-5" strokeWidth={1.5} />
                     {t('tools.analyzer.results.recommendations')}
                   </h3>
                   <ul className="space-y-2">
@@ -893,7 +895,7 @@ Heating:
                         </div>
                         <div className="text-sm text-[var(--hm-fg-secondary)]">
                           <span className="font-semibold">{alert.itemName}</span>
-                          <span className="text-[var(--hm-fg-muted)]"> — {alert.message}</span>
+                          <span className="text-[var(--hm-fg-muted)]"> - {alert.message}</span>
                         </div>
                       </div>
                     ))}
@@ -996,7 +998,7 @@ Heating:
                                       </span>
                                     )}
                                     <span className="font-semibold text-[var(--hm-fg-primary)] tabular-nums text-sm min-w-[70px] text-right">
-                                      {item.total > 0 ? formatCurrency(item.total) : '—'}
+                                      {item.total > 0 ? formatCurrency(item.total) : '-'}
                                     </span>
                                     <span
                                       className={`px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 ${config.bg} ${config.text}`}

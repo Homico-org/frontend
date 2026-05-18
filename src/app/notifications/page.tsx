@@ -24,7 +24,7 @@ import {
   Megaphone,
   MessageSquare,
   Shield,
-  Sparkles,
+  UserCheck,
   Star,
   Trash2,
   X
@@ -80,7 +80,7 @@ const notificationConfig: Record<string, { icon: typeof Briefcase; color: string
     bgColor: 'rgba(16, 185, 129, 0.1)',
   },
   profile_update: {
-    icon: Sparkles,
+    icon: UserCheck,
     color: '#06B6D4',
     bgColor: 'rgba(6, 182, 212, 0.1)',
   },

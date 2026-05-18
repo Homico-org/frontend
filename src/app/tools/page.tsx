@@ -1,7 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/contexts/LanguageContext";
-import { ArrowRight, Calculator, Database, FileSearch, Scale, Sparkles } from "lucide-react";
+import { ArrowRight, Calculator, Database, FileSearch, Scale, Star } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -138,7 +138,7 @@ export default function ToolsPage() {
                           {toolT.title}
                         </h2>
                         <span className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-sm border border-white/10 shadow-lg">
-                          <Sparkles className="w-3.5 h-3.5" />
+                          <Star className="w-3.5 h-3.5" />
                           {t("tools.home.featuredBadge")}
                         </span>
                       </div>

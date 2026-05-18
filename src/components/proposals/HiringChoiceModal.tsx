@@ -10,7 +10,7 @@ import {
   Phone,
   Shield,
   ShieldCheck,
-  Sparkles,
+  Gift,
   Star,
   X,
   Zap
@@ -205,7 +205,7 @@ export default function HiringChoiceModal({
                     {t('proposal.hireThroughHomico')}
                   </h3>
                   <div className="flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-[var(--hm-brand-500)]" />
+                    <Star className="h-3.5 w-3.5 text-[var(--hm-brand-500)]" />
                     <span
                       className="text-xs font-medium"
                       style={{ color: 'var(--hm-brand-500)' }}
@@ -261,7 +261,7 @@ export default function HiringChoiceModal({
 
               {/* Temporary free notice */}
               <div className="mb-3 flex items-center gap-2 rounded-lg bg-[var(--hm-success-50)]/20 px-3 py-2 border border-[var(--hm-success-500)]/20/50">
-                <Sparkles className="h-4 w-4 text-[var(--hm-success-500)] flex-shrink-0" />
+                <Gift className="h-4 w-4 text-[var(--hm-success-500)] flex-shrink-0" />
                 <p className="text-xs text-[var(--hm-success-500)]">
                   {t('proposal.tempFreeNotice')}
                 </p>

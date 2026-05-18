@@ -14,7 +14,6 @@ import {
     Eye,
     Gem,
     Gift, Share2,
-    Sparkles,
     Star,
     TrendingUp,
     Zap
@@ -64,7 +63,7 @@ const TIER_CONFIG: Record<string, {
       { icon: BadgeCheck, text: { en: 'Pro Badge Active', ka: 'პრო ბეჯი აქტიურია' } },
       { icon: TrendingUp, text: { en: 'Top Search Results', ka: 'ტოპ ძიების შედეგები' } },
       { icon: Eye, text: { en: '5x Profile Visibility', ka: '5x მეტი ხილვადობა' } },
-      { icon: Sparkles, text: { en: 'Featured on Homepage', ka: 'მთავარ გვერდზე გამოჩენა' } },
+      { icon: Star, text: { en: 'Featured on Homepage', ka: 'მთავარ გვერდზე გამოჩენა' } },
     ],
   },
   elite: { 
@@ -192,7 +191,7 @@ function SuccessContent() {
                 animationDuration: `${3 + Math.random() * 3}s`,
               }}
             >
-              <Sparkles className="text-[var(--hm-warning-500)]/30" style={{ width: `${12 + Math.random() * 8}px` }} />
+              <Star className="text-[var(--hm-warning-500)]/30" style={{ width: `${12 + Math.random() * 8}px` }} />
             </div>
           ))}
         </div>
@@ -375,7 +374,7 @@ export default function SuccessPage() {
                 background: `linear-gradient(135deg, ${COLORS.terracotta}, ${COLORS.terracottaDark})`,
               }}
             >
-              <Sparkles className="w-10 h-10 text-white" />
+              <Gem className="w-10 h-10 text-white" />
             </div>
             <LoadingSpinner size="lg" color={COLORS.terracotta} />
           </div>

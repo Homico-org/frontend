@@ -97,21 +97,9 @@ export default function LikeButton({
     </svg>
   );
 
-  // Sparkle component for extra delight
-  const Sparkle = ({ delay, size: sparkleSize }: { delay: number; size: number }) => (
-    <svg
-      className="absolute text-[var(--hm-warning-500)] animate-sparkle"
-      style={{
-        animationDelay: `${delay}ms`,
-        width: sparkleSize,
-        height: sparkleSize,
-      }}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
-      <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-    </svg>
-  );
+  // Sparkle component removed - the heart pulse + burst particles +
+  // ring ripple already carry the "like landed" feeling without the
+  // 4-point sparkle bursts.
 
   // Ring ripple effect
   const RingRipple = () => (
@@ -186,14 +174,6 @@ export default function LikeButton({
             />
           ))}
 
-          {/* Sparkles on like */}
-          {isAnimating && isLiked && (
-            <>
-              <Sparkle delay={0} size={10} />
-              <Sparkle delay={100} size={8} />
-              <Sparkle delay={200} size={6} />
-            </>
-          )}
         </div>
 
         {/* Like count with animation */}

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs';
-import { Armchair, Sparkles, Package, Users, Hammer, Clock } from 'lucide-react';
+import { Armchair, Box, Package, Users, Hammer, Clock } from 'lucide-react';
 import RequirementBadge from './RequirementBadge';
 
 const meta: Meta<typeof RequirementBadge> = {
@@ -30,7 +30,7 @@ export const FurnitureSelection: Story = {
 
 export const Visualization: Story = {
   args: {
-    icon: <Sparkles className="w-4 h-4" />,
+    icon: <Box className="w-4 h-4" />,
     text: '3D Visualization',
   },
 };
@@ -57,7 +57,7 @@ export const AllRequirements: Story = {
         text="Furniture Selection"
       />
       <RequirementBadge
-        icon={<Sparkles className="w-4 h-4" />}
+        icon={<Box className="w-4 h-4" />}
         text="3D Visualization"
       />
       <RequirementBadge
@@ -80,7 +80,7 @@ export const GeorgianLabels: Story = {
         text="ავეჯის შერჩევა"
       />
       <RequirementBadge
-        icon={<Sparkles className="w-4 h-4" />}
+        icon={<Box className="w-4 h-4" />}
         text="3D ვიზუალიზაცია"
       />
       <RequirementBadge

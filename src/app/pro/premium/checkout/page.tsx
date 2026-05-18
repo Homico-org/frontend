@@ -20,7 +20,7 @@ import {
   RefreshCw,
   Shield,
   ShieldCheck,
-  Sparkles, Star, Zap
+  Star, Zap
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -335,7 +335,7 @@ function CheckoutContent() {
                 animationDuration: `${4 + Math.random() * 3}s`,
               }}
             >
-              <Sparkles className="text-[var(--hm-warning-500)]/30" style={{ width: `${12 + Math.random() * 8}px` }} />
+              <Star className="text-[var(--hm-warning-500)]/30" style={{ width: `${12 + Math.random() * 8}px` }} />
             </div>
           ))}
         </div>
@@ -823,8 +823,8 @@ function CheckoutContent() {
                       {isElite && (
                         <div className="absolute inset-0 overflow-hidden pointer-events-none">
                           {[...Array(5)].map((_, i) => (
-                            <Sparkles 
-                              key={i} 
+                            <Star
+                              key={i}
                               className="absolute text-white/20 animate-float"
                               style={{
                                 left: `${20 + i * 15}%`,

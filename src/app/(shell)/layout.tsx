@@ -26,11 +26,11 @@ import {
   Hammer,
   HelpCircle,
   LayoutDashboard,
+  Loader2,
   Mail,
   Plus,
   RotateCcw,
   Search,
-  Sparkles,
   Settings,
   Users,
   Wrench,
@@ -148,7 +148,7 @@ function AiSearchIndicator({ isSearching }: { isSearching: boolean }) {
   if (!isSearching) return null;
   return (
     <div className="absolute right-10 top-1/2 -translate-y-1/2 flex items-center gap-1">
-      <Sparkles className="w-3.5 h-3.5 text-[var(--hm-brand-500)] animate-pulse" />
+      <Loader2 className="w-3.5 h-3.5 text-[var(--hm-brand-500)] animate-spin" />
     </div>
   );
 }
@@ -362,7 +362,7 @@ function BrowseSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
 
   const handleSubToggle = (_catKey: string, subKey: string) => {
     toggleSubcategory(subKey);
-    // Always clear selectedCategory — it's no longer needed with multi-select
+    // Always clear selectedCategory - it's no longer needed with multi-select
     setSelectedCategory(null);
   };
 
@@ -710,7 +710,7 @@ function ShellContent({ children }: { children: ReactNode }) {
               : SIDEBAR_EXPANDED_WIDTH,
           }}
         >
-          {/* Post Job — top of sidebar */}
+          {/* Post Job - top of sidebar */}
           <div className={`pt-3 pb-1.5 flex-shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}>
             <Link
               href="/post-job"
@@ -796,7 +796,7 @@ function ShellContent({ children }: { children: ReactNode }) {
             </nav>
           </div>
 
-          {/* Categories removed from sidebar — handled by filter bar on both pages */}
+          {/* Categories removed from sidebar - handled by filter bar on both pages */}
 
           {/* Footer area (My pages + Support + Social) */}
           <div className={`mt-auto pb-4 ${isCollapsed ? "px-2" : "px-3"}`}>
@@ -989,7 +989,7 @@ function ShellContent({ children }: { children: ReactNode }) {
       <MobileBottomNav />
 
       {/* Mobile Categories Panel */}
-      {/* Categories moved to filter bar — mobile panel removed */}
+      {/* Categories moved to filter bar - mobile panel removed */}
 
       <style jsx>{`
         .scrollbar-hide::-webkit-scrollbar {

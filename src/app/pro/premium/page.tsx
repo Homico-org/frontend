@@ -22,7 +22,6 @@ import {
   MessageCircle,
   Palette,
   Shield,
-  Sparkles,
   Star,
   TrendingUp,
   Zap,
@@ -103,7 +102,7 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
       { icon: Crown, text: { en: "Pro Badge", ka: "პრო ბეჯი" } },
       { icon: TrendingUp, text: { en: "Top Placement", ka: "ტოპ პოზიცია" } },
       { icon: Eye, text: { en: "5x Profile Views", ka: "5x მეტი ნახვა" } },
-      { icon: Sparkles, text: { en: "Homepage Feature", ka: "მთავარ გვერდზე" } },
+      { icon: Star, text: { en: "Homepage Feature", ka: "მთავარ გვერდზე" } },
       { icon: Shield, text: { en: "Priority Support", ka: "პრიორიტეტული მხარდაჭერა" } },
       { icon: Award, text: { en: "Unlimited Portfolio", ka: "შეუზღუდავი პორტფოლიო" } },
     ],
@@ -125,7 +124,7 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
       { icon: Crown, text: { en: "Elite Gold Badge", ka: "ელიტა ოქროს ბეჯი" } },
       { icon: TrendingUp, text: { en: "#1 Search Priority", ka: "#1 ძიების პრიორიტეტი" } },
       { icon: Eye, text: { en: "10x Profile Views", ka: "10x მეტი ნახვა" } },
-      { icon: Sparkles, text: { en: "Exclusive Spotlight", ka: "ექსკლუზიური სპოტლაითი" } },
+      { icon: Award, text: { en: "Exclusive Spotlight", ka: "ექსკლუზიური სპოტლაითი" } },
       { icon: Headphones, text: { en: "Personal Manager", ka: "პერსონალური მენეჯერი" } },
       { icon: MessageCircle, text: { en: "WhatsApp Support", ka: "WhatsApp მხარდაჭერა" } },
       { icon: Palette, text: { en: "Custom Portfolio", ka: "პერსონალური პორტფოლიო" } },
@@ -137,7 +136,7 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
 type BillingPeriod = "monthly" | "yearly";
 
 // Animated Sparkle Component
-function AnimatedSparkles() {
+function AnimatedStars() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {[...Array(20)].map((_, i) => (
@@ -151,12 +150,12 @@ function AnimatedSparkles() {
             animationDuration: `${3 + Math.random() * 4}s`,
           }}
         >
-          <Sparkles 
-            className="text-[var(--hm-warning-500)]/20" 
-            style={{ 
+          <Star
+            className="text-[var(--hm-warning-500)]/20"
+            style={{
               width: `${8 + Math.random() * 12}px`,
               height: `${8 + Math.random() * 12}px`,
-            }} 
+            }}
           />
         </div>
       ))}
@@ -255,7 +254,7 @@ function PremiumCard({
               className="px-4 py-1.5 rounded-b-xl text-xs font-bold text-white tracking-wider flex items-center gap-1.5 shadow-lg"
               style={{ background: `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})` }}
             >
-              <Sparkles className="w-3 h-3" />
+              <Star className="w-3 h-3" />
               {tier.highlightKey ? t(tier.highlightKey) : ''}
             </div>
           </div>
@@ -655,7 +654,7 @@ export default function PremiumPlansPage() {
         {/* ========== HERO SECTION ========== */}
         <section className="relative pt-16 pb-24 overflow-hidden">
           {/* Animated Background */}
-          <AnimatedSparkles />
+          <AnimatedStars />
           
           {/* Gradient Orbs */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -913,7 +912,7 @@ export default function PremiumPlansPage() {
                                radial-gradient(circle at 80% 70%, rgba(255,255,255,0.2) 0%, transparent 40%)`,
             }}
           />
-          <AnimatedSparkles />
+          <AnimatedStars />
 
           <div className="max-w-4xl mx-auto px-4 sm:px-6 relative text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm mb-8">
