@@ -179,6 +179,11 @@ export default function AddressPicker({
     if (coordinates) {
       markerRef.current.setPosition(coordinates);
     }
+    // updateLocation intentionally excluded - listing it would recreate
+    // the map on every selection (updateLocation closes over `coordinates`
+    // via setState). The closure inside the listener reads the latest
+    // ref-backed value, so re-creating the map is wasteful and flickery.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapLoaded, isDarkMode, coordinates]);
 
   // Initialize map when loaded
@@ -495,8 +500,9 @@ export default function AddressPicker({
                   }}
                 >
                   <div
-                    className="px-4 py-3 rounded-xl bg-white/95 backdrop-blur-md flex items-center gap-3"
+                    className="px-4 py-3 rounded-xl backdrop-blur-md flex items-center gap-3"
                     style={{
+                      backgroundColor: 'var(--hm-bg-elevated)',
                       boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
                     }}
                   >
@@ -513,8 +519,9 @@ export default function AddressPicker({
               {/* Map hint - only show when no address selected */}
               {!selectedAddress && (
                 <div
-                  className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/95 backdrop-blur-sm text-xs font-medium pointer-events-none z-10"
+                  className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full backdrop-blur-sm text-xs font-medium pointer-events-none z-10"
                   style={{
+                    backgroundColor: 'var(--hm-bg-elevated)',
                     color: 'var(--hm-fg-secondary)',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                   }}
@@ -691,8 +698,9 @@ export default function AddressPicker({
               }}
             >
               <div
-                className="px-5 py-4 rounded-2xl bg-white/95 backdrop-blur-md flex items-center gap-4"
+                className="px-5 py-4 rounded-2xl backdrop-blur-md flex items-center gap-4"
                 style={{
+                  backgroundColor: 'var(--hm-bg-elevated)',
                   boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
                 }}
               >
@@ -714,8 +722,9 @@ export default function AddressPicker({
           {/* Hint when no address */}
           {!selectedAddress && (
             <div
-              className="absolute left-1/2 -translate-x-1/2 px-6 py-3 rounded-full bg-white/95 backdrop-blur-md text-sm font-medium text-[var(--hm-fg-secondary)] z-10"
+              className="absolute left-1/2 -translate-x-1/2 px-6 py-3 rounded-full backdrop-blur-md text-sm font-medium text-[var(--hm-fg-secondary)] z-10"
               style={{
+                backgroundColor: 'var(--hm-bg-elevated)',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
                 bottom: '24px',
               }}

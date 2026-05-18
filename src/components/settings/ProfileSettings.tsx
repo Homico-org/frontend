@@ -59,6 +59,9 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
         avatar: user.avatar || '',
       });
     }
+    // `allValidCities` is computed from a constant locale array and is
+    // stable across renders; we don't want it triggering re-syncs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
