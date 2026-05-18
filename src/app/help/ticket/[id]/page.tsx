@@ -67,6 +67,9 @@ export default function TicketDetailPage() {
     if (token && ticketId) {
       fetchTicket();
     }
+    // fetchTicket is defined inline below; its only externals are
+    // `token` and `ticketId` which we already list.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, ticketId]);
 
   useEffect(() => {

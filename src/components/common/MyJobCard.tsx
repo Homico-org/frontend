@@ -80,6 +80,7 @@ const MyJobCard = React.memo(function MyJobCard({
             <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-md sm:rounded-lg overflow-hidden bg-[var(--hm-bg-tertiary)] flex-shrink-0">
               {firstImage && !imageError ? (
                 <>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
                   <img
                     src={getImageSrc(firstImage)}
                     alt={job.title}

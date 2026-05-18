@@ -34,7 +34,7 @@ export default function JobsPage() {
 
   const isPro = user?.role === "pro" || user?.role === "admin";
 
-  // URL sync removed — causes re-render loop with JobsContext defaults
+  // URL sync removed - causes re-render loop with JobsContext defaults
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -100,8 +100,6 @@ export default function JobsPage() {
       }
     },
     [
-      isPro,
-      user?.selectedSubcategories,
       user?.role,
       filters.category,
       filters.subcategory,
@@ -112,6 +110,8 @@ export default function JobsPage() {
       filters.searchQuery,
       filters.deadline,
       filters.showFavoritesOnly,
+      filters.sort,
+      filters.subcategories,
     ],
   );
 
@@ -216,7 +216,7 @@ export default function JobsPage() {
     if (page > 1) fetchJobs(page);
   }, [page, fetchJobs]);
 
-  // Handle save — require auth
+  // Handle save - require auth
   const onSaveJob = useCallback((jobId: string) => {
     if (!isAuthenticated) {
       openLoginModal();
@@ -271,7 +271,7 @@ export default function JobsPage() {
     <div className="space-y-4 sm:space-y-8">
       <JobsFilterBar />
 
-      {/* User's Own Posted Jobs Section — authenticated users only */}
+      {/* User's Own Posted Jobs Section - authenticated users only */}
       {isAuthenticated && !filters.showFavoritesOnly && myJobs.length > 0 && (
         <div
           className="rounded-xl sm:rounded-2xl border border-neutral-200/60 p-3 sm:p-4 shadow-sm"
@@ -338,7 +338,7 @@ export default function JobsPage() {
         </div>
       ) : (
         <>
-          {/* Section Header — only shown when my jobs section is visible above */}
+          {/* Section Header - only shown when my jobs section is visible above */}
           {isAuthenticated && myJobs.length > 0 && isPro && (
             <div className="flex items-center justify-between pb-2 sm:pb-3 border-b border-[var(--hm-border-subtle)] mb-3 sm:mb-4">
               <div className="flex items-center gap-2 sm:gap-3">

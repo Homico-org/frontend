@@ -68,6 +68,7 @@ export default function PollOptionCard({
               }
             }}
           >
+            {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
             <img
               src={imageUrl}
               alt={option.text || 'Option'}
@@ -171,6 +172,7 @@ export default function PollOptionCard({
           >
             <X className="w-6 h-6" />
           </button>
+          {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
           <img
             src={imageUrl}
             alt={option.text || 'Option'}

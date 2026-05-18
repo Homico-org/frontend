@@ -114,6 +114,9 @@ export default function HelpPage() {
     if (isAuthenticated && token) {
       fetchMyTickets();
     }
+    // fetchMyTickets is defined inline below and only reads `token`,
+    // which we already depend on.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, token]);
 
   const fetchMyTickets = async () => {
@@ -600,7 +603,7 @@ export default function HelpPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs text-[var(--hm-fg-muted)]">{t('help.categories.support')}</p>
-                <p className="text-sm font-medium text-[var(--hm-fg-primary)]">09:00 – 18:00</p>
+                <p className="text-sm font-medium text-[var(--hm-fg-primary)]">09:00 - 18:00</p>
               </div>
             </div>
           </div>

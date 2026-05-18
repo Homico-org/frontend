@@ -169,6 +169,9 @@ function AdminActivityLogsPageContent() {
       setIsRefreshing(false);
     }
     },
+    // `t` excluded - it's a stable selector from useLanguage that
+    // closes over `locale`, which is already in deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [page, searchQuery, typeFilter, getStartDateForTimeFilter, toast, locale]
   );
 
@@ -971,7 +974,7 @@ function AdminActivityLogsPageContent() {
                                       fontFamily: "'JetBrains Mono', monospace",
                                     }}
                                   >
-                                    {truncate(safeString(c.from), 140) || "—"}
+                                    {truncate(safeString(c.from), 140) || "-"}
                                   </span>
                                 </div>
                                 <div className="col-span-4">
@@ -981,7 +984,7 @@ function AdminActivityLogsPageContent() {
                                       fontFamily: "'JetBrains Mono', monospace",
                                     }}
                                   >
-                                    {truncate(safeString(c.to), 140) || "—"}
+                                    {truncate(safeString(c.to), 140) || "-"}
                                   </span>
                                 </div>
                               </div>

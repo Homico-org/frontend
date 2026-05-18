@@ -153,7 +153,7 @@ export interface ProfileSetupContextValue {
   selectedCategories: string[];
   selectedSubcategories: string[];
   servicePricing: {
-    // Stable catalog ids — source of truth
+    // Stable catalog ids - source of truth
     serviceId?: string;
     categoryId?: string;
     subcategoryId?: string;
@@ -490,7 +490,7 @@ export function ProfileSetupProvider({
           draft.selectedSubcategoriesWithPricing,
         );
     } catch {
-      // corrupt draft — ignore
+      // corrupt draft - ignore
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -514,7 +514,7 @@ export function ProfileSetupProvider({
         }),
       );
     } catch {
-      // quota exceeded — ignore
+      // quota exceeded - ignore
     }
   }, [
     formData,
@@ -648,7 +648,7 @@ export function ProfileSetupProvider({
 
           // Note: when subcategories are pre-selected (invite flow), the
           // invite page navigates the user directly to the services step.
-          // No router.replace here — that used to bounce the route mid-mount
+          // No router.replace here - that used to bounce the route mid-mount
           // and crashed Next's <Router> with React #310.
           return;
         } catch (err) {
@@ -795,7 +795,7 @@ export function ProfileSetupProvider({
                   );
                   const hasAnyEntry = matchingEntries.length > 0;
 
-                  // Detect "is this stored entry a range?" — pro had range mode on
+                  // Detect "is this stored entry a range?" - pro had range mode on
                   // when both priceMin and priceMax are present and meaningfully differ.
                   const hasRange = (sp: typeof matchingEntries[number]): boolean =>
                     sp.priceMin !== undefined &&
@@ -869,7 +869,7 @@ export function ProfileSetupProvider({
                   );
 
                   // Pro's note is per-servicePricing entry but semantically per
-                  // service — pick the first non-empty note across this service's
+                  // service - pick the first non-empty note across this service's
                   // matching entries.
                   const storedNote = matchingEntries.find(
                     (sp) => sp.notes && sp.notes.trim().length > 0,
@@ -907,7 +907,7 @@ export function ProfileSetupProvider({
             setCustomServices(profile.customServices);
           }
 
-          // Merge server data with draft — draft values win when non-empty
+          // Merge server data with draft - draft values win when non-empty
           const draft = draftDataRef.current?.formData;
           setFormData((prev) => ({
             ...prev,
@@ -1140,6 +1140,8 @@ export function ProfileSetupProvider({
     if (allCategories.length > 0) {
       fetchExistingProfile();
     }
+    // `pick` is a stable selector from useLanguage tied to `locale`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     user,
     allCategories,
@@ -1209,7 +1211,7 @@ export function ProfileSetupProvider({
 
   // Strict rule: ≥1 active service, AND every active service has a price.
   // Safe because the services UI auto-seeds the catalog default price when a
-  // service is toggled on — users can't leave an active service with price=0
+  // service is toggled on - users can't leave an active service with price=0
   // unless they explicitly zero it out.
   const isServicePriced = (svc: {
     price: number;
@@ -1252,7 +1254,7 @@ export function ProfileSetupProvider({
   // Permissive rule (2026-05): the Save & Continue button unlocks as soon as
   // the pro has at least ONE priced active service. Unpriced services are
   // surfaced via the inline "N price missing" badge per-subcategory so the
-  // pro can come back and fix them — they no longer silently disable the
+  // pro can come back and fix them - they no longer silently disable the
   // global Save button (which made debugging "why is it disabled?" painful).
   // Inverted ranges still hard-block via `hasInvalidRange`.
   const allActiveServicesPriced =
@@ -1267,13 +1269,16 @@ export function ProfileSetupProvider({
       experience: selectedSubcategoriesWithPricing.length > 0,
       categories: selectedSubcategoriesWithPricing.length > 0,
       subcategories: selectedSubcategoriesWithPricing.length > 0,
-      // Same strict rule as canProceedFromStep('services') — every active
+      // Same strict rule as canProceedFromStep('services') - every active
       // service must be priced. Auto-seed on toggle keeps this always true
       // unless the user explicitly zeroes a price.
       pricing: allActiveServicesPriced,
       serviceAreas: formData.nationwide || formData.serviceAreas.length > 0,
       portfolio: true,
     }),
+    // `allActiveServicesPriced` is derived from the listed deps; its
+    // identity changes every render but the value tracks the same.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       avatarPreview,
       formData.bio,
@@ -1346,7 +1351,7 @@ export function ProfileSetupProvider({
   );
 
   // Step navigation must preserve `?proId=` when an admin is editing another
-  // pro's profile — otherwise the next step's mount loses adminTargetProId
+  // pro's profile - otherwise the next step's mount loses adminTargetProId
   // and silently falls back to /me/pro-profile (admin's own account).
   const buildStepHref = useCallback(
     (slug: ProfileSetupStepSlug) => {
@@ -1469,6 +1474,8 @@ export function ProfileSetupProvider({
           return {};
       }
     },
+    // `servicePricing` is read indirectly via memos already listed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       formData,
       selectedSubcategoriesWithPricing,
@@ -1489,7 +1496,7 @@ export function ProfileSetupProvider({
 
       const idx = STEP_SLUGS.indexOf(currentSlug);
 
-      // Last step — full submit
+      // Last step - full submit
       if (idx >= STEP_SLUGS.length - 1) {
         handleSubmitRef.current?.();
         return;
@@ -1540,7 +1547,7 @@ export function ProfileSetupProvider({
         }
       }
 
-      // Navigate — keep isSaving true so button stays disabled during transition
+      // Navigate - keep isSaving true so button stays disabled during transition
       router.push(buildStepHref(STEP_SLUGS[idx + 1]));
       window.scrollTo({ top: 0, behavior: "smooth" });
       // Reset after a short delay to cover the route transition
@@ -1583,14 +1590,14 @@ export function ProfileSetupProvider({
       const hasServicePricingData = servicePricing.length > 0;
 
       // If user selected services via the new pricing step, skip legacy price validation
-      // Even if no prices are set yet, allow submission — pros can set prices later
+      // Even if no prices are set yet, allow submission - pros can set prices later
       if (
         !hasServicePricingData &&
         selectedSubcategoriesWithPricing.length === 0 &&
         pricingModel !== "byAgreement"
       ) {
         if (!baseRaw || !Number.isFinite(baseNum) || baseNum <= 0) {
-          pricingModel = "byAgreement"; // fallback — don't block submission
+          pricingModel = "byAgreement"; // fallback - don't block submission
         }
       }
 

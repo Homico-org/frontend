@@ -73,6 +73,9 @@ export default function BookingReviewPage() {
       return;
     }
     fetchBooking();
+    // fetchBooking and router are stable for this mount; gate is the
+    // auth state transition handled by the listed deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user]);
 
   const fetchBooking = async () => {
@@ -331,7 +334,7 @@ export default function BookingReviewPage() {
                 <p className="text-xs mt-0.5" style={{ color: 'var(--hm-fg-muted)' }}>
                   {formatDate(booking.date, locale as 'en' | 'ka' | 'ru')}
                   {' · '}
-                  {formatHour(booking.startHour)} — {formatHour(booking.endHour)}
+                  {formatHour(booking.startHour)} - {formatHour(booking.endHour)}
                 </p>
               )}
             </div>
@@ -403,7 +406,7 @@ export default function BookingReviewPage() {
             />
           </div>
 
-          {/* Photos removed — pro uploads photos during work completion */}
+          {/* Photos removed - pro uploads photos during work completion */}
 
           {/* Submit */}
           <Button

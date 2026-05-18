@@ -32,10 +32,12 @@ import {
   RefreshCw,
   Shield,
   UserCheck,
+  UserPlus,
   Users,
   X,
   XCircle,
 } from "lucide-react";
+import CreateUserModal from "./CreateUserModal";
 import NextImage from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -96,6 +98,7 @@ function AdminUsersPageContent() {
   const [rejectionNote, setRejectionNote] = useState("");
   const [isProcessingVerification, setIsProcessingVerification] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const getUserId = useCallback((u: User) => u._id || u.id || "", []);
 
@@ -240,6 +243,10 @@ function AdminUsersPageContent() {
       { label: t("admin.clients"), value: stats?.clients || 0, icon: UserCheck, color: THEME.success, role: "client" },
       { label: t("admin.professionals"), value: stats?.pros || 0, icon: Shield, color: THEME.info, role: "pro" },
     ],
+    // `stats?.companies` is left here intentionally so the cards
+    // refresh when a company is added even though the current card
+    // set doesn't include one yet.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [stats?.clients, stats?.companies, stats?.pros, stats?.total, t]
   );
 
@@ -370,6 +377,21 @@ function AdminUsersPageContent() {
                 }}
               >
                 <Filter className="w-4 h-4" style={{ color: showFilters ? THEME.primary : THEME.textMuted }} />
+              </Button>
+
+              <Button
+                onClick={() => setShowCreateModal(true)}
+                variant="secondary"
+                size="sm"
+                className="h-9 px-3 sm:px-4"
+                style={{
+                  background: THEME.surfaceLight,
+                  border: `1px solid ${THEME.border}`,
+                  color: THEME.text,
+                }}
+              >
+                <UserPlus className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">{t("admin.createUser")}</span>
               </Button>
 
               <Button
@@ -710,6 +732,12 @@ function AdminUsersPageContent() {
           </div>
         )}
       </main>
+
+      <CreateUserModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreated={() => fetchData(true)}
+      />
 
       {/* Verification Modal */}
       {showVerificationModal && (

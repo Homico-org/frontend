@@ -340,6 +340,7 @@ function MyWorkPageContent({ embedded }: { embedded?: boolean }) {
                   {/* Optional thumbnail - desktop only */}
                   {firstImage && (
                     <div className="hidden sm:block w-28 lg:w-36 flex-shrink-0 overflow-hidden bg-[var(--hm-bg-tertiary)]">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
                       <img
                         src={storage.getFileUrl(firstImage)}
                         alt=""

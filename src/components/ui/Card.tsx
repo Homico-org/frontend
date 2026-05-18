@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */
 'use client';
 
 import * as React from "react"

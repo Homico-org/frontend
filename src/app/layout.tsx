@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-page-custom-font, @next/next/next-script-for-ga -- Google Fonts via <link> avoids next/font runtime overhead; GA / GTM / Contentsquare scripts use inline init for early data-layer setup. */
 import ClientLayout from "@/components/common/ClientLayout";
 import EnvBadge from "@/components/common/EnvBadge";
 import Providers from "@/components/common/Providers";

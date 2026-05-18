@@ -61,6 +61,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
         >
           {images.length > 0 ? (
             <>
+              {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
               <img
                 src={images[imageIndex]?.url || images[0]?.url}
                 alt={service.title}

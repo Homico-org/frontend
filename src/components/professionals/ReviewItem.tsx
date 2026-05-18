@@ -122,6 +122,7 @@ export default function ReviewItem({
                   onClick={() => onPhotoClick?.(photo)}
                   className="w-16 h-16 rounded-lg overflow-hidden hover:ring-2 hover:ring-[var(--hm-brand-500)] transition-all"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
                   <img
                     src={storage.getFileUrl(photo)}
                     alt=""
