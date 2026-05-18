@@ -12,7 +12,6 @@ import {
   Layers,
   Package,
   Info,
-  Sparkles,
   Lightbulb,
   Clock,
   RefreshCw,
@@ -107,10 +106,11 @@ export function StepSummary({
     }
   }, [rooms, totalArea, qualityLevel, locale, t]);
 
-  // Fetch AI tips on mount and when key parameters change
-  useEffect(() => {
-    fetchAITips();
-  }, []);
+  // Fetch AI tips on mount only. fetchAITips itself is memoized via
+  // useCallback with the right deps - re-running on every change would
+  // burn AI quota for tiny tweaks. eslint can't see that intent.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchAITips(); }, []);
 
   return (
     <div className="space-y-5">
@@ -319,7 +319,7 @@ export function StepSummary({
           {t('tools.calculator.estimateRange')}
         </div>
         <div className="text-sm font-medium text-[var(--hm-fg-secondary)] tabular-nums">
-          {formatCurrency(calculation.lowEstimate)} — {formatCurrency(calculation.highEstimate)}
+          {formatCurrency(calculation.lowEstimate)} - {formatCurrency(calculation.highEstimate)}
         </div>
       </div>
 
@@ -328,7 +328,7 @@ export function StepSummary({
         <div className="p-4 border-b border-[var(--hm-border)] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
+              <Lightbulb className="w-4 h-4 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
             </div>
             <h3 className="font-semibold text-[var(--hm-n-800)]">
               {t('tools.calculator.aiTips')}

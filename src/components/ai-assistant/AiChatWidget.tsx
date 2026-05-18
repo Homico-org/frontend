@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, Minimize2, Send, Sparkles, Trash2, X } from "lucide-react";
+import { Bot, ChevronLeft, Minimize2, Send, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -161,7 +161,7 @@ export default function AiChatWidget(): React.ReactElement | null {
   const [isOpen, setIsOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  // No attention-grabbing pulse on load — FAB stays quiet until the user taps it.
+  // No attention-grabbing pulse on load - FAB stays quiet until the user taps it.
   const [showPulse, setShowPulse] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -192,7 +192,7 @@ export default function AiChatWidget(): React.ReactElement | null {
         getComputedStyle(document.documentElement).getPropertyValue('--sat-bottom') || '0',
         10,
       ) || 0;
-      // Fallback — most iOS devices have ~34px home-indicator safe area
+      // Fallback - most iOS devices have ~34px home-indicator safe area
       const iosInset = /iPhone|iPad|iPod/.test(navigator.userAgent) ? 34 : 0;
       const safeBottom = Math.max(cssSafeInset, iosInset);
       const bottomOffset = isMobile ? 58 + safeBottom + 100 : 160; // 58 nav + safe + 100 cushion
@@ -422,6 +422,10 @@ export default function AiChatWidget(): React.ReactElement | null {
         await sendMessage(text, locale, pathname);
       }
     },
+    // `pick` is intentionally not in the deps - it's a stable function
+    // from useLanguage that returns the same reference unless `locale`
+    // changes, and `locale` is already listed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [sendMessage, locale, pathname],
   );
 
@@ -455,7 +459,7 @@ export default function AiChatWidget(): React.ReactElement | null {
 
   return (
     <>
-      {/* Right-edge reveal tab — visible only when widget is hidden */}
+      {/* Right-edge reveal tab - visible only when widget is hidden */}
       <AnimatePresence>
         {isHidden && (
           <motion.button
@@ -473,7 +477,7 @@ export default function AiChatWidget(): React.ReactElement | null {
           >
             <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
             <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ring-1 ring-white/40 bg-white/15">
-              <Sparkles className="w-3.5 h-3.5 text-white" strokeWidth={2} />
+              <Bot className="w-3.5 h-3.5 text-white" strokeWidth={2} />
             </div>
           </motion.button>
         )}
@@ -508,7 +512,7 @@ export default function AiChatWidget(): React.ReactElement | null {
             }}
             aria-label="Open AI Assistant"
           >
-            {/* Outer ring — subtle glow, not flashing */}
+            {/* Outer ring - subtle glow, not flashing */}
             <div
               className={`absolute -inset-1 rounded-full transition-all duration-300 ${
                 isDragging
@@ -517,7 +521,7 @@ export default function AiChatWidget(): React.ReactElement | null {
               }`}
             />
 
-            {/* Brand-aligned avatar — vermillion circle with white sparkles
+            {/* Brand-aligned avatar - vermillion circle with white sparkles
                 icon. Replaces the off-brand multi-color mascot image. */}
             <div
               className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-200 ${
@@ -527,10 +531,10 @@ export default function AiChatWidget(): React.ReactElement | null {
               }`}
               style={{ backgroundColor: 'var(--hm-brand-500)' }}
             >
-              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2} />
+              <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2} />
             </div>
 
-            {/* Drag handle dots — visible on hover to hint draggability */}
+            {/* Drag handle dots - visible on hover to hint draggability */}
             <div
               className={`absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 transition-opacity duration-200 ${
                 isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
@@ -582,7 +586,7 @@ export default function AiChatWidget(): React.ReactElement | null {
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop — click outside to close (desktop only) */}
+            {/* Backdrop - click outside to close (desktop only) */}
             <motion.div
               key="ai-chat-backdrop"
               initial={{ opacity: 0 }}
@@ -616,7 +620,7 @@ export default function AiChatWidget(): React.ReactElement | null {
                 <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div className="flex items-center gap-3 relative z-10">
                   <div className="w-9 h-9 rounded-full flex items-center justify-center ring-2 ring-white/30 shadow-md flex-shrink-0 bg-white/20">
-                    <Sparkles className="w-4 h-4 text-white" strokeWidth={2} />
+                    <Bot className="w-4 h-4 text-white" strokeWidth={2} />
                   </div>
                   <div className="min-w-0">
                     <h2
@@ -672,7 +676,7 @@ export default function AiChatWidget(): React.ReactElement | null {
                       className="w-16 h-16 rounded-full flex items-center justify-center mb-4 ring-2 ring-[var(--hm-brand-500)]/15 shadow-md"
                       style={{ backgroundColor: 'var(--hm-brand-500)' }}
                     >
-                      <Sparkles className="w-7 h-7 text-white" strokeWidth={2} />
+                      <Bot className="w-7 h-7 text-white" strokeWidth={2} />
                     </div>
                     <h3
                       className="text-lg font-semibold mb-1.5 tracking-tight"

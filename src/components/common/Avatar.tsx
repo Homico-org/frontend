@@ -1,8 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { storage } from '@/services/storage';
 import { useLanguage } from "@/contexts/LanguageContext";
+
+const sizePx: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl', number> = {
+  xs: 24, sm: 32, md: 40, lg: 48, xl: 64, '2xl': 96,
+};
 
 interface AvatarProps {
   src?: string | null;
@@ -99,12 +104,20 @@ export default function Avatar({
   };
 
   if (src && !imageError) {
+    const px = sizePx[size];
+    const url = getAvatarUrl(src);
+    // Cloudinary-hosted avatars come from a domain Next isn't always
+    // configured for, and we also receive base64 data URLs (preview
+    // before upload). `unoptimized` skips Next's optimizer but keeps
+    // lazy loading + the right `next/image` lifecycle.
     return (
-      <img
-        src={getAvatarUrl(src)}
+      <Image
+        src={url}
         alt={name}
+        width={px}
+        height={px}
         loading="lazy"
-        decoding="async"
+        unoptimized
         onClick={handleClick}
         onError={() => setImageError(true)}
         className={`${sizeClasses[size]} ${roundedClasses[rounded]} ${borderClass} ${cursorClass} object-cover ${className}`}

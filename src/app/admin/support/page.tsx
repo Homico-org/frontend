@@ -310,6 +310,9 @@ function AdminSupportPageContent() {
       fetchTickets();
       fetchStats();
     }
+    // fetchTickets/fetchStats are inline below and only read `token`
+    // + `statusFilter`, already in deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, user, statusFilter]);
 
   const fetchTickets = async () => {

@@ -14,15 +14,20 @@ const inputVariants = cva(
   {
     variants: {
       variant: {
-        // Default input — sits on a slightly recessed off-white surface so
-        // it reads as "field, not label" against white container cards.
-        // Border is visible at rest, hover bumps to border-strong, focus
+        // Default input — sits on a slightly recessed surface so it reads
+        // as "field, not label" against the container card. Uses the
+        // theme-aware `--hm-bg-tertiary` (off-white in light, dark recess
+        // in dark) instead of the fixed `--hm-n-50` neutral, which stayed
+        // white in dark mode and made every form on /settings look like
+        // an unstyled white box on a dark page.
+        // Border visible at rest, hover bumps to border-strong, focus
         // lands on brand vermillion with a soft 2px ring.
         default:
-          "bg-[var(--hm-n-50)] border border-[var(--hm-n-200)] hover:border-[var(--hm-border-strong)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:bg-[var(--hm-bg-elevated)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 transition-colors",
+          "bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border-subtle)] hover:border-[var(--hm-border-strong)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:bg-[var(--hm-bg-elevated)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 transition-colors",
         // Filled variant — pre-tinted surface for dense embedded forms.
+        // Same theme-aware swap as `default` for the same reason.
         filled:
-          "bg-[var(--hm-n-100)] border border-[var(--hm-border-subtle)] hover:border-[var(--hm-border-strong)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 focus:bg-[var(--hm-bg-elevated)] transition-colors",
+          "bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border-subtle)] hover:border-[var(--hm-border-strong)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 focus:bg-[var(--hm-bg-elevated)] transition-colors",
         // Ghost variant — borderless, for inline editing or super-minimal UIs.
         ghost:
           "bg-transparent border-b border-[var(--hm-border-subtle)] rounded-none focus:outline-none focus:border-[var(--hm-brand-500)] transition-colors",
@@ -123,15 +128,20 @@ const textareaVariants = cva(
   {
     variants: {
       variant: {
-        // Default input — sits on a slightly recessed off-white surface so
-        // it reads as "field, not label" against white container cards.
-        // Border is visible at rest, hover bumps to border-strong, focus
+        // Default input — sits on a slightly recessed surface so it reads
+        // as "field, not label" against the container card. Uses the
+        // theme-aware `--hm-bg-tertiary` (off-white in light, dark recess
+        // in dark) instead of the fixed `--hm-n-50` neutral, which stayed
+        // white in dark mode and made every form on /settings look like
+        // an unstyled white box on a dark page.
+        // Border visible at rest, hover bumps to border-strong, focus
         // lands on brand vermillion with a soft 2px ring.
         default:
-          "bg-[var(--hm-n-50)] border border-[var(--hm-n-200)] hover:border-[var(--hm-border-strong)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:bg-[var(--hm-bg-elevated)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 transition-colors",
+          "bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border-subtle)] hover:border-[var(--hm-border-strong)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:bg-[var(--hm-bg-elevated)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 transition-colors",
         // Filled variant — pre-tinted surface for dense embedded forms.
+        // Same theme-aware swap as `default` for the same reason.
         filled:
-          "bg-[var(--hm-n-100)] border border-[var(--hm-border-subtle)] hover:border-[var(--hm-border-strong)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 focus:bg-[var(--hm-bg-elevated)] transition-colors",
+          "bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border-subtle)] hover:border-[var(--hm-border-strong)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 focus:bg-[var(--hm-bg-elevated)] transition-colors",
         // Ghost variant — borderless, for inline editing or super-minimal UIs.
         ghost:
           "bg-transparent border-b border-[var(--hm-border-subtle)] rounded-none focus:outline-none focus:border-[var(--hm-brand-500)] transition-colors",

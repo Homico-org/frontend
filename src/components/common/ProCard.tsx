@@ -9,7 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { storage } from "@/services/storage";
 import { ProProfile, ProStatus } from "@/types";
-import { ArrowUpRight, Briefcase, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, MapPin, Play, Sparkles, Star, Wallet, Zap } from "lucide-react";
+import { ArrowUpRight, Briefcase, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, MapPin, Play, Plus, Star, Wallet, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -18,7 +18,7 @@ import { trackEvent } from "@/hooks/useTracker";
 interface ProCardProps {
   profile: ProProfile;
   variant?: "default" | "compact" | "horizontal";
-  /** Active browse filters — used to show relevant price/experience */
+  /** Active browse filters - used to show relevant price/experience */
   activeCategory?: string;
   activeSubcategories?: string[];
   onLike?: () => void;
@@ -39,7 +39,7 @@ export default function ProCard({
   const [isHovered, setIsHovered] = useState(false);
   const autoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Services and categories — derived in priority order:
+  // Services and categories - derived in priority order:
   //   1. `servicePricing` (the structured source the pro detail page renders)
   //   2. `selectedServices` (mid-migration field with experience data)
   //   3. legacy `selectedCategories` / `selectedSubcategories` arrays
@@ -47,7 +47,7 @@ export default function ProCard({
   // Bug previously: when a pro cleared their servicePricing, the legacy
   // `selectedSubcategories` field stayed populated, so the listing card
   // showed stale services that the detail page (correctly) didn't.
-  // Trusting an empty servicePricing array as "no services" fixes that —
+  // Trusting an empty servicePricing array as "no services" fixes that -
   // we only fall through to legacy when servicePricing is undefined.
   const { userCategories, userSubcategories, servicesWithExperience } = useMemo(() => {
     const sp = profile.servicePricing;
@@ -115,7 +115,7 @@ export default function ProCard({
   const completedJobs = Math.max(completedJobsCounter, portfolioCount, portfolioItemCount, completedProjects, externalJobs);
 
   // Filter-aware pricing: show price only for the filtered service(s).
-  // Range-aware — when an entry has `priceMin`/`priceMax`, use its bounds
+  // Range-aware - when an entry has `priceMin`/`priceMax`, use its bounds
   // instead of the midpoint `price` to show the customer the real range.
   const matchedPricing = useMemo(() => {
     const sp = profile.servicePricing;
@@ -159,7 +159,7 @@ export default function ProCard({
       if (value) return { value };
     }
 
-    // No filter — don't show a misleading aggregate price
+    // No filter - don't show a misleading aggregate price
     return null;
   }, [profile.servicePricing, activeCategory, activeSubcategories]);
 
@@ -191,7 +191,7 @@ export default function ProCard({
       }
     }
 
-    // No filter — don't show misleading aggregate
+    // No filter - don't show misleading aggregate
     return null;
   }, [servicesWithExperience, activeCategory, activeSubcategories, t]);
 
@@ -233,7 +233,7 @@ export default function ProCard({
     return Math.max(total, portfolioItemCount);
   }, [profile.portfolioPreviewImages, profile.portfolioPreviewBeforeAfter, profile.portfolioPreviewVideos, portfolioItemCount]);
 
-  // Track card visibility — only auto-slide when in viewport
+  // Track card visibility - only auto-slide when in viewport
   const cardRef = useRef<HTMLAnchorElement>(null);
   const [isInView, setIsInView] = useState(false);
   useEffect(() => {
@@ -289,7 +289,7 @@ export default function ProCard({
     return map;
   }, [catalogCategories, pick]);
 
-  // All subcategories for display — filtered against current catalog
+  // All subcategories for display - filtered against current catalog
   const allSubcats = useMemo(() => {
     const raw = userCategories.flatMap(cat => getSubcatsForCategory(cat));
     return raw.filter(key => catalogLabelMap.has(key));
@@ -299,7 +299,7 @@ export default function ProCard({
   const displaySubcats = allSubcats.slice(0, 4);
   const remainingSubcats = allSubcats.length - 4;
 
-  // Min-price per subcategory key — used to surface a "from N₾" hint next
+  // Min-price per subcategory key - used to surface a "from N₾" hint next
   // to each service pill so clients can scan price at a glance. Built from
   // `servicePricing` (the structured source); falls back to nothing when
   // the pro hasn't entered structured prices yet.
@@ -333,7 +333,7 @@ export default function ProCard({
   }, [profile.servicePricing]);
 
   if (variant === "horizontal") {
-    // Keep horizontal variant simple — used in recommendations etc.
+    // Keep horizontal variant simple - used in recommendations etc.
     return (
       <Link href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick}>
         <div className="relative h-full bg-[var(--hm-bg-elevated)] rounded-xl overflow-hidden border border-[var(--hm-border-subtle)] shadow-sm group-hover:border-[var(--hm-brand-500)]/25 transition-all duration-300 group-hover:shadow-md p-3.5">
@@ -378,13 +378,13 @@ export default function ProCard({
     );
   }
 
-  // Default / Compact variant — unified card with portfolio photos
+  // Default / Compact variant - unified card with portfolio photos
   const hasMedia = mediaSlides.length > 0;
   return (
-    <Link ref={cardRef} href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} — ${t('browse.professionals')}`}>
+    <Link ref={cardRef} href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} - ${t('browse.professionals')}`}>
       <div className={`relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] shadow-sm group-hover:border-[var(--hm-brand-500)]/30 transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-0.5 ${isPremium ? 'ring-1 ring-amber-300/30' : ''}`}>
 
-        {/* Portfolio media carousel — wide-and-short aspect so the photo
+        {/* Portfolio media carousel - wide-and-short aspect so the photo
             doesn't dominate the card. */}
         {hasMedia ? (
           <div
@@ -519,7 +519,7 @@ export default function ProCard({
           </div>
         </div>
 
-        {/* Card body — comfortable padding */}
+        {/* Card body - comfortable padding */}
         <div className="flex-1 flex flex-col px-3 pb-3 pt-1.5 sm:px-3.5 sm:pb-3.5">
           {/* Pro identity */}
           <div className="mb-1.5">
@@ -536,7 +536,7 @@ export default function ProCard({
                   </span>
                 )}
             </div>
-            {/* Rating + city — co-located with subtle separator */}
+            {/* Rating + city - co-located with subtle separator */}
             <div className="flex items-center gap-1.5 mt-1 text-[11px] text-[var(--hm-fg-muted)]">
               {(profile.totalReviews || 0) > 0 ? (
                 <StarRating
@@ -546,7 +546,7 @@ export default function ProCard({
                   size="xs"
                 />
               ) : (
-                <Badge variant="success" size="xs" icon={<Sparkles className="w-2.5 h-2.5" />}>
+                <Badge variant="success" size="xs" icon={<Plus className="w-2.5 h-2.5" />}>
                   {t('card.new')}
                 </Badge>
               )}
@@ -600,7 +600,7 @@ export default function ProCard({
             )}
           </div>
 
-          {/* Service pills — clean, no gray fill, no truncation. The label can
+          {/* Service pills - clean, no gray fill, no truncation. The label can
               wrap to a second line when needed; "from N₾" sits to the right
               tinted in vermillion so the price reads as the value, not the
               service name. */}
@@ -658,7 +658,7 @@ export default function ProCard({
           </div>
         )}
 
-        {/* Hover-reveal "open" affordance — sits over the bottom-right
+        {/* Hover-reveal "open" affordance - sits over the bottom-right
             corner. Hidden until hover so it doesn't compete with the card
             content at rest. */}
         <div

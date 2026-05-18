@@ -2,11 +2,11 @@
 
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { ArrowRight, BadgeCheck, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 import type { SelectedService } from './StepSelectServices';
 
-// Note: fullName intentionally not part of this card — name is collected in
+// Note: fullName intentionally not part of this card - name is collected in
 // /pro/profile-setup/about (split firstName + lastName) so we don't have it
 // at this point. The success card shows avatar + city + Pro badge + services
 // which is enough to feel celebratory without leaving an empty line.
@@ -34,9 +34,8 @@ export default function StepComplete({
         <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-[var(--hm-success-100)] flex items-center justify-center mx-auto animate-bounce-slow">
           <CheckCircle2 className="w-8 h-8 sm:w-12 sm:h-12 text-[var(--hm-success-500)]" />
         </div>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 sm:-translate-y-2">
-          <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-[var(--hm-brand-500)] animate-pulse" />
-        </div>
+        {/* Decorative top accent removed (was a Sparkles burst). The
+            CheckCircle2 above already communicates success. */}
       </div>
 
       {/* Header */}
@@ -50,7 +49,7 @@ export default function StepComplete({
       {/* Profile Preview Card */}
       <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border)] p-4 sm:p-6 mb-5 sm:mb-8 text-left">
         <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-          {/* Avatar — always shown (upload was required before this screen) */}
+          {/* Avatar - always shown (upload was required before this screen) */}
           <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] flex-shrink-0">
             {avatarPreview && (
               <Image
@@ -76,7 +75,7 @@ export default function StepComplete({
           {/* Pro Badge */}
           <div className="flex-shrink-0">
             <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] text-[10px] sm:text-xs font-bold">
-              <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              <BadgeCheck className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               PRO
             </span>
           </div>

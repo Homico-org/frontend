@@ -34,7 +34,7 @@ export interface BeforeAfterPair {
   afterImage: string;
 }
 
-// Services snapshotted onto a project — pros pick from their own pricing
+// Services snapshotted onto a project - pros pick from their own pricing
 // catalog when adding/editing a project, and the chosen services with their
 // prices travel with the project so customers see "this 'TV Mounting' project
 // covered: TV install ₾40, Wall mount ₾30".
@@ -141,6 +141,7 @@ function BeforeAfterPreview({
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
       <img
         src={afterImage}
         alt="After"
@@ -151,6 +152,7 @@ function BeforeAfterPreview({
         className="absolute inset-0 pointer-events-none"
         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
       >
+        {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
         <img
           src={beforeImage}
           alt="Before"
@@ -211,7 +213,7 @@ export default function ProjectsStep({
   // `useRange` flag OR the presence of meaningful `priceMin`/`priceMax`. The
   // flag is the modern source of truth, but stale data from before the DTO fix
   // (2026-05) or partial hydration may carry priceMin/priceMax without the
-  // flag — so we fall through to the values themselves to avoid showing the
+  // flag - so we fall through to the values themselves to avoid showing the
   // midpoint as a single price.
   const availableServicesForProject = useMemo<PortfolioProjectService[]>(() => {
     const out: PortfolioProjectService[] = [];
@@ -284,6 +286,10 @@ export default function ProjectsStep({
       const updated = projects.map((p, idx) => ({ ...p, displayOrder: idx }));
       onChange(updated);
     }
+    // Run once on mount only - this is a backfill for legacy projects
+    // missing displayOrder. Re-running on every parent re-render would
+    // create an update loop since onChange's identity is unstable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const resetForm = () => {
@@ -594,7 +600,7 @@ export default function ProjectsStep({
 
   return (
     <div className="space-y-6">
-      {/* Header — count + featured-on-card explanation + add button */}
+      {/* Header - count + featured-on-card explanation + add button */}
       {projects.length > 0 && !isAddingProject && (
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -675,7 +681,7 @@ export default function ProjectsStep({
                   }}
                 >
                   <div className="p-4">
-                    {/* Project Header — number badge, status pill, actions all
+                    {/* Project Header - number badge, status pill, actions all
                         ALWAYS visible (no more hover-only). Pros immediately
                         understand what's visible where + how to edit. On
                         narrow mobile the actions drop to a second row so the
@@ -683,7 +689,7 @@ export default function ProjectsStep({
                         wrap by three icon buttons fighting for the same row. */}
                     <div className="flex flex-wrap sm:flex-nowrap items-start justify-between mb-3 gap-3">
                       <div className="flex items-start gap-2.5 flex-1 min-w-0 w-full sm:w-auto">
-                        {/* Number badge — vermillion when featured on browse card, neutral otherwise */}
+                        {/* Number badge - vermillion when featured on browse card, neutral otherwise */}
                         <div
                           className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
                           style={
@@ -699,7 +705,7 @@ export default function ProjectsStep({
                           <h4 className="font-semibold text-[var(--hm-fg-primary)] leading-tight">
                             {project.title}
                           </h4>
-                          {/* Status pills row — VISIBILITY signals always shown */}
+                          {/* Status pills row - VISIBILITY signals always shown */}
                           <div className="mt-1 flex items-center flex-wrap gap-1.5">
                             {willShowInBrowse ? (
                               <span
@@ -743,7 +749,7 @@ export default function ProjectsStep({
                               {project.description}
                             </p>
                           )}
-                          {/* Meta row — location + completion date side-by-side */}
+                          {/* Meta row - location + completion date side-by-side */}
                           {(project.location || project.completedDate) && (
                             <div className="mt-2 flex items-center flex-wrap gap-x-3 gap-y-1 text-[12px] text-[var(--hm-fg-muted)]">
                               {project.location && (
@@ -760,7 +766,7 @@ export default function ProjectsStep({
                               )}
                             </div>
                           )}
-                          {/* Services performed — pills with prices */}
+                          {/* Services performed - pills with prices */}
                           {project.services && project.services.length > 0 && (
                             <div className="mt-2 flex flex-wrap gap-1.5">
                               {project.services.map((svc) => {
@@ -817,7 +823,7 @@ export default function ProjectsStep({
                         </div>
                       </div>
 
-                      {/* Actions (only for external projects) — ALWAYS visible.
+                      {/* Actions (only for external projects) - ALWAYS visible.
                           `w-full sm:w-auto` + `justify-end` drops the actions
                           to a right-aligned second row on narrow mobile so the
                           title gets its full row. */}
@@ -953,7 +959,7 @@ export default function ProjectsStep({
         </div>
       )}
 
-      {/* Empty State — compact, auto-opens form */}
+      {/* Empty State - compact, auto-opens form */}
       {projects.length === 0 && !isAddingProject && (
         <Button
           type="button"
@@ -1027,7 +1033,7 @@ export default function ProjectsStep({
               </div>
             </div>
 
-            {/* Description — compact */}
+            {/* Description - compact */}
             <div>
               <label className="block text-xs font-medium text-[var(--hm-fg-secondary)] mb-1">
                 {t('common.description')}
@@ -1043,7 +1049,7 @@ export default function ProjectsStep({
               />
             </div>
 
-            {/* Services performed on this project — pulled from the pro's
+            {/* Services performed on this project - pulled from the pro's
                 pricing catalog so the picker shows real prices the pro set */}
             {availableServicesForProject.length > 0 && (
               <div>
@@ -1356,7 +1362,7 @@ export default function ProjectsStep({
         </div>
       )}
 
-      {/* No stats summary — keep it clean */}
+      {/* No stats summary - keep it clean */}
     </div>
   );
 }

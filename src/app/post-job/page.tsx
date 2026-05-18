@@ -33,6 +33,7 @@ import {
     Image as ImageIcon,
     MapPin,
     Palette,
+    MessageCircle,
     Pencil,
     Plus,
     Ruler,
@@ -306,8 +307,13 @@ function PostJobPageContent() {
 
   const canProceedFromCategory = () => {
     // Title is auto-derived from selected services at submit time, and the
-    // description is now optional — neither blocks the step transition.
-    if (!selectedCategory || !formData.propertyType) return false;
+    // description is now optional - neither blocks the step transition.
+    //
+    // Multi-category mode (added 2026-05): `selectedCategory` is now just
+    // the "currently being browsed" category, not the job's category.
+    // The real gate is whether the user has picked at least one service;
+    // its categoryKey provides the job's primary category at submit time.
+    if (!formData.propertyType) return false;
     if (selectedJobServices.length === 0) return false;
     // Also validate required category-specific fields shown on this step
     const activeFields = getActiveFields();
@@ -334,7 +340,7 @@ function PostJobPageContent() {
     }
     return true;
   };
-  // Photos are optional and live on the location step now — no separate
+  // Photos are optional and live on the location step now - no separate
   // canProceedFromDetails. Kept here as a no-op for any stale call sites.
   const canProceedFromDetails = () => true;
 
@@ -414,10 +420,37 @@ function PostJobPageContent() {
       const now = new Date();
       const deadline = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
+      // Primary category: with multi-category support (2026-05), the job
+      // schema still wants ONE `category` field. Derive it from the most
+      // common category across the selected services so the canonical
+      // tag reflects where the bulk of the work sits. Fall back to the
+      // legacy `selectedCategory` when no services are picked (shouldn't
+      // happen because canProceedFromCategory blocks that).
+      const primaryCategory = (() => {
+        if (selectedJobServices.length === 0) return selectedCategory;
+        const counts = new Map<string, number>();
+        for (const s of selectedJobServices) {
+          counts.set(s.categoryKey, (counts.get(s.categoryKey) ?? 0) + 1);
+        }
+        let best = selectedJobServices[0].categoryKey;
+        let bestCount = 0;
+        for (const [k, n] of counts) {
+          if (n > bestCount) { best = k; bestCount = n; }
+        }
+        return best;
+      })();
+      // All distinct category keys represented across the picks. Sent as
+      // an extra `categories` array - backend currently stores only the
+      // primary one but we forward the full set so future filtering work
+      // doesn't need a follow-up migration of historical jobs.
+      const allCategories = Array.from(
+        new Set(selectedJobServices.map(s => s.categoryKey).filter(Boolean)),
+      );
+
       const jobData: Record<string, unknown> = {
         title: deriveJobTitle(),
         description: formData.description,
-        category: selectedCategory,
+        category: primaryCategory,
         subcategory: selectedSubcategory,
         skills: [selectedSubcategory],
         location: formData.location,
@@ -430,6 +463,10 @@ function PostJobPageContent() {
       if (selectedJobServices.length > 0) {
         jobData.services = selectedJobServices.map(svc => ({
           key: svc.serviceKey,
+          // Send the per-service category so the backend can route /
+          // notify pros from each represented trade, not just the
+          // primary one.
+          categoryKey: svc.categoryKey,
           unitKey: svc.unitKey,
           quantity: svc.quantity || 1,
           unitPrice: svc.budget,
@@ -442,7 +479,13 @@ function PostJobPageContent() {
             ? { notes: svc.notes.trim() }
             : {}),
         }));
+        // Skills span every selected service key so the existing
+        // pro-matching query (which $in's against skills) surfaces this
+        // job to every relevant trade, not just the primary category.
         jobData.skills = selectedJobServices.map(s => s.serviceKey);
+        if (allCategories.length > 1) {
+          jobData.categories = allCategories;
+        }
         const totalBudget = selectedJobServices.reduce((sum, s) => sum + s.budget, 0);
         if (totalBudget > 0) {
           jobData.budgetType = 'fixed';
@@ -558,7 +601,7 @@ function PostJobPageContent() {
                 </p>
               </div>
 
-                {/* Description — optional. Title is auto-derived from the
+                {/* Description - optional. Title is auto-derived from the
                     selected service(s) at submit time, so no name field here. */}
                 <div>
                   <label className="block text-sm font-semibold text-[var(--hm-fg-secondary)] mb-2">
@@ -748,7 +791,7 @@ function PostJobPageContent() {
                     />
                   </div>
 
-                  {/* Budget Type Selection — hidden when per-service budgets are set */}
+                  {/* Budget Type Selection - hidden when per-service budgets are set */}
                   {hasServiceBudgets ? (
                     serviceBudgetTotal > 0 ? (
                       <div className="rounded-xl p-4" style={{ backgroundColor: 'rgba(239,78,36,0.06)', border: '1px solid rgba(239,78,36,0.2)' }}>
@@ -790,7 +833,7 @@ function PostJobPageContent() {
                 </div>
               </div>
 
-              {/* Photos card — optional. Folded into the location step so the
+              {/* Photos card - optional. Folded into the location step so the
                   whole flow is 3 steps instead of 4. */}
               <div className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] p-4 sm:p-5">
                 <div className="flex items-start gap-3 mb-3 sm:mb-4">
@@ -810,7 +853,7 @@ function PostJobPageContent() {
                   </div>
                 </div>
 
-                {/* Tip pills — show only before any photo is added */}
+                {/* Tip pills - show only before any photo is added */}
                 {(existingMedia.length + mediaFiles.length) === 0 && (
                   <div className="mb-3 sm:mb-4 flex flex-wrap gap-1.5 sm:gap-2">
                     {[
@@ -882,7 +925,7 @@ function PostJobPageContent() {
                   ))}
                 </div>
 
-                {/* Success state — soft confirmation, no required-warning */}
+                {/* Success state - soft confirmation, no required-warning */}
                 {(existingMedia.length + mediaFiles.length) > 0 && (
                   <div className="mt-4 flex items-center gap-2 text-sm text-[var(--hm-success-500)]">
                     <Check className="w-4 h-4" />
@@ -910,7 +953,7 @@ function PostJobPageContent() {
                 </p>
               </div>
 
-              {/* Hero card — Title + Category + Timing + Budget */}
+              {/* Hero card - Title + Category + Timing + Budget */}
               <div
                 className="rounded-2xl p-4 sm:p-5 relative overflow-hidden"
                 style={{ backgroundColor: 'rgba(239,78,36,0.06)', border: '1px solid rgba(239,78,36,0.15)' }}
@@ -954,14 +997,40 @@ function PostJobPageContent() {
                     const budgetText = hasServiceBudgets
                       ? (serviceBudgetTotal > 0 ? `${serviceBudgetTotal}₾` : null)
                       : formData.budgetType === "range"
-                        ? `${formData.budgetMin}–${formData.budgetMax}₾`
+                        ? `${formData.budgetMin}-${formData.budgetMax}₾`
                         : formData.budgetType === "negotiable" ? null
                           : formData.budgetMin ? `${formData.budgetMin}₾` : null;
-                    return budgetText ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(239,78,36,0.12)', color: 'var(--hm-brand-500)' }}>
-                        {budgetText}
-                      </span>
-                    ) : null;
+                    if (budgetText) {
+                      return (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(239,78,36,0.12)', color: 'var(--hm-brand-500)' }}>
+                          {budgetText}
+                        </span>
+                      );
+                    }
+                    // No price set anywhere - either explicit "negotiable"
+                    // budget type or every service was left open to
+                    // offers. Either way, show a clear pill so the
+                    // header doesn't read as if budget info is missing.
+                    const showOpenToOffers =
+                      formData.budgetType === "negotiable" ||
+                      (hasServiceBudgets && serviceBudgetTotal === 0);
+                    if (showOpenToOffers) {
+                      return (
+                        <span
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full"
+                          style={{
+                            background: 'var(--hm-bg-tertiary)',
+                            color: 'var(--hm-fg-secondary)',
+                            border: '1px dashed var(--hm-border-subtle)',
+                          }}
+                          title={t('job.openToOffersHint')}
+                        >
+                          <MessageCircle className="w-3 h-3" />
+                          {t('job.openToOffers')}
+                        </span>
+                      );
+                    }
+                    return null;
                   })()}
                 </div>
               </div>
@@ -986,48 +1055,142 @@ function PostJobPageContent() {
                     </Button>
                   </div>
                   <div className="divide-y" style={{ borderColor: 'var(--hm-border-subtle)' }}>
-                    {selectedJobServices.map(svc => {
-                      const qty = svc.quantity || 1;
-                      const lineTotal = svc.budget * qty;
-                      return (
-                        <div key={svc.serviceKey} className="flex items-center justify-between px-4 py-2.5">
-                          <div className="flex-1 min-w-0">
-                            <span className="text-[13px] font-medium block truncate" style={{ color: 'var(--hm-fg-primary)' }}>
-                              {pick({ en: svc.name, ka: svc.nameKa })}
-                            </span>
-                            <span className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
-                              {qty > 1 ? `${qty} × ` : ''}{pick({ en: svc.unitName, ka: svc.unitNameKa })}
-                              {svc.budget > 0 && qty > 1 && (
-                                <span className="ml-1">· {svc.budget}₾/{pick({ en: svc.unitName, ka: svc.unitNameKa })}</span>
+                    {/* Group services by category so the preview mirrors
+                        the picker - "Plumbing & Heating: X, Y", "AC &
+                        Ventilation: Z" - instead of one flat list where
+                        the pro can't tell which trade each line belongs
+                        to. Order is first-appearance to stay stable. */}
+                    {(() => {
+                      const groups = new Map<string, JobServiceSelection[]>();
+                      for (const s of selectedJobServices) {
+                        const key = s.categoryKey || '';
+                        const arr = groups.get(key) ?? [];
+                        arr.push(s);
+                        groups.set(key, arr);
+                      }
+                      return Array.from(groups.entries()).map(([catKey, services]) => {
+                        const catData = categories.find(c => c.key === catKey);
+                        const accent = catData?.color || 'var(--hm-brand-500)';
+                        return (
+                          <div key={catKey || 'uncategorized'}>
+                            {/* Category subheader - only when we know the
+                                category (defensive: legacy selections may
+                                lack categoryKey). */}
+                            {catData && (
+                              <div
+                                className="flex items-center gap-2 px-4 py-2"
+                                style={{ background: 'var(--hm-bg-tertiary)' }}
+                              >
+                                <span
+                                  className="flex items-center justify-center rounded-md w-5 h-5"
+                                  style={{ background: `${accent}1f`, color: accent }}
+                                >
+                                  <CategoryIcon type={catData.key} className="w-3 h-3" />
+                                </span>
+                                <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--hm-fg-secondary)' }}>
+                                  {pick({ en: catData.name, ka: catData.nameKa })}
+                                </span>
+                                <span className="text-[10px] ml-auto" style={{ color: 'var(--hm-fg-muted)' }}>
+                                  {services.length}
+                                </span>
+                              </div>
+                            )}
+                            {services.map(svc => {
+                              const qty = svc.quantity || 1;
+                              const lineTotal = svc.budget * qty;
+                              // Mode-aware: range mode is "open to
+                              // offers" only when both min and max are
+                              // empty. Fixed mode is empty budget.
+                              const isOpenToOffers = svc.useRange
+                                ? (!svc.budgetMin || svc.budgetMin === 0) && (!svc.budgetMax || svc.budgetMax === 0)
+                                : (svc.budget || 0) === 0;
+                              return (
+                                <div key={svc.serviceKey} className="flex items-center justify-between px-4 py-2.5">
+                                  <div className="flex-1 min-w-0">
+                                    <span className="text-[13px] font-medium block truncate" style={{ color: 'var(--hm-fg-primary)' }}>
+                                      {pick({ en: svc.name, ka: svc.nameKa })}
+                                    </span>
+                                    <span className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
+                                      {qty > 1 ? `${qty} × ` : ''}{pick({ en: svc.unitName, ka: svc.unitNameKa })}
+                                      {svc.budget > 0 && qty > 1 && (
+                                        <span className="ml-1">· {svc.budget}₾/{pick({ en: svc.unitName, ka: svc.unitNameKa })}</span>
+                                      )}
+                                    </span>
+                                  </div>
+                                  {isOpenToOffers ? (
+                                    <span
+                                      className="inline-flex items-center gap-1 text-[10px] font-semibold shrink-0 ml-3 px-2 py-0.5 rounded-full"
+                                      style={{
+                                        background: 'var(--hm-bg-tertiary)',
+                                        color: 'var(--hm-fg-secondary)',
+                                        border: '1px dashed var(--hm-border-subtle)',
+                                      }}
+                                      title={t('job.openToOffersHint')}
+                                    >
+                                      <MessageCircle className="w-2.5 h-2.5" />
+                                      {t('job.openToOffers')}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[13px] font-bold shrink-0 ml-3" style={{ color: 'var(--hm-brand-500)' }}>
+                                      {lineTotal}₾
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      });
+                    })()}
+                    {/* Total row - always shown when any budget is set,
+                        even with a single service. When some services
+                        are open-to-offers, surface that explicitly so
+                        the total doesn't read as if it covers everything. */}
+                    {(() => {
+                      const quoteCount = selectedJobServices.filter(s => {
+                        if (s.useRange) {
+                          return (!s.budgetMin || s.budgetMin === 0) && (!s.budgetMax || s.budgetMax === 0);
+                        }
+                        return (s.budget || 0) === 0;
+                      }).length;
+                      if (serviceBudgetTotal > 0) {
+                        return (
+                          <div className="flex items-center justify-between px-4 py-3" style={{ backgroundColor: 'rgba(239,78,36,0.06)' }}>
+                            <div className="flex flex-col">
+                              <span className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--hm-fg-secondary)' }}>
+                                {t('common.total')}
+                              </span>
+                              {quoteCount > 0 && (
+                                <span className="text-[10px]" style={{ color: 'var(--hm-fg-muted)' }}>
+                                  {t('job.openToOffersCount', { count: quoteCount })}
+                                </span>
                               )}
+                            </div>
+                            <span className="text-[15px] font-bold" style={{ color: 'var(--hm-brand-500)' }}>
+                              {serviceBudgetTotal}₾
                             </span>
                           </div>
-                          {svc.budget > 0 && (
-                            <span className="text-[13px] font-bold shrink-0 ml-3" style={{ color: 'var(--hm-brand-500)' }}>
-                              {lineTotal}₾
+                        );
+                      }
+                      // All services are open to offers - no total row but
+                      // a single banner explaining what pros will see.
+                      if (quoteCount > 0) {
+                        return (
+                          <div className="flex items-center gap-2 px-4 py-3" style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}>
+                            <MessageCircle className="w-3.5 h-3.5" style={{ color: 'var(--hm-brand-500)' }} />
+                            <span className="text-[12px]" style={{ color: 'var(--hm-fg-secondary)' }}>
+                              {t('job.openToOffersHint')}
                             </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                    {/* Total row — always shown when any budget is set, even
-                        with a single service (user expects to see the total
-                        explicitly stated, not just inferred from the line). */}
-                    {serviceBudgetTotal > 0 && (
-                      <div className="flex items-center justify-between px-4 py-3" style={{ backgroundColor: 'rgba(239,78,36,0.06)' }}>
-                        <span className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--hm-fg-secondary)' }}>
-                          {t('common.total')}
-                        </span>
-                        <span className="text-[15px] font-bold" style={{ color: 'var(--hm-brand-500)' }}>
-                          {serviceBudgetTotal}₾
-                        </span>
-                      </div>
-                    )}
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
               )}
 
-              {/* Property & Location — full breakdown, label/value rows */}
+              {/* Property & Location - full breakdown, label/value rows */}
               <div
                 className="rounded-2xl overflow-hidden"
                 style={{ backgroundColor: 'var(--hm-bg-elevated)', border: '1px solid var(--hm-border-subtle)' }}
@@ -1060,7 +1223,7 @@ function PostJobPageContent() {
                   </div>
                 </div>
 
-                {/* Property facts grid — only render rows that have values */}
+                {/* Property facts grid - only render rows that have values */}
                 <div className="divide-y" style={{ borderColor: 'var(--hm-border-subtle)' }}>
                   {formData.propertyType && (
                     <div className="px-4 py-2.5 flex items-center justify-between gap-3">
@@ -1103,7 +1266,7 @@ function PostJobPageContent() {
                       </span>
                     </div>
                   )}
-                  {/* Budget row — only when not already covered by per-service breakdown */}
+                  {/* Budget row - only when not already covered by per-service breakdown */}
                   {!hasServiceBudgets && formData.budgetType && (
                     <div className="px-4 py-2.5 flex items-center justify-between gap-3">
                       <span className="text-[12px]" style={{ color: 'var(--hm-fg-muted)' }}>
@@ -1112,14 +1275,14 @@ function PostJobPageContent() {
                       <span className="text-[13px] font-bold" style={{ color: 'var(--hm-brand-500)' }}>
                         {formData.budgetType === "negotiable" && t('job.negotiable')}
                         {formData.budgetType === "fixed" && formData.budgetMin && `${formData.budgetMin}₾`}
-                        {formData.budgetType === "range" && formData.budgetMin && formData.budgetMax && `${formData.budgetMin}–${formData.budgetMax}₾`}
+                        {formData.budgetType === "range" && formData.budgetMin && formData.budgetMax && `${formData.budgetMin}-${formData.budgetMax}₾`}
                       </span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Job details — category-specific fields the user filled in */}
+              {/* Job details - category-specific fields the user filled in */}
               {(() => {
                 const filledFields = getActiveFields().filter((f) => {
                   const v = formData[f.key as keyof typeof formData];
@@ -1165,7 +1328,7 @@ function PostJobPageContent() {
                 );
               })()}
 
-              {/* Photos — bigger previews when present */}
+              {/* Photos - bigger previews when present */}
               {(existingMedia.length > 0 || mediaFiles.length > 0) && (
                 <div
                   className="rounded-2xl p-4"
@@ -1207,7 +1370,7 @@ function PostJobPageContent() {
         </div>
       </main>
 
-      {/* Footer Navigation — sit above the mobile bottom nav (58px + iOS safe area) */}
+      {/* Footer Navigation - sit above the mobile bottom nav (58px + iOS safe area) */}
       <footer className="fixed left-0 right-0 z-40 lg:bottom-0 bottom-[calc(58px+env(safe-area-inset-bottom))]">
         <div className="bg-[var(--hm-bg-elevated)] border-t border-[var(--hm-border-subtle)] shadow-[0_-4px_12px_rgba(20,18,14,0.06)]">
           <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-3">

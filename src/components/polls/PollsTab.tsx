@@ -55,6 +55,8 @@ export default function PollsTab({
     } finally {
       setIsLoading(false);
     }
+    // `t` is a stable selector from useLanguage closing over `locale`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId, locale]);
 
   useEffect(() => {

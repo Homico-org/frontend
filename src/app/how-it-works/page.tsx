@@ -13,7 +13,6 @@ import {
   Search,
   Send,
   ShieldCheck,
-  Sparkles,
   Star,
   User,
   Zap,
@@ -56,7 +55,7 @@ export default function HowItWorksPage() {
       number: 5,
       titleKey: 'howItWorks.clientStep5Title',
       descriptionKey: 'howItWorks.clientStep5Description',
-      icon: <Sparkles className="w-8 h-8" />,
+      icon: <Star className="w-8 h-8" />,
     },
   ];
 

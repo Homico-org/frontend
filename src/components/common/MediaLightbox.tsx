@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -245,6 +246,7 @@ export default function MediaLightbox({
                       : 'opacity-60 hover:opacity-100'
                   }`}
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
                   <img
                     src={getImageUrl(item.url)}
                     alt=""

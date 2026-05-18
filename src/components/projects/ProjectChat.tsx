@@ -287,6 +287,8 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
     if (!messagesLoadedRef.current) {
       fetchMessages();
     }
+    // Mount-only: messages are then driven by WebSocket events.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // WebSocket connection - stable connection without callback dependencies
@@ -344,6 +346,10 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
       socket.disconnect();
       socketRef.current = null;
     };
+    // The full `user` object isn't a dep - only `user.id` matters for
+    // reconnecting; the socket closure reads `user` via ref-stable
+    // references it captured at mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, jobId]); // Only reconnect when user or job changes
 
   // Scroll to bottom when messages change
@@ -531,6 +537,7 @@ export default function ProjectChat({ jobId, locale, isClient = false }: Project
                                 <div key={aIdx} className="mb-1">
                                   {isImage ? (
                                     <a href={storage.getFileUrl(attachment)} target="_blank" rel="noopener noreferrer">
+                                      {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
                                       <img
                                         src={storage.getFileUrl(attachment)}
                                         alt=""

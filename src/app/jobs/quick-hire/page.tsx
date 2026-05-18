@@ -80,6 +80,9 @@ export default function QuickHirePage() {
     if (step === 3) {
       fetchSuggestedPros();
     }
+    // fetchSuggestedPros is intentionally re-run only on step entry;
+    // re-adding it to deps would refetch on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   const filteredCategories = searchQuery

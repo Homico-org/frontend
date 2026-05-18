@@ -124,6 +124,9 @@ export default function ReviewsTab({
     } finally {
       setIsLinkLoading(false);
     }
+    // `t` / `toast` are stable selectors closing over `locale` which
+    // doesn't impact this fetch's semantics.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOwner, reviewLink]);
 
   useEffect(() => {

@@ -734,7 +734,7 @@ function ColorPickerModal({
                         onSelect(c.hex);
                         onClose();
                       }}
-                      title={`${c.name} — ${c.hex}`}
+                      title={`${c.name} - ${c.hex}`}
                       style={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -977,10 +977,10 @@ function ServiceRow({
         <span style={{ color: THEME.textDim, marginLeft: 6, fontSize: 11 }}>({service.key})</span>
       </div>
       <span style={{ color: THEME.textMuted }}>{service.basePrice}</span>
-      <span style={{ color: THEME.textMuted }}>{service.maxPrice ?? '—'}</span>
+      <span style={{ color: THEME.textMuted }}>{service.maxPrice ?? '-'}</span>
       <span style={{ color: THEME.textMuted }}>{service.unit}</span>
-      <span style={{ color: THEME.textMuted }}>{service.maxQuantity ?? '—'}</span>
-      <span style={{ color: THEME.textMuted }}>{service.discountTiers?.length || '—'}</span>
+      <span style={{ color: THEME.textMuted }}>{service.maxQuantity ?? '-'}</span>
+      <span style={{ color: THEME.textMuted }}>{service.discountTiers?.length || '-'}</span>
       <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
         <button
           onClick={() => onEdit(service)}
@@ -1179,7 +1179,7 @@ function ServiceEditForm({
           </button>
         </div>
       </div>
-      {/* Description (3 locales) — optional, shown on landing/detail pages */}
+      {/* Description (3 locales) - optional, shown on landing/detail pages */}
       <div>
         <label style={labelStyle}>{t('admin.description')}</label>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
@@ -1213,7 +1213,7 @@ function ServiceEditForm({
             value={value.pricingModel}
             onChange={e => set('pricingModel', e.target.value as PricingModel | '')}
           >
-            <option value="">— default (fixed) —</option>
+            <option value="">- default (fixed) -</option>
             {PRICING_MODELS.map(m => (
               <option key={m} value={m}>{m}</option>
             ))}
@@ -1226,7 +1226,7 @@ function ServiceEditForm({
             value={value.serviceType}
             onChange={e => set('serviceType', e.target.value as ServiceType | '')}
           >
-            <option value="">—</option>
+            <option value="">-</option>
             {SERVICE_TYPES.map(st => (
               <option key={st} value={st}>{st}</option>
             ))}
@@ -1241,7 +1241,7 @@ function ServiceEditForm({
             type="number"
             value={value.priceRangeMin}
             onChange={e => set('priceRangeMin', e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="—"
+            placeholder="-"
           />
         </div>
         <div>
@@ -1251,7 +1251,7 @@ function ServiceEditForm({
             type="number"
             value={value.priceRangeMax}
             onChange={e => set('priceRangeMax', e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="—"
+            placeholder="-"
           />
         </div>
         <div>
@@ -1261,7 +1261,7 @@ function ServiceEditForm({
             type="number"
             value={value.estimatedDurationMin}
             onChange={e => set('estimatedDurationMin', e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="—"
+            placeholder="-"
           />
         </div>
         <div>
@@ -1271,7 +1271,7 @@ function ServiceEditForm({
             type="number"
             value={value.estimatedDurationMax}
             onChange={e => set('estimatedDurationMax', e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="—"
+            placeholder="-"
           />
         </div>
       </div>
@@ -1419,7 +1419,9 @@ function ServiceAddonPanel({
   onReload: () => void;
   t: (key: string) => string;
 }) {
-  const safeItems = items ?? [];
+  // Wrap in useMemo so dependent useEffect/useCallback hooks below
+  // don't see a fresh array identity on every render.
+  const safeItems = useMemo(() => items ?? [], [items]);
   const toast = useToast();
   const confirm = useConfirm();
   const [addingNew, setAddingNew] = useState(false);

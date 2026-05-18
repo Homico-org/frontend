@@ -160,6 +160,7 @@ export default function StepReview({
                 <div key={project.id} className="group relative">
                   {project.images.length > 0 ? (
                     <div className="aspect-[4/3] rounded-xl overflow-hidden bg-[var(--hm-bg-tertiary)]">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
                       <img
                         src={project.images[0]}
                         alt={project.title || 'Project'}

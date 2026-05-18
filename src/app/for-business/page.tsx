@@ -18,7 +18,6 @@ import {
   MessageSquareQuote,
   Shield,
   ShoppingBag,
-  Sparkles,
   Star,
   Users,
   Zap,
@@ -239,7 +238,7 @@ export default function ForBusinessPage() {
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 mb-8"
             >
-              <Sparkles className="w-4 h-4 text-white" />
+              <Star className="w-4 h-4 text-white" />
               <span className="text-sm font-medium text-white">{t('business.heroTag')}</span>
             </motion.div>
 
@@ -366,7 +365,7 @@ export default function ForBusinessPage() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10 relative">
-            {/* Connecting line — animated */}
+            {/* Connecting line - animated */}
             <motion.div
               className="hidden md:block absolute top-16 left-[calc(16.67%+32px)] right-[calc(16.67%+32px)] h-px origin-left"
               style={{ background: `linear-gradient(90deg, transparent, ${ACCENT_COLOR}30, ${ACCENT_COLOR}30, transparent)` }}
@@ -657,7 +656,7 @@ export default function ForBusinessPage() {
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 sm:gap-8">
-            {/* Sidebar — trust points */}
+            {/* Sidebar - trust points */}
             <motion.div
               className="lg:col-span-2 order-2 lg:order-1"
               variants={slideInLeft}

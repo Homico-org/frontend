@@ -16,7 +16,7 @@ import {
   MessageSquare,
   Phone,
   RefreshCw,
-  Sparkles,
+  Zap,
   User as UserIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -91,7 +91,7 @@ function statusColor(s: ServiceRequestStatus): {
 }
 
 function timingIcon(t: Timing): React.ReactElement {
-  if (t === "asap") return <Sparkles className="w-3.5 h-3.5" />;
+  if (t === "asap") return <Zap className="w-3.5 h-3.5" />;
   if (t === "this_week") return <Clock className="w-3.5 h-3.5" />;
   return <Calendar className="w-3.5 h-3.5" />;
 }

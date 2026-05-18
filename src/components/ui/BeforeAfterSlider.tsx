@@ -153,7 +153,12 @@ export default function BeforeAfterSlider({
           <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-black/70 backdrop-blur-sm text-white text-[11px] font-semibold rounded-full">
             {beforeLabel || t('common.before')}
           </div>
-          <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-white/95 backdrop-blur-sm text-[var(--hm-fg-primary)] text-[11px] font-semibold rounded-full shadow-lg">
+          {/* Text color is theme-locked (not a CSS var) because the pill
+              floats over a photo, not over the app surface - the photo
+              decides the contrast context, not the theme. In dark mode the
+              var-based foreground flipped to white and made this pill
+              invisible against its white background. */}
+          <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-white/95 backdrop-blur-sm text-neutral-900 text-[11px] font-semibold rounded-full shadow-lg">
             {afterLabel || t('common.after')}
           </div>
         </>

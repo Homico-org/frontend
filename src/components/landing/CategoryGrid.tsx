@@ -4,14 +4,14 @@ import CategoryIcon from "@/components/categories/CategoryIcon";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { useCallback } from "react";
 
 import { AnimatedSection, GlassCard } from "./_internal";
 
 interface CategoryGridProps {
-  /** Opens the intake modal — used by the "All services" escape-hatch card. */
+  /** Opens the intake modal - used by the "All services" escape-hatch card. */
   onIntakeOpen: () => void;
 }
 
@@ -80,7 +80,7 @@ export default function CategoryGrid({ onIntakeOpen }: CategoryGridProps) {
             );
           })}
 
-          {/* "All services" escape hatch for needs outside the top 8 — opens intake instead of search */}
+          {/* "All services" escape hatch for needs outside the top 8 - opens intake instead of search */}
           <AnimatedSection stagger index={8}>
             <button
               type="button"
@@ -98,7 +98,7 @@ export default function CategoryGrid({ onIntakeOpen }: CategoryGridProps) {
                       "color-mix(in srgb, var(--hm-brand-500) 6%, transparent)",
                   }}
                 >
-                  <Sparkles
+                  <LayoutGrid
                     className="w-6 h-6 text-[var(--hm-brand-500)]"
                     strokeWidth={1.75}
                   />

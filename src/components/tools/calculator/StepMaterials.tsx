@@ -7,7 +7,7 @@ import {
   ArrowUpFromLine,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
+  Brush,
   Grid3x3,
   Wallpaper,
   Scissors,
@@ -37,7 +37,7 @@ const WALL_OPTIONS: { type: WallType; icon: typeof Paintbrush }[] = [
   { type: 'paint', icon: Paintbrush },
   { type: 'wallpaper', icon: Wallpaper },
   { type: 'tile', icon: Grid3x3 },
-  { type: 'decorative_plaster', icon: Sparkles },
+  { type: 'decorative_plaster', icon: Brush },
 ];
 
 const CEILING_OPTIONS: { type: CeilingType; icon: typeof ArrowUpFromLine }[] = [

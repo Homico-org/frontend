@@ -1063,6 +1063,10 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
       setShowVerification(true);
       await sendOtp(verificationChannel);
     }
+    // `authMethod` and `submitRegistration` are kept in deps deliberately
+    // so the step transition logic re-binds when auth method changes
+    // mid-flow (e.g. switching email -> phone).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     userType,
     currentStep,

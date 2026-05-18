@@ -213,6 +213,7 @@ function ProjectCard({
           {/* Images */}
           {project.images.map((img, imgIndex) => (
             <div key={`img-${imgIndex}`} className="relative group">
+              {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
               <img
                 src={img}
                 alt={`Project ${index + 1} image ${imgIndex + 1}`}

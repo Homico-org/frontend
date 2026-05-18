@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { BadgeCheck, Star, Sparkles, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft } from 'lucide-react';
+import { BadgeCheck, Star, Plus, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft } from 'lucide-react';
 import { ACCENT_COLOR } from '@/constants/theme';
 
 export type StatusPillVariant =
@@ -72,7 +72,7 @@ const variantConfig: Record<StatusPillVariant, {
   new: {
     bgClass: 'bg-[var(--hm-info-50)]',
     textClass: 'text-[var(--hm-info-500)]',
-    icon: Sparkles,
+    icon: Plus,
     labelEn: 'New',
     labelKa: 'ახალი',
   },

@@ -19,7 +19,7 @@ import {
   Edit3,
   Image as ImageIcon,
   MoreVertical,
-  Sparkles,
+  Search,
   Star,
   ThumbsUp,
   Trash2
@@ -239,7 +239,7 @@ function MyReviewsPageContent() {
                   href="/portfolio"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--hm-n-700)] text-white rounded-xl hover:bg-[var(--hm-n-700)] transition-colors font-medium"
                 >
-                  <Sparkles className="h-5 w-5" />
+                  <Search className="h-5 w-5" />
                   {language === 'ka' ? 'სპეციალისტების ნახვა' : 'Find Professionals'}
                 </Link>
               </div>

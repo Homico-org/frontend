@@ -31,7 +31,6 @@ import {
   PieChart,
   Eye,
   EyeOff,
-  Sparkles,
   AlertTriangle,
   ThumbsUp,
   ThumbsDown,
@@ -1008,7 +1007,7 @@ Grand Total: 91,600₾`,
                 <div className="bg-gradient-to-br from-[var(--hm-bg-page)] to-[var(--hm-bg-tertiary)] rounded-2xl border border-[var(--hm-border)] overflow-hidden">
                   <div className="p-4 border-b border-[var(--hm-border)] flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
+                      <Lightbulb className="w-4 h-4 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
                     </div>
                     <h3 className="font-semibold text-[var(--hm-n-800)]">
                       {t('tools.compare.aiAnalysis')}
@@ -1112,7 +1111,7 @@ Grand Total: 91,600₾`,
                     <p className="text-[var(--hm-brand-700)] leading-relaxed">
                       {aiComparison ? (
                         <>
-                          <strong>{aiComparison.winner.name}</strong> — {aiComparison.recommendation}
+                          <strong>{aiComparison.winner.name}</strong> - {aiComparison.recommendation}
                         </>
                       ) : (
                         <>

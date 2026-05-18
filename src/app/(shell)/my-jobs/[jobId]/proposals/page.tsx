@@ -115,7 +115,7 @@ function ProposalsPageContent() {
       setSelectedProposal(proposal);
       setShowHiringModal(true);
     },
-    [locale, toast]
+    [],
   );
 
   const handleHiringChoice = useCallback(
@@ -164,6 +164,8 @@ function ProposalsPageContent() {
         setIsProcessing(false);
       }
     },
+    // `t` is a stable selector from useLanguage tied to `locale`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedProposal, locale, toast]
   );
 
@@ -194,6 +196,8 @@ function ProposalsPageContent() {
         setIsProcessing(false);
       }
     },
+    // `t` is a stable selector from useLanguage tied to `locale`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [locale, toast]
   );
 
@@ -221,6 +225,8 @@ function ProposalsPageContent() {
         setIsProcessing(false);
       }
     },
+    // `t` is a stable selector from useLanguage tied to `locale`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [locale, toast, router, jobId]
   );
 
@@ -257,6 +263,8 @@ function ProposalsPageContent() {
         setIsProcessing(false);
       }
     },
+    // `t` is a stable selector from useLanguage tied to `locale`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [locale, toast]
   );
 

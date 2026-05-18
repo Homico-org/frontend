@@ -86,6 +86,7 @@ export default function PortfolioCompletionModal({
                   key={index}
                   className="relative aspect-square rounded-xl overflow-hidden group"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
                   <img
                     src={storage.getFileUrl(url)}
                     alt={`Portfolio ${index + 1}`}

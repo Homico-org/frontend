@@ -156,6 +156,10 @@ export default function InviteProsModal({
       }, 300);
       return () => clearTimeout(timer);
     }
+    // fetchPros / isOpen / isLoading intentionally excluded - we only
+    // want a debounced refetch on filter input changes, not when the
+    // modal opens or another fetch is in-flight.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, sortBy, minRating]);
 
   // Infinite scroll handler

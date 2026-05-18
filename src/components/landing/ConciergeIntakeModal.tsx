@@ -26,7 +26,7 @@ import {
   CheckCircle2,
   Clock,
   MapPin,
-  Sparkles,
+  Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -100,7 +100,7 @@ export default function ConciergeIntakeModal({
       value: "asap",
       label: t("concierge.timingAsap"),
       labelKa: t("concierge.timingAsap"),
-      icon: <Sparkles className="w-4 h-4" />,
+      icon: <Zap className="w-4 h-4" />,
     },
     {
       value: "this_week",
@@ -204,7 +204,7 @@ export default function ConciergeIntakeModal({
             <h2 className="text-2xl sm:text-[28px] font-serif font-medium text-[var(--hm-fg-primary)] tracking-tight">
               {t("concierge.modalTitle")}
             </h2>
-            {/* Progress dots — no more "Step X / 3" text */}
+            {/* Progress dots - no more "Step X / 3" text */}
             <div
               className="mt-3 flex items-center gap-1.5"
               aria-label={`${t("concierge.step")} ${step} / 3`}

@@ -385,10 +385,13 @@ export default function Select({
       </select>
 
       {/* Custom select trigger.
-          Default variant uses `bg-elevated` (matches Input/PasswordInput) so
-          on warm-paper page backgrounds the dropdown reads as an interactive
-          control, not as static text. The chevron switches to brand color on
-          hover/open to telegraph "click me". */}
+          Default variant now matches the Input field surface
+          (`bg-tertiary` + `border-subtle`) so a Select sits next to a
+          text input as the same kind of "field". The chevron lives in
+          its own small well on the right (background tint + stronger
+          color) so the control reads as a dropdown at a glance instead
+          of a flat label - the user reported the previous styling
+          looked like static text. */}
       <button
         ref={triggerRef}
         type="button"
@@ -405,7 +408,7 @@ export default function Select({
                 ? 'border-[var(--hm-error-500)]/40 focus:ring-2 focus:ring-[var(--hm-error-500)]/20'
                 : isOpen
                   ? 'border-[var(--hm-brand-500)] ring-2 ring-[var(--hm-brand-500)]/20'
-                  : 'border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/40'
+                  : 'border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/60'
               }`
           }
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
@@ -413,7 +416,7 @@ export default function Select({
         `}
         style={{
           backgroundColor:
-            variant === 'minimal' ? 'transparent' : 'var(--hm-bg-elevated)',
+            variant === 'minimal' ? 'transparent' : 'var(--hm-bg-tertiary)',
         }}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -426,15 +429,25 @@ export default function Select({
         >
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <svg
-          className={`w-4 h-4 flex-shrink-0 transition-all duration-200 ${isOpen ? 'rotate-180 text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)]'}`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2.25}
-          viewBox="0 0 24 24"
+        <span
+          className={`
+            flex items-center justify-center flex-shrink-0 rounded-md
+            w-6 h-6 -mr-1 transition-colors duration-200
+            ${isOpen
+              ? 'bg-[var(--hm-brand-500)] text-white'
+              : 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] group-hover:bg-[var(--hm-brand-500)]/10 group-hover:text-[var(--hm-brand-500)]'}
+          `}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+          <svg
+            className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </span>
       </button>
 
       {dropdown}

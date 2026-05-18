@@ -9,7 +9,7 @@ import { storage } from '@/services/storage';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
-import { Calendar, Camera, Eye, MapPin, Sparkles, Star } from 'lucide-react';
+import { BadgeCheck, Calendar, Camera, Eye, MapPin, Star } from 'lucide-react';
 import { formatDate } from '@/utils/dateUtils';
 import Image from "next/image";
 import Link from "next/link";
@@ -85,6 +85,10 @@ export default function PortfolioCard({
       }
     }
     return getCategoryLabelStatic(project.category, locale);
+    // `pick` is a stable selector from useLanguage that depends on
+    // locale (already listed); listing it directly would noisily
+    // re-trigger this memo for no reason.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project.category, categories, locale]);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -171,11 +175,11 @@ export default function PortfolioCard({
               className="h-full"
               aspectRatio=""
             />
-            {/* Top badges — pointer-events-none so they don't block drag */}
+            {/* Top badges - pointer-events-none so they don't block drag */}
             <div className="absolute top-2 sm:top-3 left-2 sm:left-3 right-2 sm:right-3 flex items-start justify-between z-20 pointer-events-none">
               {project.isVerified && (
                 <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-[var(--hm-success-500)]/90 backdrop-blur-sm text-white text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide shadow-lg">
-                  <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
+                  <BadgeCheck className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
                   <span>{t('common.verified')}</span>
                 </div>
               )}
@@ -217,7 +221,7 @@ export default function PortfolioCard({
             <div className="absolute top-2 sm:top-3 left-2 sm:left-3 right-2 sm:right-3 flex items-start justify-between z-20">
               {project.isVerified && (
                 <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-[var(--hm-success-500)]/90 backdrop-blur-sm text-white text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide shadow-lg">
-                  <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
+                  <BadgeCheck className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
                   <span>{t('common.verified')}</span>
                 </div>
               )}
@@ -256,7 +260,7 @@ export default function PortfolioCard({
           </Button>
         )}
 
-        {/* Thumbnail Strip — clean elevated bg, no gradient that reads "disabled" */}
+        {/* Thumbnail Strip - clean elevated bg, no gradient that reads "disabled" */}
         {allImages.length > 1 && (
           <div className="flex gap-1.5 p-2.5 bg-[var(--hm-bg-elevated)] border-t border-[var(--hm-border-subtle)]">
             {allImages.slice(0, 4).map((img, imgIdx) => {
@@ -325,11 +329,11 @@ export default function PortfolioCard({
           </div>
         )}
 
-        {/* Project Info Section — shows EVERY available field, no truncation
+        {/* Project Info Section - shows EVERY available field, no truncation
             ellipses on title or description. Date and location render
             independently so customers see the full picture at a glance. */}
         <div className="p-4 pt-3 flex flex-col gap-2.5">
-          {/* Title — wraps naturally to 2 lines if needed, no ellipsis */}
+          {/* Title - wraps naturally to 2 lines if needed, no ellipsis */}
           <h3 className="font-semibold text-[var(--hm-fg-primary)] text-base leading-tight group-hover:text-[var(--hm-brand-500)] transition-colors duration-300">
             {svcLabel || project.title}
           </h3>
@@ -341,7 +345,7 @@ export default function PortfolioCard({
             </p>
           )}
 
-          {/* Description — full text, never clamped */}
+          {/* Description - full text, never clamped */}
           {project.description && (
             <p className="text-sm text-[var(--hm-fg-secondary)] leading-relaxed whitespace-pre-line">
               {project.description}
@@ -361,7 +365,7 @@ export default function PortfolioCard({
             </blockquote>
           )}
 
-          {/* Meta row 1: location + date — both shown when present */}
+          {/* Meta row 1: location + date - both shown when present */}
           {(project.location || project.completedDate || project.date) && (
             <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-[12px] text-[var(--hm-fg-muted)]">
               {project.location && (
@@ -390,7 +394,7 @@ export default function PortfolioCard({
             </div>
           )}
 
-          {/* Services performed on this project — labelled pills with prices */}
+          {/* Services performed on this project - labelled pills with prices */}
           {project.services && project.services.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {project.services.map((svc) => {
@@ -424,7 +428,7 @@ export default function PortfolioCard({
             </div>
           )}
 
-          {/* Meta row 2: client + source + rating — separated by hairline */}
+          {/* Meta row 2: client + source + rating - separated by hairline */}
           {(project.clientName || project.source === 'homico' || (project.rating && project.rating > 0)) && (
             <div
               className="flex items-center justify-between gap-3 pt-2.5 mt-0.5"
@@ -461,7 +465,7 @@ export default function PortfolioCard({
                 )}
                 {project.rating && project.rating > 0 && (
                   <div className="inline-flex items-center gap-1 text-[12px]">
-                    {/* Outlined-stroke star — modern + minimal. The number does
+                    {/* Outlined-stroke star - modern + minimal. The number does
                         the carrying; the star sits at 1.75 stroke for a
                         cleaner, less amber-heavy mark. */}
                     <Star
@@ -506,7 +510,7 @@ export function EmptyPortfolio({ locale = 'en', className = '' }: EmptyPortfolio
           transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
           className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[var(--hm-brand-500)]/10 flex items-center justify-center"
         >
-          <Sparkles className="w-3 h-3 text-[var(--hm-brand-500)]" />
+          <Star className="w-3 h-3 text-[var(--hm-brand-500)]" />
         </motion.div>
       </motion.div>
       <motion.p

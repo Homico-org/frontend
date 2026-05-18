@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, useRef } from 'react';
-import { Home, Paintbrush, Wrench, Calculator, ChevronLeft, ChevronRight, Check, Upload, Sparkles, FileSpreadsheet, FileText, Image, X, AlertTriangle } from 'lucide-react';
+import { Home, Paintbrush, Wrench, Calculator, ChevronLeft, ChevronRight, Check, Upload, Wand2, Lightbulb, FileSpreadsheet, FileText, Image, X, AlertTriangle } from 'lucide-react';
 import { type Room, type WorkCategories, type QualityLevel, type CalculatorStep, DEFAULT_WORK_CATEGORIES, type RoomType, type FlooringType, type WallType, type CeilingType } from './types';
 import { StepRooms } from './StepRooms';
 import { StepMaterials } from './StepMaterials';
@@ -344,7 +344,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
           <div className="p-5">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
+                <Wand2 className="w-5 h-5 text-[var(--hm-fg-secondary)]" strokeWidth={1.5} />
               </div>
               <div>
                 <h3 className="font-semibold text-[var(--hm-n-800)]">
@@ -361,7 +361,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
                 <div className="relative w-16 h-16 mb-4 flex items-center justify-center">
                   <LoadingSpinner size="xl" color="var(--hm-brand-500)" />
                   <div className="absolute inset-2 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-[var(--hm-fg-secondary)] animate-pulse" strokeWidth={1.5} />
+                    <Wand2 className="w-6 h-6 text-[var(--hm-fg-secondary)] animate-pulse" strokeWidth={1.5} />
                   </div>
                 </div>
                 <p className="text-sm text-[var(--hm-n-700)] font-medium">
@@ -422,7 +422,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
       {!showUpload && aiNotes.length > 0 && (
         <div className="bg-[var(--hm-bg-tertiary)] rounded-xl p-4 border border-[var(--hm-border)]">
           <div className="flex items-start gap-3">
-            <Sparkles className="w-5 h-5 text-[var(--hm-fg-secondary)] flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+            <Lightbulb className="w-5 h-5 text-[var(--hm-fg-secondary)] flex-shrink-0 mt-0.5" strokeWidth={1.5} />
             <div>
               <p className="text-sm font-medium text-[var(--hm-n-700)] mb-2">
                 {t('tools.calculator.aiUpload.notes')}
