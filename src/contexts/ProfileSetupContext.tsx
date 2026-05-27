@@ -1763,6 +1763,16 @@ export function ProfileSetupProvider({
         );
       }
 
+      // Meta Pixel: a pro finishing their profile for the first time is a
+      // completed registration. Don't fire on edits or admin-side edits.
+      const fbq =
+        typeof window !== "undefined"
+          ? (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq
+          : undefined;
+      if (!isAdminEditing && !isEditMode && typeof fbq === "function") {
+        fbq("track", "CompleteRegistration");
+      }
+
       if (!isAdminEditing) {
         updateUser({
           isProfileCompleted: true,
