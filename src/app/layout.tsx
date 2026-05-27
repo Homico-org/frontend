@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-page-custom-font, @next/next/next-script-for-ga -- Google Fonts via <link> avoids next/font runtime overhead; GA / GTM / Contentsquare scripts use inline init for early data-layer setup. */
 import ClientLayout from "@/components/common/ClientLayout";
 import EnvBadge from "@/components/common/EnvBadge";
+import MetaPixelPageView from "@/components/common/MetaPixelPageView";
 import Providers from "@/components/common/Providers";
 import ToastContainer from "@/components/common/Toast";
 import { AiChatWidgetMount } from "@/components/ai-assistant/AiChatWidgetMount";
@@ -222,6 +223,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <script async src="https://t.contentsquare.net/uxa/e85c48d50001d.js" />
         {/* End Contentsquare */}
 
+        {/* Meta Pixel */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '2910772282603955');
+fbq('track', 'PageView');`,
+          }}
+        />
+        {/* End Meta Pixel */}
+
         {/* Mixpanel */}
         <script
           dangerouslySetInnerHTML={{
@@ -268,12 +286,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {/* End Google Tag Manager (noscript) */}
+        {/* Meta Pixel (noscript) */}
+        <noscript>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            height="1"
+            width="1"
+            style={{ display: "none" }}
+            src="https://www.facebook.com/tr?id=2910772282603955&ev=PageView&noscript=1"
+            alt=""
+          />
+        </noscript>
+        {/* End Meta Pixel (noscript) */}
         <Providers>
           <ClientLayout>{children}</ClientLayout>
           <ToastContainer />
           <AiChatWidgetMount />
           <FeedbackWidget />
           <EnvBadge />
+          <MetaPixelPageView />
         </Providers>
       </body>
     </html>
