@@ -1764,12 +1764,22 @@ export function ProfileSetupProvider({
       }
 
       // Meta Pixel: a pro finishing their profile for the first time is a
-      // completed registration. Don't fire on edits or admin-side edits.
+      // completed registration. Gate on `isProfileCompleted` (the real
+      // first-completion signal) - NOT `isEditMode`. `isEditMode` is set true
+      // whenever GET /users/me/pro-profile returns 200, which it always does
+      // for a logged-in pro (the user doc always exists), so `!isEditMode`
+      // suppressed this event in virtually every real session. A genuine
+      // first-timer still has isProfileCompleted falsy at this point; this
+      // submit flips it true just below.
       const fbq =
         typeof window !== "undefined"
           ? (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq
           : undefined;
-      if (!isAdminEditing && !isEditMode && typeof fbq === "function") {
+      if (
+        !isAdminEditing &&
+        !user?.isProfileCompleted &&
+        typeof fbq === "function"
+      ) {
         fbq("track", "CompleteRegistration");
       }
 
