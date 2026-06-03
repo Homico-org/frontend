@@ -12,6 +12,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useCategories, type Subcategory } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { trackPixel } from "@/utils/metaPixel";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -1763,24 +1764,15 @@ export function ProfileSetupProvider({
         );
       }
 
-      // Meta Pixel: a pro finishing their profile for the first time is a
-      // completed registration. Gate on `isProfileCompleted` (the real
-      // first-completion signal) - NOT `isEditMode`. `isEditMode` is set true
-      // whenever GET /users/me/pro-profile returns 200, which it always does
-      // for a logged-in pro (the user doc always exists), so `!isEditMode`
-      // suppressed this event in virtually every real session. A genuine
-      // first-timer still has isProfileCompleted falsy at this point; this
-      // submit flips it true just below.
-      const fbq =
-        typeof window !== "undefined"
-          ? (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq
-          : undefined;
-      if (
-        !isAdminEditing &&
-        !user?.isProfileCompleted &&
-        typeof fbq === "function"
-      ) {
-        fbq("track", "CompleteRegistration");
+      // Meta Pixel: a pro finishing their full profile for the first time.
+      // This is a CUSTOM "CompleteProfile" event, distinct from the standard
+      // CompleteRegistration which now fires at account signup (in the
+      // registration hooks) - otherwise a pro would be counted twice. Gate on
+      // `isProfileCompleted` (the real first-completion signal): this submit
+      // flips it true just below, so it only fires on the first completion,
+      // not on later edits or admin-side edits.
+      if (!isAdminEditing && !user?.isProfileCompleted) {
+        trackPixel("CompleteProfile", { custom: true });
       }
 
       if (!isAdminEditing) {

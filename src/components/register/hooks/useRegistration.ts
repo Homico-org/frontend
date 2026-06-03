@@ -9,6 +9,7 @@ import {
   useLanguage,
 } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
+import { trackPixel } from "@/utils/metaPixel";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -935,6 +936,10 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
       }
 
       login(data.access_token, data.user);
+      // Meta Pixel: account created = registration complete. Fires for every
+      // signup (client + pro), unlike the old placement at pro profile-setup
+      // completion which most users never reached.
+      trackPixel("CompleteRegistration");
       trackEvent(
         data.user.role === "pro"
           ? AnalyticsEvent.REGISTER_PRO

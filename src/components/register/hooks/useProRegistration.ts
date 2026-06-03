@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
+import { trackPixel } from '@/utils/metaPixel';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import type { SelectedService } from '../steps/StepSelectServices';
@@ -324,6 +325,10 @@ export function useProRegistration(): UseProRegistrationReturn {
         login(data.access_token, data.user);
         // Store user ID for profile navigation
         setRegisteredUserId(data.user._id || data.user.id);
+        // Meta Pixel: account created = registration complete. Fires here (at
+        // signup) rather than at pro profile-setup completion, since most
+        // sign-ups never finish the full multi-step profile.
+        trackPixel("CompleteRegistration");
       }
 
       // Skip the celebration step — drop the user straight into profile-setup
