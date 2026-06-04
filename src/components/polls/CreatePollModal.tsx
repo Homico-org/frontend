@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
+import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { storage } from '@/services/storage';
 import { Image as ImageIcon, Plus, Trash2, Type, Upload, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useLanguage } from "@/contexts/LanguageContext";
 interface PollOptionInput {
@@ -69,18 +70,18 @@ export default function CreatePollModal({
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: formData,
-      });
+      // Use the shared axios client so the request goes through the auth
+      // interceptor (handles 401 refresh, base URL, global error mapping)
+      // instead of the raw fetch that silently bypassed all of that.
+      const response = await api.post('/upload', formData);
+      const data = response.data;
 
-      if (!response.ok) throw new Error('Upload failed');
-
-      const data = await response.json();
       const newOptions = [...options];
+      // Revoke the previous blob URL before overwriting, otherwise each
+      // re-upload leaks a megabyte+ of browser memory until the tab is
+      // closed. The on-unmount effect below handles the final cleanup.
+      const previous = newOptions[index].imagePreview;
+      if (previous) URL.revokeObjectURL(previous);
       newOptions[index].imageUrl = data.url || data.path;
       newOptions[index].imagePreview = URL.createObjectURL(file);
       setOptions(newOptions);
@@ -90,6 +91,20 @@ export default function CreatePollModal({
       setUploadingIndex(null);
     }
   };
+
+  // Revoke any remaining object URLs on unmount so the leaked blob handles
+  // get released. Without this, every closed-without-saving modal session
+  // keeps the uploaded preview images pinned in browser memory.
+  useEffect(() => {
+    return () => {
+      options.forEach((o) => {
+        if (o.imagePreview) URL.revokeObjectURL(o.imagePreview);
+      });
+    };
+    // We intentionally only want this to run on unmount, not on every
+    // options change - per-upload cleanup is handled inline above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Allowed image types (no SVG, no PDF)
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
@@ -131,9 +146,15 @@ export default function CreatePollModal({
       await onSubmit({
         title: title.trim(),
         description: description.trim() || undefined,
+        // Send ONLY the field that matches the current optionType.
+        // Previously we sent both text and imageUrl whenever either was
+        // populated, so a user who typed text then switched to image
+        // mode then uploaded would submit options with both fields
+        // set. PollCard's `hasImages` check then forced image-mode
+        // render and the text payload was wasted DB space.
         options: validOptions.map(opt => ({
-          text: opt.text.trim() || undefined,
-          imageUrl: opt.imageUrl || undefined,
+          text: optionType === 'text' ? opt.text.trim() || undefined : undefined,
+          imageUrl: optionType === 'image' ? opt.imageUrl || undefined : undefined,
         })),
       });
 
@@ -155,6 +176,20 @@ export default function CreatePollModal({
 
   const handleClose = () => {
     if (isSubmitting) return;
+    // Reset form state on close so reopening shows a fresh modal
+    // instead of leftover text + uploaded images from a half-finished
+    // previous session. Also revoke any blob URLs we own to release
+    // the browser memory.
+    options.forEach((o) => {
+      if (o.imagePreview) URL.revokeObjectURL(o.imagePreview);
+    });
+    setTitle('');
+    setDescription('');
+    setOptions([
+      { id: '1', text: '', imageUrl: '' },
+      { id: '2', text: '', imageUrl: '' },
+    ]);
+    setError('');
     onClose();
   };
 
@@ -183,6 +218,7 @@ export default function CreatePollModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t('polls.egColorPaletteForLiving')}
+              maxLength={200}
             />
           </div>
 
@@ -208,7 +244,18 @@ export default function CreatePollModal({
               <Button
                 type="button"
                 variant={optionType === 'image' ? 'outline' : 'secondary'}
-                onClick={() => setOptionType('image')}
+                onClick={() => {
+                  // Switching modes: clear the now-irrelevant field on
+                  // each option so what the user sees matches what
+                  // will be submitted. Revoke blob URLs we no longer
+                  // own to keep memory tidy.
+                  if (optionType !== 'image') {
+                    setOptions((prev) =>
+                      prev.map((o) => ({ ...o, text: '' })),
+                    );
+                  }
+                  setOptionType('image');
+                }}
                 className={cn(
                   'flex-1',
                   optionType === 'image' && 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)]'
@@ -220,7 +267,17 @@ export default function CreatePollModal({
               <Button
                 type="button"
                 variant={optionType === 'text' ? 'outline' : 'secondary'}
-                onClick={() => setOptionType('text')}
+                onClick={() => {
+                  if (optionType !== 'text') {
+                    setOptions((prev) =>
+                      prev.map((o) => {
+                        if (o.imagePreview) URL.revokeObjectURL(o.imagePreview);
+                        return { ...o, imageUrl: '', imagePreview: undefined };
+                      }),
+                    );
+                  }
+                  setOptionType('text');
+                }}
                 className={cn(
                   'flex-1',
                   optionType === 'text' && 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)]'

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { OTPInput } from '@/components/ui/OTPInput';
 import { PhoneInput } from '@/components/ui/PhoneInput';
 import { CountryCode, useLanguage } from '@/contexts/LanguageContext';
+import { isValidPhone } from '@/utils/phoneValidation';
 import { ArrowLeft, MessageCircle, Shield, Smartphone } from 'lucide-react';
 import type { VerificationChannel } from '../hooks/useRegistration';
 
@@ -178,7 +179,7 @@ export default function StepPhone({
       {/* Send Code Button */}
       <Button
         onClick={onSendCode}
-        disabled={isLoading || phone.length < 9}
+        disabled={isLoading || !isValidPhone(phone, phoneCountry)}
         loading={isLoading}
         className="w-full h-10 sm:h-11 text-sm sm:text-base"
         size="lg"

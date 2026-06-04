@@ -1,3 +1,5 @@
+"use client";
+
 export default function OfflinePage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-6 bg-[var(--hm-bg-page)]">
@@ -10,12 +12,13 @@ export default function OfflinePage() {
         </p>
 
         <div className="mt-6 flex flex-col sm:flex-row gap-3">
-          <a
-            href=""
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
             className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-700)] transition-colors"
           >
             Retry
-          </a>
+          </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold border border-[var(--hm-border)] text-[var(--hm-fg-primary)] hover:bg-[var(--hm-bg-tertiary)]/60 transition-colors"
@@ -27,4 +30,3 @@ export default function OfflinePage() {
     </main>
   );
 }
-

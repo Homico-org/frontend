@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useClickOutsideMultiple } from '@/hooks/useClickOutside';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface SelectOption {
   value: string;
@@ -31,7 +32,7 @@ export default function Select({
   options,
   value,
   onChange,
-  placeholder = 'Select an option',
+  placeholder,
   disabled = false,
   className = '',
   error = false,
@@ -41,6 +42,10 @@ export default function Select({
   size = 'md',
   variant = 'default',
 }: SelectProps) {
+  const { t } = useLanguage();
+  // Locale-aware default - caller-supplied `placeholder` prop still wins so
+  // surface-specific copy (e.g. "Pick a category") isn't replaced.
+  const resolvedPlaceholder = placeholder ?? t('common.selectOption');
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -256,7 +261,7 @@ export default function Select({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Search..."
+                  placeholder={t('common.searchPlaceholder')}
                   className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 transition-all"
                   style={{
                     backgroundColor: 'var(--hm-bg-page)',
@@ -272,7 +277,7 @@ export default function Select({
           <ul
             ref={listRef}
             role="listbox"
-            className="max-h-[260px] overflow-y-auto p-2 scrollbar-thin"
+            className="scrollbar-subtle max-h-[260px] overflow-y-auto p-2"
           >
             {filteredOptions.length === 0 ? (
               <li className="px-4 py-3 text-sm text-center" style={{ color: 'var(--hm-fg-muted)' }}>
@@ -376,7 +381,7 @@ export default function Select({
         tabIndex={-1}
         aria-hidden="true"
       >
-        <option value="">{placeholder}</option>
+        <option value="">{resolvedPlaceholder}</option>
         {options.map((opt) => (
           <option key={opt.value} value={opt.value} disabled={opt.disabled}>
             {opt.label}
@@ -427,7 +432,7 @@ export default function Select({
             color: selectedOption ? 'var(--hm-fg-primary)' : 'var(--hm-fg-muted)',
           }}
         >
-          {selectedOption ? selectedOption.label : placeholder}
+          {selectedOption ? selectedOption.label : resolvedPlaceholder}
         </span>
         <span
           className={`

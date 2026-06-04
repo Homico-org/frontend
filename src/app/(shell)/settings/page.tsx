@@ -2,6 +2,7 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import AvatarCropper from '@/components/common/AvatarCropper';
+import Link from 'next/link';
 import Select from '@/components/common/Select';
 import { AccountSettings, EmailChangeModal, NotificationSettings, PasswordChangeForm, PaymentSettings, PhoneChangeModal, ProfileSettings } from '@/components/settings';
 import PaymentMethodCard, { type PaymentMethod } from '@/components/settings/PaymentMethodCard';
@@ -14,8 +15,11 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Toggle } from '@/components/ui/Toggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
-import { countries, useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { citiesFor } from '@/data/cities';
+import { DEFAULT_COUNTRY, type CountryCode } from '@/data/countries';
 import { useClickOutside } from '@/hooks/useClickOutside';
+import { api } from '@/lib/api';
 import DatePicker from '@/components/common/DatePicker';
 import Checkbox from '@/components/ui/Checkbox';
 import { AlertTriangle, Bell, BriefcaseBusiness, Calendar, CreditCard, EyeOff, Lock, Mail, MessageCircle, RefreshCw, Shield, Smartphone, Trash2, User, X } from 'lucide-react';
@@ -53,11 +57,34 @@ interface NotificationSettingsData {
   preferences: NotificationPreferences;
 }
 
+/**
+ * Section header used by every settings card. Brand-accent gradient
+ * icon tile + tab + bold title - same anchor as my-space sections, so
+ * the two main "stacked-sections" pages feel like one system.
+ */
 function SectionHeader({ icon: Icon, label }: { icon: typeof User; label: string }) {
   return (
-    <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)]/30">
-      <Icon className="w-4 h-4 text-[var(--hm-brand-500)]" />
-      <h2 className="text-sm font-semibold text-[var(--hm-fg-primary)]">{label}</h2>
+    <div
+      className="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--hm-border-subtle)]"
+      style={{
+        background:
+          "linear-gradient(180deg, var(--hm-bg-tertiary) 0%, transparent 100%)",
+      }}
+    >
+      <span
+        className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(239,78,36,0.18) 0%, rgba(239,78,36,0.06) 100%)",
+          boxShadow: "inset 0 0 0 1px rgba(239,78,36,0.18)",
+        }}
+        aria-hidden="true"
+      >
+        <Icon className="w-3.5 h-3.5 text-[var(--hm-brand-500)]" />
+      </span>
+      <h2 className="text-[15px] font-bold text-[var(--hm-fg-primary)] tracking-tight">
+        {label}
+      </h2>
     </div>
   );
 }
@@ -152,9 +179,23 @@ function SettingsPageContent() {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const cityDropdownRef = useClickOutside<HTMLDivElement>(() => setShowCityDropdown(false), showCityDropdown);
 
-  // Get cities from country data
-  const georgianCities = countries.GE.citiesLocal;
-  const englishCities = countries.GE.cities;
+  // City lists resolved from the user's marketplace, falling back to
+  // the active marketplace cookie, then GE. Same priority order as the
+  // shared ProfileSettings component. Variable name kept as
+  // `georgianCities` to avoid sweeping its many downstream references
+  // - it holds whichever marketplace's localized city list applies.
+  const userCountry = (user as { country?: string } | null)?.country;
+  const cookieMarketplace =
+    typeof document !== 'undefined'
+      ? document.cookie
+          .split('; ')
+          .find((c) => c.startsWith('homico-marketplace='))
+          ?.split('=')[1]
+          ?.toUpperCase()
+      : undefined;
+  const cityCountry = (userCountry ?? cookieMarketplace ?? DEFAULT_COUNTRY) as CountryCode;
+  const georgianCities = citiesFor(cityCountry, 'ka');
+  const englishCities = citiesFor(cityCountry, 'en');
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -294,25 +335,31 @@ function SettingsPageContent() {
     }
   };
 
-  // Payment methods functions
+  // Payment methods functions. Migrated from raw `fetch` to the shared
+  // `api` axios client so the request goes through the auth interceptor
+  // (401 refresh, base URL, global error mapping) instead of bypassing
+  // all of that with manual token reads. Shared-ref AbortController
+  // cancels prior in-flight calls when the user toggles tabs rapidly.
+  const fetchPaymentsAbortRef = useRef<AbortController | null>(null);
   const fetchPaymentMethods = useCallback(async () => {
+    fetchPaymentsAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchPaymentsAbortRef.current = controller;
     setIsLoadingPayments(true);
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const token = localStorage.getItem('access_token');
-
-      const res = await fetch(`${API_URL}/users/payment-methods`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get('/users/payment-methods', {
+        signal: controller.signal,
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        setPaymentMethods(data);
-      }
+      setPaymentMethods(response.data);
     } catch (error) {
+      const name = (error as { name?: string })?.name;
+      const code = (error as { code?: string })?.code;
+      if (name === 'CanceledError' || code === 'ERR_CANCELED') return;
       console.error('Error fetching payment methods:', error);
     } finally {
-      setIsLoadingPayments(false);
+      if (!controller.signal.aborted) {
+        setIsLoadingPayments(false);
+      }
     }
   }, []);
 
@@ -436,50 +483,45 @@ function SettingsPageContent() {
     }
   };
 
-  // Fetch notification preferences
+  // Fetch notification preferences. Migrated to shared `api` client +
+  // AbortController for the same reasons as the other settings fetches.
+  const fetchNotificationsAbortRef = useRef<AbortController | null>(null);
   const fetchNotificationPreferences = useCallback(async () => {
     if (!isAuthenticated) return;
+    fetchNotificationsAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchNotificationsAbortRef.current = controller;
     setIsLoadingNotifications(true);
+
+    // Defaults used when the endpoint fails or returns an error so the
+    // notifications UI still renders something sane.
+    const defaults = {
+      email: user?.email || null,
+      isEmailVerified: false,
+      phone: user?.phone || null,
+      isPhoneVerified: false,
+      preferences: {
+        email: { enabled: true, newJobs: true, proposals: true, messages: true, marketing: false },
+        push: { enabled: true, newJobs: true, proposals: true, messages: true },
+        sms: { enabled: false, proposals: false, messages: false },
+      },
+    };
+
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const token = localStorage.getItem('access_token');
-      const res = await fetch(`${API_URL}/users/notification-preferences`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get('/users/notification-preferences', {
+        signal: controller.signal,
       });
-      if (res.ok) {
-        const data = await res.json();
-        setNotificationData(data);
-      } else {
-        // If endpoint fails, set default preferences so UI still works
-        console.error('Notification preferences endpoint failed:', res.status);
-        setNotificationData({
-          email: user?.email || null,
-          isEmailVerified: false,
-          phone: user?.phone || null,
-          isPhoneVerified: false,
-          preferences: {
-            email: { enabled: true, newJobs: true, proposals: true, messages: true, marketing: false },
-            push: { enabled: true, newJobs: true, proposals: true, messages: true },
-            sms: { enabled: false, proposals: false, messages: false },
-          },
-        });
-      }
+      setNotificationData(response.data);
     } catch (error) {
+      const name = (error as { name?: string })?.name;
+      const code = (error as { code?: string })?.code;
+      if (name === 'CanceledError' || code === 'ERR_CANCELED') return;
       console.error('Failed to fetch notification preferences:', error);
-      // Set defaults on error so UI renders
-      setNotificationData({
-        email: user?.email || null,
-        isEmailVerified: false,
-        phone: user?.phone || null,
-        isPhoneVerified: false,
-        preferences: {
-          email: { enabled: true, newJobs: true, proposals: true, messages: true, marketing: false },
-          push: { enabled: true, newJobs: true, proposals: true, messages: true },
-          sms: { enabled: false, proposals: false, messages: false },
-        },
-      });
+      setNotificationData(defaults);
     } finally {
-      setIsLoadingNotifications(false);
+      if (!controller.signal.aborted) {
+        setIsLoadingNotifications(false);
+      }
     }
   }, [isAuthenticated, user]);
 
@@ -489,34 +531,41 @@ function SettingsPageContent() {
     }
   }, [activeTab, notificationData, fetchNotificationPreferences]);
 
-  // Fetch verification data for pro users
+  // Fetch verification data for pro users. Migrated to shared `api`
+  // client; AbortController prevents double-fire on Strict Mode remount
+  // and tab toggling.
+  const fetchVerificationAbortRef = useRef<AbortController | null>(null);
   const fetchVerificationData = useCallback(async () => {
     if (!isAuthenticated || user?.role !== 'pro') return;
 
+    fetchVerificationAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchVerificationAbortRef.current = controller;
     setIsLoadingVerification(true);
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get('/users/me', {
+        signal: controller.signal,
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setVerificationData({
-          facebookUrl: data.facebookUrl || '',
-          instagramUrl: data.instagramUrl || '',
-          linkedinUrl: data.linkedinUrl || '',
-          websiteUrl: data.websiteUrl || '',
-          idDocumentUrl: data.idDocumentUrl || '',
-          idDocumentBackUrl: data.idDocumentBackUrl || '',
-          selfieWithIdUrl: data.selfieWithIdUrl || '',
-          verificationStatus: data.verificationStatus || 'pending',
-        });
-      }
+      const data = response.data;
+      setVerificationData({
+        facebookUrl: data.facebookUrl || '',
+        instagramUrl: data.instagramUrl || '',
+        linkedinUrl: data.linkedinUrl || '',
+        websiteUrl: data.websiteUrl || '',
+        idDocumentUrl: data.idDocumentUrl || '',
+        idDocumentBackUrl: data.idDocumentBackUrl || '',
+        selfieWithIdUrl: data.selfieWithIdUrl || '',
+        verificationStatus: data.verificationStatus || 'pending',
+      });
     } catch (error) {
+      const name = (error as { name?: string })?.name;
+      const code = (error as { code?: string })?.code;
+      if (name === 'CanceledError' || code === 'ERR_CANCELED') return;
       console.error('Failed to fetch verification data:', error);
     } finally {
-      setIsLoadingVerification(false);
+      if (!fetchVerificationAbortRef.current?.signal.aborted) {
+        setIsLoadingVerification(false);
+      }
     }
   }, [isAuthenticated, user?.role]);
 
@@ -817,7 +866,7 @@ function SettingsPageContent() {
 
       <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
         {/* Profile */}
-        <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
+        <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border-subtle)] overflow-hidden shadow-[0_1px_2px_0_rgba(15,23,42,0.04),0_4px_12px_-2px_rgba(15,23,42,0.04)]">
           <SectionHeader icon={User} label={t('common.profile')} />
           <div className="p-4">
             <ProfileSettings
@@ -828,7 +877,7 @@ function SettingsPageContent() {
         </section>
 
         {/* Notifications */}
-        <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
+        <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border-subtle)] overflow-hidden shadow-[0_1px_2px_0_rgba(15,23,42,0.04),0_4px_12px_-2px_rgba(15,23,42,0.04)]">
           <SectionHeader icon={Bell} label={t('common.notifications')} />
           <div className="p-4">
             <NotificationSettings
@@ -844,7 +893,7 @@ function SettingsPageContent() {
         </section>
 
         {/* Security */}
-        <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
+        <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border-subtle)] overflow-hidden shadow-[0_1px_2px_0_rgba(15,23,42,0.04),0_4px_12px_-2px_rgba(15,23,42,0.04)]">
           <SectionHeader icon={Lock} label={t('common.password')} />
           <div className="p-4">
             <PasswordChangeForm
@@ -871,18 +920,24 @@ function SettingsPageContent() {
           </div>
         </section>
 
-        {/* Payments — gated by features.payments */}
+        {/* Payments - gated by features.payments */}
         {features.payments && (
-          <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
+          <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border-subtle)] overflow-hidden shadow-[0_1px_2px_0_rgba(15,23,42,0.04),0_4px_12px_-2px_rgba(15,23,42,0.04)]">
             <SectionHeader icon={CreditCard} label={t('settings.payments')} />
             <div className="p-4">
               <PaymentSettings onOpenAddCardModal={() => setShowAddCardModal(true)} />
+              <Link
+                href="/settings/payments"
+                className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--hm-brand-500)] hover:underline"
+              >
+                {t('payments.viewHistory')} →
+              </Link>
             </div>
           </section>
         )}
 
         {/* Account */}
-        <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border)] overflow-hidden">
+        <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border-subtle)] overflow-hidden shadow-[0_1px_2px_0_rgba(15,23,42,0.04),0_4px_12px_-2px_rgba(15,23,42,0.04)]">
           <SectionHeader icon={Shield} label={t('settings.account')} />
           <div className="p-4">
             <AccountSettings
@@ -915,7 +970,7 @@ function SettingsPageContent() {
           >
             {/* Drag handle - mobile only */}
             <div className="sm:hidden flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-neutral-300" />
+              <div className="w-10 h-1 rounded-full bg-[var(--hm-border-strong)]" />
             </div>
 
             {/* Header with gradient */}
@@ -941,7 +996,7 @@ function SettingsPageContent() {
             <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               {/* Warning list */}
               <div className="space-y-2">
-                <p className="text-xs sm:text-sm font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
+                <p className="text-xs sm:text-sm font-medium text-[var(--hm-fg-primary)]">
                   {t('settings.thisWillPermanentlyDelete')}
                 </p>
                 <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
@@ -966,7 +1021,7 @@ function SettingsPageContent() {
 
               {/* Confirmation input */}
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 text-[var(--hm-fg-primary)]">
                   {t('settings.typeDeleteToConfirm')}
                 </label>
                 <Input
@@ -1042,7 +1097,7 @@ function SettingsPageContent() {
           >
             {/* Drag handle - mobile only */}
             <div className="sm:hidden flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-neutral-300" />
+              <div className="w-10 h-1 rounded-full bg-[var(--hm-border-strong)]" />
             </div>
 
             {/* Header */}
@@ -1068,7 +1123,7 @@ function SettingsPageContent() {
             <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               {/* Until date (optional) */}
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 text-[var(--hm-fg-primary)]">
                   {t('settings.returnDateOptional')}
                 </label>
                 <DatePicker
@@ -1084,7 +1139,7 @@ function SettingsPageContent() {
 
               {/* Reason (optional) */}
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2" style={{ color: 'var(--hm-fg-primary)' }}>
+                <label className="block text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 text-[var(--hm-fg-primary)]">
                   {t('settings.reasonOptional')}
                 </label>
                 <Select
@@ -1173,7 +1228,7 @@ function SettingsPageContent() {
         document.body
       )}
 
-      {/* Add Email Modal — gated by features.email */}
+      {/* Add Email Modal - gated by features.email */}
       {features.email && (
       <EmailChangeModal
         isOpen={showAddEmailModal}
@@ -1212,7 +1267,7 @@ function SettingsPageContent() {
           >
             {/* Drag handle - mobile only */}
             <div className="sm:hidden flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-neutral-300" />
+              <div className="w-10 h-1 rounded-full bg-[var(--hm-border-strong)]" />
             </div>
 
             {/* Header */}
@@ -1223,7 +1278,7 @@ function SettingsPageContent() {
                     <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-brand-500)]" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm sm:text-base" style={{ color: 'var(--hm-fg-primary)' }}>
+                    <h3 className="font-semibold text-sm sm:text-base text-[var(--hm-fg-primary)]">
                       {t('settings.addCard')}
                     </h3>
                     <p className="text-[10px] sm:text-xs mt-0.5" style={{ color: 'var(--hm-fg-secondary)' }}>
@@ -1238,6 +1293,7 @@ function SettingsPageContent() {
                     setShowAddCardModal(false);
                     setCardFormData({ cardNumber: '', cardExpiry: '', cardholderName: '', setAsDefault: false });
                   }}
+                  aria-label={t("common.close")}
                 >
                   <X className="w-5 h-5" />
                 </Button>

@@ -37,21 +37,40 @@ export default function TimingSelector({
   const { pick } = useLanguage();
   return (
     <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 ${className}`}>
-      {timingOptions.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          onClick={() => onChange(option.value)}
-          className={`flex items-center justify-center gap-2 sm:gap-2.5 py-3 sm:py-3.5 px-3 sm:px-4 rounded-xl text-[13px] sm:text-sm font-medium border-2 transition-all ${
-            value === option.value
-              ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)] shadow-sm'
-              : 'border-[var(--hm-border)] text-[var(--hm-fg-muted)] hover:border-[var(--hm-border-strong)] hover:bg-neutral-50'
-          }`}
-        >
-          {option.icon}
-          <span>{pick({ en: option.labelEn, ka: option.labelKa })}</span>
-        </button>
-      ))}
+      {timingOptions.map((option) => {
+        const selected = value === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onChange(option.value)}
+            className={`flex items-center justify-center gap-2 sm:gap-2.5 py-3 sm:py-3.5 px-3 sm:px-4 rounded-xl text-[13px] sm:text-sm font-medium transition-all duration-150 ${
+              selected ? '-translate-y-[1px]' : 'hover:-translate-y-[1px] hover:shadow-md'
+            }`}
+            style={
+              selected
+                ? {
+                    background:
+                      'linear-gradient(180deg, rgba(239,78,36,0.12) 0%, rgba(239,78,36,0.04) 100%)',
+                    border: '1px solid rgba(239,78,36,0.45)',
+                    color: 'var(--hm-brand-500)',
+                    boxShadow:
+                      '0 4px 10px -2px rgba(239,78,36,0.15), inset 0 1px 0 rgba(255,255,255,0.5)',
+                  }
+                : {
+                    backgroundColor: 'var(--hm-bg-elevated)',
+                    border: '1px solid var(--hm-border-subtle)',
+                    color: 'var(--hm-fg-secondary)',
+                    boxShadow: '0 1px 2px rgba(15,23,42,0.03)',
+                  }
+            }
+            aria-pressed={selected}
+          >
+            {option.icon}
+            <span>{pick({ en: option.labelEn, ka: option.labelKa })}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

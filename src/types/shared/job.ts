@@ -40,6 +40,10 @@ export interface ProposalPro {
   avatar?: string;
   phone?: string;
   title?: string;
+  // Marketplace where the pro operates (added 2026-05). Used to build
+  // the country-prefixed link from proposal lists back to the pro's
+  // detail page.
+  country?: string;
 }
 
 // ============== JOB ==============
@@ -63,6 +67,10 @@ export interface Job extends BaseEntity {
   
   // Location & Property
   location?: string;
+  // ISO 3166-1 alpha-2 country code (added 2026-05). Where the work
+  // happens. Defaults to "GE" on legacy rows via the backfill migration.
+  // Determines which `/[country]/jobs/...` URL the job is listed under.
+  country?: string;
   propertyType?: JobPropertyType | string;
   propertyTypeOther?: string;
   

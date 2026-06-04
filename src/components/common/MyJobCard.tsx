@@ -5,6 +5,7 @@ import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { storage } from "@/services/storage";
 import type { Job } from "@/types/shared";
 import { formatCurrency, formatPriceRange } from "@/utils/currencyUtils";
+import { currencySymbol } from "@/utils/currency";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Eye, MessageSquare } from "lucide-react";
 import Link from "next/link";
@@ -45,12 +46,12 @@ const MyJobCard = React.memo(function MyJobCard({
     } else if (job.budgetType === "per_sqm" && job.pricePerUnit) {
       const total = job.areaSize ? job.pricePerUnit * job.areaSize : null;
       if (total) return formatCurrency(total);
-      return `${job.pricePerUnit}₾/მ²`;
+      return `${job.pricePerUnit}${currencySymbol({ country: job.country ?? 'GE' })}/მ²`;
     } else if (job.budgetType === "range" && job.budgetMin && job.budgetMax) {
       return formatPriceRange(job.budgetMin, job.budgetMax);
     }
     return t('card.negotiable');
-  }, [job.budgetType, job.budgetAmount, job.pricePerUnit, job.areaSize, job.budgetMin, job.budgetMax, t]);
+  }, [job.budgetType, job.budgetAmount, job.pricePerUnit, job.areaSize, job.budgetMin, job.budgetMax, job.country, t]);
 
   const timeAgo = useMemo(() => {
     const seconds = Math.floor((new Date().getTime() - new Date(job.createdAt).getTime()) / 1000);
@@ -71,7 +72,7 @@ const MyJobCard = React.memo(function MyJobCard({
 
   return (
     <div className="group relative">
-      <Link href={`/jobs/${job.id}`} className="block">
+      <Link href={`/${(job.country ?? 'GE').toLowerCase()}/jobs/${job.id}`} className="block">
         <div className="bg-[var(--hm-bg-elevated)] rounded-lg sm:rounded-xl overflow-hidden border border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] transition-all duration-200 sm:hover:shadow-md">
 
           {/* Compact Header with Image */}

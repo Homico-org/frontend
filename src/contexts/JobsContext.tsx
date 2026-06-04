@@ -37,6 +37,10 @@ const DEFAULT_FILTERS: JobFilters = {
 interface JobsContextType {
   filters: JobFilters;
   setFilters: (filters: JobFilters | ((prev: JobFilters) => JobFilters)) => void;
+  /** Reset filters back to their defaults (used by empty-state "Clear filters" CTA). */
+  clearFilters: () => void;
+  /** True if any user-applied filter is currently narrowing results. */
+  hasActiveFilters: boolean;
   savedJobIds: Set<string>;
   handleSaveJob: (jobId: string) => void;
   appliedJobIds: Set<string>;
@@ -51,13 +55,24 @@ export function JobsProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
 
-  // Initialize from URL
+  // Initialize from URL. Every browse-list-shaped page is
+  // deep-linkable - paste the URL into a new tab and see the same
+  // filtered list.
   const [filters, setFiltersRaw] = useState<JobFilters>(() => {
     const subcats = searchParams.get('subcategories');
     return {
       ...DEFAULT_FILTERS,
+      category: searchParams.get('category'),
       subcategories: subcats ? subcats.split(',').filter(Boolean) : [],
       subcategory: subcats ? subcats.split(',')[0] : null,
+      budgetMin: searchParams.has('budgetMin') ? Number(searchParams.get('budgetMin')) : null,
+      budgetMax: searchParams.has('budgetMax') ? Number(searchParams.get('budgetMax')) : null,
+      propertyType: searchParams.get('propertyType') ?? DEFAULT_FILTERS.propertyType,
+      location: searchParams.get('location') ?? DEFAULT_FILTERS.location,
+      deadline: searchParams.get('deadline') ?? DEFAULT_FILTERS.deadline,
+      searchQuery: searchParams.get('search') ?? '',
+      showFavoritesOnly: searchParams.get('saved') === '1',
+      sort: searchParams.get('sort') ?? DEFAULT_FILTERS.sort,
     };
   });
 
@@ -66,16 +81,27 @@ export function JobsProvider({ children }: { children: ReactNode }) {
     (update: JobFilters | ((prev: JobFilters) => JobFilters)) => {
       setFiltersRaw((prev) => {
         const next = typeof update === 'function' ? update(prev) : update;
-        // Sync URL without triggering React re-render
+        // Sync URL without triggering React re-render. Native History
+        // API sidesteps Next.js router so the provider doesn't reset
+        // state each time a filter changes.
         if (typeof window !== 'undefined' && window.location.pathname.includes('/jobs')) {
           const params = new URLSearchParams();
+          if (next.category) params.set('category', next.category);
           if (next.subcategories?.length > 0) params.set('subcategories', next.subcategories.join(','));
           if (next.budgetMin !== null) params.set('budgetMin', next.budgetMin.toString());
           if (next.budgetMax !== null) params.set('budgetMax', next.budgetMax.toString());
+          if (next.propertyType && next.propertyType !== DEFAULT_FILTERS.propertyType) params.set('propertyType', next.propertyType);
+          if (next.location && next.location !== DEFAULT_FILTERS.location) params.set('location', next.location);
+          if (next.deadline && next.deadline !== DEFAULT_FILTERS.deadline) params.set('deadline', next.deadline);
           if (next.searchQuery) params.set('search', next.searchQuery);
+          if (next.showFavoritesOnly) params.set('saved', '1');
+          if (next.sort && next.sort !== DEFAULT_FILTERS.sort) params.set('sort', next.sort);
           const qs = params.toString();
           const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
-          window.history.replaceState(null, '', newUrl);
+          const currentUrl = window.location.pathname + window.location.search;
+          if (currentUrl !== newUrl) {
+            window.history.replaceState(null, '', newUrl);
+          }
         }
         return next;
       });
@@ -214,17 +240,38 @@ export function JobsProvider({ children }: { children: ReactNode }) {
     makeApiCall();
   }, [isAuthenticated]);
 
+  // Reset filters back to their initial defaults. Wired to the
+  // empty-state "Clear filters" CTA so a user who's narrowed
+  // themselves into a zero-results corner has a one-tap escape.
+  const clearFilters = useCallback(() => {
+    setFilters(DEFAULT_FILTERS);
+  }, [setFilters]);
+
+  const hasActiveFilters =
+    filters.category !== null ||
+    filters.subcategories.length > 0 ||
+    filters.budgetMin !== null ||
+    filters.budgetMax !== null ||
+    filters.propertyType !== DEFAULT_FILTERS.propertyType ||
+    filters.location !== DEFAULT_FILTERS.location ||
+    filters.deadline !== DEFAULT_FILTERS.deadline ||
+    filters.searchQuery !== '' ||
+    filters.showFavoritesOnly ||
+    (filters.sort !== DEFAULT_FILTERS.sort && filters.sort !== '');
+
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
     filters,
     setFilters,
+    clearFilters,
+    hasActiveFilters,
     savedJobIds,
     handleSaveJob,
     appliedJobIds,
     isLoadingApplied,
     isLoadingSaved,
     refreshSavedJobs: fetchSavedJobs
-  }), [filters, setFilters, savedJobIds, handleSaveJob, appliedJobIds, isLoadingApplied, isLoadingSaved, fetchSavedJobs]);
+  }), [filters, setFilters, clearFilters, hasActiveFilters, savedJobIds, handleSaveJob, appliedJobIds, isLoadingApplied, isLoadingSaved, fetchSavedJobs]);
 
   return (
     <JobsContext.Provider value={contextValue}>

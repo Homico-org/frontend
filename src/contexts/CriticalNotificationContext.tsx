@@ -117,19 +117,27 @@ export function CriticalNotificationProvider({ children }: { children: React.Rea
     });
   }, []);
 
-  // Watch for new critical notifications
-  const prevNotificationsLengthRef = useRef(0);
+  // Watch for new critical notifications.
+  //
+  // Previous version only inspected `notifications[0]` gated by a
+  // length-increase check - that missed criticals in two real cases:
+  //   1. Multiple notifications arrive together and a non-critical
+  //      one occupies index 0; the critical one was silently skipped.
+  //   2. markAsRead reduces array length, the length ref decrements,
+  //      and the next arrival is treated as a non-change.
+  //
+  // Fix: scan EVERY notification on every change. seenIdsRef handles
+  // dedupe so each id only enqueues once.
   useEffect(() => {
     if (notifications.length === 0) return;
-    if (notifications.length <= prevNotificationsLengthRef.current) {
-      prevNotificationsLengthRef.current = notifications.length;
-      return;
-    }
-    prevNotificationsLengthRef.current = notifications.length;
-
-    const latest = notifications[0];
-    if (latest && isCriticalType(latest.type) && !latest.isRead) {
-      enqueue(latest);
+    for (const n of notifications) {
+      if (
+        isCriticalType(n.type) &&
+        !n.isRead &&
+        !seenIdsRef.current.has(n.id)
+      ) {
+        enqueue(n);
+      }
     }
   }, [notifications, enqueue]);
 
@@ -187,7 +195,13 @@ export function CriticalNotificationProvider({ children }: { children: React.Rea
         })
       );
 
-      const cutoff = Date.now() - 30 * 60 * 1000;
+      // Extended from 30 min to 24 h. Completion-type criticals
+      // (booking_completed, review prompts) are not time-sensitive
+      // in the new-booking sense - the user should still see them
+      // on the next visit even hours later. The 30-min cutoff was
+      // calibrated for new_booking only and silently dropped older
+      // completion modals.
+      const cutoff = Date.now() - 24 * 60 * 60 * 1000;
       const missed = allNotifications.filter(
         n => isCriticalType(n.type) && !seenIdsRef.current.has(n.id) && new Date(n.createdAt).getTime() > cutoff
       );

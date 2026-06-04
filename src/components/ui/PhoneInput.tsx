@@ -178,11 +178,11 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
             {...props}
           />
 
-          {/* Country dropdown — rendered in portal */}
+          {/* Country dropdown - rendered in portal */}
           {showDropdown && dropdownPos && createPortal(
             <div
               ref={dropdownRef}
-              className="fixed w-64 max-h-64 overflow-y-auto rounded-xl shadow-2xl border z-[200] animate-scale-in"
+              className="scrollbar-subtle fixed w-64 max-h-64 overflow-y-auto rounded-xl shadow-2xl border z-[200] animate-scale-in"
               style={{
                 top: dropdownPos.top,
                 left: dropdownPos.left,

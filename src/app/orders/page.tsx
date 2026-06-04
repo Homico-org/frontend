@@ -67,12 +67,9 @@ export default function ClientOrdersPage() {
         <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card">
           <EmptyState
             icon={Package}
-            title="No orders yet"
-            titleKa="შეკვეთები ჯერ არ არის"
-            description="Post a job and accept proposals to create orders"
-            descriptionKa="გამოაქვეყნე სამუშაო და მიიღე შეთავაზებები შეკვეთების შესაქმნელად"
-            actionLabel="Post a Job"
-            actionLabelKa="სამუშაოს გამოქვეყნება"
+            title={t("job.noOrdersYet")}
+            description={t("job.noOrdersYetBody")}
+            actionLabel={t("job.postJob")}
             actionHref="/post-job"
             variant="illustrated"
             size="md"

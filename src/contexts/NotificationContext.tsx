@@ -39,6 +39,13 @@ export interface Notification {
   type: NotificationType;
   title: string;
   message: string;
+  // i18n keys + params for localized rendering (added 2026-05). When
+  // present, the bell-icon feed calls `t(titleKey, i18nParams)` so
+  // the same notification reads in the user's UI language. Falls
+  // back to `title` / `message` (always English) for legacy docs.
+  titleKey?: string;
+  messageKey?: string;
+  i18nParams?: Record<string, string | number>;
   isRead: boolean;
   link?: string;
   referenceId?: string;
@@ -56,6 +63,9 @@ interface RawNotification {
   type: NotificationType;
   title: string;
   message: string;
+  titleKey?: string;
+  messageKey?: string;
+  i18nParams?: Record<string, string | number>;
   isRead: boolean;
   link?: string;
   referenceId?: string;
@@ -73,6 +83,9 @@ function transformNotification(n: RawNotification): Notification {
     type: n.type,
     title: n.title,
     message: n.message,
+    titleKey: n.titleKey,
+    messageKey: n.messageKey,
+    i18nParams: n.i18nParams,
     isRead: n.isRead,
     link: n.link,
     referenceId: n.referenceId,
@@ -83,9 +96,31 @@ function transformNotification(n: RawNotification): Notification {
   };
 }
 
+// Exact unread counts grouped into the activity-menu categories the header
+// renders (tile badges + footer summary). Sourced from the server aggregation
+// at GET /notifications/unread-counts-by-category, so they stay accurate even
+// when the bell feed is paginated.
+export interface ActivityUnreadCounts {
+  invitations: number;
+  newProposals: number;
+  proposalReplies: number;
+  bookings: number;
+  reviews: number;
+}
+
+const EMPTY_ACTIVITY_COUNTS: ActivityUnreadCounts = {
+  invitations: 0,
+  newProposals: 0,
+  proposalReplies: 0,
+  bookings: 0,
+  reviews: 0,
+};
+
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
+  activityCounts: ActivityUnreadCounts;
+  refreshActivityCounts: () => Promise<void>;
   isLoading: boolean;
   isConnected: boolean;
   fetchNotifications: (options?: { limit?: number; offset?: number; unreadOnly?: boolean }) => Promise<void>;
@@ -102,6 +137,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [activityCounts, setActivityCounts] = useState<ActivityUnreadCounts>(
+    EMPTY_ACTIVITY_COUNTS,
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
 
@@ -110,18 +148,55 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const initialFetchDoneRef = useRef(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Shared abort refs. Both functions can fire multiple times in quick
+  // succession (refreshUnreadCount fires after every markAsRead;
+  // fetchNotifications fires on filter change and auth change). Without
+  // cancellation, parallel in-flight requests could resolve out of
+  // order and clobber state with stale data.
+  const refreshUnreadAbortRef = useRef<AbortController | null>(null);
+  const fetchNotificationsAbortRef = useRef<AbortController | null>(null);
+  const activityCountsAbortRef = useRef<AbortController | null>(null);
+
   const refreshUnreadCount = useCallback(async () => {
     if (!isAuthenticated) return;
+    refreshUnreadAbortRef.current?.abort();
+    const controller = new AbortController();
+    refreshUnreadAbortRef.current = controller;
     try {
-      const response = await api.get(`/notifications/unread-count`);
+      const response = await api.get(`/notifications/unread-count`, {
+        signal: controller.signal,
+      });
       setUnreadCount(response.data.unreadCount);
     } catch (error) {
+      if ((error as { name?: string })?.name === 'CanceledError') return;
+      if ((error as { code?: string })?.code === 'ERR_CANCELED') return;
       console.error('Failed to fetch unread count:', error);
+    }
+  }, [isAuthenticated]);
+
+  const refreshActivityCounts = useCallback(async () => {
+    if (!isAuthenticated) return;
+    activityCountsAbortRef.current?.abort();
+    const controller = new AbortController();
+    activityCountsAbortRef.current = controller;
+    try {
+      const response = await api.get(
+        `/notifications/unread-counts-by-category`,
+        { signal: controller.signal },
+      );
+      setActivityCounts({ ...EMPTY_ACTIVITY_COUNTS, ...response.data });
+    } catch (error) {
+      if ((error as { name?: string })?.name === 'CanceledError') return;
+      if ((error as { code?: string })?.code === 'ERR_CANCELED') return;
+      console.error('Failed to fetch activity counts:', error);
     }
   }, [isAuthenticated]);
 
   const fetchNotifications = useCallback(async (options?: { limit?: number; offset?: number; unreadOnly?: boolean }) => {
     if (!isAuthenticated) return;
+    fetchNotificationsAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchNotificationsAbortRef.current = controller;
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
@@ -129,13 +204,19 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       if (options?.offset) params.append('offset', String(options.offset));
       if (options?.unreadOnly) params.append('unreadOnly', 'true');
 
-      const response = await api.get(`/notifications?${params.toString()}`);
+      const response = await api.get(`/notifications?${params.toString()}`, {
+        signal: controller.signal,
+      });
       setNotifications(response.data.notifications.map(transformNotification));
       setUnreadCount(response.data.unreadCount);
     } catch (error) {
+      if ((error as { name?: string })?.name === 'CanceledError') return;
+      if ((error as { code?: string })?.code === 'ERR_CANCELED') return;
       console.error('Failed to fetch notifications:', error);
     } finally {
-      setIsLoading(false);
+      if (!controller.signal.aborted) {
+        setIsLoading(false);
+      }
     }
   }, [isAuthenticated]);
 
@@ -232,10 +313,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const token = localStorage.getItem('access_token');
     if (!token) return;
 
-    // Create socket connection to notifications namespace
+    // Create socket connection to notifications namespace.
+    // `auth` is a CALLBACK (not a static object) so every connection
+    // attempt - including reconnects - reads the freshest token from
+    // localStorage. Without this, a token captured here once goes stale
+    // when the JWT expires; the axios interceptor refreshes the stored
+    // token on the next HTTP 401, but the socket would keep retrying
+    // with the old one and the gateway rejects each attempt with
+    // "jwt expired" until a full page reload.
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     const socket = io(`${apiUrl}/notifications`, {
-      auth: { token },
+      auth: (cb) => cb({ token: localStorage.getItem('access_token') || '' }),
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 10,
@@ -244,6 +332,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     });
 
     socketRef.current = socket;
+
+    // When the axios interceptor refreshes the access token (after a 401),
+    // it fires `auth:refresh`. Force an immediate reconnect so the socket
+    // re-handshakes with the new token rather than waiting out the backoff
+    // or exhausting its 10 reconnect attempts against the expired one.
+    const handleTokenRefresh = () => {
+      if (!localStorage.getItem('access_token')) return;
+      socket.disconnect();
+      socket.connect();
+    };
+    window.addEventListener('auth:refresh', handleTokenRefresh);
 
     socket.on('connect', () => {
       setIsConnected(true);
@@ -278,6 +377,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     });
 
     return () => {
+      window.removeEventListener('auth:refresh', handleTokenRefresh);
       socket.off('connect');
       socket.off('disconnect');
       socket.off('connect_error');
@@ -300,8 +400,19 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       initialFetchDoneRef.current = false;
       setNotifications([]);
       setUnreadCount(0);
+      setActivityCounts(EMPTY_ACTIVITY_COUNTS);
     }
   }, [authLoading, isAuthenticated, refreshUnreadCount]);
+
+  // Keep the activity-category counts in sync with the unread total. Any
+  // change to unreadCount (a new notification over WS, or a mark-read) means
+  // the per-category breakdown may have shifted, so refetch the exact counts.
+  // Cheap (one grouped aggregation) and always consistent with the badges.
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      refreshActivityCounts();
+    }
+  }, [unreadCount, authLoading, isAuthenticated, refreshActivityCounts]);
 
   // No polling fallback - WebSocket has built-in reconnection logic
   // If WS disconnects, it will auto-reconnect and sync counts
@@ -310,6 +421,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const contextValue = useMemo(() => ({
     notifications,
     unreadCount,
+    activityCounts,
+    refreshActivityCounts,
     isLoading,
     isConnected,
     fetchNotifications,
@@ -318,7 +431,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     deleteNotification,
     deleteAllNotifications,
     refreshUnreadCount,
-  }), [notifications, unreadCount, isLoading, isConnected, fetchNotifications, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications, refreshUnreadCount]);
+  }), [notifications, unreadCount, activityCounts, refreshActivityCounts, isLoading, isConnected, fetchNotifications, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications, refreshUnreadCount]);
 
   return (
     <NotificationContext.Provider value={contextValue}>

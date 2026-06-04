@@ -2,6 +2,7 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import { currencySymbol } from '@/utils/currency';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
 import { ADMIN_THEME as THEME } from '@/constants/theme';
@@ -43,6 +44,10 @@ interface PendingPro {
   email?: string;
   phone?: string;
   avatar?: string;
+  // Marketplace country (added 2026-05). Determines which currency
+  // symbol the admin sees next to the pro's pricing.
+  country?: string;
+  currency?: string;
   city?: string;
   bio?: string;
   categories?: string[];
@@ -102,7 +107,17 @@ function AdminPendingProsPageContent() {
   // Avoid "full page reload" feel on filter changes after first load
   const hasLoadedOnceRef = useRef(false);
 
+  // Shared abort refs for both fetches. Admin tabs through the
+  // verification status pills rapidly; without cancellation each filter
+  // change queues parallel /admin/pending-pros calls and the slowest
+  // wins setPros, leaving the table out of sync.
+  const fetchPendingProsAbortRef = useRef<AbortController | null>(null);
+  const fetchStatsAbortRef = useRef<AbortController | null>(null);
+
   const fetchPendingPros = useCallback(async () => {
+    fetchPendingProsAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchPendingProsAbortRef.current = controller;
     try {
       if (hasLoadedOnceRef.current) setIsRefreshing(true);
       else setIsLoading(true);
@@ -113,24 +128,38 @@ function AdminPendingProsPageContent() {
           limit: 20,
           status: statusFilter,
         },
+        signal: controller.signal,
       });
       setPros(response.data.users);
       setTotalPages(response.data.totalPages);
     } catch (error) {
+      const name = (error as { name?: string })?.name;
+      const code = (error as { code?: string })?.code;
+      if (name === 'CanceledError' || code === 'ERR_CANCELED') return;
       console.error('Error fetching pending pros:', error);
       setErrorMessage(t('admin.pendingPros.failedToLoadData'));
     } finally {
-      hasLoadedOnceRef.current = true;
-      setIsLoading(false);
-      setIsRefreshing(false);
+      if (!controller.signal.aborted) {
+        hasLoadedOnceRef.current = true;
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, [page, statusFilter, t]);
 
   const fetchStats = useCallback(async () => {
+    fetchStatsAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchStatsAbortRef.current = controller;
     try {
-      const response = await api.get('/admin/pending-pros/stats');
+      const response = await api.get('/admin/pending-pros/stats', {
+        signal: controller.signal,
+      });
       setStats(response.data);
     } catch (error) {
+      const name = (error as { name?: string })?.name;
+      const code = (error as { code?: string })?.code;
+      if (name === 'CanceledError' || code === 'ERR_CANCELED') return;
       console.error('Error fetching stats:', error);
     }
   }, []);
@@ -556,7 +585,7 @@ function AdminPendingProsPageContent() {
                           setRejectModalPro(pro);
                         }}
                         disabled={actionLoading === getProId(pro)}
-                        className="flex-1 h-9"
+                        className="flex-1 h-10 active:scale-[0.98]"
                         style={{ borderColor: THEME.error, color: THEME.error }}
                       >
                         <XCircle className="w-4 h-4 mr-1.5" />
@@ -569,7 +598,7 @@ function AdminPendingProsPageContent() {
                           handleApprove(getProId(pro));
                         }}
                         disabled={actionLoading === getProId(pro)}
-                        className="flex-1 h-9"
+                        className="flex-1 h-10 active:scale-[0.98]"
                         style={{ background: THEME.success, color: '#fff' }}
                       >
                         <CheckCircle className="w-4 h-4 mr-1.5" />
@@ -715,7 +744,10 @@ function AdminPendingProsPageContent() {
                     <span className="text-base sm:text-lg font-semibold" style={{ color: THEME.text }}>
                       {selectedPro.basePrice}
                       {selectedPro.maxPrice && ` - ${selectedPro.maxPrice}`}
-                      {' '}₾
+                      {' '}
+                      {selectedPro.currency
+                        ? currencySymbol({ currency: selectedPro.currency })
+                        : currencySymbol({ country: selectedPro.country ?? 'GE' })}
                     </span>
                     {selectedPro.pricingModel && (
                       <span className="text-xs sm:text-sm" style={{ color: THEME.textMuted }}>

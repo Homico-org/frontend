@@ -193,7 +193,7 @@ export default function BrowseFiltersSidebar({
               </div>
 
               {/* Separator */}
-              <span className="text-[var(--hm-fg-muted)] mt-4 text-xs">—</span>
+              <span className="text-[var(--hm-fg-muted)] mt-4 text-xs">-</span>
 
               {/* Max Input */}
               <div className="flex-1">

@@ -2,6 +2,8 @@
 
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useMarketplaceCountry } from "@/hooks/useCountry";
+import { mapCenterForCountry } from "@/data/countries";
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Local type definitions for Google Maps API
@@ -38,6 +40,8 @@ declare global {
 
 export default function LocationPicker({ value, onChange, placeholder = 'Enter address' }: LocationPickerProps) {
   const { t } = useLanguage();
+  const country = useMarketplaceCountry();
+  const marketCenter = mapCenterForCountry(country);
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(value);
   const [predictions, setPredictions] = useState<AutocompletePrediction[]>([]);
@@ -84,11 +88,11 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
     if (!window.google?.maps) return; // Guard against undefined
 
     const googleMaps = window.google.maps;
-    const defaultCenter = { lat: 41.7151, lng: 44.8271 }; // Tbilisi default
+    const defaultCenter = { lat: marketCenter.lat, lng: marketCenter.lng };
 
     mapInstanceRef.current = new googleMaps.Map(mapRef.current, {
       center: selectedCoords || defaultCenter,
-      zoom: 13,
+      zoom: marketCenter.zoom,
       disableDefaultUI: true,
       zoomControl: true,
       styles: [
@@ -137,7 +141,7 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
         });
       }
     });
-  }, [isOpen, mapLoaded, selectedCoords]);
+  }, [isOpen, mapLoaded, selectedCoords, marketCenter.lat, marketCenter.lng, marketCenter.zoom]);
 
   // Search for predictions
   const searchPlaces = useCallback((query: string) => {
@@ -147,10 +151,12 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
     }
 
     setIsLoading(true);
+    // Restrict autocomplete to the active marketplace country. A US
+    // visitor's pinpoint should resolve to NYC addresses, not Tbilisi.
     autocompleteServiceRef.current.getPlacePredictions(
       {
         input: query,
-        componentRestrictions: { country: 'ge' }, // Georgia
+        componentRestrictions: { country: country.toLowerCase() },
       },
       (results: any, status: string) => {
         setIsLoading(false);
@@ -161,7 +167,7 @@ export default function LocationPicker({ value, onChange, placeholder = 'Enter a
         }
       }
     );
-  }, []);
+  }, [country]);
 
   // Handle input change with debounce
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

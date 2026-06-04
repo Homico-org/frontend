@@ -2,6 +2,8 @@
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useCountry, useCountryLink } from '@/hooks/useCountry';
+import { currencySymbol } from '@/utils/currency';
 import {
   Calculator,
   Wallet,
@@ -56,6 +58,9 @@ export function StepSummary({
   t,
 }: StepSummaryProps) {
   const { locale } = useLanguage();
+  const cl = useCountryLink();
+  const country = useCountry();
+  const sym = currencySymbol({ country });
   const [breakdownView, setBreakdownView] = useState<BreakdownView>('category');
   const [aiTips, setAiTips] = useState<RenovationCalculatorResult | null>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
@@ -65,7 +70,7 @@ export function StepSummary({
     return calculateFullBreakdown(rooms, workCategories, qualityLevel, includeMaterials);
   }, [rooms, workCategories, qualityLevel, includeMaterials]);
 
-  const formatCurrency = (amount: number) => amount.toLocaleString() + '₾';
+  const formatCurrency = (amount: number) => amount.toLocaleString() + sym;
 
   const totalArea = rooms.reduce((sum, room) => sum + room.computed.floorArea, 0);
 
@@ -95,7 +100,7 @@ export function StepSummary({
         includeKitchen: hasKitchen,
         includeFurniture: false,
         propertyType: 'apartment',
-      }, locale);
+      }, locale, country);
 
       setAiTips(result);
     } catch (err: any) {
@@ -104,7 +109,7 @@ export function StepSummary({
     } finally {
       setIsLoadingAI(false);
     }
-  }, [rooms, totalArea, qualityLevel, locale, t]);
+  }, [rooms, totalArea, qualityLevel, locale, t, country]);
 
   // Fetch AI tips on mount only. fetchAITips itself is memoized via
   // useCallback with the right deps - re-running on every change would
@@ -420,7 +425,7 @@ export function StepSummary({
 
       {/* CTA */}
       <Link
-        href="/post-job"
+        href={cl("/post-job")}
         className="block w-full py-4 px-6 bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white text-center font-semibold rounded-xl shadow-lg shadow-[var(--hm-brand-500)]/25 hover:shadow-[var(--hm-brand-500)]/40 transition-all"
       >
         <span className="flex items-center justify-center gap-2">

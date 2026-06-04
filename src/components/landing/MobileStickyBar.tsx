@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCountryLink } from "@/hooks/useCountry";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -11,6 +12,7 @@ interface MobileStickyBarProps {
 
 export default function MobileStickyBar({ onIntakeOpen }: MobileStickyBarProps) {
   const { t } = useLanguage();
+  const cl = useCountryLink();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export default function MobileStickyBar({ onIntakeOpen }: MobileStickyBarProps) 
           variant="outline"
           className="flex-1 min-w-0 px-3"
         >
-          <Link href="/professionals" className="truncate">
+          <Link href={cl("/professionals")} className="truncate">
             {t("landing.stickyBrowse")}
           </Link>
         </Button>

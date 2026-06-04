@@ -200,7 +200,67 @@ interface CategoriesContextType {
 
 const CategoriesContext = createContext<CategoriesContextType | undefined>(undefined);
 
+/**
+ * Cache the fetched catalog in localStorage so refreshes hydrate
+ * synchronously with the localized names. Before this, every page
+ * load flashed raw snake_case keys (`bathroom_install`,
+ * `water_heater`) for ~300-800ms while the `/service-catalog`
+ * request was in flight.
+ *
+ * Versioning: bump CACHE_VERSION whenever the Category /
+ * Subcategory / CatalogServiceItem shapes change so we don't
+ * deserialize stale-shaped data. TTL guards against catalog edits
+ * propagating: after 7 days we refetch fresh even if the user keeps
+ * the same browser.
+ */
+const CACHE_KEY = 'homi:catalog:v1';
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+interface CachedCatalog {
+  categories: Category[];
+  flatCategories: FlatCategoryItem[];
+  timestamp: number;
+}
+
+function readCachedCatalog(): CachedCatalog | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CachedCatalog;
+    if (!parsed.timestamp || Date.now() - parsed.timestamp > CACHE_TTL_MS) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedCatalog(categories: Category[], flatCategories: FlatCategoryItem[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    const payload: CachedCatalog = {
+      categories,
+      flatCategories,
+      timestamp: Date.now(),
+    };
+    window.localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    // Quota or private-mode lockouts - dropping the write is fine;
+    // the next visit just pays the network cost again.
+  }
+}
+
 export function CategoriesProvider({ children }: { children: ReactNode }) {
+  // Initial state must match what the server renders. Reading
+  // localStorage in a useState initializer would give the client a
+  // populated array on first paint while the server rendered empty
+  // ones, causing a hydration mismatch (any consumer that gates
+  // a section on `categories.length` would render differently on
+  // each side). The cache is replayed in the effect below instead,
+  // before the network fetch resolves, so the visible flicker is
+  // limited to one paint.
   const [categories, setCategories] = useState<Category[]>([]);
   const [flatCategories, setFlatCategories] = useState<FlatCategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -209,9 +269,20 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
   // Ref to prevent duplicate fetches (React Strict Mode)
   const fetchedRef = React.useRef(false);
 
+  // Hydrate from the localStorage cache after mount. Same data the
+  // useState initializer used to read; just moved out of the
+  // synchronous render path to keep server / client output identical.
+  useEffect(() => {
+    const cached = readCachedCatalog();
+    if (cached) {
+      setCategories(cached.categories);
+      setFlatCategories(cached.flatCategories);
+      if (cached.categories.length > 0) setLoading(false);
+    }
+  }, []);
+
   const fetchCategories = useCallback(async () => {
     try {
-      setLoading(true);
       setError(null);
 
       const [categoriesRes, flatRes] = await Promise.all([
@@ -219,8 +290,10 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
         api.get<FlatCategoryItem[]>('/service-catalog/as-categories/flat'),
       ]);
 
-      setCategories(categoriesRes.data.map(transformCategory));
+      const transformed = categoriesRes.data.map(transformCategory);
+      setCategories(transformed);
       setFlatCategories(flatRes.data);
+      writeCachedCatalog(transformed, flatRes.data);
     } catch (err) {
       console.error('Failed to fetch categories:', err);
       const error = err as { message?: string };

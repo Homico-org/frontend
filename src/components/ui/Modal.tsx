@@ -7,6 +7,7 @@ import { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ACCENT_COLOR, ACCENT_HOVER } from '@/constants/theme';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useModalHistory } from '@/hooks/useModalHistory';
 
 // Modal size variants - responsive for mobile bottom sheet
 const modalVariants = cva(
@@ -121,6 +122,10 @@ export function Modal({
     }
   }, [onClose, preventClose]);
 
+  // Browser/Android back button closes the modal instead of navigating
+  // away. Disabled when `preventClose` is set (e.g. mid-save).
+  useModalHistory({ isOpen, onClose: handleClose, enabled: !preventClose });
+
   // Handle escape key
   useEffect(() => {
     if (!isOpen || !closeOnEscape) return;
@@ -154,7 +159,7 @@ export function Modal({
   if (!isOpen) return null;
 
   const modalContent = (
-    <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4" style={{ zIndex: 9999 }}>
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4" style={{ zIndex: 'var(--hm-z-modal)' }}>
       {/* Backdrop with blur */}
       <div
         className="absolute inset-0 animate-fade-backdrop"
@@ -276,8 +281,18 @@ interface ModalFooterProps {
  * Modal footer for actions
  */
 export function ModalFooter({ children, className }: ModalFooterProps) {
+  // pb-8 (32px) was barely clearing the iOS home indicator (34px tall)
+  // on phones - footer buttons sat right against the gesture bar. The
+  // safe-area-inset-bottom env var lifts the bottom padding by exactly
+  // whatever the device chrome eats, giving every iPhone the right
+  // breathing room without over-padding non-notched devices.
   return (
-    <div className={cn('flex gap-3 px-4 sm:px-6 pt-3 pb-8 sm:pb-6', className)}>{children}</div>
+    <div
+      className={cn('flex gap-3 px-4 sm:px-6 pt-3 pb-6', className)}
+      style={{ paddingBottom: 'max(1.5rem, calc(1rem + env(safe-area-inset-bottom)))' }}
+    >
+      {children}
+    </div>
   );
 }
 

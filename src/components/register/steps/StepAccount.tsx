@@ -12,6 +12,7 @@ import { PasswordInput } from "@/components/ui/PasswordInput";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { CountryCode, useLanguage } from "@/contexts/LanguageContext";
 import { SocialIcon } from "@/components/icons";
+import { getPasswordStrength } from "@/utils/validationUtils";
 import { ArrowRight, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -259,6 +260,8 @@ export default function StepAccount({
               onChange={(e) => handleInputChange("email", e.target.value)}
               placeholder="name@example.com"
               className="h-10 sm:h-11 text-sm"
+              autoComplete="email"
+              inputMode="email"
             />
           </FormGroup>
         </div>
@@ -320,7 +323,31 @@ export default function StepAccount({
               required
               minLength={6}
               className="h-10 sm:h-11"
+              autoComplete="new-password"
+              name="new-password"
             />
+            {formData.password && (() => {
+              const strength = getPasswordStrength(formData.password, locale);
+              return (
+                <div className="mt-1.5 flex items-center gap-2">
+                  <div className="flex-1 h-1 bg-[var(--hm-bg-tertiary)] overflow-hidden rounded-full">
+                    <div
+                      className="h-full transition-all duration-300"
+                      style={{
+                        width: `${(strength.strength / 5) * 100}%`,
+                        backgroundColor: strength.color,
+                      }}
+                    />
+                  </div>
+                  <span
+                    className="text-xs font-medium"
+                    style={{ color: strength.color }}
+                  >
+                    {strength.label}
+                  </span>
+                </div>
+              );
+            })()}
           </FormGroup>
           <FormGroup>
             <Label required>{t("register.repeatPassword")}</Label>
@@ -331,6 +358,7 @@ export default function StepAccount({
               required
               minLength={6}
               className="h-10 sm:h-11"
+              autoComplete="new-password"
               error={
                 repeatPassword && formData.password !== repeatPassword
                   ? t("validation.passwordsNotMatch")

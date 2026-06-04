@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Modal } from "@/components/ui/Modal";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { translateCity } from "@/data/cities";
 import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/lib/api";
 import type { ProProfile } from "@/types/shared";
@@ -40,7 +41,7 @@ export default function InviteProsModal({
   subcategory,
   category,
 }: InviteProsModalProps) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const toast = useToast();
 
   const [pros, setPros] = useState<ProProfile[]>([]);
@@ -61,9 +62,17 @@ export default function InviteProsModal({
   const listRef = useRef<HTMLDivElement>(null);
   const LIMIT = 15;
 
-  // Fetch matching professionals
+  // Fetch matching professionals. Shared abort ref so the
+  // search-debounce path (filters change → 300ms wait → refetch) and
+  // pagination clicks don't pile two `GET /users/pros?...` requests
+  // racing for the same setPros. Also covers Strict Mode double-mount.
+  const fetchProsAbortRef = useRef<AbortController | null>(null);
   const fetchPros = useCallback(async (pageNum: number, reset = false) => {
     if (!isOpen) return;
+
+    fetchProsAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchProsAbortRef.current = controller;
 
     if (reset) {
       setIsLoading(true);
@@ -75,58 +84,74 @@ export default function InviteProsModal({
       const params = new URLSearchParams();
       params.append("page", pageNum.toString());
       params.append("limit", LIMIT.toString());
-      
+
       if (subcategory) {
         params.append("subcategory", subcategory);
       } else if (category) {
         params.append("category", category);
       }
-      
+
       if (searchQuery) {
         params.append("search", searchQuery);
       }
-      
+
       if (sortBy !== "recommended") {
         params.append("sort", sortBy);
       }
-      
+
       if (minRating > 0) {
         params.append("minRating", minRating.toString());
       }
 
-      const response = await api.get(`/users/pros?${params.toString()}`);
+      const response = await api.get(`/users/pros?${params.toString()}`, {
+        signal: controller.signal,
+      });
       const result = response.data;
       const newPros = result.data || [];
-      
+
       if (reset) {
         setPros(newPros);
       } else {
         setPros(prev => [...prev, ...newPros]);
       }
-      
+
       setHasMore(newPros.length === LIMIT);
       setPage(pageNum);
     } catch (error) {
+      const name = (error as { name?: string })?.name;
+      const code = (error as { code?: string })?.code;
+      if (name === "CanceledError" || code === "ERR_CANCELED") return;
       console.error("Error fetching pros:", error);
       if (reset) {
         toast.error(t("common.error"), t("job.failedToLoadPros"));
       }
     } finally {
-      setIsLoading(false);
-      setIsLoadingMore(false);
+      if (!controller.signal.aborted) {
+        setIsLoading(false);
+        setIsLoadingMore(false);
+      }
     }
   }, [isOpen, subcategory, category, searchQuery, sortBy, minRating, t, toast]);
 
   // Fetch already invited pros
+  const fetchInvitedProsAbortRef = useRef<AbortController | null>(null);
   const fetchInvitedPros = useCallback(async () => {
+    fetchInvitedProsAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchInvitedProsAbortRef.current = controller;
     try {
-      const response = await api.get(`/jobs/${jobId}/invited-pros`).catch(() => ({ data: [] }));
+      const response = await api.get(`/jobs/${jobId}/invited-pros`, {
+        signal: controller.signal,
+      }).catch(() => ({ data: [] }));
       const invitedIds = new Set<string>(
         (response.data || []).map((p: { id?: string; _id?: string }) => p.id || p._id)
       );
       setAlreadyInvitedIds(invitedIds);
       setSelectedIds(new Set(invitedIds));
     } catch (error) {
+      const name = (error as { name?: string })?.name;
+      const code = (error as { code?: string })?.code;
+      if (name === "CanceledError" || code === "ERR_CANCELED") return;
       console.error("Error fetching invited pros:", error);
     }
   }, [jobId]);
@@ -431,7 +456,7 @@ export default function InviteProsModal({
 
                       {/* Stats */}
                       <div className="flex items-center gap-3 text-xs text-[var(--hm-fg-muted)] mb-1.5 flex-wrap">
-                        {pro.city && <span>{pro.city}</span>}
+                        {pro.city && <span>{translateCity(pro.city, locale)}</span>}
                         <span className="flex items-center gap-1 font-medium text-[var(--hm-fg-secondary)]">
                           <Briefcase className="w-3.5 h-3.5" />
                           {projectsCount} {t("job.projects")}

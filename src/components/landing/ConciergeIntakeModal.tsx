@@ -10,7 +10,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@/components/ui/Modal";
-import { PhoneInput } from "@/components/ui/PhoneInput";
+import { PhoneInput, type CountryCode } from "@/components/ui/PhoneInput";
 import {
   SelectionGroup,
   type SelectionOption,
@@ -33,12 +33,14 @@ import { useEffect, useState } from "react";
 type Step = 1 | 2 | 3 | "success";
 type Timing = "asap" | "this_week" | "flexible";
 
-// PhoneInput gives us a digits-only string. Georgian mobile numbers are
-// 9 digits starting with 5 (e.g. 577000000). Reject dummy sequences like
-// 000000000 / 555555555 (all-same-digit) and wrong lengths.
-function isValidGeorgianMobile(digits: string): boolean {
-  if (digits.length !== 9) return false;
-  if (!digits.startsWith("5")) return false;
+// PhoneInput gives us a digits-only string. The original validation
+// here pinned to Georgian mobile numbers (9 digits starting with 5);
+// after the multi-country migration we accept any reasonable E.164
+// local-number length (7-15 digits) and just reject dummy all-same-
+// digit sequences. The backend SMS provider performs the authoritative
+// validation per country.
+function isValidPhone(digits: string): boolean {
+  if (digits.length < 7 || digits.length > 15) return false;
   if (/^(\d)\1+$/.test(digits)) return false;
   return true;
 }
@@ -55,7 +57,7 @@ export default function ConciergeIntakeModal({
   onClose,
   initialCategory,
 }: ConciergeIntakeModalProps): React.ReactElement | null {
-  const { t, locale, pick } = useLanguage();
+  const { t, locale, pick, country } = useLanguage();
   const { categories } = useCategories();
   const toast = useToast();
 
@@ -126,7 +128,7 @@ export default function ConciergeIntakeModal({
     if (step === 3) {
       return (
         name.trim().length >= 2 &&
-        isValidGeorgianMobile(phone.replace(/\D/g, ""))
+        isValidPhone(phone.replace(/\D/g, ""))
       );
     }
     return false;
@@ -171,25 +173,37 @@ export default function ConciergeIntakeModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      size="md"
+      size="lg"
       showCloseButton
       preventClose={isSubmitting}
     >
       {step === "success" ? (
         <>
           <ModalHeader
-            icon={<CheckCircle2 className="w-6 h-6" />}
+            icon={
+              <div className="relative">
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 rounded-full animate-ping"
+                  style={{
+                    backgroundColor:
+                      "color-mix(in srgb, var(--hm-success-500) 30%, transparent)",
+                  }}
+                />
+                <CheckCircle2 className="relative w-6 h-6" />
+              </div>
+            }
             variant="success"
             title={t("concierge.successTitle")}
             description={t("concierge.successDescription")}
           />
           <ModalBody>
-            <p className="text-sm text-[var(--hm-fg-secondary)] leading-relaxed">
+            <p className="text-[14px] sm:text-[15px] text-[var(--hm-fg-secondary)] leading-relaxed">
               {t("concierge.successBody")}
             </p>
-            <div className="mt-4 flex items-center gap-2 text-xs text-[var(--hm-fg-muted)]">
-              <Clock className="w-3.5 h-3.5 text-[var(--hm-brand-500)]" />
-              <span>{t("concierge.successEta")}</span>
+            <div className="mt-5 flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--hm-brand-500)]/[0.06] text-[13px] text-[var(--hm-fg-primary)]">
+              <Clock className="w-4 h-4 text-[var(--hm-brand-500)] shrink-0" />
+              <span className="font-medium">{t("concierge.successEta")}</span>
             </div>
           </ModalBody>
           <ModalFooter>
@@ -201,85 +215,120 @@ export default function ConciergeIntakeModal({
       ) : (
         <>
           <div className="px-6 sm:px-8 pt-6 sm:pt-7">
-            <h2 className="text-2xl sm:text-[28px] font-serif font-medium text-[var(--hm-fg-primary)] tracking-tight">
+            <h2 className="text-[22px] sm:text-[26px] font-bold tracking-[-0.02em] text-[var(--hm-fg-primary)] leading-tight">
               {t("concierge.modalTitle")}
             </h2>
-            {/* Progress dots - no more "Step X / 3" text */}
+            {/* Progress indicator - 3 even segments, only color changes by state */}
             <div
-              className="mt-3 flex items-center gap-1.5"
+              className="mt-4 flex items-center gap-2"
+              role="progressbar"
+              aria-valuenow={typeof step === "number" ? step : 3}
+              aria-valuemin={1}
+              aria-valuemax={3}
               aria-label={`${t("concierge.step")} ${step} / 3`}
             >
               {[1, 2, 3].map((n) => (
                 <span
                   key={n}
-                  className="h-1.5 rounded-full transition-all"
+                  className="h-1.5 flex-1 rounded-full transition-colors duration-300"
                   style={{
-                    width: n === step ? 28 : 8,
                     backgroundColor:
-                      n === step
+                      n <= (step as number)
                         ? "var(--hm-brand-500)"
-                        : n < (step as number)
-                          ? "color-mix(in srgb, var(--hm-brand-500) 40%, transparent)"
-                          : "var(--hm-border)",
+                        : "var(--hm-border)",
                   }}
                 />
               ))}
+              <span className="ml-2 text-[12px] font-medium text-[var(--hm-fg-muted)] tabular-nums whitespace-nowrap">
+                {step} / 3
+              </span>
             </div>
           </div>
 
           <ModalBody>
             {step === 1 && (
               <div className="space-y-4">
-                <p className="text-[14px] text-[var(--hm-fg-secondary)]">
+                <p className="text-[15px] sm:text-[16px] font-medium text-[var(--hm-fg-primary)]">
                   {t("concierge.q1")}
                 </p>
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-3 sm:grid-cols-3 gap-2.5 sm:gap-3">
                   {categories.map((cat) => {
                     const active = category === cat.key;
                     const accent = cat.color || "var(--hm-brand-500)";
                     return (
-                        <button
-                          key={cat.key}
-                          type="button"
-                          onClick={() => {
-                            setCategory(cat.key);
-                            setStep(2);
-                          }}
-                          className="group relative flex flex-col items-center gap-2 p-3 rounded-xl border text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
+                      <button
+                        key={cat.key}
+                        type="button"
+                        onClick={() => {
+                          setCategory(cat.key);
+                          setStep(2);
+                        }}
+                        className="group relative flex flex-col items-center justify-start gap-2.5 p-3 sm:p-3.5 rounded-xl border text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
+                        style={{
+                          borderColor: active
+                            ? accent
+                            : "var(--hm-border-subtle)",
+                          backgroundColor: active
+                            ? `${accent}10`
+                            : "var(--hm-bg-elevated)",
+                        }}
+                      >
+                        <span
+                          className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full transition-all duration-200 group-hover:scale-105"
                           style={{
-                            borderColor: active ? accent : "var(--hm-border-subtle)",
-                            backgroundColor: active ? `${accent}10` : "transparent",
+                            backgroundColor: active ? accent : `${accent}14`,
+                            color: active ? "white" : accent,
                           }}
                         >
-                          <span
-                            className="flex items-center justify-center w-10 h-10 rounded-full transition-colors"
-                            style={{
-                              backgroundColor: active ? accent : `${accent}14`,
-                              color: active ? "white" : accent,
-                            }}
-                          >
-                            <CategoryIcon
-                              type={cat.icon || cat.key}
-                              className="w-5 h-5"
-                            />
-                          </span>
-                          <span
-                            className="text-[12px] font-medium leading-tight"
-                            style={{
-                              color: active ? accent : "var(--hm-fg-primary)",
-                            }}
-                          >
-                            {pick({ en: cat.name, ka: cat.nameKa })}
-                          </span>
-                        </button>
-                      );
-                    })}
+                          <CategoryIcon
+                            type={cat.icon || cat.key}
+                            className="w-5 h-5 sm:w-6 sm:h-6"
+                          />
+                        </span>
+                        <span
+                          className="text-[11.5px] sm:text-[12px] font-semibold leading-tight line-clamp-2"
+                          style={{
+                            color: active
+                              ? accent
+                              : "var(--hm-fg-primary)",
+                          }}
+                        >
+                          {pick({ en: cat.name, ka: cat.nameKa })}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {step === 2 && (
               <div className="space-y-5">
+                {(() => {
+                  const cat = categories.find((c) => c.key === category);
+                  if (!cat) return null;
+                  const accent = cat.color || "var(--hm-brand-500)";
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full text-[12px] font-semibold border transition-colors hover:bg-[var(--hm-bg-tertiary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
+                      style={{
+                        borderColor: `${accent}40`,
+                        color: accent,
+                        backgroundColor: `${accent}10`,
+                      }}
+                      aria-label={`${t("common.back")} - ${pick({ en: cat.name, ka: cat.nameKa })}`}
+                    >
+                      <CategoryIcon
+                        type={cat.icon || cat.key}
+                        className="w-3.5 h-3.5"
+                      />
+                      <span>{pick({ en: cat.name, ka: cat.nameKa })}</span>
+                      <ArrowLeft className="w-3 h-3 opacity-60" />
+                    </button>
+                  );
+                })()}
                 <div>
                   <label className="block text-[13px] font-medium text-[var(--hm-fg-primary)] mb-1.5">
                     {t("concierge.q2Description")}
@@ -327,6 +376,30 @@ export default function ConciergeIntakeModal({
 
             {step === 3 && (
               <div className="space-y-5">
+                {(() => {
+                  const cat = categories.find((c) => c.key === category);
+                  if (!cat) return null;
+                  const accent = cat.color || "var(--hm-brand-500)";
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => setStep(2)}
+                      className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full text-[12px] font-semibold border transition-colors hover:bg-[var(--hm-bg-tertiary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
+                      style={{
+                        borderColor: `${accent}40`,
+                        color: accent,
+                        backgroundColor: `${accent}10`,
+                      }}
+                      aria-label={`${t("common.back")} - ${pick({ en: cat.name, ka: cat.nameKa })}`}
+                    >
+                      <CategoryIcon
+                        type={cat.icon || cat.key}
+                        className="w-3.5 h-3.5"
+                      />
+                      <span>{pick({ en: cat.name, ka: cat.nameKa })}</span>
+                    </button>
+                  );
+                })()}
                 <div>
                   <label className="block text-[13px] font-medium text-[var(--hm-fg-primary)] mb-1.5">
                     {t("common.firstName")}
@@ -345,10 +418,10 @@ export default function ConciergeIntakeModal({
                   <PhoneInput
                     value={phone}
                     onChange={(v) => setPhone(v)}
-                    country="GE"
+                    country={country as CountryCode}
                     error={
                       phone.length > 0 &&
-                      !isValidGeorgianMobile(phone.replace(/\D/g, ""))
+                      !isValidPhone(phone.replace(/\D/g, ""))
                         ? t("concierge.phoneInvalid")
                         : undefined
                     }

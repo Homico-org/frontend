@@ -5,8 +5,9 @@ import Header from '@/components/common/Header';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, countries, type CountryCode } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
+import { AnalyticsEvent, useAnalytics } from '@/hooks/useAnalytics';
 import { api } from '@/lib/api';
 import { CheckCircle, Star, XCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
@@ -24,8 +25,10 @@ interface ReviewRequestInfo {
 export default function ExternalReviewPage() {
   const params = useParams();
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, country } = useLanguage();
+  const phonePlaceholder = `${countries[country as CountryCode]?.phonePrefix ?? '+995'} ${countries[country as CountryCode]?.placeholder ?? '5XX XXX XXX'}`;
   const toast = useToast();
+  const { trackEvent } = useAnalytics();
   const token = params.token as string;
 
   const [isLoading, setIsLoading] = useState(true);
@@ -88,6 +91,11 @@ export default function ExternalReviewPage() {
         clientPhone: clientPhone.trim() || undefined,
         projectTitle: projectTitle.trim() || undefined,
         isAnonymous,
+      });
+
+      trackEvent(AnalyticsEvent.REVIEW_SUBMIT, {
+        label: 'external',
+        value: rating,
       });
 
       setIsSubmitted(true);
@@ -321,7 +329,7 @@ export default function ExternalReviewPage() {
                   type="tel"
                   value={clientPhone}
                   onChange={(e) => setClientPhone(e.target.value)}
-                  placeholder="+995 555 123 456"
+                  placeholder={phonePlaceholder}
                 />
                 <p className="text-xs text-[var(--hm-fg-muted)] mt-1">
                   {t('reviews.verifiedReviewsTrusted')}

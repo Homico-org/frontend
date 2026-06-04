@@ -145,6 +145,15 @@ export interface ChatMessage {
   createdAt?: string;
   suggestedActions?: SuggestedAction[];
   richContent?: RichContent[];
+  // ---- Streaming state (set by useAiChat while a response streams in) ----
+  /** True while the SSE stream is still open. Set to false on 'done'. */
+  isStreaming?: boolean;
+  /** Tool the model is currently executing. Renders as a "Searching..."
+   *  chip above the streaming text. Cleared when the tool finishes. */
+  activeTool?: string | null;
+  /** Tools that have already completed in this turn - useful for showing
+   *  a small lineage of work the model did. */
+  finishedTools?: string[];
 }
 
 export interface SuggestedAction {

@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 
 export default function VerifyResetCodePage() {
   const router = useRouter();
-  const { t, pick } = useLanguage();
+  const { t } = useLanguage();
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -188,7 +188,7 @@ export default function VerifyResetCodePage() {
             size="lg"
             className="w-full"
           >
-            {pick({ en: 'Verify Code', ka: 'კოდის დადასტურება' })}
+            {t('forgotPassword.verifyCode')}
           </Button>
         </form>
 

@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import { useRegistration } from '@/components/register/hooks';
 import { StepAccount } from '@/components/register/steps';
+import BackButton from '@/components/common/BackButton';
 import Header from '@/components/common/Header';
 import { OTPInput } from '@/components/ui/OTPInput';
 import { Alert } from '@/components/ui/Alert';
@@ -10,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ArrowLeft, Smartphone } from 'lucide-react';
+import { Smartphone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 function ClientRegisterContent() {
@@ -34,13 +35,11 @@ function ClientRegisterContent() {
 
         <div className="sticky top-0 z-40 border-b border-[var(--hm-border-subtle)]" style={{ backgroundColor: 'var(--hm-bg-elevated)' }}>
           <div className="max-w-lg mx-auto px-3 sm:px-4 py-2.5">
-            <button
+            <BackButton
+              variant="minimal"
               onClick={() => reg.setShowVerification(false)}
-              className="flex items-center gap-1.5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors -ml-1 p-1"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-xs font-medium">{t('common.back')}</span>
-            </button>
+              className="-ml-2 px-2 h-10"
+            />
           </div>
         </div>
 
@@ -102,13 +101,11 @@ function ClientRegisterContent() {
 
       <div className="sticky top-0 z-40 border-b border-[var(--hm-border-subtle)]" style={{ backgroundColor: 'var(--hm-bg-elevated)' }}>
         <div className="max-w-lg mx-auto px-3 sm:px-4 py-2.5">
-          <button
-            onClick={() => router.push('/register')}
-            className="flex items-center gap-1.5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors -ml-1 p-1"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-xs font-medium">{t('common.back')}</span>
-          </button>
+          <BackButton
+            variant="minimal"
+            href="/register"
+            className="-ml-2 px-2 h-10"
+          />
         </div>
       </div>
 

@@ -5,7 +5,23 @@
 
 import { BaseEntity } from './base';
 
-export type BookingStatus = 'pending' | 'confirmed' | 'in_progress' | 'cancelled' | 'completed';
+export type BookingStatus =
+  | 'awaiting_payment'
+  | 'pending'
+  | 'confirmed'
+  | 'in_progress'
+  | 'awaiting_client_confirmation'
+  | 'cancelled'
+  | 'completed'
+  | 'disputed';
+
+export type BookingPaymentStatus =
+  | 'unpaid'
+  | 'paid'
+  | 'refunded'
+  | 'partially_refunded'
+  | 'in_dispute'
+  | 'released';
 
 export interface BookingService {
   serviceKey: string;
@@ -46,12 +62,30 @@ export interface Booking extends BaseEntity {
   hasReview?: boolean;
   services?: BookingService[];
   totalAmount?: number;
+  // ISO 4217 currency the totalAmount is denominated in (added 2026-05).
+  // Snapshotted at booking time so historical totals remain reproducible
+  // regardless of future FX moves.
+  currency?: string;
+  // ISO 3166-1 alpha-2 country code where the service is performed
+  // (added 2026-05). Mirrors the parent job's country.
+  country?: string;
   address?: string;
   beforePhotos?: string[];
   afterPhotos?: string[];
   videos?: string[];
   startedAt?: string;
   completedAt?: string;
+  // === Payment fields (added 2026-05) ===
+  paymentStatus?: BookingPaymentStatus;
+  paymentId?: string;
+  escrowId?: string;
+  totalAmountMinor?: number;
+  clientConfirmedAt?: string;
+  disputeId?: string;
+  // When the booking entered PENDING (paid, awaiting pro confirmation).
+  // Drives the SLA-accept countdown chip on PENDING booking cards.
+  // Optional because legacy bookings predate the SLA work.
+  pendingSince?: string;
 }
 
 export interface TimeSlot {

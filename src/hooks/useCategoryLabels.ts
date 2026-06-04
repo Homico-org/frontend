@@ -154,6 +154,25 @@ const CATEGORY_LABELS: Record<string, { en: string; ka: string; ru: string }> = 
   entrance_cleaning: { en: 'Entrance Cleaning', ka: 'სადარბაზოს დასუფთავება', ru: 'Уборка подъезда' },
 };
 
+/**
+ * Format a raw catalog key (snake_case or kebab-case) into a readable
+ * title. Used as the deepest fallback when neither the backend
+ * catalog nor the static label table has an entry for the key.
+ *
+ * `bathroom_install` -> `Bathroom Install`
+ * `pest-control` -> `Pest Control`
+ *
+ * Previously this regex only replaced hyphens, so backend-emitted
+ * snake_case keys leaked through with the underscore visible on
+ * first paint (before the async catalog fetch completed).
+ */
+export function humanizeServiceKey(key: string | undefined | null): string {
+  if (!key) return '';
+  return key.trim()
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (l) => l.toUpperCase());
+}
+
 export function useCategoryLabels() {
   const { locale } = useLanguage();
 
@@ -165,10 +184,7 @@ export function useCategoryLabels() {
       if (label) {
         return label[locale as 'en' | 'ka' | 'ru'] || label.en;
       }
-      // Fallback: format the category key nicely
-      return category.trim()
-        .replace(/-/g, ' ')
-        .replace(/\b\w/g, (l) => l.toUpperCase());
+      return humanizeServiceKey(category);
     },
     [locale]
   );
@@ -184,9 +200,7 @@ export function getCategoryLabelStatic(category: string | undefined, locale: str
   if (label) {
     return label[locale as 'en' | 'ka' | 'ru'] || label.en;
   }
-  return category.trim()
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (l) => l.toUpperCase());
+  return humanizeServiceKey(category);
 }
 
 export { CATEGORY_LABELS };

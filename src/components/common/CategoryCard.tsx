@@ -1,4 +1,7 @@
+'use client';
+
 import { CategoryIcon } from '@/components/categories';
+import { useCountryLink } from '@/hooks/useCountry';
 import Link from 'next/link';
 
 interface CategoryCardProps {
@@ -9,8 +12,9 @@ interface CategoryCardProps {
 }
 
 export default function CategoryCard({ name, icon, slug, count }: CategoryCardProps) {
+  const cl = useCountryLink();
   return (
-    <Link href={`/professionals?category=${slug}`} className="group block">
+    <Link href={cl(`/professionals?category=${slug}`)} className="group block">
       <div className="relative bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)] overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-neutral-200/50 hover:border-[var(--hm-brand-500)]/30 hover:-translate-y-0.5">
         {/* Gradient background on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--hm-brand-500)]/5 via-transparent to-[var(--hm-brand-500)]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -34,7 +38,7 @@ export default function CategoryCard({ name, icon, slug, count }: CategoryCardPr
 
           {/* Pro count */}
           {count && (
-            <p className="text-xs text-[var(--hm-fg-muted)]0">
+            <p className="text-xs text-[var(--hm-fg-muted)]">
               {count}
             </p>
           )}

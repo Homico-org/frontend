@@ -159,7 +159,7 @@ export function FilterPills({
           <span
             className={cn(
               'text-xs',
-              isActive ? 'text-white/70' : 'text-neutral-400'
+              isActive ? 'text-white/70' : 'text-[var(--hm-fg-muted)]'
             )}
           >
             {count}

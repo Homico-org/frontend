@@ -1,20 +1,29 @@
 import { create } from 'zustand';
 import { User } from '@/types';
 
-// Cookie helpers for cross-subdomain auth (landing page <-> app)
+// Cookie helpers for cross-subdomain auth (landing page <-> app).
+//
+// Production hosts: international root `homico.co`, legacy alias
+// `homico.ge`. We sniff the current hostname and emit the matching
+// `.homico.xx` domain attribute so cookies persist across subdomains
+// (landing / app / api). Localhost gets no domain attribute - the
+// default host-only scope is what we want for dev.
+function resolveAuthCookieDomain(): string {
+  if (typeof window === 'undefined') return '';
+  const host = window.location.hostname;
+  if (host.includes('homico.co')) return '; domain=.homico.co';
+  if (host.includes('homico.ge')) return '; domain=.homico.ge';
+  return '';
+}
+
 const setCookie = (name: string, value: string, days: number = 7) => {
   const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-  // Use domain for production (e.g., .homico.ge for cross-subdomain)
-  const domain = typeof window !== 'undefined' && window.location.hostname.includes('homico.ge')
-    ? '; domain=.homico.ge'
-    : '';
+  const domain = resolveAuthCookieDomain();
   document.cookie = `${name}=${value}; expires=${expires}; path=/${domain}; SameSite=Lax`;
 };
 
 const deleteCookie = (name: string) => {
-  const domain = typeof window !== 'undefined' && window.location.hostname.includes('homico.ge')
-    ? '; domain=.homico.ge'
-    : '';
+  const domain = resolveAuthCookieDomain();
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/${domain}`;
 };
 
@@ -55,11 +64,19 @@ export const useAuthStore = create<AuthState>((set) => ({
     const token = localStorage.getItem('access_token');
 
     if (user && token) {
-      set({
-        user: JSON.parse(user),
-        token,
-        isAuthenticated: true,
-      });
+      try {
+        set({
+          user: JSON.parse(user),
+          token,
+          isAuthenticated: true,
+        });
+      } catch (err) {
+        // Corrupted cached user JSON would otherwise crash the boot.
+        // Drop the bad entry and stay logged out until the user signs in
+        // again, which writes a fresh string.
+        console.warn('[authStore] Cached user data was corrupted, clearing.', err);
+        localStorage.removeItem('user');
+      }
     }
   },
 }));

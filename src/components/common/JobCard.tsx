@@ -8,8 +8,10 @@ import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { storage } from "@/services/storage";
 import type { Job } from "@/types/shared";
 import { formatCurrency, formatPriceRange } from "@/utils/currencyUtils";
+import { currencySymbol } from "@/utils/currency";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { translateCity } from "@/data/cities";
 import { motion } from "framer-motion";
 import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import {
@@ -36,8 +38,8 @@ const JobCard = React.memo(function JobCard({
   isSaved = false,
   hasApplied = false,
 }: JobCardProps) {
-  const { getCategoryLabel, locale } = useCategoryLabels();
-  const { t, pick } = useLanguage();
+  const { getCategoryLabel } = useCategoryLabels();
+  const { t, pick, locale } = useLanguage();
   const { categories: catalogCats } = useCategories();
 
   // Catalog-aware label lookup
@@ -144,12 +146,12 @@ const JobCard = React.memo(function JobCard({
     } else if (job.budgetType === "per_sqm" && job.pricePerUnit) {
       const total = job.areaSize ? job.pricePerUnit * job.areaSize : null;
       if (total) return formatCurrency(total);
-      return `${job.pricePerUnit}₾/მ²`;
+      return `${job.pricePerUnit}${currencySymbol({ country: job.country ?? 'GE' })}/მ²`;
     } else if (job.budgetType === "range" && job.budgetMin && job.budgetMax) {
       return formatPriceRange(job.budgetMin, job.budgetMax);
     }
     return t("card.negotiable");
-  }, [servicesTotal, job.budgetType, job.budgetAmount, job.pricePerUnit, job.areaSize, job.budgetMin, job.budgetMax, t]);
+  }, [servicesTotal, job.budgetType, job.budgetAmount, job.pricePerUnit, job.areaSize, job.budgetMin, job.budgetMax, job.country, t]);
 
   const timeAgo = useMemo(() => {
     const seconds = Math.floor((new Date().getTime() - new Date(job.createdAt).getTime()) / 1000);
@@ -162,7 +164,11 @@ const JobCard = React.memo(function JobCard({
   const truncateLocation = (loc: string) => {
     if (!loc) return "";
     const parts = loc.split(",");
-    return parts[0]?.trim() || loc.substring(0, 20);
+    const head = parts[0]?.trim() || loc.substring(0, 20);
+    // If the first comma-segment is a known city in any supported
+    // marketplace, swap it to the active locale's variant - so a job
+    // stored as "Paris, France" reads as "პარიზი" on /fr in ka locale.
+    return translateCity(head, locale);
   };
 
   const isExpired =
@@ -170,10 +176,14 @@ const JobCard = React.memo(function JobCard({
   const isUrgent = daysLeft !== null && daysLeft <= 2 && daysLeft > 0;
 
   return (
-    <Link href={`/jobs/${job.id}`} className="group block h-full">
+    <Link href={`/${(job.country ?? 'GE').toLowerCase()}/jobs/${job.id}`} className="group block h-full">
       <motion.div
         ref={cardRef}
-        className="relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl overflow-hidden border border-[var(--hm-border-subtle)] hover:border-[var(--hm-border-strong)] transition-all duration-200"
+        className="relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl overflow-hidden border border-[var(--hm-border-subtle)] transition-all duration-200 hover:-translate-y-[2px] hover:shadow-lg"
+        style={{
+          boxShadow:
+            "0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.04)",
+        }}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -244,8 +254,10 @@ const JobCard = React.memo(function JobCard({
 
           {/* Content section */}
           <div className="p-2.5 sm:p-3 flex flex-col gap-1.5 sm:gap-2 flex-1">
-            {/* Top row: Category + badges + time */}
-            <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Top row: Category + badges + time. Right padding reserves
+                space for the absolutely-positioned save (Bookmark) button
+                so the timeAgo doesn't slide underneath it. */}
+            <div className="flex items-center gap-1.5 flex-wrap pr-9">
               <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]">
                 {getLabel(job.category)}
               </span>
@@ -271,38 +283,56 @@ const JobCard = React.memo(function JobCard({
               {job.title}
             </h3>
 
-            {/* Description - hidden on mobile */}
+            {/* Description. Was `hidden sm:block` which made the
+                mobile card render with only title + bottom row, looking
+                visually empty against the page. Now visible on mobile
+                with a tighter 1-line clamp; desktop keeps the 2-line
+                clamp via the responsive `sm:line-clamp-2`. */}
             {job.description && (
-              <p className="hidden sm:block text-[13px] text-[var(--hm-fg-muted)] line-clamp-2 leading-relaxed">
+              <p className="text-[12px] sm:text-[13px] text-[var(--hm-fg-muted)] line-clamp-1 sm:line-clamp-2 leading-relaxed">
                 {job.description}
               </p>
             )}
 
-            {/* Services breakdown */}
+            {/* Services breakdown. Show up to 2 service chips on
+                mobile so the user has signal about what the job
+                actually contains; desktop keeps showing all. */}
             {job.services && job.services.length > 0 && (
-              <div className="hidden sm:flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1">
                 {job.services.map((svc, i) => {
                   const svcName = getLabel(svc.key);
                   const qty = svc.quantity || 1;
+                  // On mobile, cap to 2 service chips to keep card height
+                  // tight. The full list is on the detail page anyway.
+                  const hiddenOnMobile = i >= 2;
                   return (
                     <span
                       key={`${svc.key}-${i}`}
-                      className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded"
-                      style={{ backgroundColor: 'var(--hm-bg-tertiary)', color: 'var(--hm-fg-secondary)' }}
+                      className={`${hiddenOnMobile ? "hidden sm:inline-flex" : "inline-flex"} items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)]`}
                     >
                       {svcName}
                       {qty > 1 && <span className="opacity-60">×{qty}</span>}
-                      {svc.unitPrice > 0 && <span className="text-[var(--hm-brand-500)] font-bold">{svc.unitPrice * qty}₾</span>}
+                      {svc.unitPrice > 0 && <span className="text-[var(--hm-brand-500)] font-bold">{svc.unitPrice * qty}{currencySymbol({ country: job.country ?? 'GE' })}</span>}
                     </span>
                   );
                 })}
+                {/* "+N more" indicator on mobile when services were
+                    capped, so the user knows there's more behind it. */}
+                {job.services.length > 2 && (
+                  <span className="sm:hidden inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]">
+                    +{job.services.length - 2}
+                  </span>
+                )}
               </div>
             )}
 
-            {/* Meta info row - hidden on mobile */}
+            {/* Meta info row - now visible on mobile too. The
+                "Mukhiani M/D-4b, #29..." string was previously hidden
+                on mobile entirely, making the card read as anonymous;
+                surfacing it gives the viewer at-a-glance proximity. */}
             {job.location && (
-              <div className="hidden sm:flex items-center gap-1 text-[12px] text-[var(--hm-fg-muted)]">
-                <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-[var(--hm-fg-muted)]" />
+              <div className="flex items-center gap-1 text-[11px] sm:text-[12px] text-[var(--hm-fg-muted)]">
+                <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0 text-[var(--hm-fg-muted)]" />
                 <span className="truncate">{truncateLocation(job.location)}</span>
               </div>
             )}
@@ -327,16 +357,19 @@ const JobCard = React.memo(function JobCard({
 
               {/* Budget - prominent */}
               <div className="flex items-center gap-2 sm:gap-3">
-                {/* Stats - hidden on mobile */}
-                <div className="hidden sm:flex items-center gap-2 text-[var(--hm-fg-muted)]">
+                {/* Stats. Proposal count shows on mobile too because
+                    it's strong competitive signal for pros browsing.
+                    Views stay desktop-only - they add noise on small
+                    cards and proposals carry more meaning. */}
+                <div className="flex items-center gap-2 text-[var(--hm-fg-muted)]">
                   {job.proposalCount > 0 && (
-                    <span className="flex items-center gap-0.5 text-[11px]">
+                    <span className="flex items-center gap-0.5 text-[10px] sm:text-[11px]">
                       <Send className="w-3 h-3" />
                       {job.proposalCount}
                     </span>
                   )}
                   {job.viewCount > 0 && (
-                    <span className="flex items-center gap-0.5 text-[11px]">
+                    <span className="hidden sm:flex items-center gap-0.5 text-[11px]">
                       <Eye className="w-3 h-3" />
                       {job.viewCount}
                     </span>

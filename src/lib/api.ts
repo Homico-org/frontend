@@ -5,6 +5,22 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 let isRefreshing = false;
 let failedQueue: Array<{ resolve: (token: string) => void; reject: (err: unknown) => void }> = [];
 
+/**
+ * Buffer for 401s that fire before the AuthModal context has mounted
+ * its event listener. Without this, an early-boot 401 (e.g. token
+ * validation in AuthContext) is dispatched into the void: the
+ * "open login modal" event is lost and the user sits on a page
+ * pretending nothing happened. The context reads + clears this flag
+ * on mount.
+ */
+function requestLoginModal() {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent('auth:open-login-modal'));
+  // Mark a pending flag so a listener that mounts AFTER the dispatch
+  // still picks the event up.
+  (window as { __homiPendingLoginModal?: boolean }).__homiPendingLoginModal = true;
+}
+
 const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach(prom => {
     if (error) prom.reject(error);
@@ -92,7 +108,7 @@ api.interceptors.response.use(
         localStorage.removeItem('user');
         localStorage.removeItem('token');
         window.dispatchEvent(new CustomEvent("auth:logout"));
-        window.dispatchEvent(new CustomEvent("auth:open-login-modal"));
+        requestLoginModal();
         return Promise.reject(error);
       }
 
@@ -117,6 +133,10 @@ api.interceptors.response.use(
               api.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
               originalRequest.headers['Authorization'] = `Bearer ${data.access_token}`;
               processQueue(null, data.access_token);
+              // Let stateful long-lived connections (e.g. the notifications
+              // WebSocket) re-handshake with the fresh token instead of
+              // hammering the gateway with the expired one.
+              window.dispatchEvent(new CustomEvent("auth:refresh"));
               resolve(api(originalRequest));
             })
             .catch(err => {
@@ -126,7 +146,7 @@ api.interceptors.response.use(
               localStorage.removeItem('user');
               localStorage.removeItem('token');
               window.dispatchEvent(new CustomEvent("auth:logout"));
-              window.dispatchEvent(new CustomEvent("auth:open-login-modal"));
+              requestLoginModal();
               reject(err);
             })
             .finally(() => {
@@ -140,7 +160,7 @@ api.interceptors.response.use(
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       window.dispatchEvent(new CustomEvent("auth:logout"));
-      window.dispatchEvent(new CustomEvent("auth:open-login-modal"));
+      requestLoginModal();
     }
     return Promise.reject(error);
   }

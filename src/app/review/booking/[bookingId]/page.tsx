@@ -7,11 +7,13 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
+import { AnalyticsEvent, useAnalytics } from '@/hooks/useAnalytics';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Textarea } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Avatar from '@/components/common/Avatar';
 import { formatDate } from '@/utils/dateUtils';
+import { extractApiErrorMessage } from '@/utils/errorUtils';
 
 interface BookingDetail {
   id: string;
@@ -53,6 +55,7 @@ export default function BookingReviewPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { t, locale } = useLanguage();
   const toast = useToast();
+  const { trackEvent } = useAnalytics();
   const bookingId = params.bookingId as string;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -190,14 +193,22 @@ export default function BookingReviewPage() {
         text: reviewText.trim() || undefined,
       });
 
+      trackEvent(AnalyticsEvent.REVIEW_SUBMIT, {
+        bookingId,
+        value: rating,
+      });
+
       toast.success(t('reviews.reviewSubmitted'));
       setPageState('success');
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { status?: number; data?: { message?: string } } };
+      const axiosErr = err as { response?: { status?: number } };
       if (axiosErr.response?.status === 409) {
         setPageState('already-reviewed');
       } else {
-        toast.error(axiosErr.response?.data?.message || t('reviews.failedToSubmit'));
+        // NestJS validation errors come back as `message: string[]` -
+        // route through the helper so the toast actually renders.
+        console.error('[review/booking] Submit failed', err);
+        toast.error(extractApiErrorMessage(err, t('reviews.failedToSubmit')));
         setPageState('form');
       }
     }

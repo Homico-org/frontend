@@ -21,8 +21,6 @@ interface ProjectSidebarProps {
   unreadChatCount?: number;
   unreadPollsCount?: number;
   unreadResourcesCount?: number;
-  isProjectStarted?: boolean;
-  isCompleted?: boolean;
 }
 
 interface SidebarMenuItem {
@@ -31,7 +29,6 @@ interface SidebarMenuItem {
   label: string;
   labelKa: string;
   badge?: number;
-  disabled?: boolean;
 }
 
 export default function ProjectSidebar({
@@ -40,10 +37,8 @@ export default function ProjectSidebar({
   unreadChatCount = 0,
   unreadPollsCount = 0,
   unreadResourcesCount = 0,
-  isProjectStarted = true,
-  isCompleted = false,
 }: ProjectSidebarProps) {
-  const { t, pick } = useLanguage();
+  const { pick } = useLanguage();
   const menuItems: SidebarMenuItem[] = [
     {
       key: "details",
@@ -57,7 +52,6 @@ export default function ProjectSidebar({
       label: "Chat",
       labelKa: "ჩატი",
       badge: unreadChatCount,
-      disabled: !isProjectStarted || isCompleted,
     },
     {
       key: "polls",
@@ -65,7 +59,6 @@ export default function ProjectSidebar({
       label: "Polls",
       labelKa: "გამოკითხვები",
       badge: unreadPollsCount,
-      disabled: !isProjectStarted || isCompleted,
     },
     {
       key: "resources",
@@ -73,14 +66,12 @@ export default function ProjectSidebar({
       label: "Resources",
       labelKa: "მასალები",
       badge: unreadResourcesCount,
-      disabled: !isProjectStarted || isCompleted,
     },
     {
       key: "history",
       icon: <History className="w-5 h-5" />,
       label: "History",
       labelKa: "ისტორია",
-      disabled: !isProjectStarted,
     },
   ];
 
@@ -88,27 +79,23 @@ export default function ProjectSidebar({
     <nav className="flex flex-col gap-1">
       {menuItems.map((item) => {
         const isActive = activeTab === item.key;
-        const isDisabled = item.disabled;
 
         return (
           <button
             key={item.key}
-            onClick={() => !isDisabled && onTabChange(item.key)}
-            disabled={isDisabled}
+            onClick={() => onTabChange(item.key)}
             className={`
               group relative flex items-center gap-3 px-4 py-3 rounded-xl
               font-medium text-sm transition-all duration-200
-              ${isDisabled
-                ? "opacity-50 cursor-not-allowed text-[var(--hm-fg-muted)]"
-                : isActive
-                  ? "text-white shadow-md"
-                  : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
+              ${isActive
+                ? "text-white shadow-md"
+                : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
               }
             `}
-            style={isActive && !isDisabled ? { backgroundColor: ACCENT } : {}}
+            style={isActive ? { backgroundColor: ACCENT } : {}}
           >
             {/* Active indicator */}
-            {isActive && !isDisabled && (
+            {isActive && (
               <div
                 className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full"
                 style={{ backgroundColor: "white" }}
@@ -118,13 +105,8 @@ export default function ProjectSidebar({
             {/* Icon */}
             <span
               className={`transition-colors ${
-                isActive && !isDisabled
-                  ? "text-white"
-                  : isDisabled
-                    ? ""
-                    : `group-hover:text-[${ACCENT}]`
+                isActive ? "text-white" : `group-hover:text-[${ACCENT}]`
               }`}
-              style={!isActive && !isDisabled ? { color: isActive ? "white" : undefined } : {}}
             >
               {item.icon}
             </span>
@@ -135,7 +117,7 @@ export default function ProjectSidebar({
             </span>
 
             {/* Badge */}
-            {item.badge !== undefined && item.badge > 0 && !isDisabled && (
+            {item.badge !== undefined && item.badge > 0 && (
               <Badge
                 variant={isActive ? "secondary" : "danger"}
                 size="xs"
@@ -147,13 +129,6 @@ export default function ProjectSidebar({
           </button>
         );
       })}
-
-      {/* Helper text for disabled items */}
-      {!isProjectStarted && (
-        <p className="px-4 py-2 text-xs text-[var(--hm-fg-muted)] italic">
-          {t('job.chatPollsResourcesAvailableAfter')}
-        </p>
-      )}
     </nav>
   );
 }
@@ -165,8 +140,6 @@ export function ProjectSidebarMobile({
   unreadChatCount = 0,
   unreadPollsCount = 0,
   unreadResourcesCount = 0,
-  isProjectStarted = true,
-  isCompleted = false,
 }: ProjectSidebarProps) {
   const { pick } = useLanguage();
   const menuItems: SidebarMenuItem[] = [
@@ -182,7 +155,6 @@ export function ProjectSidebarMobile({
       label: "Chat",
       labelKa: "ჩატი",
       badge: unreadChatCount,
-      disabled: !isProjectStarted || isCompleted,
     },
     {
       key: "polls",
@@ -190,7 +162,6 @@ export function ProjectSidebarMobile({
       label: "Polls",
       labelKa: "გამოკითხვები",
       badge: unreadPollsCount,
-      disabled: !isProjectStarted || isCompleted,
     },
     {
       key: "resources",
@@ -198,14 +169,12 @@ export function ProjectSidebarMobile({
       label: "Resources",
       labelKa: "მასალები",
       badge: unreadResourcesCount,
-      disabled: !isProjectStarted || isCompleted,
     },
     {
       key: "history",
       icon: <History className="w-4 h-4" />,
       label: "History",
       labelKa: "ისტორია",
-      disabled: !isProjectStarted,
     },
   ];
 
@@ -213,36 +182,32 @@ export function ProjectSidebarMobile({
     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
       {menuItems.map((item) => {
         const isActive = activeTab === item.key;
-        const isDisabled = item.disabled;
 
         return (
           <button
             key={item.key}
-            onClick={() => !isDisabled && onTabChange(item.key)}
-            disabled={isDisabled}
+            onClick={() => onTabChange(item.key)}
             className={`
               relative flex items-center gap-2 px-4 py-2.5 rounded-full
               font-medium text-sm whitespace-nowrap transition-all duration-200 flex-shrink-0
-              ${isDisabled
-                ? "opacity-40 cursor-not-allowed bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]"
-                : isActive
-                  ? "text-white shadow-md"
-                  : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]"
+              ${isActive
+                ? "text-white shadow-md"
+                : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)]"
               }
             `}
-            style={isActive && !isDisabled ? { backgroundColor: ACCENT } : {}}
+            style={isActive ? { backgroundColor: ACCENT } : {}}
           >
             {item.icon}
             <span>{pick({ en: item.label, ka: item.labelKa })}</span>
 
             {/* Badge */}
-            {item.badge !== undefined && item.badge > 0 && !isDisabled && (
+            {item.badge !== undefined && item.badge > 0 && (
               <Badge
                 variant={isActive ? "secondary" : "danger"}
                 size="xs"
                 className={`!min-w-[18px] !h-[18px] !px-1 ${isActive ? "!bg-white/20 !text-white" : ""}`}
               >
-                {item.badge > 9 ? "9+" : item.badge}
+                {item.badge > 99 ? "99+" : item.badge}
               </Badge>
             )}
           </button>

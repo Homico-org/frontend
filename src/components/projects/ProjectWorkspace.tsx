@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Avatar from '@/components/common/Avatar';
+import FilePreviewModal, { type PreviewFile } from '@/components/common/FilePreviewModal';
 import MediaLightbox from '@/components/common/MediaLightbox';
 import { Button } from '@/components/ui/button';
 import { ConfirmModal, Modal } from '@/components/ui/Modal';
@@ -12,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
+import { formatCurrency } from '@/utils/currency';
 import {
   ChevronDown,
   ChevronRight,
@@ -109,9 +111,13 @@ interface ProjectWorkspaceProps {
   locale: string;
   isClient: boolean;
   embedded?: boolean; // When true, shows content directly without accordion
+  // Bumped by the parent on every WS `projectMaterialsUpdate`. We
+  // refetch so the other side's section/item changes appear without a
+  // manual refresh.
+  refreshTick?: number;
 }
 
-export default function ProjectWorkspace({ jobId, locale, isClient, embedded = false }: ProjectWorkspaceProps) {
+export default function ProjectWorkspace({ jobId, locale, isClient, embedded = false, refreshTick = 0 }: ProjectWorkspaceProps) {
   const { user } = useAuth();
 
   const { t } = useLanguage();
@@ -130,7 +136,12 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
 
   // Comment state
   const [activeCommentItem, setActiveCommentItem] = useState<string | null>(null);
-  const [commentText, setCommentText] = useState('');
+  // Comment drafts keyed by item id so typing in one item's comment box
+  // doesn't carry over when the user clicks into another item's box.
+  // Previously a single shared string was used for every comment input
+  // in the workspace, so switching items mid-typing showed the prior
+  // item's draft.
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
 
   // Image lightbox state
   const [lightboxImages, setLightboxImages] = useState<{ url: string; type: 'image' }[]>([]);
@@ -140,6 +151,9 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
     setLightboxImages(images.map(a => ({ url: a.fileUrl, type: 'image' as const })));
     setLightboxIndex(clickedIndex);
   };
+
+  // Non-image attachment preview (pdf / video / audio / generic).
+  const [previewFile, setPreviewFile] = useState<PreviewFile | null>(null);
 
   // Fetch workspace data
   const fetchWorkspace = useCallback(async () => {
@@ -167,6 +181,15 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
       api.post(`/jobs/projects/${jobId}/materials/viewed`).catch(() => {});
     }
   }, [isExpanded, embedded, hasLoaded, fetchWorkspace, jobId]);
+
+  // Refetch on parent WS bump so the other side's edits appear live.
+  // Skip the initial 0 tick to avoid duplicating the mount fetch.
+  useEffect(() => {
+    if (refreshTick > 0 && (embedded || isExpanded)) {
+      fetchWorkspace();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshTick]);
 
   // Section CRUD
   const [isSavingSection, setIsSavingSection] = useState(false);
@@ -275,13 +298,15 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
     }
   };
 
-  // Comments
+  // Comments. Pulls the draft from the per-item map so each item has its
+  // own independent text. Clears only that item's draft on success.
   const handleAddComment = async (sectionId: string, itemId: string) => {
-    if (!commentText.trim()) return;
+    const draft = (commentDrafts[itemId] || '').trim();
+    if (!draft) return;
 
     try {
       const response = await api.post(`/jobs/projects/${jobId}/workspace/sections/${sectionId}/items/${itemId}/comments`, {
-        content: commentText,
+        content: draft,
       });
       setSections(prev => prev.map(s =>
         getId(s) === sectionId
@@ -293,11 +318,21 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
             }
           : s
       ));
-      setCommentText('');
+      setCommentDrafts((prev) => {
+        const next = { ...prev };
+        delete next[itemId];
+        return next;
+      });
     } catch (error) {
       toast.error(t('common.error'));
     }
   };
+
+  // Helpers passed down so ItemRow's input wires into the per-item map
+  // without each row owning the parent's full state shape.
+  const getCommentDraft = (itemId: string) => commentDrafts[itemId] || '';
+  const setCommentDraft = (itemId: string, value: string) =>
+    setCommentDrafts((prev) => ({ ...prev, [itemId]: value }));
 
   const toggleSection = (sectionId: string) => {
     setSections(prev => prev.map(s =>
@@ -357,10 +392,13 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
                 onReaction={(itemId, type) => handleReaction(getId(section), itemId, type)}
                 activeCommentItem={activeCommentItem}
                 setActiveCommentItem={setActiveCommentItem}
-                commentText={commentText}
-                setCommentText={setCommentText}
+                getCommentDraft={getCommentDraft}
+                setCommentDraft={setCommentDraft}
                 onAddComment={(itemId) => handleAddComment(getId(section), itemId)}
                 onOpenImageLightbox={openImageLightbox}
+                onPreviewFile={(att) =>
+                  setPreviewFile({ name: att.fileName, url: att.fileUrl })
+                }
               />
             ))}
           </div>
@@ -412,6 +450,12 @@ export default function ProjectWorkspace({ jobId, locale, isClient, embedded = f
         locale={locale as "en" | "ka" | "ru"}
         showThumbnails={lightboxImages.length > 1}
         showInfo={false}
+      />
+
+      {/* Non-image attachment preview */}
+      <FilePreviewModal
+        file={previewFile}
+        onClose={() => setPreviewFile(null)}
       />
 
       <ConfirmModal
@@ -496,10 +540,11 @@ function SectionCard({
   onReaction,
   activeCommentItem,
   setActiveCommentItem,
-  commentText,
-  setCommentText,
+  getCommentDraft,
+  setCommentDraft,
   onAddComment,
   onOpenImageLightbox,
+  onPreviewFile,
 }: {
   section: WorkspaceSection;
   locale: string;
@@ -513,10 +558,11 @@ function SectionCard({
   onReaction: (itemId: string, type: 'like' | 'love' | 'approved') => void;
   activeCommentItem: string | null;
   setActiveCommentItem: (id: string | null) => void;
-  commentText: string;
-  setCommentText: (text: string) => void;
+  getCommentDraft: (itemId: string) => string;
+  setCommentDraft: (itemId: string, value: string) => void;
   onAddComment: (itemId: string) => void;
   onOpenImageLightbox: (images: SectionAttachment[], clickedIndex: number) => void;
+  onPreviewFile: (att: SectionAttachment) => void;
 }) {
   const { t } = useLanguage();
   const [showMenu, setShowMenu] = useState(false);
@@ -527,10 +573,29 @@ function SectionCard({
     e.stopPropagation();
     if (menuButtonRef.current) {
       const rect = menuButtonRef.current.getBoundingClientRect();
-      setMenuPosition({
-        top: rect.bottom + 4,
-        left: rect.right - 144, // 144 = menu width (w-36 = 9rem = 144px)
-      });
+      // Menu width 144px (w-36). Approximate menu height for overflow
+      // detection - sections with edit+delete are ~88px tall.
+      const MENU_WIDTH = 144;
+      const MENU_HEIGHT_APPROX = 88;
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+
+      // Flip above the button when there's no room below.
+      const wouldOverflowBottom =
+        rect.bottom + 4 + MENU_HEIGHT_APPROX > viewportHeight;
+      const top = wouldOverflowBottom
+        ? Math.max(8, rect.top - MENU_HEIGHT_APPROX - 4)
+        : rect.bottom + 4;
+
+      // Clamp horizontally so the menu never bleeds off the left edge
+      // (was already right-aligned via `rect.right - 144`, but on very
+      // narrow viewports the button could sit close to the left edge).
+      const left = Math.max(
+        8,
+        Math.min(rect.right - MENU_WIDTH, viewportWidth - MENU_WIDTH - 8),
+      );
+
+      setMenuPosition({ top, left });
     }
     setShowMenu(!showMenu);
   };
@@ -646,30 +711,34 @@ function SectionCard({
               {section.attachments.filter(a => a.fileType !== 'image').length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {section.attachments.filter(a => a.fileType !== 'image').map((att) => (
-                    <a
+                    <button
                       key={getId(att)}
-                      href={storage.getFileUrl(att.fileUrl)}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      type="button"
+                      onClick={() => onPreviewFile(att)}
                       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--hm-bg-page)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-500)] transition-colors group"
                     >
                       <FileText className="w-4 h-4 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-brand-500)]" />
                       <span className="text-xs text-[var(--hm-fg-primary)] truncate max-w-[120px]">{att.fileName}</span>
-                      <ExternalLink className="w-3 h-3 text-[var(--hm-fg-muted)] opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </a>
+                    </button>
                   ))}
                 </div>
               )}
             </div>
           )}
 
-          {section.items.length === 0 && (!section.attachments || section.attachments.length === 0) ? (
-            <div className="px-4 py-8 text-center">
+          {/* "No items" placeholder now fires whenever the items list
+              is empty, even if the section has attachments. Previously
+              it only showed when BOTH were empty, so a section with
+              attachments only showed no acknowledgement that the items
+              list was empty and the pro saw an "Add Item" button with
+              no context. */}
+          {section.items.length === 0 ? (
+            <div className="px-4 py-6 text-center">
               <p className="text-xs text-[var(--hm-fg-muted)]">
                 {t('projects.noItemsInThisSection')}
               </p>
             </div>
-          ) : section.items.length > 0 ? (
+          ) : (
             <div className="divide-y divide-[var(--hm-border)]">
               {section.items.map((item) => (
                 <ItemRow
@@ -682,13 +751,13 @@ function SectionCard({
                   onReaction={(type) => onReaction(getId(item), type)}
                   isCommentActive={activeCommentItem === getId(item)}
                   onToggleComment={() => setActiveCommentItem(activeCommentItem === getId(item) ? null : getId(item))}
-                  commentText={commentText}
-                  setCommentText={setCommentText}
+                  commentText={getCommentDraft(getId(item))}
+                  setCommentText={(value) => setCommentDraft(getId(item), value)}
                   onAddComment={() => onAddComment(getId(item))}
                 />
               ))}
             </div>
-          ) : null}
+          )}
 
           {/* Add Item Button */}
           {!isClient && (
@@ -799,7 +868,15 @@ function ItemRow({
             <div className="flex flex-wrap items-center gap-2 mt-2">
               {item.price && (
                 <span className="text-xs font-semibold text-[var(--hm-brand-500)]">
-                  {item.currency || '₾'}{item.price}
+                  {/* Use formatCurrency so the symbol lands on the right
+                      side for ₾/₽ (Georgian and Russian convention) and
+                      on the left for $/€/£. Previously this concatenated
+                      `${symbol}${price}` unconditionally, rendering
+                      "₾120" instead of the native "120₾". */}
+                  {formatCurrency(
+                    item.price,
+                    item.currency ? { currency: item.currency } : undefined,
+                  )}
                 </span>
               )}
               {item.storeName && (
@@ -946,6 +1023,7 @@ function ItemRow({
                   onKeyDown={(e) => e.key === 'Enter' && onAddComment()}
                   placeholder={t('projects.addComment')}
                   className="flex-1 text-xs"
+                  maxLength={1000}
                 />
                 <Button
                   size="icon-sm"
@@ -1263,8 +1341,18 @@ function ItemModal({
     }
   };
 
+  // Per-type required fields. `image`/`file` need an uploaded `fileUrl`,
+  // `link` needs a `linkUrl`. Previously the Save button was enabled as
+  // soon as a title was entered, so users could create empty placeholder
+  // items that showed only a title and a broken icon. `product` is
+  // intentionally permissive - it can be just a name with no link yet.
+  const isSaveDisabled =
+    !title.trim() ||
+    ((type === 'image' || type === 'file') && !fileUrl) ||
+    (type === 'link' && !linkUrl.trim());
+
   const handleSave = () => {
-    if (!title.trim()) return;
+    if (isSaveDisabled) return;
 
     const itemData: Partial<WorkspaceItem> = {
       type,
@@ -1440,7 +1528,16 @@ function ItemModal({
                     value={price}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (value === '' || parseFloat(value) >= 0) {
+                      // Reject scientific notation ("1e5" → 100000) and
+                      // anything that isn't a plain decimal so the
+                      // stored price stays a number the user actually
+                      // typed. Previously `1e5` passed parseFloat>=0
+                      // and was stored as the string "1e5" which then
+                      // rendered as "1e5₾" in the modal preview but
+                      // "100000₾" in the saved item - confusing both
+                      // sides.
+                      const isPlainDecimal = /^\d*\.?\d*$/.test(value);
+                      if (value === '' || (isPlainDecimal && parseFloat(value) >= 0)) {
                         setPrice(value);
                       }
                     }}
@@ -1476,7 +1573,7 @@ function ItemModal({
           <Button variant="secondary" onClick={onClose}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleSave} disabled={!title.trim()}>
+          <Button onClick={handleSave} disabled={isSaveDisabled}>
             {t('common.add')}
           </Button>
         </div>

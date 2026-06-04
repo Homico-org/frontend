@@ -12,13 +12,17 @@ import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/contexts/NotificationContext";
 import { useToast } from "@/contexts/ToastContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
+import { useCountryLink } from "@/hooks/useCountry";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
 import type { Job, ProjectStage, ProjectTracking } from "@/types/shared";
 import { formatTimeAgo } from "@/utils/dateUtils";
-import { formatCurrency, formatPriceRange } from "@/utils/currencyUtils";
+import { formatCurrency, formatPriceRange, type Currency } from "@/utils/currencyUtils";
+import { currencyForCountry } from "@/data/countries";
+import { currencySymbol } from "@/utils/currency";
 import {
   AlertTriangle,
   ArrowRight,
@@ -49,14 +53,17 @@ interface ProjectStageUpdateEvent {
 
 import { useLanguage } from "@/contexts/LanguageContext";
 
-// Status color strip mapping
+// Status color strip mapping. The "unknown / other" branch used the
+// hardcoded `bg-neutral-300` which read as a bright blue-grey on dark
+// theme. Swapped to the theme-aware `--hm-border-strong` token so the
+// strip stays a neutral muted line in both modes.
 function getStatusColor(job: Job) {
   const hasShortlisted = (job.shortlistedCount || 0) > 0;
   if (job.status === "open" && hasShortlisted) return "bg-[var(--hm-info-500)]";
   if (job.status === "open") return "bg-[var(--hm-success-500)]";
   if (job.status === "in_progress") return "bg-[var(--hm-brand-500)]";
   if (job.status === "expired") return "bg-[var(--hm-warning-500)]";
-  return "bg-neutral-300";
+  return "bg-[var(--hm-border-strong)]";
 }
 
 // Status badge component
@@ -75,17 +82,22 @@ function JobStatusBadge({ job, t }: { job: Job; t: (key: string) => string }) {
   return null;
 }
 
-// Budget display helper
+// Budget display helper. The job carries its own marketplace country
+// (stamped at post time), which determines the currency we render -
+// the same client may have jobs in GE (GEL) and IL (ILS) and each
+// should render in its own currency.
 function getJobBudget(job: Job, t: (key: string) => string): string {
+  const currency = currencyForCountry(job.country) as Currency;
+  const sym = currencySymbol({ country: job.country ?? 'GE' });
   if (job.budgetType === "fixed") {
     const amount = job.budgetAmount ?? job.budgetMin;
-    if (amount) return formatCurrency(amount);
+    if (amount) return formatCurrency(amount, currency);
   } else if (job.budgetType === "per_sqm" && job.pricePerUnit) {
     const total = job.areaSize ? job.pricePerUnit * job.areaSize : null;
-    if (total) return formatCurrency(total);
-    return `${job.pricePerUnit}₾/მ²`;
+    if (total) return formatCurrency(total, currency);
+    return `${job.pricePerUnit}${sym}/${t('common.perSqmShort')}`;
   } else if (job.budgetType === "range" && job.budgetMin && job.budgetMax) {
-    return formatPriceRange(job.budgetMin, job.budgetMax);
+    return formatPriceRange(job.budgetMin, job.budgetMax, currency);
   }
   return t("card.negotiable");
 }
@@ -97,11 +109,22 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
   const { getCategoryLabel, locale } = useCategoryLabels();
   const toast = useToast();
   const router = useRouter();
+  const cl = useCountryLink();
   const isEmbedded = !!embedded;
+  // Notification unread-count is used as a "something happened"
+  // signal to trigger a chat-unread refetch. When a new message-
+  // type notification arrives, the bell count ticks up, which is
+  // our cheap, backend-free cue to refresh the per-job badges.
+  const { unreadCount: notifUnreadCount } = useNotifications();
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  // Unread chat-message count keyed by job id. Populated alongside
+  // project-tracking fetch so the card render can show a "you have
+  // new messages" badge on jobs that have activity in their chat
+  // since the last open. Empty Record by default - no badge shown.
+  const [chatUnreadByJob, setChatUnreadByJob] = useState<Record<string, number>>({});
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
   const [deleteModalJob, setDeleteModalJob] = useState<Job | null>(null);
   const [renewingJobId, setRenewingJobId] = useState<string | null>(null);
@@ -112,6 +135,11 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
       router.push("/");
     }
   }, [authLoading, isAuthenticated, router]);
+
+  // Stable ref to the latest fetchMyJobs so the socket effect can
+  // call it without adding the function to its dependency array
+  // (which would re-mount the socket every render).
+  const fetchMyJobsRef = useRef<(() => void) | null>(null);
 
   // WebSocket connection for real-time project stage updates
   useEffect(() => {
@@ -125,11 +153,33 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
 
     socketRef.current = io(`${wsUrl}/chat`, {
       auth: { token },
-      transports: ["websocket"],
+      // WebSocket first, polling fallback. Previously `["websocket"]`
+      // only meant a corporate firewall blocking ws:// or wss://
+      // silently failed - users on locked-down networks got zero
+      // real-time updates. socket.io will negotiate the upgrade
+      // automatically when WS is available.
+      transports: ["websocket", "polling"],
+      // Auto-reconnect with backoff. Previously the socket had no
+      // reconnection config; a sleep/wake or network blip silently
+      // killed updates until the user navigated away. Matches the
+      // notifications socket so behavior is consistent.
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
     });
 
     socketRef.current.on("connect", () => {
       console.log("[MyJobs] WebSocket connected");
+    });
+
+    // On reconnect, refetch my-jobs so any stage updates that fired
+    // during the disconnect window get pulled in. WebSocket replay
+    // doesn't cover events emitted while we were offline. Refs go
+    // through `fetchMyJobsRef` so the socket effect doesn't have
+    // to list fetchMyJobs as a dep (would cause socket churn).
+    socketRef.current.io.on("reconnect", () => {
+      fetchMyJobsRef.current?.();
     });
 
     // Listen for project stage updates
@@ -164,26 +214,51 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
     };
   }, [isAuthenticated, user]);
 
+  // Shared abort ref so refetches (from WS reconnect, initial mount,
+  // and Strict Mode double-mount) cancel the prior in-flight request
+  // instead of all racing for the same setJobs and stomping each
+  // other's tracking-populated payloads.
+  const fetchMyJobsAbortRef = useRef<AbortController | null>(null);
   const fetchMyJobs = useCallback(
     async (isInitial: boolean = false) => {
+      fetchMyJobsAbortRef.current?.abort();
+      const controller = new AbortController();
+      fetchMyJobsAbortRef.current = controller;
       try {
         if (isInitial) {
           setIsInitialLoading(true);
         }
-        const response = await api.get(`/jobs/my-jobs`);
-        // Filter out mobile-created orders (those with services populated)
-        const jobsData = (response.data as (Job & { services?: unknown[] })[]).filter(
-          (j) => !j.services || j.services.length === 0
-        );
+        const response = await api.get(`/jobs/my-jobs`, {
+          signal: controller.signal,
+        });
+        // Show all jobs returned by the API. The previous "filter out
+        // anything with a services array" rule was a legacy mobile-
+        // order exclusion - but the standard post-job wizard ALSO
+        // writes a `services` array whenever the user picks any
+        // service, so the filter silently hid every wizard-posted job
+        // from My Jobs. If a future legacy-order exclusion is needed
+        // it should key off an explicit signal (jobType / source flag),
+        // not the presence of `services`.
+        const jobsData = response.data as Job[];
 
-        // Fetch project tracking data for in_progress jobs
+        // Fetch project tracking + chat-unread for in_progress
+        // jobs in parallel. The unread fetch is best-effort -
+        // failure is silent so a single bad jobId doesn't break
+        // the whole list render.
+        const unreadByJob: Record<string, number> = {};
         const jobsWithTracking = await Promise.all(
           jobsData.map(async (job: Job) => {
             if (job.status === "in_progress") {
               try {
-                const trackingResponse = await api.get(
-                  `/jobs/projects/${job.id}`
-                );
+                const [trackingResponse, unreadResponse] = await Promise.all([
+                  api.get(`/jobs/projects/${job.id}`, { signal: controller.signal }),
+                  api
+                    .get<{ chat?: number }>(`/jobs/projects/${job.id}/unread-counts`, { signal: controller.signal })
+                    .catch(() => null),
+                ]);
+                if (unreadResponse?.data?.chat) {
+                  unreadByJob[job.id] = unreadResponse.data.chat;
+                }
                 return {
                   ...job,
                   projectTracking: trackingResponse.data.project,
@@ -197,16 +272,31 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
           })
         );
 
+        if (controller.signal.aborted) return;
         setJobs(jobsWithTracking);
+        setChatUnreadByJob(unreadByJob);
       } catch (err) {
+        const name = (err as { name?: string })?.name;
+        const code = (err as { code?: string })?.code;
+        if (name === "CanceledError" || code === "ERR_CANCELED") return;
         console.error("Failed to fetch jobs:", err);
         toast.error(t("common.error"), t("job.failedToLoadProjects"));
       } finally {
-        setIsInitialLoading(false);
+        if (!controller.signal.aborted) {
+          setIsInitialLoading(false);
+        }
       }
     },
     [toast, t]
   );
+
+  // Keep the ref pointed at the latest fetchMyJobs so the socket
+  // reconnect handler always invokes the freshest closure.
+  useEffect(() => {
+    fetchMyJobsRef.current = () => {
+      void fetchMyJobs();
+    };
+  }, [fetchMyJobs]);
 
   // Initial load
   useEffect(() => {
@@ -214,6 +304,56 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
       fetchMyJobs(true);
     }
   }, [isAuthenticated, isInitialLoading, fetchMyJobs]);
+
+  // Lightweight chat-unread refresh - no job-list refetch, just
+  // re-pulls the per-job badge counts. Used as a live-update path
+  // so badges don't go stale when a message arrives in another tab
+  // or while the user is on this page.
+  const refreshChatUnreadCounts = useCallback(async () => {
+    const inProgressIds = jobs
+      .filter((j) => j.status === "in_progress")
+      .map((j) => j.id);
+    if (inProgressIds.length === 0) return;
+    const next: Record<string, number> = {};
+    await Promise.all(
+      inProgressIds.map(async (jobId) => {
+        try {
+          const res = await api.get<{ chat?: number }>(
+            `/jobs/projects/${jobId}/unread-counts`,
+          );
+          if (res.data?.chat) next[jobId] = res.data.chat;
+        } catch {
+          // Silent: per-job failure doesn't break the rest
+        }
+      }),
+    );
+    setChatUnreadByJob(next);
+  }, [jobs]);
+
+  // Refresh badges whenever the notification unread-count ticks up
+  // (a new message-type notification just arrived). Tracked via a
+  // ref so we only refetch on transitions UP, not down (which fires
+  // when the user marks notifications read).
+  const lastNotifUnreadRef = useRef(notifUnreadCount);
+  useEffect(() => {
+    if (notifUnreadCount > lastNotifUnreadRef.current) {
+      void refreshChatUnreadCounts();
+    }
+    lastNotifUnreadRef.current = notifUnreadCount;
+  }, [notifUnreadCount, refreshChatUnreadCounts]);
+
+  // Refresh when the tab regains focus - covers the case where the
+  // user reads/replies in another tab and comes back; the badges
+  // should reflect the new zero, not the count from page-mount time.
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        void refreshChatUnreadCounts();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [refreshChatUnreadCounts]);
 
   // Mark proposals on each job as viewed when clicking "View Proposals"
   const handleViewProposals = async (jobId: string) => {
@@ -355,10 +495,14 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
             <Button
               asChild
               size="sm"
-              className="rounded-full text-xs sm:text-sm px-3 sm:px-4 flex-shrink-0"
+              // min-h-10 forces a 40px tap height even at the smaller
+              // `sm` size, matching the iOS HIG comfort floor without
+              // bumping the desktop visual past where the page header
+              // expects it.
+              className="rounded-full text-xs sm:text-sm px-3 sm:px-4 min-h-10 flex-shrink-0 active:scale-95"
               leftIcon={<Plus className="w-3.5 h-3.5" />}
             >
-              <Link href="/post-job">{t("common.add")}</Link>
+              <Link href={cl("/post-job")}>{t("common.add")}</Link>
             </Button>
           </div>
         }
@@ -379,27 +523,27 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
 
         {/* ==================== JOB CARDS ZONE ==================== */}
         {visibleJobs.length === 0 ? (
+          /* Empty state. Previously used the EmptyState component's
+             `titleKa` / `descriptionKa` side-channel which (a) skipped
+             Russian entirely and (b) violated the project rule "never
+             hardcode user-facing strings, always use t()". The
+             EmptyState component still supports the side-channel for
+             legacy callers; new copy threads through proper i18n keys
+             instead. */
           <EmptyState
             icon={Briefcase}
-            title={jobs.length === 0 ? "No jobs yet" : "No jobs found"}
-            titleKa={
-              jobs.length === 0 ? "პროექტები ჯერ არ არის" : "პროექტები არ მოიძებნა"
-            }
-            description={
-              jobs.length === 0
-                ? "Create your first project and start receiving proposals"
-                : "Try a different search term"
-            }
-            descriptionKa={
-              jobs.length === 0
-                ? "შექმენი პირველი პროექტი და დაიწყე შეთავაზებების მიღება"
-                : "სცადე სხვა საძიებო სიტყვა"
-            }
-            actionLabel={jobs.length === 0 ? "Post a Job" : undefined}
-            actionLabelKa={jobs.length === 0 ? "სამუშაოს გამოქვეყნება" : undefined}
+            title={t(jobs.length === 0 ? "job.noJobsYet" : "job.noJobsMatchSearch")}
+            description={t(
+              jobs.length === 0 ? "job.noJobsYetBody" : "job.noJobsMatchSearchBody",
+            )}
+            actionLabel={jobs.length === 0 ? t("job.postJob") : undefined}
             actionHref={jobs.length === 0 ? "/post-job" : undefined}
             variant="illustrated"
-            size="md"
+            // Zero-jobs is a first-impression moment - bump to `lg`
+            // so the CTA gets the full hero treatment. Filtered-empty
+            // (user already has jobs, just narrowed them out) stays
+            // `md` so it doesn't shove the rest of the page down.
+            size={jobs.length === 0 ? "lg" : "md"}
           />
         ) : (
           <div className="space-y-3">
@@ -414,7 +558,7 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
               return (
                 <div
                   key={job.id}
-                  onClick={() => router.push(`/jobs/${job.id}`)}
+                  onClick={() => router.push(`/${(job.country ?? 'GE').toLowerCase()}/jobs/${job.id}`)}
                   className="group relative bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/30 transition-colors duration-150 cursor-pointer hover:shadow-md flex"
                 >
                   {/* Status color strip */}
@@ -469,6 +613,8 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                                 size="icon"
                                 asChild
                                 onClick={(e) => e.stopPropagation()}
+                                aria-label={t("common.edit")}
+                                title={t("common.edit")}
                                 className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity"
                               >
                                 <Link href={`/post-job?edit=${job.id}`}>
@@ -483,6 +629,8 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                                   setDeleteModalJob(job);
                                 }}
                                 disabled={deletingJobId === job.id}
+                                aria-label={t("common.delete")}
+                                title={t("common.delete")}
                                 className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)]"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -509,9 +657,23 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                       </div>
                     </div>
 
-                    {/* Title + mobile location */}
-                    <h3 className="text-[13px] sm:text-base font-semibold text-[var(--hm-fg-primary)] line-clamp-1 sm:line-clamp-2 group-hover:text-[var(--hm-brand-500)] transition-colors duration-150 mb-0.5">
-                      {job.title}
+                    {/* Title + mobile location + unread-chat badge */}
+                    <h3 className="text-[13px] sm:text-base font-semibold text-[var(--hm-fg-primary)] line-clamp-1 sm:line-clamp-2 group-hover:text-[var(--hm-brand-500)] transition-colors duration-150 mb-0.5 flex items-center gap-1.5">
+                      <span className="line-clamp-1 sm:line-clamp-2">{job.title}</span>
+                      {/* Unread message count for in-progress jobs.
+                          Surfaces backend data that was previously
+                          trapped inside ProjectChat - now visible
+                          on the list card so users know which jobs
+                          have new activity without opening each. */}
+                      {chatUnreadByJob[job.id] > 0 && (
+                        <span
+                          className="flex-shrink-0 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-[var(--hm-brand-500)] text-white text-[10px] font-bold"
+                          title={t("notifications.filters.unread")}
+                          aria-label={t("notifications.filters.unread")}
+                        >
+                          {chatUnreadByJob[job.id]}
+                        </span>
+                      )}
                     </h3>
 
                     {/* Mobile location */}
@@ -560,16 +722,11 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                                 </div>
                               )}
                             </div>
-                            <div className="min-w-0">
-                              <span className="text-[12px] sm:text-[13px] font-semibold text-[var(--hm-brand-500)]">
-                                {job.proposalCount} {t("job.proposals")}
+                            {job.proposalCount === 1 && job.recentProposals?.[0]?.proId?.name && (
+                              <span className="min-w-0 text-[11px] sm:text-[12px] text-[var(--hm-fg-muted)] truncate">
+                                {t("job.from")} {job.recentProposals[0].proId.name}
                               </span>
-                              {job.proposalCount === 1 && job.recentProposals?.[0]?.proId?.name && (
-                                <span className="block text-[10px] sm:text-[11px] text-[var(--hm-fg-muted)] truncate">
-                                  {t("job.from")} {job.recentProposals[0].proId.name}
-                                </span>
-                              )}
-                            </div>
+                            )}
                           </>
                         )}
                         {isOpen && job.proposalCount === 0 && (
@@ -623,39 +780,55 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
 
                       {/* Right: CTA buttons */}
                       <div className="flex items-center gap-1.5 flex-shrink-0">
-                        {/* Mobile action icons */}
+                        {/* Mobile action icons - bumped from 28px to
+                            36px so they reliably hit a finger tap on
+                            phones. Each icon also got a slight bump to
+                            14px so the visual stays balanced inside the
+                            larger button. */}
                         <div className="flex sm:hidden items-center gap-0.5">
                           {isOpen && (
                             <>
-                              <Button variant="ghost" size="icon" asChild onClick={(e) => e.stopPropagation()} className="w-7 h-7">
-                                <Link href={`/post-job?edit=${job.id}`}><Edit3 className="w-3 h-3" /></Link>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                                onClick={(e) => e.stopPropagation()}
+                                aria-label={t("common.edit")}
+                                className="w-9 h-9 active:scale-95"
+                              >
+                                <Link href={`/post-job?edit=${job.id}`}>
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </Link>
                               </Button>
                               <Button
-                                variant="ghost" size="icon"
+                                variant="ghost"
+                                size="icon"
                                 onClick={(e) => { e.stopPropagation(); setDeleteModalJob(job); }}
                                 disabled={deletingJobId === job.id}
-                                className="w-7 h-7 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)]"
+                                aria-label={t("common.delete")}
+                                className="w-9 h-9 active:scale-95 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)]"
                               >
-                                <Trash2 className="w-3 h-3" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </Button>
                             </>
                           )}
                           {isExpired && (
                             <Button
-                              variant="ghost" size="icon"
+                              variant="ghost"
+                              size="icon"
                               onClick={(e) => { e.stopPropagation(); handleRenewJob(job.id); }}
                               disabled={renewingJobId === job.id}
                               loading={renewingJobId === job.id}
-                              className="w-7 h-7 text-[var(--hm-warning-500)]"
+                              className="w-9 h-9 active:scale-95 text-[var(--hm-warning-500)]"
                             >
-                              <RefreshCw className="w-3 h-3" />
+                              <RefreshCw className="w-3.5 h-3.5" />
                             </Button>
                           )}
                         </div>
 
                         {isOpen && job.proposalCount > 0 && (
                           <Button
-                            variant="secondary"
+                            variant="default"
                             size="sm"
                             asChild
                             onClick={(e) => { e.stopPropagation(); handleViewProposals(job.id); }}
@@ -663,7 +836,7 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
                           >
                             <Link href={`/my-jobs/${job.id}/proposals`} className="flex items-center gap-1.5">
                               <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                              {t("job.viewProposals")}
+                              {t("job.viewProposalsCount", { count: job.proposalCount })}
                               <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 opacity-0 -ml-1 group-hover/btn:opacity-100 group-hover/btn:ml-0 transition-all" />
                             </Link>
                           </Button>

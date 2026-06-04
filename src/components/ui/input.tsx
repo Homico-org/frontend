@@ -95,6 +95,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           type={type}
           min={numberMin}
+          // aria-invalid wires screen readers AND the global
+          // `useScrollToError` helper. When a form sets `error={true}`
+          // on its first failing input, submit handlers can call
+          // `scrollToFirstError()` and the page jumps directly to it
+          // - no per-form wiring needed.
+          aria-invalid={error ? true : undefined}
           className={cn(
             inputVariants({ variant, inputSize }),
             leftIcon && "pl-10",
@@ -168,19 +174,56 @@ export interface TextareaProps
     VariantProps<typeof textareaVariants> {
   error?: boolean;
   success?: boolean;
+  /**
+   * When true, the textarea grows to fit its content (clamped to
+   * `minRows`..`maxRows`). Replaces the awkward fixed-height +
+   * inner scrollbar pattern that mobile users particularly hate.
+   * Off by default to preserve existing layouts.
+   */
+  autoResize?: boolean;
+  minRows?: number;
+  maxRows?: number;
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, variant, textareaSize, error, success, ...props }, ref) => {
+  ({ className, variant, textareaSize, error, success, autoResize, minRows, maxRows, value, ...props }, ref) => {
+    const innerRef = React.useRef<HTMLTextAreaElement | null>(null);
+    // Combine forwarded ref + our local ref so the auto-resize hook
+    // can measure the element while still letting callers attach.
+    React.useImperativeHandle(ref, () => innerRef.current as HTMLTextAreaElement, []);
+
+    React.useEffect(() => {
+      if (!autoResize) return;
+      const el = innerRef.current;
+      if (!el) return;
+      const lineHeight = parseFloat(window.getComputedStyle(el).lineHeight) || 20;
+      const paddingY =
+        parseFloat(window.getComputedStyle(el).paddingTop) +
+        parseFloat(window.getComputedStyle(el).paddingBottom);
+      const borderY =
+        parseFloat(window.getComputedStyle(el).borderTopWidth) +
+        parseFloat(window.getComputedStyle(el).borderBottomWidth);
+      const minPx = lineHeight * (minRows ?? 2) + paddingY + borderY;
+      const maxPx = lineHeight * (maxRows ?? 12) + paddingY + borderY;
+      el.style.height = "auto";
+      const next = Math.min(Math.max(el.scrollHeight, minPx), maxPx);
+      el.style.height = `${next}px`;
+      el.style.overflowY = el.scrollHeight > maxPx ? "auto" : "hidden";
+    }, [autoResize, value, minRows, maxRows]);
+
     return (
       <textarea
+        // See Input above - aria-invalid powers the global
+        // `useScrollToError` helper plus screen-reader support.
+        aria-invalid={error ? true : undefined}
         className={cn(
           textareaVariants({ variant, textareaSize }),
           error && "border-[var(--hm-error-500)] focus:border-[var(--hm-error-500)] focus:ring-red-500/15",
           success && "border-[var(--hm-success-500)] focus:border-[var(--hm-success-500)] focus:ring-emerald-500/15",
           className
         )}
-        ref={ref}
+        value={value}
+        ref={innerRef}
         {...props}
       />
     )

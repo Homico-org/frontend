@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import BeforeAfterSlider from '@/components/ui/BeforeAfterSlider';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { storage } from '@/services/storage';
+import { currencySymbol } from '@/utils/currency';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
@@ -71,6 +72,13 @@ export default function PortfolioCard({
   const { t, pick } = useLanguage();
   const { categories } = useCategories();
   const [imageLoaded, setImageLoaded] = useState(false);
+  // Per-project expanded state for the description see-more toggle.
+  // Keyed by project.id so the card can render multiple descriptions
+  // independently (though today a card hosts a single project; this
+  // shape future-proofs for an inline carousel of cards).
+  const [expandedDescriptions, setExpandedDescriptions] = useState<
+    Record<string, boolean>
+  >({});
 
   // Build service name lookup from catalog
   const svcLabel = useMemo(() => {
@@ -345,12 +353,47 @@ export default function PortfolioCard({
             </p>
           )}
 
-          {/* Description - full text, never clamped */}
-          {project.description && (
-            <p className="text-sm text-[var(--hm-fg-secondary)] leading-relaxed whitespace-pre-line">
-              {project.description}
-            </p>
-          )}
+          {/* Description with see-more / see-less toggle. Long
+              portfolio descriptions used to render in full and bloat
+              the card height by 6+ lines, pushing the review quote
+              and the action footer off the visible card area in the
+              grid. Threshold-based collapse keeps the card scannable
+              while still letting the visitor read the full text in
+              place. The toggle stops propagation so opening the
+              text doesn't also fire the parent's image-lightbox
+              click handler. */}
+          {project.description && (() => {
+            const text = project.description;
+            const shouldClamp = text.length > 240;
+            const expanded = expandedDescriptions[project.id] ?? false;
+            return (
+              <div>
+                <p
+                  className={`text-sm text-[var(--hm-fg-secondary)] leading-relaxed whitespace-pre-line ${
+                    shouldClamp && !expanded ? 'line-clamp-4' : ''
+                  }`}
+                >
+                  {text}
+                </p>
+                {shouldClamp && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setExpandedDescriptions((prev) => ({
+                        ...prev,
+                        [project.id]: !expanded,
+                      }));
+                    }}
+                    className="mt-1 text-xs font-semibold text-[var(--hm-brand-500)] hover:text-[var(--hm-brand-600)] transition-colors"
+                  >
+                    {expanded ? t('common.seeLess') : t('common.seeMore')}
+                  </button>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Review quote */}
           {project.review && (
@@ -398,14 +441,15 @@ export default function PortfolioCard({
           {project.services && project.services.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {project.services.map((svc) => {
+                const sym = currencySymbol();
                 const priceLabel =
                   svc.priceMin !== undefined &&
                   svc.priceMax !== undefined &&
                   svc.priceMin > 0 &&
                   svc.priceMax > 0 &&
                   svc.priceMin !== svc.priceMax
-                    ? `${svc.priceMin}-${svc.priceMax}₾`
-                    : `${svc.price}₾`;
+                    ? `${svc.priceMin}-${svc.priceMax}${sym}`
+                    : `${svc.price}${sym}`;
                 return (
                   <span
                     key={svc.serviceKey}

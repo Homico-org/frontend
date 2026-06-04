@@ -16,7 +16,7 @@ import { ACCENT_COLOR } from '@/constants/theme';
 
 type FeedbackType = 'bug' | 'feature' | 'general';
 
-const HIDDEN_ROUTES = ['/admin'];
+const HIDDEN_ROUTES = ['/admin', '/login', '/register', '/forgot-password', '/pro/profile-setup'];
 
 const SUBJECT_MAP: Record<FeedbackType, string> = {
   bug: 'Bug Report',
@@ -146,18 +146,17 @@ export function FeedbackWidget() {
         </button>
       )}
 
-      {/* Mobile trigger — FAB. Positioned above the MobileBottomNav (58px tall
-          plus iOS safe-area inset) so it never overlaps the bottom rail. */}
+      {/* Mobile trigger — FAB. Stacks above the AI chat FAB which sits at
+          calc(80 + safe + 20) from bottom. Adds AI FAB height (48px) + 12px
+          gap so the two never collide and both clear the bottom nav. */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed flex sm:hidden right-3 z-[39] w-10 h-10 rounded-full shadow-lg items-center justify-center cursor-pointer"
+          className="fixed flex lg:hidden right-5 z-[51] w-10 h-10 rounded-full shadow-lg items-center justify-center cursor-pointer"
           style={{
             backgroundColor: ACCENT_COLOR,
             color: '#fff',
-            // 58px nav + iOS safe-area + generous 32px gap — also clears the
-            // shadow halo so the FAB doesn't visually merge with the nav.
-            bottom: 'calc(58px + env(safe-area-inset-bottom) + 32px)',
+            bottom: 'calc(80px + env(safe-area-inset-bottom) + 80px)',
           }}
           aria-label={t('feedback.title')}
         >
@@ -301,6 +300,8 @@ function PanelContent({
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('feedback.email')}
               inputSize="default"
+              autoComplete="email"
+              inputMode="email"
             />
           </div>
         )}

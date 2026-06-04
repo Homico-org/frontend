@@ -97,7 +97,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
               <Lock
                 className={cn(
                   iconSizes[size || 'md'],
-                  error ? 'text-[var(--hm-error-500)]' : 'text-neutral-400'
+                  error ? 'text-[var(--hm-error-500)]' : 'text-[var(--hm-fg-muted)]'
                 )}
               />
             </div>

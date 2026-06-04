@@ -214,8 +214,8 @@ export default function InvitePage() {
 
               <p className="text-sm leading-relaxed" style={{ color: 'var(--hm-fg-secondary)' }}>
                 {pick(
-                  `You've been invited to join Homico — Georgia's platform for home service professionals. Set up your profile, showcase your work, and start getting clients.`,
-                  `მოგიწვიეთ Homico-ზე — პლატფორმაზე, სადაც სახლის სერვისის სპეციალისტები კლიენტებს პოულობენ. შექმენი პროფილი, დაამატე შენი ნამუშევრები და დაიწყე შეკვეთების მიღება.`
+                  `You've been invited to join Homico - the platform for home service professionals. Set up your profile, showcase your work, and start getting clients.`,
+                  `მოგიწვიეთ Homico-ზე - პლატფორმაზე, სადაც სახლის სერვისის სპეციალისტები კლიენტებს პოულობენ. შექმენი პროფილი, დაამატე შენი ნამუშევრები და დაიწყე შეკვეთების მიღება.`
                 )}
               </p>
             </div>

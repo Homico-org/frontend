@@ -1,73 +1,211 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import AuthGuard from '@/components/common/AuthGuard';
-import { Image as ImageIcon, Plus, Eye } from 'lucide-react';
+import EmptyState from '@/components/common/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/Card';
+import { IconBadge } from '@/components/ui/IconBadge';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useMarketplaceCountry } from '@/hooks/useCountry';
+import api from '@/lib/api';
+import type { PortfolioItem } from '@/types/shared/social';
+import { Image as ImageIcon, Layers, Plus } from 'lucide-react';
 
 function ProPortfolioPageContent() {
   const router = useRouter();
+  const { t } = useLanguage();
+  const { user } = useAuth();
+  const country = useMarketplaceCountry();
+
+  const [items, setItems] = useState<PortfolioItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const res = await api.get(`/portfolio/pro/${user.id}`, {
+          signal: controller.signal,
+        });
+        const raw = Array.isArray(res.data) ? res.data : [];
+        setItems(raw as PortfolioItem[]);
+      } catch (err) {
+        const e = err as { name?: string; code?: string };
+        if (e?.name === 'CanceledError' || e?.code === 'ERR_CANCELED') return;
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [user?.id]);
+
+  const stats = useMemo(() => {
+    const totalImages = items.reduce((acc, item) => {
+      const main = item.imageUrl ? 1 : 0;
+      const extra = item.images?.length ?? 0;
+      const beforeAfter = (item.beforeAfter?.length ?? 0) * 2;
+      return acc + main + extra + beforeAfter;
+    }, 0);
+    const categories = new Set(
+      items.map((i) => i.category).filter((c): c is string => Boolean(c)),
+    );
+    return {
+      totalProjects: items.length,
+      totalImages,
+      categoriesCount: categories.size,
+    };
+  }, [items]);
+
+  const manageHref = user?.id
+    ? `/${country.toLowerCase()}/professionals/${user.id}`
+    : '/pro/profile-setup';
 
   return (
     <div className="min-h-screen bg-[var(--hm-bg-page)] py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-medium text-[var(--hm-fg-primary)]">Portfolio</h1>
-            <p className="mt-1 sm:mt-2 text-sm sm:text-base text-[var(--hm-fg-muted)]">Showcase your best work to attract clients</p>
+            <h1 className="text-2xl sm:text-3xl font-serif font-medium text-[var(--hm-fg-primary)]">
+              {t('common.portfolio')}
+            </h1>
+            <p className="mt-1 sm:mt-2 text-sm sm:text-base text-[var(--hm-fg-muted)]">
+              {t('professional.portfolioSubtitle')}
+            </p>
           </div>
-          <button className="inline-flex items-center justify-center px-4 py-2.5 sm:py-3 bg-[var(--hm-n-800)] text-white rounded-xl hover:bg-[var(--hm-n-700)] transition-all duration-200 ease-out font-medium touch-manipulation">
-            <Plus className="h-5 w-5 mr-2" />
-            Add Project
-          </button>
+          <Button
+            variant="default"
+            leftIcon={<Plus className="h-5 w-5" />}
+            onClick={() => router.push(manageHref)}
+          >
+            {t('common.addProject')}
+          </Button>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
-          <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card p-4 sm:p-6">
+          <Card variant="elevated" size="md">
             <div className="flex items-center">
-              <div className="bg-[var(--hm-n-800)] p-2.5 sm:p-3 rounded-lg sm:rounded-xl">
-                <ImageIcon className="h-5 sm:h-6 w-5 sm:w-6 text-white" />
-              </div>
-              <div className="ml-3 sm:ml-4">
-                <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">Total Projects</p>
-                <p className="text-xl sm:text-2xl font-semibold text-[var(--hm-fg-primary)]">0</p>
+              <IconBadge icon={ImageIcon} variant="neutral" size="lg" />
+              <div className="ml-2.5 sm:ml-4">
+                <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">
+                  {t('professional.totalProjects')}
+                </p>
+                <p className="text-lg sm:text-2xl font-semibold text-[var(--hm-fg-primary)]">
+                  {isLoading ? <Skeleton className="h-6 w-10" /> : stats.totalProjects}
+                </p>
               </div>
             </div>
-          </div>
-          <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card p-4 sm:p-6">
+          </Card>
+          <Card variant="elevated" size="md">
             <div className="flex items-center">
-              <div className="bg-primary-500 p-2.5 sm:p-3 rounded-lg sm:rounded-xl">
-                <Eye className="h-5 sm:h-6 w-5 sm:w-6 text-white" />
-              </div>
-              <div className="ml-3 sm:ml-4">
-                <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">Total Views</p>
-                <p className="text-xl sm:text-2xl font-semibold text-[var(--hm-fg-primary)]">0</p>
+              <IconBadge icon={ImageIcon} variant="info" size="lg" />
+              <div className="ml-2.5 sm:ml-4">
+                <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">
+                  {t('professional.totalImages')}
+                </p>
+                <p className="text-lg sm:text-2xl font-semibold text-[var(--hm-fg-primary)]">
+                  {isLoading ? <Skeleton className="h-6 w-10" /> : stats.totalImages}
+                </p>
               </div>
             </div>
-          </div>
-          <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card p-4 sm:p-6">
+          </Card>
+          <Card variant="elevated" size="md">
             <div className="flex items-center">
-              <div className="bg-[var(--hm-brand-500)] p-2.5 sm:p-3 rounded-lg sm:rounded-xl">
-                <ImageIcon className="h-5 sm:h-6 w-5 sm:w-6 text-white" />
-              </div>
-              <div className="ml-3 sm:ml-4">
-                <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">Categories</p>
-                <p className="text-xl sm:text-2xl font-semibold text-[var(--hm-fg-primary)]">0</p>
+              <IconBadge icon={Layers} variant="accent" size="lg" />
+              <div className="ml-2.5 sm:ml-4">
+                <p className="text-xs sm:text-sm text-[var(--hm-fg-muted)]">
+                  {t('professional.categoriesCount')}
+                </p>
+                <p className="text-lg sm:text-2xl font-semibold text-[var(--hm-fg-primary)]">
+                  {isLoading ? <Skeleton className="h-6 w-10" /> : stats.categoriesCount}
+                </p>
               </div>
             </div>
-          </div>
+          </Card>
         </div>
 
-        {/* Empty State */}
-        <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card p-8 sm:p-12 text-center">
-          <ImageIcon className="h-12 sm:h-16 w-12 sm:w-16 text-[var(--hm-fg-muted)] mx-auto mb-3 sm:mb-4" />
-          <h3 className="text-base sm:text-lg font-medium text-[var(--hm-fg-primary)] mb-2">No portfolio items yet</h3>
-          <p className="text-sm sm:text-base text-[var(--hm-fg-muted)] mb-5 sm:mb-6">Add your best work to showcase your skills and attract more clients</p>
-          <button className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 sm:py-3.5 bg-[var(--hm-n-800)] text-white rounded-xl hover:bg-[var(--hm-n-700)] transition-all duration-200 ease-out font-medium touch-manipulation">
-            <Plus className="h-5 w-5 mr-2" />
-            Add Your First Project
-          </button>
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <LoadingSpinner size="lg" />
+          </div>
+        ) : items.length === 0 ? (
+          <Card variant="elevated" size="lg">
+            <EmptyState
+              icon={ImageIcon}
+              title={t('professional.noPortfolioItemsYet')}
+              description={t('professional.portfolioEmptyBody')}
+              actionLabel={t('common.addYourFirstProject')}
+              actionHref={manageHref}
+              variant="illustrated"
+              size="md"
+            />
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {items.map((item) => {
+              const cover =
+                item.imageUrl ||
+                item.images?.[0] ||
+                item.beforeAfter?.[0]?.after ||
+                item.afterImage ||
+                item.beforeAfter?.[0]?.before ||
+                item.beforeImage;
+              return (
+                <Card
+                  key={item.id}
+                  variant="elevated"
+                  size="sm"
+                  hover
+                  className="overflow-hidden p-0 cursor-pointer"
+                  onClick={() => router.push(manageHref)}
+                >
+                  <div className="relative aspect-[4/3] w-full bg-[var(--hm-bg-tertiary)]">
+                    {cover ? (
+                      <Image
+                        src={cover}
+                        alt={item.title || ''}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <ImageIcon className="h-10 w-10 text-[var(--hm-fg-muted)]" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3 sm:p-4">
+                    <h3 className="text-sm sm:text-base font-medium text-[var(--hm-fg-primary)] line-clamp-1">
+                      {item.title || t('common.untitled')}
+                    </h3>
+                    {item.category && (
+                      <p className="mt-1 text-xs text-[var(--hm-fg-muted)] line-clamp-1">
+                        {item.category}
+                      </p>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+
+        {items.length > 0 && !isLoading && (
+          <div className="mt-6 sm:mt-8 flex justify-center">
+            <Button
+              variant="outline"
+              onClick={() => router.push(manageHref)}
+            >
+              {t('professional.manageInProfile')}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

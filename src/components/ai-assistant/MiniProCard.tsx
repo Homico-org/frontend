@@ -12,6 +12,7 @@ import Avatar from "@/components/common/Avatar";
 import Link from "next/link";
 import { ProfessionalCardData } from "./types";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { currencySymbol } from "@/utils/currency";
 
 interface MiniProCardProps {
   professional: ProfessionalCardData;
@@ -42,9 +43,13 @@ export default function MiniProCard({
     ? pick({ en: primaryCategory, ka: primaryCategoryKa })
     : primaryCategory;
 
+  const sym = currencySymbol(
+    priceRange?.currency ? { currency: priceRange.currency } : undefined,
+  );
+
   const formatPrice = (price?: number) => {
     if (!price) return null;
-    return `₾${price.toLocaleString()}`;
+    return `${sym}${price.toLocaleString()}`;
   };
 
   const getPriceLabel = () => {

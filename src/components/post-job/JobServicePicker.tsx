@@ -5,9 +5,12 @@ import { useCategories } from '@/contexts/CategoriesContext';
 import type { CatalogServiceItem, Subcategory } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAiServiceSearch } from '@/hooks/useAiServiceSearch';
+import { expandSearchQuery } from '@/data/searchSynonyms';
+import { useCountry } from '@/hooks/useCountry';
+import { currencySymbol } from '@/utils/currency';
 import AiSearchBar from '@/components/common/AiSearchBar';
-import { ArrowLeft, Check, ChevronRight, MessageCircle, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Check, MessageCircle, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export interface JobServiceSelection {
   serviceKey: string;
@@ -58,8 +61,35 @@ export default function JobServicePicker({
 }: JobServicePickerProps) {
   const { t, pick } = useLanguage();
   const { categories } = useCategories();
+  const country = useCountry();
+  const sym = currencySymbol({ country });
   const [searchQuery, setSearchQuery] = useState('');
-  const { aiResults, aiLoading, search: aiSearch, clear: aiClear } = useAiServiceSearch();
+  const { aiResults, aiLoading, aiAttempted, search: aiSearch, clear: aiClear } = useAiServiceSearch();
+
+  // Tab strip auto-scroll. When the selected category changes - either
+  // by user click (likely already in view) or by AI search resolving
+  // to a category whose tab is off-screen (e.g. user types "gipso" and
+  // the "Contractors" tab is far right) - scroll the active tab into
+  // the visible area of the strip. `inline: 'center'` centers the
+  // active pill so the user sees neighbouring tabs on both sides; the
+  // outer container is `position: relative` so the scroll stays inside
+  // the strip and doesn't yank the whole page.
+  const tabStripRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const strip = tabStripRef.current;
+    if (!strip) return;
+    const targetKey = selectedCategory || '__all__';
+    const active = strip.querySelector<HTMLElement>(
+      `[data-tab-key="${targetKey}"]`,
+    );
+    if (active) {
+      active.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }
+  }, [selectedCategory]);
 
   // Resolve AI results to actual service items
   const aiMatchedServices = useMemo(() => {
@@ -83,15 +113,35 @@ export default function JobServicePicker({
     return matches.length > 0 ? matches : null;
   }, [aiResults, categories]);
 
-  // Local text search fallback
+  // Local text search fallback. Matches service name (en/ka), service
+  // tags, subcategory name, subcategory keywords, AND a frontend
+  // synonym expansion (data/searchSynonyms.ts). Synonyms cover the
+  // colloquial / transliterated terms users actually type that don't
+  // appear in the canonical catalog text - e.g. "gipso" expands to
+  // "drywall" + "გიფს" + "гипсокарт" so it matches "Plasterer &
+  // drywaller" / "გიფსოკარტონი" / "Гипсокартон" without needing the
+  // catalog seed to carry every spelling variant. 1-char gate.
   const localSearchResults = useMemo(() => {
-    if (!searchQuery.trim() || searchQuery.length < 2) return null;
-    const q = searchQuery.toLowerCase();
+    if (!searchQuery.trim()) return null;
+    const tokens = expandSearchQuery(searchQuery);
+    if (tokens.length === 0) return null;
     const results: { svc: CatalogServiceItem; sub: Subcategory; catKey: string }[] = [];
     for (const cat of categories) {
       for (const sub of cat.subcategories) {
-        for (const svc of (sub.services ?? [])) {
-          if (svc.name.toLowerCase().includes(q) || svc.nameKa.toLowerCase().includes(q)) {
+        const subFields = [
+          sub.name.toLowerCase(),
+          sub.nameKa.toLowerCase(),
+          ...((sub.keywords ?? []) as string[]).map((k) => k.toLowerCase()),
+        ];
+        const subHit = tokens.some((t) => subFields.some((f) => f.includes(t)));
+        for (const svc of sub.services ?? []) {
+          const svcFields = [
+            svc.name.toLowerCase(),
+            svc.nameKa.toLowerCase(),
+            ...((svc.tags ?? []) as string[]).map((tg) => tg.toLowerCase()),
+          ];
+          const svcHit = tokens.some((t) => svcFields.some((f) => f.includes(t)));
+          if (subHit || svcHit) {
             results.push({ svc, sub, catKey: cat.key });
           }
         }
@@ -120,18 +170,26 @@ export default function JobServicePicker({
     aiClear();
   }
 
-  const handleCategoryClick = (categoryKey: string) => {
-    // Free switching since 2026-05 - selections from other categories
-    // are preserved, so there's nothing to warn about.
-    if (categoryKey === selectedCategory) return;
-    onCategoryChange(categoryKey);
-  };
-
   const handleServiceToggle = (serviceKey: string, subcatKey: string, categoryKeyOverride?: string) => {
     // categoryKeyOverride lets search results jump straight to a service
     // in a category the user isn't currently viewing. The drill-down view
-    // always passes `selectedCategory` (matches its own filtering).
-    const catKey = categoryKeyOverride ?? selectedCategory;
+    // always passes `selectedCategory` (matches its own filtering). The
+    // "All services" view callers MUST pass `cat.key` from their render
+    // closure because selectedCategory is '' there.
+    let catKey = categoryKeyOverride ?? selectedCategory;
+    // Belt-and-suspenders: if we still don't know which category owns
+    // this service (a future caller forgot to pass it), scan to find it.
+    // Cheap - categories are O(10), subcategories O(10) each.
+    if (!catKey) {
+      const owner = categories.find((c) =>
+        c.subcategories?.some(
+          (s) =>
+            s.key === subcatKey &&
+            s.services?.some((svc) => svc.key === serviceKey),
+        ),
+      );
+      if (owner) catKey = owner.key;
+    }
     const cat = categories.find(c => c.key === catKey);
     const subcat = cat?.subcategories.find(s => s.key === subcatKey);
     const svc = subcat?.services?.find(s => s.key === serviceKey);
@@ -257,7 +315,6 @@ export default function JobServicePicker({
     );
   };
 
-  const selectedCategoryData = categories.find(c => c.key === selectedCategory);
   const totalBudget = selectedServices.reduce((sum, s) => sum + s.budget * (s.quantity || 1), 0);
 
   // "Open to offers" semantics differ per pricing mode:
@@ -300,6 +357,8 @@ export default function JobServicePicker({
           onChange={(v) => handleSearchChange(v)}
           aiLoading={aiLoading}
           aiResultsCount={aiResults?.length ?? 0}
+          aiAttempted={aiAttempted}
+          hasLocalResults={(localSearchResults?.length ?? 0) > 0}
           placeholder={t('browse.searchServices')}
         />
         {!searchQuery && (
@@ -322,7 +381,7 @@ export default function JobServicePicker({
                   onClick={() => handleSearchServiceSelect(svc.key, sub.key, catKey)}
                   className="w-full flex items-center gap-3 px-3.5 py-2.5 text-left hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                 >
-                  <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${isChecked ? 'bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)]' : 'border-neutral-300'}`}>
+                  <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${isChecked ? 'bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)]' : 'border-[var(--hm-border-strong)]'}`}>
                     {isChecked && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -335,7 +394,7 @@ export default function JobServicePicker({
                   </div>
                   {svc.basePrice > 0 && (
                     <span className="text-[11px] font-medium shrink-0" style={{ color: 'var(--hm-fg-secondary)' }}>
-                      ~{svc.basePrice}₾
+                      ~{svc.basePrice}{sym}
                     </span>
                   )}
                 </button>
@@ -345,173 +404,115 @@ export default function JobServicePicker({
         </div>
       )}
 
-      {/* Your selections - horizontal chip row grouping selected services
-          by category. Tapping a chip jumps to that category so the user
-          can edit/remove from it. Only renders when there's >= 1
-          selection. Visible whether we're in the grid or drilled into a
-          category, so the user always sees the whole picture. */}
-      {!searchQuery && selectionsByCategory.length > 0 && (
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[11px] font-medium text-[var(--hm-fg-muted)] mr-1">
-            {t('job.yourSelections')}:
-          </span>
-          {selectionsByCategory.map(({ key, count, data }) => {
-            const accent = data?.color || 'var(--hm-brand-500)';
-            const isOpen = key === selectedCategory;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => onCategoryChange(isOpen ? '' : key)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all"
-                style={{
-                  background: isOpen ? accent : `${accent}14`,
-                  color: isOpen ? '#fff' : accent,
-                  border: `1px solid ${isOpen ? accent : `${accent}40`}`,
-                }}
-              >
-                <span className="inline-flex w-3.5 h-3.5">
-                  <CategoryIcon type={key} className="w-full h-full" />
-                </span>
-                {data ? pick({ en: data.name, ka: data.nameKa }) : key}
-                <span
-                  className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full text-[10px] font-bold"
-                  style={{
-                    background: isOpen ? 'rgba(255,255,255,0.25)' : accent,
-                    color: isOpen ? '#fff' : '#fff',
-                  }}
+      {/* Category tab strip. Replaces the old category-grid + drill-in
+          two-step discovery. "All" is the default tab and shows every
+          category's services in one scroll; the per-category tabs scope
+          the list. Picked-count badges per tab carry the function that
+          the now-removed "Your selections:" chip row used to. */}
+      {!searchQuery && (
+        // Note: `snap-x` was here previously - removed because on touch
+        // devices the snap engine occasionally swallowed taps on the
+        // pills (it interpreted the press as a swipe-to-snap intent).
+        // Plain overflow-x-auto keeps the horizontal scroll without
+        // that side-effect. Also bumped py to 2 for a slightly larger
+        // tap target (44x44 is the iOS minimum recommendation).
+        <div ref={tabStripRef} className="-mx-3 sm:mx-0 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-1.5 px-3 sm:px-0 min-w-min">
+            {(() => {
+              const isAll = !selectedCategory;
+              return (
+                <button
+                  type="button"
+                  data-tab-key="__all__"
+                  onClick={() => onCategoryChange('')}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-[12px] font-semibold transition-all shrink-0 whitespace-nowrap border touch-manipulation ${
+                    isAll
+                      ? 'bg-[var(--hm-brand-500)] text-white border-[var(--hm-brand-500)]'
+                      : 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] border-[var(--hm-border-subtle)] hover:border-[var(--hm-border-strong)]'
+                  }`}
                 >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Category grid - color-tinted cards using catalog `color`, with
-          a service count and (when present) a "selected from this
-          category" badge so the user can scan at a glance which
-          categories already contribute to the job. */}
-      {!searchQuery && !selectedCategory && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
-          {categories.filter(c => c.isActive).map(cat => {
-            const accent = cat.color || 'var(--hm-brand-500)';
-            const svcCount = cat.subcategories.reduce(
-              (n, s) => n + ((s.services?.length) ?? 0),
-              0,
-            );
-            const pickedCount = selectionsByCategory.find(s => s.key === cat.key)?.count ?? 0;
-            const hasPicks = pickedCount > 0;
-            return (
-              <button
-                key={cat.key}
-                type="button"
-                onClick={() => handleCategoryClick(cat.key)}
-                className="group relative flex items-center gap-3 px-3.5 py-3.5 sm:px-4 sm:py-4 rounded-2xl text-left transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)] focus-visible:ring-offset-2"
-                style={{
-                  backgroundColor: 'var(--hm-bg-elevated)',
-                  border: `1px solid ${hasPicks ? accent : 'var(--hm-border-subtle)'}`,
-                  boxShadow: hasPicks
-                    ? `0 4px 14px -8px ${accent}66, 0 1px 2px rgba(0,0,0,0.04)`
-                    : '0 1px 2px rgba(0,0,0,0.02)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = accent;
-                  e.currentTarget.style.boxShadow = `0 6px 18px -8px ${accent}40, 0 1px 2px rgba(0,0,0,0.04)`;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = hasPicks ? accent : 'var(--hm-border-subtle)';
-                  e.currentTarget.style.boxShadow = hasPicks
-                    ? `0 4px 14px -8px ${accent}66, 0 1px 2px rgba(0,0,0,0.04)`
-                    : '0 1px 2px rgba(0,0,0,0.02)';
-                }}
-              >
-                {/* Color-tinted icon backplate - soft tint, real catalog color */}
-                <span
-                  className="flex-shrink-0 flex items-center justify-center rounded-xl w-11 h-11 sm:w-12 sm:h-12 transition-colors"
-                  style={{
-                    background: `${accent}14`,
-                    color: accent,
-                  }}
-                >
-                  <CategoryIcon type={cat.key} className="w-5 h-5 sm:w-6 sm:h-6" />
-                </span>
-                <span className="flex-1 min-w-0 flex flex-col gap-0.5">
-                  <span className="text-[13px] sm:text-sm font-semibold leading-tight text-[var(--hm-fg-primary)] line-clamp-2">
-                    {pick({ en: cat.name, ka: cat.nameKa })}
-                  </span>
-                  {svcCount > 0 && (
-                    <span className="text-[10px] sm:text-[11px] text-[var(--hm-fg-muted)]">
-                      {svcCount} {t('common.services').toLowerCase()}
+                  {t('job.allServices')}
+                  {selectedServices.length > 0 && (
+                    <span
+                      className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white ${
+                        isAll ? 'bg-white/25' : 'bg-[var(--hm-brand-500)]'
+                      }`}
+                    >
+                      {selectedServices.length}
                     </span>
                   )}
-                </span>
-                {hasPicks ? (
-                  <span
-                    className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full text-[11px] font-bold text-white flex-shrink-0"
-                    style={{ background: accent }}
-                  >
-                    {pickedCount}
+                </button>
+              );
+            })()}
+            {categories.filter(c => c.isActive).map(cat => {
+              const accent = cat.color || 'var(--hm-brand-500)';
+              const isActive = selectedCategory === cat.key;
+              const pickedCount = selectionsByCategory.find(s => s.key === cat.key)?.count ?? 0;
+              return (
+                <button
+                  key={cat.key}
+                  type="button"
+                  data-tab-key={cat.key}
+                  onClick={() => onCategoryChange(cat.key)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-[12px] font-semibold transition-all shrink-0 whitespace-nowrap border touch-manipulation"
+                  style={{
+                    background: isActive ? accent : `${accent}14`,
+                    color: isActive ? '#fff' : accent,
+                    borderColor: isActive ? accent : `${accent}40`,
+                  }}
+                >
+                  <span className="inline-flex w-3.5 h-3.5">
+                    <CategoryIcon type={cat.key} className="w-full h-full" />
                   </span>
-                ) : (
-                  <ChevronRight
-                    className="w-4 h-4 flex-shrink-0 text-[var(--hm-fg-muted)] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
-                  />
-                )}
-              </button>
-            );
-          })}
+                  {pick({ en: cat.name, ka: cat.nameKa })}
+                  {pickedCount > 0 && (
+                    <span
+                      className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white"
+                      style={{ background: isActive ? 'rgba(255,255,255,0.25)' : accent }}
+                    >
+                      {pickedCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {/* Empty state - visible only when no category and no search query */}
-      {!searchQuery && !selectedCategory && (
-        <div className="flex flex-col items-center text-center py-2">
-          <p className="text-[13px] font-medium text-[var(--hm-fg-secondary)]">
-            {t('job.selectCategoryFirst')}
-          </p>
-          <p className="mt-1 text-[11px] text-[var(--hm-fg-muted)]">
-            {t('job.searchOrPick')}
-          </p>
-        </div>
-      )}
-
-      {!searchQuery && selectedCategoryData && (() => {
-        const accent = selectedCategoryData.color || 'var(--hm-brand-500)';
+      {/* Always-visible services list, scoped to the active tab. The
+          "All" tab shows every category with a small category header
+          per group; a specific tab shows only that category's
+          subcategories (no header needed, the tab already labels it).
+          This removes the previous drill-in step that hid services
+          like "Gypsum wall maker" two clicks deep. */}
+      {!searchQuery && (() => {
+        const categoriesToShow = selectedCategory
+          ? categories.filter(c => c.key === selectedCategory)
+          : categories.filter(c => c.isActive);
+        const showCategoryHeaders = !selectedCategory;
         return (
         <div className="space-y-4">
-          {/* Selected category header - shows accent + back link */}
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-2.5">
-              <span
-                className="flex items-center justify-center rounded-lg w-8 h-8"
-                style={{ background: `${accent}14`, color: accent }}
-              >
-                <CategoryIcon type={selectedCategoryData.key} className="w-4 h-4" />
-              </span>
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-wider font-semibold text-[var(--hm-fg-muted)]">
-                  {t('job.selectServices')}
-                </span>
-                <span className="text-sm font-semibold text-[var(--hm-fg-primary)]">
-                  {pick({ en: selectedCategoryData.name, ka: selectedCategoryData.nameKa })}
-                </span>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => onCategoryChange('')}
-              className="group inline-flex items-center gap-1 text-[12px] font-medium text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
-              {t('job.allCategories')}
-            </button>
-          </div>
-
-          {selectedCategoryData.subcategories
-            .filter(sub => sub.isActive && sub.services && sub.services.length > 0)
-            .map(subcat => (
+          {categoriesToShow.map(cat => {
+            const accent = cat.color || 'var(--hm-brand-500)';
+            const subcats = cat.subcategories.filter(sub => sub.isActive && sub.services && sub.services.length > 0);
+            if (subcats.length === 0) return null;
+            return (
+              <div key={cat.key} className="space-y-3">
+                {showCategoryHeaders && (
+                  <div className="flex items-center gap-2.5 pt-1">
+                    <span
+                      className="flex items-center justify-center rounded-lg w-8 h-8"
+                      style={{ background: `${accent}14`, color: accent }}
+                    >
+                      <CategoryIcon type={cat.key} className="w-4 h-4" />
+                    </span>
+                    <span className="text-sm font-semibold text-[var(--hm-fg-primary)]">
+                      {pick({ en: cat.name, ka: cat.nameKa })}
+                    </span>
+                  </div>
+                )}
+                {subcats.map(subcat => (
               <div
                 key={subcat.key}
                 className="rounded-2xl border bg-[var(--hm-bg-elevated)] overflow-hidden"
@@ -561,10 +562,14 @@ export default function JobServicePicker({
                         className="px-4 py-3.5"
                       >
                         <div className="flex items-start gap-3">
-                          {/* Checkbox - bumped to 22×22 with brand-tinted hover ring and a check icon that pops in */}
+                          {/* Checkbox - bumped to 22×22 with brand-tinted hover ring and a check icon that pops in.
+                              The 3rd arg `cat.key` is REQUIRED on the "All
+                              services" view (selectedCategory === ''). Without it,
+                              handleServiceToggle's catKey lookup returns
+                              undefined and the click is a silent no-op. */}
                           <button
                             type="button"
-                            onClick={() => handleServiceToggle(svc.key, subcat.key)}
+                            onClick={() => handleServiceToggle(svc.key, subcat.key, cat.key)}
                             className={`flex-shrink-0 w-[22px] h-[22px] mt-px rounded-md border-2 flex items-center justify-center transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)] focus-visible:ring-offset-1 ${
                               isChecked
                                 ? 'border-[var(--hm-brand-500)] shadow-sm scale-[1.02]'
@@ -600,7 +605,7 @@ export default function JobServicePicker({
                               {/* Market price hint - suppressed for quote-only services */}
                               {!isQuoteOnly && marketMax > 0 && (
                                 <span className="text-[11px] text-[var(--hm-fg-muted)]">
-                                  {t('job.marketPrice')}: {marketMin === marketMax ? `${marketMin}₾` : `${marketMin}-${marketMax}₾`}
+                                  {t('job.marketPrice')}: {marketMin === marketMax ? `${marketMin}${sym}` : `${marketMin}-${marketMax}${sym}`}
                                 </span>
                               )}
                             </div>
@@ -652,7 +657,7 @@ export default function JobServicePicker({
                                         >
                                           {pick({ en: uo.label.en, ka: uo.label.ka })}
                                           {uo.defaultPrice > 0 && (
-                                            <span className={`ml-1 ${isActive ? 'opacity-80' : 'opacity-50'}`}>~{uo.defaultPrice}₾</span>
+                                            <span className={`ml-1 ${isActive ? 'opacity-80' : 'opacity-50'}`}>~{uo.defaultPrice}{sym}</span>
                                           )}
                                         </button>
                                       );
@@ -660,12 +665,26 @@ export default function JobServicePicker({
                                   </div>
                                 )}
 
-                                {/* Quantity + Per-unit price */}
+                                {/* Quantity + Per-unit price.
+                                    On mobile the Qty input + × +
+                                    Price cluster (label + Fixed/Range
+                                    toggle + 1-2 number inputs) is too
+                                    wide for the card; previously the
+                                    row had `flex items-center gap-3`
+                                    with no wrap and the Price cluster
+                                    pushed off the right edge of the
+                                    screen. Switched to a vertical
+                                    stack on mobile (each row gets full
+                                    card width to wrap its own
+                                    contents), inline on sm+. The `×`
+                                    separator only renders on sm+
+                                    because it has no meaning when the
+                                    two clusters live on separate rows. */}
                                 <div
                                   className="rounded-lg px-3 py-2.5 space-y-2"
                                   style={{ border: '1px solid var(--hm-border-subtle)' }}
                                 >
-                                  <div className="flex items-center gap-3">
+                                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                                     {/* Quantity */}
                                     <div className="flex items-center gap-1.5">
                                       <span className="text-[11px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>
@@ -688,7 +707,7 @@ export default function JobServicePicker({
                                       />
                                     </div>
 
-                                    <span className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>×</span>
+                                    <span className="hidden sm:inline text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>×</span>
 
                                     {/* Per-unit price (single OR min-max range).
                                         The mode toggle is rendered as an
@@ -712,7 +731,7 @@ export default function JobServicePicker({
                                           role="tab"
                                           aria-selected={!selection?.useRange}
                                           onClick={() => { if (selection?.useRange) toggleRange(svc.key); }}
-                                          className="px-2 py-0.5 text-[10px] font-semibold transition-colors"
+                                          className="px-3 py-1.5 text-[11px] font-semibold transition-colors min-h-[32px]"
                                           style={{
                                             background: !selection?.useRange ? 'var(--hm-brand-500)' : 'transparent',
                                             color: !selection?.useRange ? '#fff' : 'var(--hm-fg-muted)',
@@ -725,7 +744,7 @@ export default function JobServicePicker({
                                           role="tab"
                                           aria-selected={!!selection?.useRange}
                                           onClick={() => { if (!selection?.useRange) toggleRange(svc.key); }}
-                                          className="px-2 py-0.5 text-[10px] font-semibold transition-colors"
+                                          className="px-3 py-1.5 text-[11px] font-semibold transition-colors min-h-[32px]"
                                           style={{
                                             background: selection?.useRange ? 'var(--hm-brand-500)' : 'transparent',
                                             color: selection?.useRange ? '#fff' : 'var(--hm-fg-muted)',
@@ -737,7 +756,7 @@ export default function JobServicePicker({
                                       {selection?.useRange ? (
                                         <div className="flex items-center gap-1 flex-1">
                                           <div className="relative flex-1 max-w-[64px]">
-                                            <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                                            <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>{sym}</span>
                                             <input
                                               type="number"
                                               min="0"
@@ -756,7 +775,7 @@ export default function JobServicePicker({
                                           </div>
                                           <span className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>-</span>
                                           <div className="relative flex-1 max-w-[64px]">
-                                            <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                                            <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>{sym}</span>
                                             <input
                                               type="number"
                                               min="0"
@@ -776,7 +795,7 @@ export default function JobServicePicker({
                                         </div>
                                       ) : (
                                         <div className="relative flex-1 max-w-[120px]">
-                                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>{sym}</span>
                                           <input
                                             type="number"
                                             min="0"
@@ -844,7 +863,7 @@ export default function JobServicePicker({
                                         <div className="flex items-center justify-between gap-2 flex-wrap">
                                           {budget > 0 && (selection?.quantity ?? 1) > 1 ? (
                                             <span className="text-[11px] font-bold" style={{ color: 'var(--hm-brand-500)' }}>
-                                              = {budget * (selection?.quantity ?? 1)}₾ {t('common.total').toLowerCase()}
+                                              = {budget * (selection?.quantity ?? 1)}{sym} {t('common.total').toLowerCase()}
                                             </span>
                                           ) : openToOffers ? (
                                             <span
@@ -892,6 +911,9 @@ export default function JobServicePicker({
                 </div>
               </div>
             ))}
+              </div>
+            );
+          })}
         </div>
         );
       })()}
@@ -927,7 +949,7 @@ export default function JobServicePicker({
               return (
                 <div className="flex flex-col items-end leading-tight">
                   <span className="text-sm font-semibold" style={{ color: 'var(--hm-brand-500)' }}>
-                    {t('job.totalBudget')}: {totalBudget}₾
+                    {t('job.totalBudget')}: {totalBudget}{sym}
                   </span>
                   <span className="text-[10px]" style={{ color: 'var(--hm-fg-muted)' }}>
                     {t('job.openToOffersCount', { count: quoteCount })}
@@ -938,7 +960,7 @@ export default function JobServicePicker({
             if (totalBudget > 0) {
               return (
                 <span className="text-sm font-semibold" style={{ color: 'var(--hm-brand-500)' }}>
-                  {t('job.totalBudget')}: {totalBudget}₾
+                  {t('job.totalBudget')}: {totalBudget}{sym}
                 </span>
               );
             }

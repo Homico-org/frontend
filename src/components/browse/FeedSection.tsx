@@ -5,6 +5,7 @@ import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCountryLink } from "@/hooks/useCountry";
 import { useLikes } from "@/hooks/useLikes";
 import { FeedItem, LikeTargetType } from "@/types";
 import { ArrowRight, Briefcase, Image, Plus, Users } from "lucide-react";
@@ -29,6 +30,7 @@ export default function FeedSection({
   const { searchQuery, sortBy, selectedCity, selectedSubcategory } =
     useBrowseContext();
   const { toggleLike, initializeLikeStates, likeStates } = useLikes();
+  const cl = useCountryLink();
 
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -257,10 +259,8 @@ export default function FeedSection({
   const FeedEmptyState = () => (
     <EmptyState
       icon={Image}
-      title="No work found"
-      titleKa="ნამუშევრები არ მოიძებნა"
-      description="No matching work found in this category. Try exploring other categories."
-      descriptionKa="ამჟამად არ არის შესაბამისი ნამუშევარი. სცადეთ სხვა კატეგორია."
+      title={t("job.noFeedItems")}
+      description={t("job.noFeedItemsBody")}
       variant="illustrated"
       size="lg"
     />
@@ -273,7 +273,7 @@ export default function FeedSection({
     if (isPro && user?.id) {
       return (
         <Link
-          href={`/professionals/${user.id}`}
+          href={cl(`/professionals/${user.id}`)}
           className="flex items-center justify-between gap-3 p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20 rounded-xl sm:rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all group"
         >
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
@@ -321,7 +321,7 @@ export default function FeedSection({
     if (isClient) {
       return (
         <Link
-          href="/post-job"
+          href={cl("/post-job")}
           className="flex items-center justify-between gap-3 p-3 sm:p-4 mb-3 sm:mb-4 bg-gradient-to-r from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border border-[var(--hm-brand-500)]/20 rounded-xl sm:rounded-2xl hover:border-[var(--hm-brand-500)]/40 transition-all group"
         >
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">

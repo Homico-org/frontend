@@ -6,6 +6,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { OTPInput } from '@/components/ui/OTPInput';
 import PhoneInput, { CountryCode } from '@/components/ui/PhoneInput';
 import { countries, useLanguage } from '@/contexts/LanguageContext';
+import { isValidPhone } from '@/utils/phoneValidation';
 import { Check, CheckCircle2, ChevronRight, Phone, Send, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -25,18 +26,27 @@ export default function PhoneChangeModal({
 }: PhoneChangeModalProps) {
   const [step, setStep] = useState<'phone' | 'otp' | 'success'>('phone');
 
-  const { t } = useLanguage();
+  const { t, country: ctxCountry } = useLanguage();
   const [newPhone, setNewPhone] = useState('');
-  const [phoneCountry, setPhoneCountry] = useState({ code: '+995', flag: '🇬🇪' });
+  // Seed from the LanguageContext country (marketplace-aware) so a US
+  // visitor's settings modal opens with +1 instead of +995. The state
+  // shape (`{ code, flag }`) tracks the *picker* country, where `code`
+  // is the CountryCode key (e.g. "US"), not the phone prefix - the
+  // legacy initial value was wrong but only ever swapped on first
+  // selection.
+  const [phoneCountry, setPhoneCountry] = useState<{ code: CountryCode; flag: string }>(() => ({
+    code: ctxCountry as CountryCode,
+    flag: countries[ctxCountry as CountryCode]?.flag ?? '🇬🇪',
+  }));
   const [otpCode, setOtpCode] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
-  const fullPhone = phoneCountry.code + newPhone;
+  const fullPhone = (countries[phoneCountry.code]?.phonePrefix ?? '') + newPhone;
 
   const handleSendOtp = async () => {
-    if (!newPhone || newPhone.length < 6) {
+    if (!newPhone || !isValidPhone(newPhone, phoneCountry.code)) {
       setError(t('settings.enterAValidPhoneNumber'));
       return;
     }
@@ -150,7 +160,7 @@ export default function PhoneChangeModal({
       >
         {/* Drag handle - mobile only */}
         <div className="sm:hidden flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-neutral-300" />
+          <div className="w-10 h-1 rounded-full bg-[var(--hm-border-strong)]" />
         </div>
 
         {/* Header */}
@@ -281,7 +291,7 @@ export default function PhoneChangeModal({
               <PhoneInput
                 value={newPhone}
                 onChange={setNewPhone}
-                country={phoneCountry.code as CountryCode}
+                country={phoneCountry.code}
                 onCountryChange={(country: CountryCode) => setPhoneCountry({ code: country, flag: countries[country].flag })}
                 placeholder={t('settings.newPhoneNumber')}
               />

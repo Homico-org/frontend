@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/input';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatNumberWithSpaces } from '@/utils/currencyUtils';
+import { currencySymbol } from '@/utils/currency';
 import { useCallback } from 'react';
 
 interface JobSummary {
@@ -13,6 +14,8 @@ interface JobSummary {
   budgetMin?: number;
   budgetMax?: number;
   location?: string;
+  // Marketplace country - drives which currency symbol the modal renders.
+  country?: string;
   category?: string;
   subcategory?: string;
   propertyType?: string;
@@ -51,6 +54,7 @@ export default function ProposalFormModal({
 }: ProposalFormModalProps) {
   const { t, pick } = useLanguage();
   const { categories: catalogCats } = useCategories();
+  const sym = currencySymbol({ country: job?.country ?? 'GE' });
 
   const getLabel = useCallback((key: string): string => {
     for (const cat of catalogCats) {
@@ -100,12 +104,12 @@ export default function ProposalFormModal({
     // Services total
     if (job.services && job.services.length > 0) {
       const total = job.services.reduce((s, svc) => s + svc.unitPrice * (svc.quantity || 1), 0);
-      if (total > 0) return `${formatNumberWithSpaces(total.toString())}₾`;
+      if (total > 0) return `${formatNumberWithSpaces(total.toString())}${sym}`;
     }
     if (job.budgetMin && job.budgetMax && job.budgetMin !== job.budgetMax) {
-      return `${formatNumberWithSpaces(job.budgetMin.toString())}-${formatNumberWithSpaces(job.budgetMax.toString())}₾`;
+      return `${formatNumberWithSpaces(job.budgetMin.toString())}-${formatNumberWithSpaces(job.budgetMax.toString())}${sym}`;
     }
-    if (job.budgetMin) return `${formatNumberWithSpaces(job.budgetMin.toString())}₾`;
+    if (job.budgetMin) return `${formatNumberWithSpaces(job.budgetMin.toString())}${sym}`;
     return t('common.negotiable');
   })();
 
@@ -137,7 +141,7 @@ export default function ProposalFormModal({
           </button>
         </div>
 
-        {/* Job context — compact pills */}
+        {/* Job context - compact pills */}
         {job && (
           <div className="px-5 pt-4 flex flex-wrap gap-2">
             {job.category && (
@@ -179,7 +183,7 @@ export default function ProposalFormModal({
                       </span>
                     </span>
                     {svc.unitPrice > 0 && (
-                      <span className="font-bold" style={{ color: 'var(--hm-brand-500)' }}>{svc.unitPrice * qty}₾</span>
+                      <span className="font-bold" style={{ color: 'var(--hm-brand-500)' }}>{svc.unitPrice * qty}{sym}</span>
                     )}
                   </div>
                 );
@@ -212,15 +216,15 @@ export default function ProposalFormModal({
             />
           </div>
 
-          {/* Price + Duration — side by side */}
+          {/* Price + Duration - side by side */}
           <div className="grid grid-cols-2 gap-3">
             {/* Proposed Price */}
             <div>
               <label className="block text-[12px] font-semibold mb-1.5" style={{ color: 'var(--hm-fg-secondary)' }}>
-                {t('common.price')} (₾)
+                {t('common.price')} ({sym})
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium" style={{ color: 'var(--hm-fg-muted)' }}>{sym}</span>
                 <input
                   type="text"
                   inputMode="numeric"

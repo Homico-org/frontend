@@ -4,12 +4,24 @@ import React, { createContext, useContext, useState, useCallback, useRef, useMem
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
+/**
+ * Optional inline action button rendered to the right of the toast
+ * message. Used for the "Undo" affordance on destructive actions
+ * (delete notification, archive job, etc.) so users have a 5-second
+ * window to take it back without re-creating the item from scratch.
+ */
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface Toast {
   id: string;
   type: ToastType;
   message: string;
   description?: string;
   duration?: number;
+  action?: ToastAction;
 }
 
 interface ToastContextType {

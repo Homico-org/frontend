@@ -218,7 +218,7 @@ export function useGeocoder(): UseGeocoderReturn {
 export interface UsePlacesAutocompleteOptions {
   /** Debounce delay in ms */
   debounceMs?: number;
-  /** Country restriction (e.g., 'ge' for Georgia) */
+  /** Country restriction (ISO 3166-1 alpha-2, lowercased, e.g. 'ge', 'us'). Omit to autocomplete globally. */
   country?: string;
   /** Types of places to return */
   types?: string[];
@@ -272,7 +272,7 @@ export interface UsePlacesAutocompleteReturn {
 export function usePlacesAutocomplete(
   options: UsePlacesAutocompleteOptions = {}
 ): UsePlacesAutocompleteReturn {
-  const { debounceMs = 300, country = 'ge', types = ['geocode'] } = options;
+  const { debounceMs = 300, country, types = ['geocode'] } = options;
 
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -320,7 +320,11 @@ export function usePlacesAutocomplete(
         service.getPlacePredictions(
           {
             input,
-            componentRestrictions: { country },
+            // When `country` is undefined, omit the restriction entirely
+            // so autocomplete works globally for new marketplaces; setting
+            // `country: undefined` on `componentRestrictions` triggers a
+            // Google Maps warning.
+            ...(country ? { componentRestrictions: { country } } : {}),
             types,
           },
           (results: any[] | null, status: string) => {

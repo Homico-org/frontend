@@ -2,17 +2,19 @@
 
 import { FilterPills } from '@/components/ui/FilterPills';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useMarketplaceCountry } from '@/hooks/useCountry';
+import { currencySymbol } from '@/utils/currency';
 
-// Budget filter options
-const BUDGET_FILTERS = [
-  { key: 'all', name: 'Any Budget', nameKa: 'ნებისმიერი', nameRu: 'Любой' },
-  { key: 'under-500', name: 'Under ₾500', nameKa: '₾500-მდე', nameRu: 'До ₾500', max: 500 },
-  { key: '500-2000', name: '₾500 - ₾2000', nameKa: '₾500 - ₾2000', nameRu: '₾500 - ₾2000', min: 500, max: 2000 },
-  { key: '2000-5000', name: '₾2000 - ₾5000', nameKa: '₾2000 - ₾5000', nameRu: '₾2000 - ₾5000', min: 2000, max: 5000 },
-  { key: 'over-5000', name: 'Over ₾5000', nameKa: '₾5000+', nameRu: 'Больше ₾5000', min: 5000 },
+// Budget brackets - nominal numbers, currency symbol resolved per
+// marketplace at render time so the same component works in /us, /il,
+// /fr without separate constant tables.
+const BUDGET_BRACKETS = [
+  { key: 'all', min: null as number | null, max: null as number | null },
+  { key: 'under-500', min: null, max: 500 },
+  { key: '500-2000', min: 500, max: 2000 },
+  { key: '2000-5000', min: 2000, max: 5000 },
+  { key: 'over-5000', min: 5000, max: null },
 ];
-
-export { BUDGET_FILTERS };
 
 interface JobsFilterSectionProps {
   selectedBudget: string;
@@ -23,7 +25,17 @@ export default function JobsFilterSection({
   selectedBudget,
   onSelectBudget,
 }: JobsFilterSectionProps) {
-  const { t, pick } = useLanguage();
+  const { t } = useLanguage();
+  const country = useMarketplaceCountry();
+  const sym = currencySymbol({ country });
+
+  const labelFor = (b: { key: string; min: number | null; max: number | null }): string => {
+    if (b.key === 'all') return t('browse.anyBudget');
+    if (b.min == null && b.max != null) return `< ${sym}${b.max}`;
+    if (b.min != null && b.max == null) return `${sym}${b.min}+`;
+    if (b.min != null && b.max != null) return `${sym}${b.min} - ${sym}${b.max}`;
+    return b.key;
+  };
 
   return (
     <div className="w-full">
@@ -36,10 +48,7 @@ export default function JobsFilterSection({
           activeVariant="terracotta"
           value={selectedBudget}
           onChange={onSelectBudget}
-          options={BUDGET_FILTERS.map((b) => ({
-            key: b.key,
-            label: pick({ en: b.name, ka: b.nameKa, ru: b.nameRu }),
-          }))}
+          options={BUDGET_BRACKETS.map((b) => ({ key: b.key, label: labelFor(b) }))}
         />
       </div>
     </div>

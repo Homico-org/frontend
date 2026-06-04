@@ -1,9 +1,11 @@
 "use client";
 
+import ImageLightbox from "@/components/common/ImageLightbox";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Tabs } from "@/components/ui/Tabs";
+import { storage } from "@/services/storage";
 import {
   Modal,
   ModalBody,
@@ -11,9 +13,10 @@ import {
   ModalHeader,
 } from "@/components/ui/Modal";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, countries, type CountryCode } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/lib/api";
+import { extractApiErrorMessage } from "@/utils/errorUtils";
 import {
   CheckCircle,
   Copy,
@@ -26,7 +29,7 @@ import {
   Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReviewItem, { RatingSummary, Review } from "./ReviewItem";
 
 type ReviewFilter = "all" | "homico" | "external";
@@ -63,7 +66,8 @@ export default function ReviewsTab({
   proName,
   onReviewSubmitted,
 }: ReviewsTabProps) {
-  const { t } = useLanguage();
+  const { t, country } = useLanguage();
+  const phonePlaceholder = `${countries[country as CountryCode]?.phonePrefix ?? '+995'} ${countries[country as CountryCode]?.placeholder ?? '5XX XXX XXX'}`;
   const toast = useToast();
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
@@ -77,6 +81,28 @@ export default function ReviewsTab({
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [showRequestSection, setShowRequestSection] = useState(false);
   const [reviewLinkError, setReviewLinkError] = useState(false);
+
+  // Lightbox state for clicking review photos. Built from the
+  // photos array of whichever review was clicked so left/right
+  // arrows step through that single review's photos.
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
+
+  // Default handler when consumers don't pass their own. Build the
+  // gallery from the photos of every review (so arrow nav works
+  // across the whole list), then open at the clicked index. Photos
+  // are resolved through `storage.getFileUrl` so the lightbox gets
+  // the full https URL, not the raw object key from S3.
+  const handlePhotoClick = (clickedPhoto: string) => {
+    if (onPhotoClick) {
+      onPhotoClick(clickedPhoto);
+      return;
+    }
+    const all: string[] = [];
+    reviews.forEach((r) => r.photos?.forEach((p) => all.push(storage.getFileUrl(p))));
+    const clickedUrl = storage.getFileUrl(clickedPhoto);
+    const idx = all.indexOf(clickedUrl);
+    setLightbox({ images: all, index: idx >= 0 ? idx : 0 });
+  };
 
   // Leave Review Modal State
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -110,19 +136,34 @@ export default function ReviewsTab({
   }, [reviews, user?.id, user?.phone]);
 
   // Fetch review link when owner opens the section
+  // Shared abort ref - the pro can toggle the request section open and
+  // closed rapidly, and Strict Mode double-mount can fire two parallel
+  // /reviews/request-link calls. Cancelling the prior request keeps the
+  // state set from the latest one.
+  const fetchReviewLinkAbortRef = useRef<AbortController | null>(null);
   const fetchReviewLink = useCallback(async () => {
     if (!isOwner || reviewLink) return;
+    fetchReviewLinkAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchReviewLinkAbortRef.current = controller;
     setIsLinkLoading(true);
     setReviewLinkError(false);
     try {
-      const res = await api.get("/reviews/request-link");
+      const res = await api.get("/reviews/request-link", {
+        signal: controller.signal,
+      });
       setReviewLink(res.data.link);
     } catch (err) {
+      const name = (err as { name?: string })?.name;
+      const code = (err as { code?: string })?.code;
+      if (name === "CanceledError" || code === "ERR_CANCELED") return;
       console.error("Failed to fetch review link:", err);
       setReviewLinkError(true);
       toast.error(t("common.error"), t("common.tryAgain"));
     } finally {
-      setIsLinkLoading(false);
+      if (!controller.signal.aborted) {
+        setIsLinkLoading(false);
+      }
     }
     // `t` / `toast` are stable selectors closing over `locale` which
     // doesn't impact this fetch's semantics.
@@ -163,9 +204,8 @@ export default function ReviewsTab({
       toast.success(t("common.success"), t("reviews.invitationSent"));
       setInvitePhone("");
       setInviteName("");
-    } catch (err: any) {
-      const message = err.response?.data?.message || t("common.error");
-      toast.error(t("common.error"), message);
+    } catch (err) {
+      toast.error(t("common.error"), extractApiErrorMessage(err, t("common.error")));
     } finally {
       setIsSendingInvite(false);
     }
@@ -390,7 +430,7 @@ export default function ReviewsTab({
                     />
                     <Input
                       type="tel"
-                      placeholder="+995 555 ..."
+                      placeholder={phonePlaceholder}
                       value={invitePhone}
                       onChange={(e) => setInvitePhone(e.target.value)}
                       inputSize="sm"
@@ -424,6 +464,35 @@ export default function ReviewsTab({
           />
         )}
 
+        {/* Rating distribution histogram. Answers the silent "is the
+            4.8 average from 3 glowing reviews or 300?" question that
+            star-rating-alone doesn't. Five-bar pure-CSS render, no
+            chart library. Shows only when there are >=3 reviews
+            (smaller samples look misleading as bars). */}
+        {reviews.length >= 3 && (
+          <div className="space-y-1 px-3 py-3 rounded-xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]">
+            {[5, 4, 3, 2, 1].map((star) => {
+              const count = reviews.filter((r) => Math.round(r.rating) === star).length;
+              const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+              return (
+                <div key={star} className="flex items-center gap-2 text-[11px]">
+                  <span className="w-3 text-[var(--hm-fg-muted)] tabular-nums">{star}</span>
+                  <Star className="w-2.5 h-2.5 fill-[var(--hm-warning-500)] text-[var(--hm-warning-500)]" />
+                  <div className="flex-1 h-1.5 rounded-full bg-[var(--hm-bg-tertiary)] overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-[var(--hm-warning-500)]/70 transition-all"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="w-8 text-right text-[var(--hm-fg-muted)] tabular-nums">
+                    {count}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* Filter Tabs */}
         {reviews.length > 0 && (
           <Tabs
@@ -445,7 +514,7 @@ export default function ReviewsTab({
             key={review.id}
             review={review}
             locale={locale}
-            onPhotoClick={onPhotoClick}
+            onPhotoClick={handlePhotoClick}
           />
           ))
         ) : reviews.length > 0 ? (
@@ -564,7 +633,7 @@ export default function ReviewsTab({
                 type="tel"
                 value={reviewerPhone}
                 onChange={(e) => setReviewerPhone(e.target.value)}
-                placeholder="+995 555 ..."
+                placeholder={phonePlaceholder}
               />
               <p className="text-xs text-[var(--hm-fg-muted)] mt-1">
                 {t("reviews.phoneVerificationNote")}
@@ -593,6 +662,18 @@ export default function ReviewsTab({
           </Button>
         </ModalFooter>
       </Modal>
+
+      {/* Lightbox for review photos. Consumers can still pass their
+          own `onPhotoClick` to override; the default falls through
+          to this internal viewer. */}
+      {lightbox && (
+        <ImageLightbox
+          isOpen={!!lightbox}
+          onClose={() => setLightbox(null)}
+          images={lightbox.images}
+          initialIndex={lightbox.index}
+        />
+      )}
     </div>
   );
 }

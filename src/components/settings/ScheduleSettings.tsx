@@ -127,7 +127,7 @@ export default function ScheduleSettings() {
                 <button
                   onClick={() => updateDay(dayInfo.dayOfWeek, { isAvailable: !day.isAvailable })}
                   className={`w-8 h-[18px] rounded-full relative transition-colors flex-shrink-0 ${
-                    day.isAvailable ? "bg-[var(--hm-brand-500)]" : "bg-neutral-300"
+                    day.isAvailable ? "bg-[var(--hm-brand-500)]" : "bg-[var(--hm-border-strong)]"
                   }`}
                 >
                   <span

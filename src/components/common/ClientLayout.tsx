@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import AmplitudeProvider from './AmplitudeProvider';
 import AppBackground from './AppBackground';
 import AppLayout from './AppLayout';
 import ProProfileGuard from './ProProfileGuard';
@@ -31,6 +32,7 @@ interface ClientLayoutProps {
 export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <>
+      <AmplitudeProvider />
       <AppBackground />
       <ProProfileGuard>
         <AppLayout>

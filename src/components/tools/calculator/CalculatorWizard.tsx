@@ -10,6 +10,7 @@ import { StepSummary } from './StepSummary';
 import { createRoom, createRoomWithParams } from '@/utils/calculator';
 import { aiService, ProjectAnalysisResult } from '@/services/ai';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCountry } from '@/hooks/useCountry';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import * as XLSX from 'xlsx';
@@ -117,6 +118,7 @@ const getImageMimeType = (fileName: string): string => {
 
 export function CalculatorWizard({ t }: CalculatorWizardProps) {
   const { locale } = useLanguage();
+  const country = useCountry();
   const [currentStep, setCurrentStep] = useState<CalculatorStep>(1);
   const [rooms, setRooms] = useState<Room[]>([createRoom('living')]);
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
@@ -214,7 +216,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
       if (isImageFile(file.name)) {
         const imageBase64 = await imageToBase64(file);
         const imageMimeType = getImageMimeType(file.name);
-        result = await aiService.analyzeProject('', locale, imageBase64, imageMimeType);
+        result = await aiService.analyzeProject('', locale, imageBase64, imageMimeType, country);
       } else {
         // Extract text from document files
         let text = '';
@@ -232,7 +234,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
         }
 
         // Send to AI for analysis
-        result = await aiService.analyzeProject(text, locale);
+        result = await aiService.analyzeProject(text, locale, undefined, undefined, country);
       }
 
       // Apply AI results to calculator
@@ -245,7 +247,7 @@ export function CalculatorWizard({ t }: CalculatorWizardProps) {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [locale, t, applyAIResults]);
+  }, [locale, t, applyAIResults, country]);
 
   const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

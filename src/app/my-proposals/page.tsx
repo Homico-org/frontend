@@ -1,10 +1,11 @@
 'use client';
 
+// Legacy slug. The pro-side dashboard moved to /my-work in 2026-05;
+// this page is kept as a stable redirect so any old bookmarks or
+// outbound links still land in the right place. No client hooks or
+// state - calling `redirect()` inside a client component is fine.
 import { redirect } from 'next/navigation';
-import { useLanguage } from "@/contexts/LanguageContext";
 
-// Redirect to /my-work - the new unified page for pros
 export default function MyProposalsPage() {
-  const { t } = useLanguage();
   redirect("/my-work");
 }

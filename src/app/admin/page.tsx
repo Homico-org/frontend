@@ -17,6 +17,8 @@ import {
   BarChart3,
   Briefcase,
   Building2,
+  Banknote,
+  Lightbulb,
   ChevronRight,
   FileText,
   Globe,
@@ -285,9 +287,12 @@ function AdminDashboardPageContent() {
     }
   }, [isAuthenticated, clickAnalyticsDays, fetchClickAnalytics]);
 
-  // Auto-refresh every 60 seconds
+  // Auto-refresh every 60 seconds. Skip while the tab is hidden -
+  // an admin who leaves the dashboard open in a background tab
+  // shouldn't keep generating background traffic.
   useEffect(() => {
     const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       if (isAuthenticated && !isRefreshing) {
         fetchDashboardData(true);
       }
@@ -407,7 +412,7 @@ function AdminDashboardPageContent() {
               className="absolute -bottom-1.5 -right-1.5 sm:-bottom-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center animate-bounce"
               style={{ background: THEME.warning }}
             >
-              <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-[var(--hm-fg-primary)]" />
             </div>
           </div>
           <p className="mt-4 sm:mt-6 text-xs sm:text-sm" style={{ color: THEME.textMuted }}>
@@ -541,6 +546,7 @@ function AdminDashboardPageContent() {
         {/* Quick Actions - Prominent at top */}
         <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 mb-4 sm:mb-8">
           {[
+            { label: t('adminAnalytics.title'), icon: BarChart3, href: '/admin/analytics', color: THEME.info },
             { label: t('admin.users'), icon: Users, href: '/admin/users', color: THEME.primary, count: stats?.users.total },
             { label: t('admin.approvals'), icon: UserCheck, href: '/admin/pending-pros', color: '#f59e0b', count: pendingProsCount, badge: pendingProsCount > 0 ? pendingProsCount : undefined },
             { label: t('admin.jobs'), icon: Briefcase, href: '/admin/jobs', color: THEME.info, count: stats?.jobs.total },
@@ -549,6 +555,9 @@ function AdminDashboardPageContent() {
             { label: t('admin.businessQuotes'), icon: Building2, href: '/admin/business-quotes', color: '#8B5CF6' },
             { label: t('admin.serviceCatalog'), icon: LayoutList, href: '/admin/service-catalog', color: '#06B6D4' },
             { label: t('admin.aiIndex'), icon: Zap, href: '/admin/ai-index', color: '#A855F7' },
+            { label: t('admin.disputes'), icon: AlertCircle, href: '/admin/disputes', color: '#EF4E24' },
+            { label: t('admin.payouts'), icon: Banknote, href: '/admin/payouts', color: '#10B981' },
+            { label: t('admin.catalogSuggestions'), icon: Lightbulb, href: '/admin/catalog-suggestions', color: '#A855F7' },
             { label: t('admin.invites'), icon: Send, href: '/admin/invites', color: 'var(--hm-brand-500)', count: undefined },
             { label: t('admin.requests'), icon: MessageSquare, href: '/admin/requests', color: '#EF4E24', count: undefined },
           ].map((action, index) => (

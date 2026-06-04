@@ -3,8 +3,14 @@
 import { AnalyticsEvent, trackAnalyticsEvent } from '@/hooks/useAnalytics';
 import api from '@/lib/api';
 import { AccountType, UserRole } from '@/types';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  isCountryAgnostic,
+  swapCountryPrefix,
+  writeMarketplaceCookie,
+} from '@/utils/countryLink';
+import { isSupportedCountry } from '@/data/countries';
 
 interface SelectedService {
   key: string;
@@ -30,6 +36,20 @@ interface User {
   accountType?: AccountType;
   isProfileCompleted?: boolean;
   verificationStatus?: 'pending' | 'submitted' | 'verified' | 'rejected';
+  // Pro availability status. `away` exempts the pro from SLA timers
+  // and shows an "Away" pill in browse. Surfaced via POST /users/me/status.
+  status?: 'active' | 'busy' | 'away';
+  // SLA accountability state. Drives the SlaStatusBanner on /my-space.
+  // `none` means nothing to display; the other levels render the banner.
+  slaPenaltyLevel?: 'none' | 'warning' | 'demoted' | 'paused';
+  slaDemotedUntil?: string;
+  // Surface the existing deactivation fields so the banner can render
+  // the paused countdown using `deactivatedUntil`. `deactivationReason
+  // === 'sla_breach'` is how the banner tells SLA-driven pauses from
+  // user-driven ones (the latter doesn't get the SLA banner).
+  isProfileDeactivated?: boolean;
+  deactivatedUntil?: string;
+  deactivationReason?: string;
 }
 
 interface AuthContextType {
@@ -60,11 +80,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthValidated, setIsAuthValidated] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   // Ref to prevent duplicate auth initialization (React Strict Mode)
   const authInitializedRef = useRef(false);
 
-  // Validate token with backend — uses api instance so refresh interceptor works
+  // Validate token with backend - uses api instance so refresh interceptor works
   const validateToken = useCallback(async (tokenToValidate: string): Promise<User | null> => {
     try {
       // Ensure the token is set before calling
@@ -80,6 +101,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         avatar: userData.avatar,
         city: userData.city,
         phone: userData.phone,
+        // Without this, every app boot silently strips the verified flag
+        // from the user object even though /users/me returns it correctly.
+        // The proposal/comment gates on JobDetailClient read
+        // `user.isPhoneVerified` and were blocking verified pros from
+        // sending proposals because the field arrived as undefined.
+        isPhoneVerified: userData.isPhoneVerified,
         selectedCategories: userData.selectedCategories,
         selectedSubcategories: userData.selectedSubcategories,
         selectedServices: userData.selectedServices,
@@ -108,15 +135,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Get locally stored user data - use immediately for fast initial render
+      // Get locally stored user data - use immediately for fast initial render.
+      // Wrapped in try/catch because localStorage can hold corrupted JSON
+      // (other tab race, partial clear, manual devtools edit) and an
+      // unhandled SyntaxError here would crash the entire AuthProvider on
+      // mount, taking down the whole app for the user.
+      let storedUser: User | null = null;
       const storedUserStr = localStorage.getItem('user');
-      const storedUser = storedUserStr ? JSON.parse(storedUserStr) : null;
+      if (storedUserStr) {
+        try {
+          storedUser = JSON.parse(storedUserStr) as User;
+        } catch (err) {
+          console.warn('[Auth] Cached user data was corrupted, clearing.', err);
+          localStorage.removeItem('user');
+        }
+      }
 
       // Use cached user data immediately to prevent blocking
       if (storedUser) {
         setUser(storedUser);
         setToken(accessToken);
         setIsLoading(false);
+
+        // On boot we only mirror the marketplace cookie - no URL swap.
+        // A deep-link / bookmark to /ge/jobs/abc should still resolve;
+        // the cookie alone is enough so future bare-path visits and
+        // country-agnostic pages know where the user belongs. The
+        // explicit `login` callback above does the URL swap on a fresh
+        // sign-in, which is when the user expects to land on "their"
+        // marketplace.
+        const bootCountry = (storedUser as { country?: string }).country;
+        if (bootCountry && isSupportedCountry(bootCountry)) {
+          writeMarketplaceCookie(bootCountry);
+        }
 
         // Validate token in background (non-blocking)
         validateToken(accessToken).then(validatedUser => {
@@ -177,7 +228,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
     setUser(userData);
     setToken(accessToken);
-  }, []);
+
+    // Sync the active marketplace to the user's stored country. Without
+    // this, a US-based pro who signs in while parked on /ge stays on
+    // /ge for the rest of the session - their dashboard, post-job
+    // flow, and AI assistant all keep pretending they're in Tbilisi.
+    //
+    // Order of operations:
+    //   1. Stamp the `homico-marketplace` cookie so future bare-path
+    //      navigations and country-agnostic pages resolve to the user's
+    //      country.
+    //   2. If we're standing on a country-scoped path with a different
+    //      country segment, swap the prefix client-side. Country-
+    //      agnostic pages (settings, admin, /pro/profile-setup) are
+    //      left alone - the cookie update is enough for them.
+    const userCountry = (userData as { country?: string }).country;
+    if (userCountry && isSupportedCountry(userCountry)) {
+      writeMarketplaceCookie(userCountry);
+      if (pathname && !isCountryAgnostic(pathname)) {
+        const target = swapCountryPrefix(pathname, userCountry);
+        if (target !== pathname) {
+          router.replace(target);
+        }
+      }
+    }
+  }, [pathname, router]);
 
   const logout = useCallback(() => {
     // Track logout event before clearing data

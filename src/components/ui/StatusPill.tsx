@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { BadgeCheck, Star, Plus, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft } from 'lucide-react';
+import { BadgeCheck, Star, Plus, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft, Moon } from 'lucide-react';
 import { ACCENT_COLOR } from '@/constants/theme';
 
 export type StatusPillVariant =
@@ -17,6 +17,7 @@ export type StatusPillVariant =
   | 'accepted'
   | 'rejected'
   | 'withdrawn'
+  | 'away' // Pro toggled themselves Away; SLA-exempt + grey pill in browse
   | 'homico'; // For Homico-verified work
 
 export type StatusPillSize = 'xs' | 'sm' | 'md';
@@ -138,6 +139,15 @@ const variantConfig: Record<StatusPillVariant, {
     icon: CornerUpLeft,
     labelEn: 'Withdrawn',
     labelKa: 'გაუქმებული',
+  },
+  away: {
+    // Calm neutral - greys the card slightly without screaming "broken".
+    // Distinct from `withdrawn` (which is a final-state thing).
+    bgClass: 'bg-[var(--hm-bg-tertiary)]',
+    textClass: 'text-[var(--hm-fg-secondary)]',
+    icon: Moon,
+    labelEn: 'Away',
+    labelKa: 'მიუწვდომელი',
   },
   homico: {
     bgClass: '', // Uses inline style for theme color

@@ -8,8 +8,13 @@ import { useCategories } from "@/contexts/CategoriesContext";
 import { useBrowseContext } from "@/contexts/BrowseContext";
 import { useLanguage, type Locale } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
+import { useMarketplaceCountry } from "@/hooks/useCountry";
+import { currencySymbol } from "@/utils/currency";
+import { cityRecordsFor, popularCityValuesFor } from "@/data/cities";
+import { useAiServiceSearch } from "@/hooks/useAiServiceSearch";
 import {
   ChevronDown,
+  Loader2,
   MapPin,
   Search,
   SlidersHorizontal,
@@ -21,18 +26,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 type OpenDropdown = "city" | "rating" | "budget" | "sort" | null;
 
-const CITIES = [
-  { value: "tbilisi", labelKa: "თბილისი", labelEn: "Tbilisi", labelRu: "Тбилиси" },
-  { value: "batumi", labelKa: "ბათუმი", labelEn: "Batumi", labelRu: "Батуми" },
-  { value: "kutaisi", labelKa: "ქუთაისი", labelEn: "Kutaisi", labelRu: "Кутаиси" },
-  { value: "rustavi", labelKa: "რუსთავი", labelEn: "Rustavi", labelRu: "Рустави" },
-  { value: "gori", labelKa: "გორი", labelEn: "Gori", labelRu: "Гори" },
-  { value: "zugdidi", labelKa: "ზუგდიდი", labelEn: "Zugdidi", labelRu: "Зугдиди" },
-  { value: "poti", labelKa: "ფოთი", labelEn: "Poti", labelRu: "Поти" },
-  { value: "kobuleti", labelKa: "კობულეთი", labelEn: "Kobuleti", labelRu: "Кобулети" },
-];
-
-const POPULAR_CITIES = ["tbilisi", "batumi", "kutaisi", "rustavi"];
+// Per-country city tables resolved at render time via `cityRecordsFor`
+// and `popularCityValuesFor` so a /fr visitor sees Paris/Marseille and
+// a /us visitor sees New York/LA. Hardcoded GE-only lists were the
+// 2026-05 bug behind "All cities" showing Georgian cities on /fr.
 
 const RATING_OPTIONS = [
   { value: 0, label: "browse.allRatings" },
@@ -41,11 +38,13 @@ const RATING_OPTIONS = [
   { value: 4.5, label: "4.5+" },
 ];
 
-const BUDGET_PRESETS = [
-  { min: 50, max: 100, label: "50-100₾" },
-  { min: 100, max: 300, label: "100-300₾" },
-  { min: 300, max: 500, label: "300-500₾" },
-  { min: 500, max: null, label: "500₾+" },
+// Budget brackets are nominal numbers in the marketplace's local
+// currency; rebuilt with the active symbol on each render.
+const BUDGET_PRESET_RANGES = [
+  { min: 50, max: 100 },
+  { min: 100, max: 300 },
+  { min: 300, max: 500 },
+  { min: 500, max: null as number | null },
 ];
 
 const SORT_OPTIONS = [
@@ -57,8 +56,10 @@ const SORT_OPTIONS = [
 
 type PickFn = (values: Partial<Record<Locale, string | undefined>>, fallback?: string) => string;
 
-function getCityLabel(cityValue: string, pick: PickFn): string {
-  const city = CITIES.find((c) => c.value === cityValue);
+type CityRecord = ReturnType<typeof cityRecordsFor>[number];
+
+function getCityLabel(cityValue: string, cities: CityRecord[], pick: PickFn): string {
+  const city = cities.find((c) => c.value === cityValue);
   if (!city) return cityValue;
   return pick({ en: city.labelEn, ka: city.labelKa, ru: city.labelRu }, cityValue);
 }
@@ -126,7 +127,11 @@ function DropdownWrapper({
 
       {isOpen && (
         <div
-          className={`absolute top-full mt-1.5 z-50 rounded-xl border border-[var(--hm-border-subtle)] shadow-lg min-w-[220px] ${align === "right" ? "right-0" : "left-0"}`}
+          // max-w cap keeps the dropdown from clipping the viewport on
+          // narrow phones (<360px) regardless of which side it's
+          // anchored from. The 1rem reserve = 8px breathing room on
+          // each side so the panel doesn't kiss the viewport edge.
+          className={`absolute top-full mt-1.5 z-50 rounded-xl border border-[var(--hm-border-subtle)] shadow-lg min-w-[220px] max-w-[calc(100vw-1rem)] ${align === "right" ? "right-0" : "left-0"}`}
           style={{ background: "var(--hm-bg-elevated)" }}
         >
           {children}
@@ -140,6 +145,14 @@ export default function BrowseFilterBar() {
   const { t, pick } = useLanguage();
   const { getCategoryLabel } = useCategoryLabels();
   const { categories } = useCategories();
+  const country = useMarketplaceCountry();
+  const sym = currencySymbol({ country });
+  const budgetPresets = BUDGET_PRESET_RANGES.map((p) => ({
+    ...p,
+    label: p.max == null ? `${p.min}${sym}+` : `${p.min}-${p.max}${sym}`,
+  }));
+  const cities = cityRecordsFor(country);
+  const popularCityValues = popularCityValuesFor(country, 4);
 
   // Lookup any key (category, subcategory, or service) from the catalog tree
   const getLabel = useCallback((key: string): string => {
@@ -181,12 +194,52 @@ export default function BrowseFilterBar() {
   const [localSearch, setLocalSearch] = useState(searchQuery);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout>>();
 
+  // AI search runs in parallel with the text-match search. When the
+  // user types something like "leak fix" the AI maps it to a category
+  // (plumbing) and we auto-apply that as a filter alongside the plain
+  // text query - the backend still does keyword matching but the
+  // category filter narrows the result set to pros who actually offer
+  // that work, instead of returning everyone whose bio happens to
+  // contain "leak". Without this wiring the Professionals page was the
+  // only search surface that didn't use AI.
+  const { aiResults, aiLoading, search: aiSearch } = useAiServiceSearch();
+
   useEffect(() => {
     setLocalSearch(searchQuery);
   }, [searchQuery]);
 
+  // Auto-apply the strongest AI match to the category filter. Mirrors
+  // the shell header pattern (app/(shell)/layout.tsx). Only fires when
+  // the user hasn't already picked a category - manual category choice
+  // should never be overridden by a vague AI match.
+  useEffect(() => {
+    if (!aiResults || aiResults.length === 0) return;
+    if (selectedCategory) return;
+    const match = aiResults[0];
+    if (match?.category) setSelectedCategory(match.category);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aiResults]);
+
+  // Marketplace switch (e.g. /ge -> /fr): the persisted `selectedCity`
+  // from the previous market won't exist in the new country's city
+  // list, so the filter would silently return zero results. Reset to
+  // "all" whenever the city no longer matches the current marketplace.
+  useEffect(() => {
+    if (!selectedCity || selectedCity === "all") return;
+    const stillValid = cities.some((c) => c.value === selectedCity);
+    if (!stillValid) setSelectedCity("all");
+    // `cities` is derived from `country`; tracking country alone is
+    // enough for the effect to re-run on marketplace change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country]);
+
   const handleSearchChange = (value: string) => {
     setLocalSearch(value);
+    // Kick the AI lookup immediately - the hook handles its own
+    // debounce (600ms) and minQueryLength gate, so calling on every
+    // keystroke is safe and avoids a stale "AI for previous query"
+    // race if the user keeps typing past the local debounce.
+    aiSearch(value);
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     searchDebounceRef.current = setTimeout(() => {
       setSearchQuery(value);
@@ -203,7 +256,7 @@ export default function BrowseFilterBar() {
 
   const cityLabel =
     selectedCity && selectedCity !== "all"
-      ? getCityLabel(selectedCity, pick)
+      ? getCityLabel(selectedCity, cities, pick)
       : t("browse.allCities");
 
   const ratingLabel =
@@ -212,8 +265,8 @@ export default function BrowseFilterBar() {
   const budgetLabel =
     budgetMin !== null || budgetMax !== null
       ? budgetMax === null
-        ? `${budgetMin}₾+`
-        : `${budgetMin ?? 0}-${budgetMax}₾`
+        ? `${budgetMin}${sym}+`
+        : `${budgetMin ?? 0}-${budgetMax}${sym}`
       : t("browse.budget");
 
   const currentSortOption = SORT_OPTIONS.find((o) => o.value === sortBy);
@@ -257,9 +310,17 @@ export default function BrowseFilterBar() {
 
       {/* Desktop filter bar - clean inline row, no boxed container */}
       <div className="hidden lg:flex items-center gap-2 py-1">
-        {/* Search - rounded pill matches the dropdowns */}
+        {/* Search - rounded pill matches the dropdowns. The left-side
+            icon flips from Search -> Loader2 while AI is mapping the
+            query to a category, so the user has a visual signal that
+            the page is doing semantic work in addition to the text
+            search firing on its own debounce. */}
         <div className="relative w-72">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--hm-fg-muted)]" />
+          {aiLoading ? (
+            <Loader2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--hm-brand-500)] animate-spin" />
+          ) : (
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--hm-fg-muted)]" />
+          )}
           <input
             type="text"
             value={localSearch}
@@ -270,7 +331,7 @@ export default function BrowseFilterBar() {
           {localSearch && (
             <button
               onClick={() => handleSearchChange("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[var(--hm-bg-tertiary)] transition-colors"
+              className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors active:scale-95"
               aria-label="Clear search"
             >
               <X className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
@@ -289,7 +350,7 @@ export default function BrowseFilterBar() {
         >
           <div className="p-3 space-y-3">
             <div className="flex flex-wrap gap-1.5">
-              {POPULAR_CITIES.map((v) => (
+              {popularCityValues.map((v) => (
                 <button
                   key={v}
                   type="button"
@@ -304,11 +365,11 @@ export default function BrowseFilterBar() {
                       : "border-[var(--hm-border-subtle)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-brand-500)]/40",
                   ].join(" ")}
                 >
-                  {getCityLabel(v, pick)}
+                  {getCityLabel(v, cities, pick)}
                 </button>
               ))}
             </div>
-            <div className="border-t border-[var(--hm-border-subtle)] pt-2 space-y-0.5">
+            <div className="scrollbar-subtle border-t border-[var(--hm-border-subtle)] pt-2 space-y-0.5 max-h-[40vh] overflow-y-auto -mx-3 px-3">
               <button
                 type="button"
                 onClick={() => {
@@ -324,7 +385,7 @@ export default function BrowseFilterBar() {
               >
                 {t("browse.allCities")}
               </button>
-              {CITIES.filter((c) => !POPULAR_CITIES.includes(c.value)).map(
+              {cities.filter((c) => !popularCityValues.includes(c.value)).map(
                 (city) => (
                   <button
                     key={city.value}
@@ -340,7 +401,7 @@ export default function BrowseFilterBar() {
                         : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]",
                     ].join(" ")}
                   >
-                    {getCityLabel(city.value, pick)}
+                    {getCityLabel(city.value, cities, pick)}
                   </button>
                 ),
               )}
@@ -391,7 +452,7 @@ export default function BrowseFilterBar() {
         >
           <div className="p-3 space-y-3 w-64">
             <div className="flex flex-wrap gap-1.5">
-              {BUDGET_PRESETS.map((preset) => (
+              {budgetPresets.map((preset) => (
                 <button
                   key={preset.label}
                   type="button"
@@ -418,7 +479,7 @@ export default function BrowseFilterBar() {
                   onChange={(e) => setDraftMin(e.target.value)}
                 />
               </div>
-              <span className="text-[var(--hm-fg-muted)] text-sm">—</span>
+              <span className="text-[var(--hm-fg-muted)] text-sm">-</span>
               <div className="flex-1">
                 <Input
                   type="number"
@@ -527,7 +588,7 @@ export default function BrowseFilterBar() {
         <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
           {selectedCity && selectedCity !== "all" && (
             <ActivePill
-              label={getCityLabel(selectedCity, pick)}
+              label={getCityLabel(selectedCity, cities, pick)}
               onRemove={() => setSelectedCity("all")}
             />
           )}
@@ -589,7 +650,7 @@ function ActivePill({
       <button
         type="button"
         onClick={onRemove}
-        className="ml-0.5 rounded-full hover:bg-[var(--hm-brand-500)]/20 transition-colors p-0.5"
+        className="ml-0.5 -mr-1 w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--hm-brand-500)]/20 transition-colors active:scale-95"
         aria-label="Remove filter"
       >
         <X className="w-3 h-3" />

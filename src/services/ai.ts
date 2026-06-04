@@ -129,11 +129,13 @@ export const aiService = {
    */
   async analyzeEstimate(
     estimateText: string,
-    locale: string = 'en'
+    locale: string = 'en',
+    country?: string,
   ): Promise<EstimateAnalysisResult> {
     const response = await api.post('/ai/analyze-estimate', {
       estimateText,
       locale,
+      country,
     });
     return response.data;
   },
@@ -143,11 +145,13 @@ export const aiService = {
    */
   async calculateRenovation(
     params: CalculateRenovationParams,
-    locale: string = 'en'
+    locale: string = 'en',
+    country?: string,
   ): Promise<RenovationCalculatorResult> {
     const response = await api.post('/ai/calculate-renovation', {
       ...params,
       locale,
+      country,
     });
     return response.data;
   },
@@ -157,11 +161,13 @@ export const aiService = {
    */
   async compareEstimates(
     estimates: { name: string; content: string }[],
-    locale: string = 'en'
+    locale: string = 'en',
+    country?: string,
   ): Promise<CompareEstimatesResult> {
     const response = await api.post('/ai/compare-estimates', {
       estimates,
       locale,
+      country,
     });
     return response.data;
   },
@@ -171,11 +177,13 @@ export const aiService = {
    */
   async getPriceInfo(
     item: string,
-    locale: string = 'en'
+    locale: string = 'en',
+    country?: string,
   ): Promise<PriceCheckResult> {
     const response = await api.post('/ai/price-info', {
       item,
       locale,
+      country,
     });
     return response.data;
   },
@@ -185,11 +193,13 @@ export const aiService = {
    */
   async generateBio(
     prompt: string,
-    locale: string = 'en'
+    locale: string = 'en',
+    country?: string,
   ): Promise<string> {
     const response = await api.post('/ai/generate-bio', {
       prompt,
       locale,
+      country,
     });
     return response.data.bio;
   },
@@ -199,11 +209,13 @@ export const aiService = {
    */
   async chat(
     messages: ChatMessage[],
-    locale: string = 'en'
+    locale: string = 'en',
+    country?: string,
   ): Promise<string> {
     const response = await api.post('/ai/chat', {
       messages,
       locale,
+      country,
     });
     return response.data.response;
   },
@@ -215,13 +227,15 @@ export const aiService = {
     projectText: string,
     locale: string = 'en',
     imageBase64?: string,
-    imageMimeType?: string
+    imageMimeType?: string,
+    country?: string,
   ): Promise<ProjectAnalysisResult> {
     const response = await api.post('/ai/analyze-project', {
       projectText: projectText || undefined,
       imageBase64,
       imageMimeType,
       locale,
+      country,
     });
     return response.data;
   },

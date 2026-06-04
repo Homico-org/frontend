@@ -6,6 +6,7 @@ import Header, { HeaderSpacer } from '@/components/common/Header';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/contexts/ToastContext';
 import { AnalyticsEvent, useAnalytics } from '@/hooks/useAnalytics';
 import {
   ArrowLeft,
@@ -122,6 +123,7 @@ const PREMIUM_TIERS: Record<string, {
 
 function CheckoutContent() {
   const { t, pick } = useLanguage();
+  const { error: toastError } = useToast();
   const { isAuthenticated } = useAuth();
   const { trackEvent } = useAnalytics();
   const router = useRouter();
@@ -258,18 +260,45 @@ function CheckoutContent() {
     e.preventDefault();
     setIsProcessing(true);
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      if (useNewCard && saveNewCard) {
+        await saveCardToAccount();
+      }
 
-    if (useNewCard && saveNewCard) {
-      await saveCardToAccount();
+      trackEvent(AnalyticsEvent.PREMIUM_PURCHASE, {
+        planType: tierId,
+        planPrice: price,
+      });
+
+      // Real payment: create a premium intent and hand off to the provider.
+      // The /pro/premium/return page reconciles + grants on the way back.
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_URL}/payments/premium/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ tier: tierId, period }),
+      });
+      if (!res.ok) throw new Error(`Premium checkout failed (${res.status})`);
+      const data = (await res.json()) as { paymentId?: string; redirectUrl?: string };
+      // Stash the paymentId so the return page can reconcile this exact payment
+      // (the provider returns to a fixed URL that can't carry it).
+      if (data.paymentId) {
+        sessionStorage.setItem('premiumPaymentId', data.paymentId);
+      }
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
+      throw new Error('No payment redirect URL returned');
+    } catch (err) {
+      console.error('[premium checkout]', err);
+      toastError(t('common.error'));
+      setIsProcessing(false);
     }
-
-    trackEvent(AnalyticsEvent.PREMIUM_PURCHASE, {
-      planType: tierId,
-      planPrice: price,
-    });
-
-    router.push('/pro/premium/success?tier=' + tierId);
   };
 
   if (!tier) {

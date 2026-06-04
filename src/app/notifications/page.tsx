@@ -1,8 +1,10 @@
 'use client';
 
 import AuthGuard from '@/components/common/AuthGuard';
+import EmptyState from '@/components/common/EmptyState';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import MobileBottomNav from '@/components/common/MobileBottomNav';
+import TimeAgo from '@/components/common/TimeAgo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IconBadge } from '@/components/ui/IconBadge';
@@ -13,6 +15,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Notification, NotificationType, useNotifications } from '@/contexts/NotificationContext';
+import { useToast } from '@/contexts/ToastContext';
+import { useHaptic } from '@/hooks/useHaptic';
 import { formatTimeAgoCompact } from '@/utils/dateUtils';
 import {
   Bell,
@@ -187,13 +191,37 @@ function extractMessageParams(message: string, locale: string): Record<string, s
   return params;
 }
 
-// Get translated notification title and message
+// Get translated notification title and message.
+//
+// Resolution order:
+//   1. Explicit `titleKey` / `messageKey` set by the backend at
+//      creation time (added 2026-05). Resolved with the notification's
+//      own `i18nParams` so we can interpolate values like {reason},
+//      {jobTitle}, {clientName} without re-parsing the EN fallback.
+//   2. Legacy title-pattern lookup via `titleToTypeMap` for older
+//      notifications that don't carry explicit keys yet.
+//   3. The stored English `title` / `message` as a final fallback.
 function getTranslatedNotification(
   notification: Notification,
   t: (key: string, params?: Record<string, string | number>) => string,
   locale: string
 ): { title: string; message: string } {
-  // Check title mapping first to distinguish e.g. "Work Completed" from "Booking Completed"
+  // Backend-supplied i18n keys win when present.
+  if (notification.titleKey || notification.messageKey) {
+    const params = {
+      ...extractMessageParams(notification.message, locale),
+      ...(notification.i18nParams || {}),
+    };
+    const tt = notification.titleKey ? t(notification.titleKey, params) : notification.title;
+    const tm = notification.messageKey ? t(notification.messageKey, params) : notification.message;
+    return {
+      title: tt !== notification.titleKey ? tt : notification.title,
+      message: tm !== notification.messageKey ? tm : notification.message,
+    };
+  }
+
+  // Legacy path: pattern-match the English title against the known set.
+  // Distinguishes e.g. "Work Completed" from "Booking Completed".
   const resolvedKey = titleToTypeMap[notification.title] || notification.type;
 
   const titleKey = `notifications.types.${resolvedKey}.title`;
@@ -218,11 +246,19 @@ function SwipeableNotificationCard({
   onDelete,
   onClick,
   locale,
+  relatedCount = 0,
 }: {
   notification: Notification;
   onDelete: () => void;
   onClick: () => void;
   locale: string;
+  /**
+   * How many OTHER notifications share this card's `referenceId`.
+   * When > 0 we surface a tiny chip hinting at burstiness ("5 more
+   * events on this job") so users get scan-level signal without
+   * having to open and skim.
+   */
+  relatedCount?: number;
 }) {
   const { t } = useLanguage();
   const [translateX, setTranslateX] = useState(0);
@@ -306,15 +342,27 @@ function SwipeableNotificationCard({
                 <div className="w-2 h-2 rounded-full bg-[var(--hm-brand-500)] flex-shrink-0 mt-1.5" />
               )}
             </div>
-            <p className="mt-0.5 text-xs text-[var(--hm-fg-muted)]0 line-clamp-2">
+            <p className="mt-0.5 text-xs text-[var(--hm-fg-muted)] line-clamp-2">
               {translated.message}
             </p>
-            <div className="mt-2 flex items-center justify-between">
-              <span className="text-[11px] text-[var(--hm-fg-muted)]">
-                {formatTimeAgoCompact(notification.createdAt, locale as 'en' | 'ka' | 'ru')}
-              </span>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <TimeAgo
+                  isoDate={notification.createdAt}
+                  variant="compact"
+                  className="text-[11px] text-[var(--hm-fg-muted)]"
+                />
+                {relatedCount > 0 && (
+                  // Burstiness hint - "+N related". Click is a no-op
+                  // (the card click still navigates to the same
+                  // destination); this is a passive scan signal.
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--hm-brand-500)]/8 text-[var(--hm-brand-500)] font-medium truncate">
+                    +{relatedCount} {t('notifications.related')}
+                  </span>
+                )}
+              </div>
               {notification.link && (
-                <span className="text-[11px] text-[var(--hm-brand-500)] flex items-center gap-0.5">
+                <span className="text-[11px] text-[var(--hm-brand-500)] flex items-center gap-0.5 flex-shrink-0">
                   {t('common.view')}
                   <ChevronRight className="w-3 h-3" />
                 </span>
@@ -395,6 +443,65 @@ function NotificationsPageContent() {
 
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const { addToast } = useToast();
+  const haptic = useHaptic();
+
+  // Deferred-delete pattern. When the user dismisses a notification,
+  // we hide it locally + start a 5s timer. Within that window the
+  // user can hit "Undo" in the toast to restore it. Without this
+  // pattern, an accidental tap meant rebuilding the notification
+  // from scratch (impossible for system-emitted ones).
+  const [locallyHidden, setLocallyHidden] = useState<Set<string>>(new Set());
+  const pendingDeletesRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  const handleDeleteWithUndo = (notification: Notification) => {
+    haptic("tap");
+    setLocallyHidden((prev) => new Set(prev).add(notification.id));
+    // Schedule the real API call. Until then the notification is
+    // only hidden in this component's view; the server still has it.
+    const timer = setTimeout(() => {
+      pendingDeletesRef.current.delete(notification.id);
+      void deleteNotification(notification.id);
+    }, 5000);
+    pendingDeletesRef.current.set(notification.id, timer);
+    addToast({
+      type: 'info',
+      message: t('common.deleted'),
+      duration: 5000,
+      action: {
+        label: t('common.undo'),
+        onClick: () => {
+          haptic("undo");
+          const pending = pendingDeletesRef.current.get(notification.id);
+          if (pending) {
+            clearTimeout(pending);
+            pendingDeletesRef.current.delete(notification.id);
+          }
+          setLocallyHidden((prev) => {
+            const next = new Set(prev);
+            next.delete(notification.id);
+            return next;
+          });
+        },
+      },
+    });
+  };
+
+  // If the user navigates away with pending deletes, fire them
+  // so we don't leak timers and the server stays in sync with what
+  // the user thought they did. We snapshot the ref into a local var
+  // so the cleanup sees the right map (per react-hooks/exhaustive-deps).
+  useEffect(() => {
+    const pendingMap = pendingDeletesRef.current;
+    return () => {
+      pendingMap.forEach((timer, id) => {
+        clearTimeout(timer);
+        void deleteNotification(id);
+      });
+      pendingMap.clear();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -416,6 +523,8 @@ function NotificationsPageContent() {
   ];
 
   const filteredNotifications = notifications.filter((n) => {
+    // Skip items the user just deleted (still within undo window).
+    if (locallyHidden.has(n.id)) return false;
     switch (activeFilter) {
       case 'unread':
         return !n.isRead;
@@ -429,6 +538,22 @@ function NotificationsPageContent() {
         return true;
     }
   });
+
+  // Count related notifications per referenceId. Surfaces a "+N
+  // related events" chip on each card so users get a hint when
+  // there's been more activity on the same job/conversation.
+  // Built over the unfiltered list so the count reflects truly
+  // related events even when the user has filtered down to one
+  // category (e.g. "unread" hides others but the hint still says
+  // "5 more events on this job").
+  const referenceCounts = (() => {
+    const counts: Record<string, number> = {};
+    for (const n of notifications) {
+      if (!n.referenceId || locallyHidden.has(n.id)) continue;
+      counts[n.referenceId] = (counts[n.referenceId] ?? 0) + 1;
+    }
+    return counts;
+  })();
 
   const groupedNotifications = groupNotificationsByDate(
     filteredNotifications,
@@ -525,11 +650,13 @@ function NotificationsPageContent() {
             />
           </div>
 
-          {/* Filter Button - Mobile */}
+          {/* Filter Button - Mobile. Bumped to h-10 + active-scale so
+              the touch zone matches the rest of the app's tap-comfort
+              floor and gets tactile feedback on tap. */}
           <div className="sm:hidden px-4 pb-3">
             <button
               onClick={() => setShowFilterMenu(true)}
-              className="flex items-center gap-2 px-3 py-2 bg-[var(--hm-bg-tertiary)] rounded-lg text-sm font-medium text-[var(--hm-fg-secondary)]"
+              className="inline-flex items-center gap-2 h-10 px-3.5 bg-[var(--hm-bg-tertiary)] rounded-lg text-sm font-medium text-[var(--hm-fg-secondary)] transition-all active:scale-[0.97]"
             >
               <Filter className="w-4 h-4" />
               <span>{currentFilter?.label}</span>
@@ -550,7 +677,11 @@ function NotificationsPageContent() {
             className="absolute inset-0 bg-black/50"
             onClick={() => setShowFilterMenu(false)}
           />
-          <div className="absolute bottom-0 left-0 right-0 bg-[var(--hm-bg-elevated)] rounded-t-2xl animate-slide-up">
+          {/* iOS home indicator overlap fix - bottom sheet sits at
+              bottom:0 so the inner padding has to absorb the safe
+              area inset, otherwise the last filter row gets clipped
+              by the indicator on iPhones without bezels. */}
+          <div className="absolute bottom-0 left-0 right-0 bg-[var(--hm-bg-elevated)] rounded-t-2xl animate-slide-up pb-[env(safe-area-inset-bottom)]">
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
@@ -558,7 +689,8 @@ function NotificationsPageContent() {
                 </h3>
                 <button
                   onClick={() => setShowFilterMenu(false)}
-                  className="p-2 -mr-2 rounded-lg hover:bg-[var(--hm-bg-tertiary)]"
+                  aria-label={t('common.close')}
+                  className="w-10 h-10 -mr-2 rounded-lg flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] active:scale-95"
                 >
                   <X className="w-5 h-5 text-[var(--hm-fg-muted)]" />
                 </button>
@@ -615,44 +747,69 @@ function NotificationsPageContent() {
             ))}
           </div>
         ) : filteredNotifications.length === 0 ? (
-          /* Empty State */
-          <div className="px-4 py-12 text-center">
-            <div className="w-10 h-10 rounded-xl bg-[var(--hm-bg-tertiary)] flex items-center justify-center mx-auto mb-3">
-              <Bell className="w-5 h-5 text-[var(--hm-fg-muted)]" />
-            </div>
-            <h3 className="text-sm font-semibold text-[var(--hm-fg-primary)] mb-1">
-              {activeFilter === 'unread'
+          /* Empty state.
+             - Uses the shared EmptyState component so the visual
+               weight matches every other zero-state in the app.
+             - First-visit case (no filter, total notifications === 0)
+               gets `lg` size since this is a first-impression page.
+             - Filtered-empty cases (e.g. "unread" tab with all read)
+               stay `md` so they don't shove the filter strip away. */
+          <EmptyState
+            icon={Bell}
+            title={
+              activeFilter === 'unread'
                 ? t('notifications.allCaughtUp')
-                : t('notifications.noNotifications')}
-            </h3>
-            <p className="text-xs text-[var(--hm-fg-muted)] max-w-xs mx-auto">
-              {activeFilter === 'unread'
+                : t('notifications.noNotifications')
+            }
+            description={
+              activeFilter === 'unread'
                 ? t('notifications.allRead')
-                : t('notifications.newWillAppear')}
-            </p>
-          </div>
+                : t('notifications.newWillAppear')
+            }
+            variant="illustrated"
+            size={notifications.length === 0 ? 'lg' : 'md'}
+          />
         ) : (
           <div className="py-2">
             {groupedNotifications.map((group) => (
               <div key={group.label}>
                 {/* Date Label */}
-                <div className="px-4 py-2 sticky top-[116px] sm:top-[140px] z-10">
-                  <span className="text-xs font-medium text-[var(--hm-fg-muted)]0 uppercase tracking-wide">
+                {/* Group divider sits below the sticky filter strip
+                    (which itself sits below the global header). Was
+                    using `text-[var(--hm-fg-muted)]0` - the trailing
+                    `0` made the arbitrary-value class invalid so no
+                    color rendered; the label was falling back to the
+                    inherited text color. Also added a frosted glass
+                    background so the label stays legible when
+                    notification cards scroll underneath the sticky
+                    label - previously the label sat on a transparent
+                    band and cards bled through the text. */}
+                <div className="px-4 py-2 sticky top-[116px] sm:top-[140px] z-10 bg-[var(--hm-bg-tertiary)]/85 backdrop-blur-md">
+                  <span className="text-xs font-medium text-[var(--hm-fg-muted)] uppercase tracking-wide">
                     {group.label}
                   </span>
                 </div>
 
                 {/* Notifications */}
                 <div className="px-4 space-y-2">
-                  {group.notifications.map((notification) => (
-                    <SwipeableNotificationCard
-                      key={notification.id}
-                      notification={notification}
-                      onDelete={() => deleteNotification(notification.id)}
-                      onClick={() => handleNotificationClick(notification)}
-                      locale={locale}
-                    />
-                  ))}
+                  {group.notifications.map((notification) => {
+                    // -1 because referenceCounts includes the card
+                    // itself; the chip says "OTHER events" so the
+                    // display value is one less than the total.
+                    const related = notification.referenceId
+                      ? Math.max(0, (referenceCounts[notification.referenceId] ?? 1) - 1)
+                      : 0;
+                    return (
+                      <SwipeableNotificationCard
+                        key={notification.id}
+                        notification={notification}
+                        onDelete={() => handleDeleteWithUndo(notification)}
+                        onClick={() => handleNotificationClick(notification)}
+                        locale={locale}
+                        relatedCount={related}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             ))}

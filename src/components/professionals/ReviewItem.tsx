@@ -1,6 +1,7 @@
 'use client';
 
 import Avatar from '@/components/common/Avatar';
+import SmartImage from '@/components/common/SmartImage';
 import { MultiStarDisplay } from '@/components/ui/StarRating';
 import { storage } from '@/services/storage';
 import { formatTimeAgo } from '@/utils/dateUtils';
@@ -69,7 +70,11 @@ export default function ReviewItem({
 
   return (
     <div
-      className={`bg-[var(--hm-bg-elevated)] rounded-2xl p-5 shadow-sm border border-[var(--hm-border-subtle)] ${className}`}
+      className={`bg-[var(--hm-bg-elevated)] rounded-2xl p-5 border border-[var(--hm-border-subtle)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md ${className}`}
+      style={{
+        boxShadow:
+          "0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.04)",
+      }}
     >
       <div className="flex items-start gap-4">
         <Avatar
@@ -86,16 +91,20 @@ export default function ReviewItem({
               <p className="font-semibold text-[var(--hm-fg-primary)] text-sm truncate">
                 {displayName}
               </p>
-              {/* Source badge */}
+              {/* Source badge. Was rendered at 30% opacity before -
+                  effectively invisible. Now reads as a clear trust
+                  signal: green "Verified Homico booking" for reviews
+                  left through a paid + completed Homico job, neutral
+                  "External review" for reviews imported from elsewhere. */}
               {isExternal ? (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[var(--hm-info-100)] text-[var(--hm-info-500)]/30 shrink-0">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[var(--hm-info-50)] text-[var(--hm-info-600)] shrink-0">
                   <Globe className="w-2.5 h-2.5" />
                   {review.externalVerifiedAt ? t('reviews.verified') : t('reviews.external')}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[var(--hm-success-100)] text-[var(--hm-success-500)]/30 shrink-0">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[var(--hm-success-50)] text-[var(--hm-success-600)] shrink-0">
                   <ShieldCheck className="w-2.5 h-2.5" />
-                  Homico
+                  {t('reviews.verifiedHomicoBooking')}
                 </span>
               )}
             </div>
@@ -122,10 +131,10 @@ export default function ReviewItem({
                   onClick={() => onPhotoClick?.(photo)}
                   className="w-16 h-16 rounded-lg overflow-hidden hover:ring-2 hover:ring-[var(--hm-brand-500)] transition-all"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary-served + onError fallback; next/image conversion deferred until perf audit. */}
-                  <img
+                  <SmartImage
                     src={storage.getFileUrl(photo)}
                     alt=""
+                    square
                     className="w-full h-full object-cover"
                   />
                 </button>
