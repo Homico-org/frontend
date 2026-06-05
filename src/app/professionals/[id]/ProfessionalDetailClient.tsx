@@ -51,6 +51,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Edit3,
+  Eye,
   Facebook,
   Link2,
   MapPin,
@@ -647,6 +648,20 @@ export default function ProfessionalDetailClient({
         proId: profile.id,
         proName: profile.name,
       });
+      // Persist a unique-visitor phone-view count (deduped by IP / 24h on the
+      // backend). Reflect the returned count in local state so the stat updates
+      // without a reload; never block the reveal on this write.
+      api
+        .post(`/users/pros/${profile.id}/phone-view`)
+        .then((res) => {
+          const count = res.data?.phoneViewCount;
+          if (typeof count === "number") {
+            setProfile((prev) =>
+              prev ? { ...prev, phoneViewCount: count } : prev,
+            );
+          }
+        })
+        .catch(() => {});
       return;
     }
 
@@ -2276,6 +2291,13 @@ export default function ProfessionalDetailClient({
                           </motion.button>
                         )}
                       </AnimatePresence>
+                      {(profile.phoneViewCount ?? 0) > 0 && (
+                        <p className="flex items-center justify-center gap-1 text-[11px] text-[var(--hm-fg-muted)]">
+                          <Eye className="w-3 h-3" />
+                          {profile.phoneViewCount}{" "}
+                          {t("professional.phoneViewsLabel")}
+                        </p>
+                      )}
                       {myOpenJobsLoaded && myMatchingOpenJobs.length > 0 && (
                         <motion.button
                           whileHover={{ scale: 1.02, y: -1 }}

@@ -144,6 +144,7 @@ export interface ProProfile extends BaseEntity {
   avgRating: number;
   totalReviews: number;
   profileViewCount?: number;
+  phoneViewCount?: number;
   completedJobs: number;
   completedProjects?: number;
   externalCompletedJobs?: number;
