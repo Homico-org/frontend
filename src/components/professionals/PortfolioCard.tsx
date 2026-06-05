@@ -9,7 +9,7 @@ import { storage } from '@/services/storage';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getCategoryLabelStatic } from '@/hooks/useCategoryLabels';
-import { BadgeCheck, Calendar, Camera, Eye, MapPin, Star } from 'lucide-react';
+import { BadgeCheck, Calendar, Camera, Eye, MapPin, Play, Star } from 'lucide-react';
 import { formatDate } from '@/utils/dateUtils';
 import Image from "next/image";
 import Link from "next/link";
@@ -121,24 +121,32 @@ export default function PortfolioCard({
     glareOpacity.set(0);
   }
 
-  // Regular images separate from before/after pairs
+  // Regular images separate from before/after pairs and videos
   const regularImages = project.images || [];
   const baPairs = project.beforeAfter || [];
-  // allImages = regular images only (B/A shown differently)
+  const videos = project.videos || [];
+  // allImages = regular images first, then B/A slots, then video slots.
+  // Order matters: the index ranges below identify each media type.
   const allImages = [...regularImages];
   // Track B/A start index for thumbnail strip
   const baStartIndex = regularImages.length;
   // Add B/A "slots" to allImages for indexing (hero will show B/A split for these)
   baPairs.forEach(() => allImages.push("__ba__"));
+  // Track video start index; push the actual video URLs as their own slots.
+  const videoStartIndex = allImages.length;
+  videos.forEach((v) => allImages.push(v));
 
   const hasBeforeAfter = baPairs.length > 0;
 
   const hasImages = allImages.length > 0;
   const currentImage = allImages[activeThumb] || allImages[0];
-  const currentIsBa = activeThumb >= baStartIndex;
+  const currentIsBa = activeThumb >= baStartIndex && activeThumb < videoStartIndex;
+  const currentIsVideo = activeThumb >= videoStartIndex;
   const currentBaPair = currentIsBa ? baPairs[activeThumb - baStartIndex] : null;
+  const currentVideo = currentIsVideo ? videos[activeThumb - videoStartIndex] : null;
   // Prefer optimized (Cloudinary) URLs when available; otherwise falls back to original URL.
-  const currentSrc = currentImage
+  // Videos are never run through the image optimizer.
+  const currentSrc = currentImage && !currentIsVideo
     ? storage.getOptimizedImageUrl(currentImage, "portfolio")
     : "";
 
@@ -166,7 +174,35 @@ export default function PortfolioCard({
       <div className="relative bg-[var(--hm-bg-elevated)] rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] group-hover:border-[var(--hm-brand-500)]/30 transition-all duration-300">
 
         {/* Main Image */}
-        {currentIsBa && currentBaPair ? (
+        {currentIsVideo && currentVideo ? (
+          <Button
+            variant="ghost"
+            onClick={() => onClick?.(activeThumb)}
+            className="relative w-full aspect-[4/3] h-auto p-0 overflow-hidden hover:bg-transparent bg-black"
+            aria-label={t('common.view') || 'View'}
+          >
+            <video
+              src={currentVideo}
+              className="absolute inset-0 w-full h-full object-cover"
+              muted
+              playsInline
+              preload="metadata"
+            />
+            {/* Play overlay */}
+            <div className="absolute inset-0 flex items-center justify-center z-20">
+              <div className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm shadow-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                <Play className="w-6 h-6 text-[var(--hm-n-900)] translate-x-0.5" fill="currentColor" />
+              </div>
+            </div>
+            {/* Media count badge */}
+            {allImages.length > 1 && (
+              <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-black/50 backdrop-blur-md text-white text-[10px] sm:text-xs font-medium shadow-lg z-20">
+                <Camera className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                <span>{allImages.length}{hasBeforeAfter && ' ✦'}</span>
+              </div>
+            )}
+          </Button>
+        ) : currentIsBa && currentBaPair ? (
           <div className="relative w-full aspect-[4/3] overflow-hidden">
             <BeforeAfterSlider
               beforeImage={storage.getOptimizedImageUrl(currentBaPair.before, "hero")}
@@ -264,7 +300,8 @@ export default function PortfolioCard({
         {allImages.length > 1 && (
           <div className="flex gap-1.5 p-2.5 bg-[var(--hm-bg-elevated)] border-t border-[var(--hm-border-subtle)]">
             {allImages.slice(0, 4).map((img, imgIdx) => {
-              const isBaPair = imgIdx >= baStartIndex;
+              const isVideo = imgIdx >= videoStartIndex;
+              const isBaPair = imgIdx >= baStartIndex && imgIdx < videoStartIndex;
               const baIdx = imgIdx - baStartIndex;
               const baPair = isBaPair ? baPairs[baIdx] : null;
 
@@ -283,7 +320,23 @@ export default function PortfolioCard({
                       : 'ring-1 ring-[var(--hm-border-subtle)]/50 hover:ring-[var(--hm-brand-500)]/50 hover:scale-[1.02]'
                   }`}
                 >
-                  {baPair ? (
+                  {isVideo ? (
+                    /* Video thumbnail with play badge */
+                    <div className="absolute inset-0 bg-black">
+                      <video
+                        src={img}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        muted
+                        playsInline
+                        preload="metadata"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-white/85 flex items-center justify-center">
+                          <Play className="w-3 h-3 text-[var(--hm-n-900)] translate-x-px" fill="currentColor" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : baPair ? (
                     /* Before/After split thumbnail */
                     <div className="absolute inset-0 flex">
                       <div className="w-1/2 h-full relative">
