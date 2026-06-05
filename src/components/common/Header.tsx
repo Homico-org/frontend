@@ -15,6 +15,7 @@ import { useSupportUnread } from "@/hooks/useSupportUnread";
 import { trackEvent } from "@/hooks/useTracker";
 import {
   ArrowRight,
+  Activity,
   BarChart3,
   Bell,
   Briefcase,
@@ -239,6 +240,10 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   // Jobs tab. Country-stripped pathname already handled above.
   const isPathActive = (target: string) =>
     localPath === target || localPath.startsWith(`${target}/`);
+
+  // The Shop tab owns the whole shop section: catalog (/shop) AND orders
+  // (/orders), which live under the same sidebar group.
+  const isShopActive = isPathActive("/shop") || isPathActive("/orders");
 
   // Three mega-dropdowns drive the entire top-bar navigation. Each top-
   // level label ("Jobs", "Professionals", "My activity") opens a panel
@@ -711,6 +716,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
               setOpenMenuKey(openMenuKey === "jobs" ? null : "jobs")
             }
             label={t("header.jobs")}
+            icon={<Briefcase className="w-4 h-4" strokeWidth={1.7} />}
           />
           <NavTrigger
             triggerRef={prosTriggerRef}
@@ -720,7 +726,11 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
               setOpenMenuKey(openMenuKey === "pros" ? null : "pros")
             }
             label={t("header.professionals")}
+            icon={<Users className="w-4 h-4" strokeWidth={1.7} />}
           />
+          {/* Plan: AI-powered renovation planning. Named "Plan" instead of
+              "Tools" - in renovation context the latter reads as physical
+              hammers/saws in KA/RU. */}
           {/* Plan: AI-powered renovation planning. Named "Plan" instead of
               "Tools" - in renovation context the latter reads as physical
               hammers/saws in KA/RU. */}
@@ -732,7 +742,31 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
               setOpenMenuKey(openMenuKey === "plan" ? null : "plan")
             }
             label={t("header.plan")}
+            icon={<LayoutGrid className="w-4 h-4" strokeWidth={1.7} />}
           />
+          {/* Shop: a standalone destination (not an AI tool) - its own link. */}
+          <Link
+            href="/shop"
+            onClick={() => setOpenMenuKey(null)}
+            className="relative inline-flex items-center gap-1.5 px-2.5 h-8 text-[13px] tracking-[-0.005em] transition-colors whitespace-nowrap hover:text-[var(--hm-brand-500)]"
+            style={{
+              color: isShopActive
+                ? "var(--hm-brand-500)"
+                : "var(--hm-fg-primary)",
+              fontWeight: isShopActive ? 600 : 500,
+            }}
+          >
+            <ShoppingBag className="w-4 h-4" strokeWidth={1.7} />
+            {t("header.shop")}
+            <span
+              aria-hidden
+              className="absolute left-2.5 right-2.5 -bottom-[1px] h-[2px] rounded-full transition-opacity duration-200"
+              style={{
+                background: "var(--hm-brand-500)",
+                opacity: isShopActive ? 1 : 0,
+              }}
+            />
+          </Link>
           {isAuthenticated && visibleDropdownActivityItems.length > 0 && (
             <NavTrigger
               triggerRef={activityTriggerRef}
@@ -744,6 +778,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                 )
               }
               label={t("header.myActivity")}
+              icon={<Activity className="w-4 h-4" strokeWidth={1.7} />}
             />
           )}
         </nav>
@@ -1620,12 +1655,14 @@ function NavTrigger({
   open,
   onClick,
   label,
+  icon,
 }: {
   triggerRef: React.RefObject<HTMLButtonElement>;
   active: boolean;
   open: boolean;
   onClick: () => void;
   label: string;
+  icon?: React.ReactNode;
 }) {
   return (
     <button
@@ -1634,12 +1671,13 @@ function NavTrigger({
       onClick={onClick}
       aria-haspopup="menu"
       aria-expanded={open}
-      className="relative inline-flex items-center px-2.5 h-8 text-[13px] tracking-[-0.005em] transition-colors whitespace-nowrap hover:text-[var(--hm-brand-500)]"
+      className="relative inline-flex items-center gap-1.5 px-2.5 h-8 text-[13px] tracking-[-0.005em] transition-colors whitespace-nowrap hover:text-[var(--hm-brand-500)]"
       style={{
         color: active ? "var(--hm-brand-500)" : "var(--hm-fg-primary)",
         fontWeight: active ? 600 : 500,
       }}
     >
+      {icon}
       {label}
       <span
         aria-hidden

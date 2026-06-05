@@ -1,13 +1,24 @@
 'use client';
 
-import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
-import { FormGroup, Input, Label, Textarea } from '@/components/ui/input';
+import AddSpaceModal from '@/components/projects/AddSpaceModal';
+import ImageLightbox from '@/components/common/ImageLightbox';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
-import { DoorOpen, Pencil, Plus, Ruler, Trash2, Wallet } from 'lucide-react';
-import { useState } from 'react';
+import { storage } from '@/services/storage';
+import {
+  DoorOpen,
+  ImagePlus,
+  Pencil,
+  Plus,
+  Ruler,
+  Square,
+  Trash2,
+  Wallet,
+  X,
+} from 'lucide-react';
+import { useRef, useState } from 'react';
 
 export interface Room {
   id: string;
@@ -16,6 +27,7 @@ export interface Room {
   width?: number;
   height?: number;
   area?: number;
+  wallArea?: number;
   budget?: number;
   note?: string;
   photos?: string[];
@@ -32,16 +44,6 @@ interface ProjectRoomsProps {
 const fmtGel = (n: number) =>
   `${Math.round(n).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
 
-const emptyForm = {
-  name: '',
-  length: '',
-  width: '',
-  height: '',
-  area: '',
-  budget: '',
-  note: '',
-};
-
 export default function ProjectRooms({
   projectId,
   rooms,
@@ -51,63 +53,68 @@ export default function ProjectRooms({
   const { t } = useLanguage();
   const toast = useToast();
   const [open, setOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ ...emptyForm });
-  const [saving, setSaving] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  // Per-space gallery: upload target + full-screen viewer.
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [photoRoomId, setPhotoRoomId] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [lightbox, setLightbox] = useState<{
+    images: string[];
+    index: number;
+  } | null>(null);
 
   const errMsg = (err: unknown) =>
     (err as { response?: { data?: { message?: string } } })?.response?.data
       ?.message || t('projects.tryAgain');
 
-  const openAdd = () => {
-    setForm({ ...emptyForm });
-    setEditingId(null);
-    setOpen(true);
-  };
-
-  const openEdit = (r: Room) => {
-    setForm({
-      name: r.name || '',
-      length: r.length != null ? String(r.length) : '',
-      width: r.width != null ? String(r.width) : '',
-      height: r.height != null ? String(r.height) : '',
-      area: r.area != null ? String(r.area) : '',
-      budget: r.budget != null ? String(r.budget) : '',
-      note: r.note || '',
-    });
-    setEditingId(r.id);
-    setOpen(true);
-  };
-
-  const num = (v: string) => (v ? Number(v) : undefined);
-
-  const save = async () => {
-    if (!form.name.trim()) return;
-    setSaving(true);
+  // Upload a render/photo and attach it to the chosen space (room.photos).
+  const uploadRoomPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const room = rooms.find((r) => r.id === photoRoomId);
+    if (!file || !room) {
+      setPhotoRoomId(null);
+      return;
+    }
+    setUploadingPhoto(true);
     try {
-      const body = {
-        name: form.name.trim(),
-        length: num(form.length),
-        width: num(form.width),
-        height: num(form.height),
-        area: num(form.area),
-        budget: num(form.budget),
-        note: form.note.trim() || undefined,
-      };
-      if (editingId) {
-        await api.patch(`/projects/${projectId}/rooms/${editingId}`, body);
-      } else {
-        await api.post(`/projects/${projectId}/rooms`, body);
-      }
-      setOpen(false);
+      const fd = new FormData();
+      fd.append('file', file);
+      const up = await api.post('/upload', fd);
+      const url = (up.data.url || up.data.filename) as string;
+      await api.patch(`/projects/${projectId}/rooms/${room.id}`, {
+        photos: [...(room.photos ?? []), url],
+      });
       await onChanged();
       toast.success(t('projects.savedChanges'));
     } catch (err) {
       toast.error(t('projects.tryAgain'), errMsg(err));
     } finally {
-      setSaving(false);
+      setUploadingPhoto(false);
+      setPhotoRoomId(null);
+      if (photoInputRef.current) photoInputRef.current.value = '';
     }
+  };
+
+  const removeRoomPhoto = async (room: Room, url: string) => {
+    try {
+      await api.patch(`/projects/${projectId}/rooms/${room.id}`, {
+        photos: (room.photos ?? []).filter((p) => p !== url),
+      });
+      await onChanged();
+    } catch (err) {
+      toast.error(t('projects.tryAgain'), errMsg(err));
+    }
+  };
+
+  const openAdd = () => {
+    setEditingRoom(null);
+    setOpen(true);
+  };
+
+  const openEdit = (r: Room) => {
+    setEditingRoom(r);
+    setOpen(true);
   };
 
   const remove = async (id: string) => {
@@ -122,12 +129,6 @@ export default function ProjectRooms({
       setBusyId(null);
     }
   };
-
-  // Live area preview from L x W when area isn't manually set.
-  const previewArea =
-    !form.area && form.length && form.width
-      ? Math.round(Number(form.length) * Number(form.width) * 100) / 100
-      : null;
 
   return (
     <section>
@@ -202,6 +203,12 @@ export default function ProjectRooms({
                     {r.area} {t('projects.sqm')}
                   </span>
                 )}
+                {!!r.wallArea && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Square className="w-4 h-4" />
+                    {r.wallArea} {t('projects.sqm')}
+                  </span>
+                )}
                 {(r.length || r.width || r.height) && (
                   <span className="tabular-nums">
                     {[r.length, r.width, r.height]
@@ -221,100 +228,92 @@ export default function ProjectRooms({
                   {r.note}
                 </p>
               )}
+
+              {/* Per-space gallery: renders / photos tied to this space. */}
+              {((r.photos?.length ?? 0) > 0 || canManage) && (
+                <div className="mt-3 grid grid-cols-4 gap-2">
+                  {(r.photos ?? []).map((url, i) => (
+                    <div
+                      key={url}
+                      className="group/photo relative aspect-square overflow-hidden rounded-lg bg-[var(--hm-bg-tertiary)]"
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setLightbox({ images: r.photos ?? [], index: i })
+                        }
+                        className="absolute inset-0 h-full w-full"
+                        aria-label={r.name}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={storage.getOptimizedImageUrl(url, 'feedCard')}
+                          alt=""
+                          loading="lazy"
+                          className="absolute inset-0 h-full w-full object-cover transition-opacity group-hover/photo:opacity-90"
+                        />
+                      </button>
+                      {canManage && (
+                        <button
+                          type="button"
+                          onClick={() => removeRoomPhoto(r, url)}
+                          aria-label={t('common.delete')}
+                          className="absolute right-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity group-hover/photo:opacity-100"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {canManage && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPhotoRoomId(r.id);
+                        photoInputRef.current?.click();
+                      }}
+                      disabled={uploadingPhoto}
+                      className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-[var(--hm-border-strong)] text-[var(--hm-fg-muted)] transition-colors hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)] disabled:opacity-60"
+                    >
+                      <ImagePlus className="h-4 w-4" />
+                      <span className="text-[10px] font-medium">
+                        {t('projects.addPhoto')}
+                      </span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
+      {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+      <input
+        ref={photoInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={uploadRoomPhoto}
+      />
+
+      {lightbox && (
+        <ImageLightbox
+          isOpen={!!lightbox}
+          onClose={() => setLightbox(null)}
+          images={lightbox.images.map((u) => storage.getFileUrl(u))}
+          initialIndex={lightbox.index}
+        />
+      )}
+
       {open && (
-        <Modal isOpen={open} onClose={() => setOpen(false)} size="md" showCloseButton>
-          <ModalHeader title={t('projects.roomAdd')} />
-          <ModalBody>
-            <div className="flex flex-col gap-4">
-              <FormGroup>
-                <Label>{t('projects.selName')}</Label>
-                <Input
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  autoFocus
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label>
-                  {t('projects.roomDimensions')}{' '}
-                  <span className="text-[var(--hm-fg-muted)] font-normal">
-                    ({t('common.optional')})
-                  </span>
-                </Label>
-                <div className="grid grid-cols-3 gap-2">
-                  <Input
-                    type="number"
-                    min={0}
-                    value={form.length}
-                    onChange={(e) => setForm({ ...form, length: e.target.value })}
-                    placeholder="L"
-                  />
-                  <Input
-                    type="number"
-                    min={0}
-                    value={form.width}
-                    onChange={(e) => setForm({ ...form, width: e.target.value })}
-                    placeholder="W"
-                  />
-                  <Input
-                    type="number"
-                    min={0}
-                    value={form.height}
-                    onChange={(e) => setForm({ ...form, height: e.target.value })}
-                    placeholder="H"
-                  />
-                </div>
-              </FormGroup>
-              <div className="grid grid-cols-2 gap-3">
-                <FormGroup>
-                  <Label>{t('projects.landAreaLabel')}</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={form.area}
-                    onChange={(e) => setForm({ ...form, area: e.target.value })}
-                    placeholder={previewArea != null ? String(previewArea) : ''}
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label>{t('projects.statBudgetLabel')}</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={form.budget}
-                    onChange={(e) => setForm({ ...form, budget: e.target.value })}
-                  />
-                </FormGroup>
-              </div>
-              <FormGroup>
-                <Label>
-                  {t('common.description')}{' '}
-                  <span className="text-[var(--hm-fg-muted)] font-normal">
-                    ({t('common.optional')})
-                  </span>
-                </Label>
-                <Textarea
-                  value={form.note}
-                  onChange={(e) => setForm({ ...form, note: e.target.value })}
-                  rows={2}
-                />
-              </FormGroup>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setOpen(false)}>
-                  {t('common.cancel')}
-                </Button>
-                <Button onClick={save} disabled={saving || !form.name.trim()}>
-                  {editingId ? t('common.save') : t('common.add')}
-                </Button>
-              </div>
-            </div>
-          </ModalBody>
-        </Modal>
+        <AddSpaceModal
+          isOpen={open}
+          onClose={() => setOpen(false)}
+          projectId={projectId}
+          item={editingRoom ?? undefined}
+          onSaved={onChanged}
+        />
       )}
     </section>
   );

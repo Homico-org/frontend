@@ -3,6 +3,8 @@
 import { CategoryIcon } from "@/components/categories";
 import Header from "@/components/common/Header";
 import MobileBottomNav from "@/components/common/MobileBottomNav";
+import SidebarProjectsGroup from "@/components/layout/SidebarProjectsGroup";
+import SidebarShopGroup from "@/components/layout/SidebarShopGroup";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { features } from "@/config/features";
 import { ACCENT_COLOR } from "@/constants/theme";
@@ -35,6 +37,7 @@ import {
   RotateCcw,
   Search,
   Settings,
+  ShoppingBag,
   Users,
   Wrench,
   X,
@@ -49,7 +52,7 @@ const SIDEBAR_COLLAPSED_WIDTH = 56;
 
 type TabShowFor = "all" | "pro" | "client" | "auth";
 
-type TabKey = "my-space" | "my-jobs" | "projects" | "bookings" | "jobs" | "professionals";
+type TabKey = "my-space" | "my-jobs" | "projects" | "shop" | "bookings" | "jobs" | "professionals";
 
 
 // `countryScoped: true` flags tabs that live under `/{country}/...` and
@@ -92,6 +95,15 @@ const TABS: Array<{
     labelRu: "Проекты",
     icon: ListChecks,
     showFor: "auth" as const,
+  },
+  {
+    key: "shop",
+    route: "/shop",
+    label: "Shop",
+    labelKa: "მაღაზია",
+    labelRu: "Магазин",
+    icon: ShoppingBag,
+    showFor: "all" as const,
   },
   {
     key: "bookings",
@@ -640,6 +652,11 @@ function ShellContent({ children }: { children: ReactNode }) {
   const isMyJobsPage = localPath.startsWith("/my-jobs");
   const isBookingsPage = localPath.startsWith("/bookings");
   const isProjectsPage = localPath.startsWith("/projects");
+  // /shop renders its own header + search (CatalogSearch), so suppress the
+  // shell's secondary header row and browse filter bar - same as projects.
+  const isShopPage = localPath.startsWith("/shop");
+  // /orders has its own page header; suppress the browse chrome too.
+  const isOrdersPage = localPath.startsWith("/orders");
 
   const activeTab: TabKey | null = isMySpacePage
     ? "my-space"
@@ -647,13 +664,15 @@ function ShellContent({ children }: { children: ReactNode }) {
       ? "my-jobs"
       : isProjectsPage
         ? "projects"
-        : isBookingsPage
-          ? "bookings"
-          : isJobsPage
-            ? "jobs"
-            : (isProfessionalsPage || isPortfolioPage)
-              ? "professionals"
-              : null;
+        : (isShopPage || isOrdersPage)
+          ? "shop"
+          : isBookingsPage
+            ? "bookings"
+            : isJobsPage
+              ? "jobs"
+              : (isProfessionalsPage || isPortfolioPage)
+                ? "professionals"
+                : null;
 
   const visibleTabs = TABS.filter((tab) => {
     if (tab.key === "bookings" && !features.bookings) return false;
@@ -691,8 +710,8 @@ function ShellContent({ children }: { children: ReactNode }) {
 
   const HeaderIcon = pageHeader.icon;
 
-  const showHeaderRow = !isToolsSubpage && !isMySpacePage && !isSettingsPage && !isProjectsPage;
-  const showSearchFilters = !isToolsSubpage && !isToolsPage && !isMyJobsPage && !isMyWorkPage && !isMySpacePage && !isSettingsPage && !isBookingsPage && !isProjectsPage;
+  const showHeaderRow = !isToolsSubpage && !isMySpacePage && !isSettingsPage && !isProjectsPage && !isShopPage && !isOrdersPage;
+  const showSearchFilters = !isToolsSubpage && !isToolsPage && !isMyJobsPage && !isMyWorkPage && !isMySpacePage && !isSettingsPage && !isBookingsPage && !isProjectsPage && !isShopPage && !isOrdersPage;
 
   useEffect(() => setMounted(true), []);
 
@@ -701,6 +720,229 @@ function ShellContent({ children }: { children: ReactNode }) {
       <Header fixed={false} />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
+
+        {/* Left Sidebar */}
+        <aside
+          className="hidden lg:flex flex-col flex-shrink-0 border-r transition-all duration-300 ease-in-out relative"
+          style={{
+            borderColor: 'var(--hm-border)',
+            backgroundColor: 'var(--hm-bg-page)',
+            width: isHydrated
+              ? isCollapsed
+                ? SIDEBAR_COLLAPSED_WIDTH
+                : SIDEBAR_EXPANDED_WIDTH
+              : SIDEBAR_EXPANDED_WIDTH,
+          }}
+        >
+          {/* Post Job - top of sidebar */}
+          <div className={`pt-3 pb-1.5 flex-shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}>
+            <Link
+              href="/post-job"
+              className={`group flex items-center justify-center border transition-all mb-2 ${
+                isCollapsed
+                  ? "w-9 h-9 mx-auto"
+                  : "w-full gap-2 py-1.5"
+              } hover:shadow-md`}
+              style={{
+                borderColor: 'var(--hm-brand-500)',
+                backgroundColor: 'var(--hm-brand-500)',
+                color: '#fff',
+              }}
+              title={isCollapsed ? t("browse.postAJob") : undefined}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--hm-brand-600)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--hm-brand-500)';
+              }}
+            >
+              <Plus className="w-4 h-4 flex-shrink-0 transition-transform group-hover:rotate-90" />
+              {!isCollapsed && <span className="text-[13px] font-semibold">{t("browse.postAJob")}</span>}
+            </Link>
+
+            {!isCollapsed && (
+              <div
+                className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-3 pb-2"
+              >
+                {t("nav.sectionWork")}
+              </div>
+            )}
+            <nav className={`space-y-0.5 ${isCollapsed ? "px-1.5" : "px-2"}`}>
+              {visibleTabs.map((tab) => {
+                const isActive = activeTab === tab.key;
+                const Icon = tab.icon;
+                // Projects renders as a collapsible tree of the user's projects.
+                if (tab.key === "projects") {
+                  return (
+                    <SidebarProjectsGroup
+                      key="projects"
+                      label={pick({ en: tab.label, ka: tab.labelKa, ru: tab.labelRu })}
+                      isCollapsed={isCollapsed}
+                      active={isActive}
+                    />
+                  );
+                }
+                // Shop is a collapsible group: Catalog, Orders, ...
+                if (tab.key === "shop") {
+                  return (
+                    <SidebarShopGroup
+                      key="shop"
+                      label={pick({ en: tab.label, ka: tab.labelKa, ru: tab.labelRu })}
+                      isCollapsed={isCollapsed}
+                      active={isActive}
+                    />
+                  );
+                }
+                return (
+                  <Link
+                    key={tab.key}
+                    href={tab.route}
+                    className={`group relative flex items-center rounded-xl text-[12.5px] transition-colors ${
+                      isCollapsed ? "justify-center px-2 py-2" : "gap-2.5 px-2.5 py-2"
+                    } ${
+                      isActive
+                        ? "bg-[var(--hm-brand-500)]/[0.10] font-semibold text-[var(--hm-brand-500)]"
+                        : "font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
+                    }`}
+                    title={isCollapsed ? pick({ en: tab.label, ka: tab.labelKa, ru: tab.labelRu }) : undefined}
+                  >
+                    <Icon className="w-[18px] h-[18px] flex-shrink-0" strokeWidth={isActive ? 2.1 : 1.75} />
+                    {!isCollapsed && (
+                      <span className="flex-1">
+                        {pick({ en: tab.label, ka: tab.labelKa, ru: tab.labelRu })}
+                      </span>
+                    )}
+                    {tab.key === "bookings" && pendingBookingCount > 0 && (
+                      isCollapsed ? (
+                        <span className="absolute -top-0.5 -right-0.5 bg-[var(--hm-brand-500)] text-white text-[9px] font-bold min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-0.5 shadow-sm">
+                          {pendingBookingCount}
+                        </span>
+                      ) : (
+                        <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--hm-brand-500)] px-1 text-[10px] font-bold tabular-nums text-white">
+                          {pendingBookingCount}
+                        </span>
+                      )
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Categories removed from sidebar - handled by filter bar on both pages */}
+
+          {/* Footer area (My pages + Support + Social) */}
+          <div className={`mt-auto pb-4 ${isCollapsed ? "px-2" : "px-3"}`}>
+            {isAuthenticated && (() => {
+              const settingsActive = pathname.startsWith("/settings");
+              return (
+                <div className="pt-3 border-t border-[var(--hm-border-subtle)] space-y-0.5">
+                  {!isCollapsed && (
+                    <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-1 pb-2">
+                      {t("nav.sectionAccount")}
+                    </div>
+                  )}
+                  <Link
+                    href="/settings"
+                    className={`flex items-center rounded-xl text-[12.5px] transition-colors ${
+                      isCollapsed ? "justify-center px-2 py-2" : "gap-2.5 px-2.5 py-2"
+                    } ${
+                      settingsActive
+                        ? "bg-[var(--hm-brand-500)]/[0.10] font-semibold text-[var(--hm-brand-500)]"
+                        : "font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
+                    }`}
+                    title={isCollapsed ? t("settings.title") : undefined}
+                  >
+                    <Settings
+                      className="w-[18px] h-[18px]"
+                      strokeWidth={settingsActive ? 2.1 : 1.75}
+                    />
+                    {!isCollapsed && <span>{t("settings.title")}</span>}
+                  </Link>
+                </div>
+              );
+            })()}
+
+            <div
+              className={`${
+                isAuthenticated ? "mt-3 pt-3" : "pt-3"
+              } border-t border-[var(--hm-border-subtle)] space-y-1`}
+            >
+              {isCollapsed ? (
+                <div className="flex flex-col items-center gap-1.5">
+                  <Link
+                    href="/help"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
+                    title={t("help.categories.support")}
+                  >
+                    <HelpCircle className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                  </Link>
+                  <a
+                    href="mailto:info@homico.ge"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
+                    aria-label="Email support"
+                    title="info@homico.ge"
+                  >
+                    <Mail className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                  </a>
+                  <a
+                    href="https://www.facebook.com/profile.php?id=61585402505170"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
+                    aria-label="Facebook"
+                    title="Facebook"
+                  >
+                    <Facebook className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                  </a>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-3 px-1">
+                  <Link
+                    href="/help"
+                    className="inline-flex items-center gap-2 text-xs font-medium text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] transition-colors"
+                  >
+                    <HelpCircle className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                    <span>{t("help.categories.support")}</span>
+                  </Link>
+
+                  <div className="flex items-center gap-2">
+                    <a
+                      href="mailto:info@homico.ge"
+                      className="w-8 h-8 rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] flex items-center justify-center hover:bg-[var(--hm-bg-page)] transition-colors"
+                      aria-label="Email support"
+                      title="info@homico.ge"
+                    >
+                      <Mail className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                    </a>
+                    <a
+                      href="https://www.facebook.com/profile.php?id=61585402505170"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] flex items-center justify-center hover:bg-[var(--hm-bg-page)] transition-colors"
+                      aria-label="Facebook"
+                      title="Facebook"
+                    >
+                      <Facebook className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <button
+            onClick={toggleSidebar}
+            className="absolute -right-3 top-20 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] shadow-sm hover:shadow-md transition-all duration-200 hover:scale-110"
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="w-3.5 h-3.5" style={{ color: ACCENT_COLOR }} />
+            ) : (
+              <ChevronLeft className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
+            )}
+          </button>
+        </aside>
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-[var(--hm-bg-elevated)]">

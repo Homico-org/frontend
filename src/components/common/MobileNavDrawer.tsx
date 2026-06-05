@@ -18,6 +18,7 @@ import {
   LogOut,
   Plus,
   Settings,
+  ShoppingBag,
   Sparkles,
   Star,
   UserCircle,
@@ -116,6 +117,12 @@ export default function MobileNavDrawer({
         href: cl("/jobs"),
         label: t("nav.jobs"),
         icon: Briefcase,
+      },
+      {
+        key: "shop",
+        href: "/shop",
+        label: t("header.shop"),
+        icon: ShoppingBag,
       },
     ],
   });

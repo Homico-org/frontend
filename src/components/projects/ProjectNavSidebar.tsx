@@ -1,9 +1,9 @@
 'use client';
 
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { storage } from '@/services/storage';
 import { Plus, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -13,6 +13,8 @@ interface ProjectLite {
   title: string;
   status: string;
   progress?: number;
+  coverImage?: string;
+  photos?: string[];
 }
 
 const STATUS_DOT: Record<string, string> = {
@@ -34,12 +36,21 @@ const STATUS_LABEL_KEY: Record<string, string> = {
 
 interface ProjectNavSidebarProps {
   currentId: string;
+  // The current project's section tabs. When provided, they render as a
+  // vertical sub-nav nested under the active project (replacing the page's
+  // horizontal tab bar on desktop).
+  tabs?: { id: string; label: string }[];
+  activeTab?: string;
+  onTabChange?: (id: string) => void;
   mobileOpen?: boolean;
   onMobileClose?: () => void;
 }
 
 export default function ProjectNavSidebar({
   currentId,
+  tabs,
+  activeTab,
+  onTabChange,
   mobileOpen = false,
   onMobileClose,
 }: ProjectNavSidebarProps) {
@@ -60,9 +71,17 @@ export default function ProjectNavSidebar({
   const list = (
     <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
       {projects === null ? (
-        <div className="flex justify-center py-8">
-          <LoadingSpinner size="sm" color="var(--hm-brand-500)" />
-        </div>
+        // Skeleton rows - reserve the layout so content doesn't jump when the
+        // project list resolves (it loads after the page content).
+        Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex gap-2.5 px-2.5 py-2.5">
+            <span className="h-9 w-9 shrink-0 animate-pulse rounded-lg bg-[var(--hm-bg-tertiary)]" />
+            <div className="flex-1 space-y-1.5 py-1">
+              <span className="block h-3 w-3/4 animate-pulse rounded bg-[var(--hm-bg-tertiary)]" />
+              <span className="block h-2 w-1/2 animate-pulse rounded bg-[var(--hm-bg-tertiary)]" />
+            </div>
+          </div>
+        ))
       ) : projects.length === 0 ? (
         <div className="px-3 py-6 text-center">
           <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--hm-brand-500)]/[0.10] text-[var(--hm-brand-500)] mb-2">
@@ -78,54 +97,109 @@ export default function ProjectNavSidebar({
       ) : (
         projects.map((p) => {
           const active = p.id === currentId;
+          const cover = p.coverImage || p.photos?.[0];
+          const pct = Math.min(100, Math.max(0, p.progress ?? 0));
+          const dot = STATUS_DOT[p.status] || 'var(--hm-border-strong)';
           return (
+            <div key={p.id} className="relative">
+            {/* Active accent bar */}
+            {active && (
+              <span
+                aria-hidden
+                className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[var(--hm-brand-500)]"
+              />
+            )}
             <Link
-              key={p.id}
               href={`/projects/${p.id}`}
-              onClick={onMobileClose}
+              onClick={active ? undefined : onMobileClose}
               className={cn(
-                'block px-3 py-2.5 rounded-xl transition-colors',
+                'group flex gap-2.5 px-2.5 py-2.5 rounded-xl transition-colors',
                 active
-                  ? 'bg-[var(--hm-brand-500)]/[0.08]'
+                  ? 'bg-[var(--hm-brand-500)]/[0.07]'
                   : 'hover:bg-[var(--hm-bg-tertiary)]',
               )}
             >
-              <div className="flex items-center gap-2.5">
-                <span
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{
-                    backgroundColor:
-                      STATUS_DOT[p.status] || 'var(--hm-border-strong)',
-                  }}
-                />
-                <span
-                  className={cn(
-                    'flex-1 truncate text-[13px]',
-                    active
-                      ? 'text-[var(--hm-brand-500)] font-semibold'
-                      : 'text-[var(--hm-fg-secondary)]',
+              {/* Cover thumbnail with status corner dot */}
+              <span className="relative h-9 w-9 shrink-0">
+                <span className="block h-9 w-9 overflow-hidden rounded-lg bg-[var(--hm-bg-tertiary)]">
+                  {cover ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={storage.getOptimizedImageUrl(cover, 'avatar')}
+                      alt=""
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.06]"
+                    />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center bg-[var(--hm-brand-500)]/[0.10] text-[15px] font-bold text-[var(--hm-brand-500)]">
+                      {p.title.trim().charAt(0) || '?'}
+                    </span>
                   )}
-                >
-                  {p.title}
                 </span>
-              </div>
-              <div className="flex items-center gap-2 mt-1.5 pl-[18px]">
-                {STATUS_LABEL_KEY[p.status] && (
-                  <span className="text-[11px] text-[var(--hm-fg-muted)] whitespace-nowrap">
-                    {t(STATUS_LABEL_KEY[p.status])}
-                  </span>
-                )}
-                <span className="flex-1 h-1 rounded-full bg-[var(--hm-bg-tertiary)] overflow-hidden">
+                <span
+                  aria-hidden
+                  className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--hm-bg-elevated)]"
+                  style={{ backgroundColor: dot }}
+                />
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
                   <span
-                    className="block h-full rounded-full bg-[var(--hm-brand-500)]"
-                    style={{ width: `${Math.min(100, p.progress ?? 0)}%` }}
-                  />
-                </span>
-                <span className="text-[11px] text-[var(--hm-fg-muted)] tabular-nums">
-                  {p.progress ?? 0}%
-                </span>
+                    className={cn(
+                      'flex-1 truncate text-[13px]',
+                      active
+                        ? 'font-semibold text-[var(--hm-brand-500)]'
+                        : 'font-medium text-[var(--hm-fg-secondary)]',
+                    )}
+                  >
+                    {p.title}
+                  </span>
+                  <span className="shrink-0 text-[11px] tabular-nums text-[var(--hm-fg-muted)]">
+                    {pct}%
+                  </span>
+                </div>
+                <div className="mt-1.5 flex items-center gap-2">
+                  {STATUS_LABEL_KEY[p.status] && (
+                    <span className="whitespace-nowrap text-[11px] text-[var(--hm-fg-muted)]">
+                      {t(STATUS_LABEL_KEY[p.status])}
+                    </span>
+                  )}
+                  <span className="h-1 flex-1 overflow-hidden rounded-full bg-[var(--hm-bg-tertiary)]">
+                    <span
+                      className="block h-full rounded-full bg-[var(--hm-brand-500)] transition-[width] duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </span>
+                </div>
               </div>
             </Link>
+            {/* Section tabs nested under the active project */}
+            {active && tabs && tabs.length > 0 && onTabChange && (
+              <div className="mb-1.5 ml-[18px] mt-1 space-y-0.5 border-l border-[var(--hm-border-subtle)] pl-2.5">
+                {tabs.map((tb) => {
+                  const on = tb.id === activeTab;
+                  return (
+                    <button
+                      key={tb.id}
+                      type="button"
+                      onClick={() => {
+                        onTabChange(tb.id);
+                        onMobileClose?.();
+                      }}
+                      className={cn(
+                        'block w-full rounded-lg px-3 py-1.5 text-left text-[13px] transition-colors',
+                        on
+                          ? 'bg-[var(--hm-brand-500)]/[0.06] font-semibold text-[var(--hm-brand-500)]'
+                          : 'text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]',
+                      )}
+                    >
+                      {tb.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            </div>
           );
         })
       )}
@@ -134,15 +208,19 @@ export default function ProjectNavSidebar({
 
   return (
     <>
-      {/* Desktop sidebar - only worth its ~240px when there's more than one
-          project to switch between. On a single-project account it's dead
-          width, so we hide it and let the content use the full column. The
-          mobile drawer (below) stays - it still offers "create new". */}
-      {projects && projects.length > 1 && (
+      {/* Desktop sidebar - the project switcher rail. Shows whenever the
+          account has at least one project (the current one), so it's a stable
+          left nav with quick "create new" + switch between projects. */}
+      {(projects === null || projects.length >= 1) && (
         <aside className="hidden lg:flex lg:flex-col w-60 shrink-0 self-start sticky top-[68px] max-h-[calc(100vh-84px)] overflow-hidden rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]">
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--hm-border-subtle)]">
-            <h2 className="text-[14px] font-bold text-[var(--hm-fg-primary)]">
+            <h2 className="flex items-center gap-2 text-[14px] font-bold text-[var(--hm-fg-primary)]">
               {t('projects.navProjects')}
+              {projects && (
+                <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--hm-bg-tertiary)] px-1 font-mono text-[10px] font-medium tabular-nums text-[var(--hm-fg-muted)]">
+                  {projects.length}
+                </span>
+              )}
             </h2>
             <Link
               href="/projects/new"

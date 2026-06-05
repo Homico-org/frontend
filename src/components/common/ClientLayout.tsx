@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import AmplitudeProvider from './AmplitudeProvider';
 import AppBackground from './AppBackground';
 import AppLayout from './AppLayout';
+import DevServiceWorkerKiller from './DevServiceWorkerKiller';
 import ProProfileGuard from './ProProfileGuard';
 
 // Dynamically import modals to reduce initial bundle size
@@ -32,6 +33,7 @@ interface ClientLayoutProps {
 export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <>
+      <DevServiceWorkerKiller />
       <AmplitudeProvider />
       <AppBackground />
       <ProProfileGuard>

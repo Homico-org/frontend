@@ -10,10 +10,57 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
-import { ChevronLeft, Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  DoorOpen,
+  Droplets,
+  HardHat,
+  Layers,
+  type LucideIcon,
+  Paintbrush,
+  Palette,
+  Search,
+  SprayCan,
+  Trees,
+  Triangle,
+  Truck,
+  Waves,
+  Wind,
+  Wrench,
+  Zap,
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { Room } from './ProjectRooms';
 import { ScopeItem } from './ProjectScope';
+
+// Outlined Lucide icon per catalog category (cleaning uses SprayCan, not the
+// AI-cliche Sparkles). Unknown categories fall back to a wrench.
+const CATEGORY_ICON: Record<string, LucideIcon> = {
+  cleaning: SprayCan,
+  handyman: Wrench,
+  landscaping: Trees,
+  movers: Truck,
+  plumbing: Droplets,
+  electrical: Zap,
+  painters: Paintbrush,
+  hvac: Wind,
+  contractors: HardHat,
+  architects: Compass,
+  pool_spa: Waves,
+  roofing: Triangle,
+  windows_doors: DoorOpen,
+  concrete_masonry: Layers,
+  designers: Palette,
+};
+const iconForCategory = (key: string): LucideIcon =>
+  CATEGORY_ICON[key] || Wrench;
+// Soft color backplate from the category's brand hex (falls back to neutral).
+const tintBg = (hex?: string) =>
+  hex && hex.startsWith('#') ? `${hex}1a` : 'var(--hm-bg-tertiary)';
+const tintInk = (hex?: string) =>
+  hex && hex.startsWith('#') ? hex : 'var(--hm-fg-secondary)';
 
 interface AddServiceModalProps {
   isOpen: boolean;
@@ -22,6 +69,8 @@ interface AddServiceModalProps {
   /** Step the service is added under (omit for an unassigned/object service). */
   stepId?: string;
   rooms: Room[];
+  /** Pre-select a space when adding from a space card. */
+  roomId?: string;
   /** Project steps, so the service can be filed under / moved between them. */
   steps?: { id: string; name: string }[];
   /** Pass an existing scope item to edit it; omit to create a new one. */
@@ -47,6 +96,7 @@ export default function AddServiceModal({
   projectId,
   stepId,
   rooms,
+  roomId,
   steps = [],
   item,
   onSaved,
@@ -72,7 +122,7 @@ export default function AddServiceModal({
           unitPrice: item.unitPrice != null ? String(item.unitPrice) : '',
           note: item.note ?? '',
         }
-      : { ...emptyForm },
+      : { ...emptyForm, roomId: roomId ?? '' },
   );
   const [unitOptions, setUnitOptions] = useState<CatalogUnitOption[]>([]);
   const [query, setQuery] = useState('');
@@ -116,6 +166,14 @@ export default function AddServiceModal({
     return out;
   }, [categories, pick]);
 
+  // When editing a catalog service, reload its unit options so the unit
+  // picker + price range work (we only have the saved unit otherwise).
+  useEffect(() => {
+    if (!isEdit || unitOptions.length > 0 || !item?.serviceKey) return;
+    const svc = catalogServices.find((s) => s.key === item.serviceKey);
+    if (svc) setUnitOptions(svc.unitOptions);
+  }, [isEdit, item?.serviceKey, catalogServices, unitOptions.length]);
+
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
@@ -125,11 +183,19 @@ export default function AddServiceModal({
   }, [query, catalogServices]);
 
   const browseCategories = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const s of catalogServices)
-      if (!seen.has(s.categoryKey)) seen.set(s.categoryKey, s.categoryName);
-    return Array.from(seen, ([key, name]) => ({ key, name }));
-  }, [catalogServices]);
+    const withServices = new Set(catalogServices.map((s) => s.categoryKey));
+    return categories
+      .filter((c) => withServices.has(c.key))
+      .map((c) => ({
+        key: c.key,
+        name: pick({ en: c.name, ka: c.nameKa }),
+        color: c.color,
+      }));
+  }, [categories, catalogServices, pick]);
+
+  const browseCatMeta = browseCat
+    ? browseCategories.find((c) => c.key === browseCat)
+    : null;
 
   const browseServices = useMemo(
     () =>
@@ -174,10 +240,12 @@ export default function AddServiceModal({
     if (!form.name.trim()) return;
     setSaving(true);
     try {
+      // Always send stepId (empty string clears it) so moving a service back
+      // to "no stage" on edit persists.
       const body = {
         name: form.name.trim(),
-        stepId: selectedStepId || '',
         roomId: form.roomId || '',
+        stepId: selectedStepId || '',
         serviceKey: form.serviceKey || undefined,
         categoryKey: form.categoryKey || undefined,
         unit: form.unit || undefined,
@@ -209,6 +277,12 @@ export default function AddServiceModal({
 
   const lineTotal =
     (num(form.quantity) || 0) * (num(form.unitPrice) || 0);
+  const fmtN = (n: number) =>
+    Math.round(n).toLocaleString('en-US').replace(/,/g, ' ');
+  // The unit option currently selected (for the market price range hint).
+  const activeUnit = unitOptions.find((u) => (u.unit || u.key) === form.unit);
+  const unitIsArea = form.unit === 'sqm';
+  const selectedRoomArea = rooms.find((r) => r.id === form.roomId)?.area;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md" showCloseButton>
@@ -220,80 +294,107 @@ export default function AddServiceModal({
           <>
             {/* Catalog search */}
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--hm-fg-muted)]" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--hm-fg-muted)]" />
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t('projects.searchServices')}
-                className="pl-9"
+                className="h-11 rounded-xl pl-10"
                 autoFocus
               />
             </div>
 
             {query.trim() ? (
-              <div className="flex flex-col">
+              <div className="-mx-1 flex flex-col">
                 {searchResults.length === 0 ? (
                   <p className="px-1 py-3 text-[13px] text-[var(--hm-fg-muted)]">
                     {t('projects.noServicesFound')}
                   </p>
                 ) : (
-                  searchResults.map((s) => (
-                    <button
-                      key={`${s.categoryKey}-${s.key}`}
-                      type="button"
-                      onClick={() => pickService(s)}
-                      className="flex items-center justify-between gap-3 border-b border-[var(--hm-border-subtle)] px-1 py-2.5 text-left transition-colors hover:text-[var(--hm-brand-500)]"
-                    >
-                      <span className="text-[14px] font-medium text-[var(--hm-fg-primary)]">
-                        {s.name}
-                      </span>
-                      <span className="text-[12px] text-[var(--hm-fg-muted)]">
-                        {s.categoryName}
-                      </span>
-                    </button>
-                  ))
+                  searchResults.map((s) => {
+                    const Icon = iconForCategory(s.categoryKey);
+                    return (
+                      <button
+                        key={`${s.categoryKey}-${s.key}`}
+                        type="button"
+                        onClick={() => pickService(s)}
+                        className="group flex items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors hover:bg-[var(--hm-bg-tertiary)]"
+                      >
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)]">
+                          <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-[14px] font-medium text-[var(--hm-fg-primary)]">
+                            {s.name}
+                          </span>
+                          <span className="block truncate text-[12px] text-[var(--hm-fg-muted)]">
+                            {s.categoryName}
+                          </span>
+                        </span>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-[var(--hm-fg-muted)] transition-transform group-hover:translate-x-0.5" />
+                      </button>
+                    );
+                  })
                 )}
               </div>
             ) : browseCat ? (
-              <div className="flex flex-col">
+              <div className="-mx-1 flex flex-col">
                 <button
                   type="button"
                   onClick={() => setBrowseCat(null)}
-                  className="mb-1 inline-flex items-center gap-1 self-start text-[13px] text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"
+                  className="mb-1 ml-1 inline-flex items-center gap-2 self-start text-[13px] font-medium text-[var(--hm-fg-secondary)] transition-colors hover:text-[var(--hm-fg-primary)]"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  {t('common.back')}
+                  {browseCatMeta?.name ?? t('common.back')}
                 </button>
                 {browseServices.map((s) => (
                   <button
                     key={`${s.categoryKey}-${s.key}`}
                     type="button"
                     onClick={() => pickService(s)}
-                    className="border-b border-[var(--hm-border-subtle)] px-1 py-2.5 text-left text-[14px] font-medium text-[var(--hm-fg-primary)] transition-colors hover:text-[var(--hm-brand-500)]"
+                    className="group flex items-center justify-between gap-3 rounded-xl px-2 py-2.5 text-left transition-colors hover:bg-[var(--hm-bg-tertiary)]"
                   >
-                    {s.name}
+                    <span className="truncate text-[14px] font-medium text-[var(--hm-fg-primary)]">
+                      {s.name}
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-[var(--hm-fg-muted)] transition-transform group-hover:translate-x-0.5" />
                   </button>
                 ))}
               </div>
             ) : (
               <>
-                <div className="flex flex-wrap gap-1.5">
-                  {browseCategories.map((c) => (
-                    <button
-                      key={c.key}
-                      type="button"
-                      onClick={() => setBrowseCat(c.key)}
-                      className="rounded-full border border-[var(--hm-border)] px-3 py-1.5 text-[13px] text-[var(--hm-fg-secondary)] transition-colors hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)]"
-                    >
-                      {c.name}
-                    </button>
-                  ))}
+                <div className="-mx-1 flex flex-col">
+                  {browseCategories.map((c) => {
+                    const Icon = iconForCategory(c.key);
+                    return (
+                      <button
+                        key={c.key}
+                        type="button"
+                        onClick={() => setBrowseCat(c.key)}
+                        className="group flex items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors hover:bg-[var(--hm-bg-tertiary)]"
+                      >
+                        <span
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                          style={{
+                            backgroundColor: tintBg(c.color),
+                            color: tintInk(c.color),
+                          }}
+                        >
+                          <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-[var(--hm-fg-primary)]">
+                          {c.name}
+                        </span>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-[var(--hm-fg-muted)] transition-transform group-hover:translate-x-0.5" />
+                      </button>
+                    );
+                  })}
                 </div>
                 {/* Custom (non-catalog) service */}
                 <button
                   type="button"
                   onClick={() => setPicked(true)}
-                  className="self-start text-[13px] font-medium text-[var(--hm-brand-500)] hover:underline"
+                  className="mt-1 self-start px-2 text-[13px] font-medium text-[var(--hm-brand-500)] transition-opacity hover:opacity-80"
                 >
                   {t('projects.customService')}
                 </button>
@@ -352,6 +453,24 @@ export default function AddServiceModal({
                     setForm((f) => ({ ...f, quantity: e.target.value }))
                   }
                 />
+                {unitIsArea &&
+                  selectedRoomArea != null &&
+                  String(selectedRoomArea) !== form.quantity && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm((f) => ({
+                          ...f,
+                          quantity: String(selectedRoomArea),
+                        }))
+                      }
+                      className="mt-1 text-left text-[12px] font-medium text-[var(--hm-brand-500)] transition-opacity hover:opacity-80"
+                    >
+                      {t('projects.scopeUseRoomArea', {
+                        area: selectedRoomArea,
+                      })}
+                    </button>
+                  )}
               </FormGroup>
               <FormGroup>
                 <Label>{t('projects.unitPrice')}</Label>
@@ -363,12 +482,21 @@ export default function AddServiceModal({
                     setForm((f) => ({ ...f, unitPrice: e.target.value }))
                   }
                 />
+                {activeUnit && (
+                  <p className="mt-1 text-[12px] text-[var(--hm-fg-muted)]">
+                    {t('projects.marketRange')}:{' '}
+                    {activeUnit.maxPrice && activeUnit.maxPrice > activeUnit.defaultPrice
+                      ? `${fmtN(activeUnit.defaultPrice)}-${fmtN(activeUnit.maxPrice)}`
+                      : fmtN(activeUnit.defaultPrice)}{' '}
+                    ₾
+                  </p>
+                )}
               </FormGroup>
             </div>
 
             {steps.length > 0 && (
               <FormGroup>
-                <Label>{t('projects.addStep')}</Label>
+                <Label>{t('projects.stepLabel')}</Label>
                 <select
                   value={selectedStepId}
                   onChange={(e) => setSelectedStepId(e.target.value)}

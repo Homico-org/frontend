@@ -9,12 +9,15 @@ import { ReactNode } from 'react';
 export function TableCard({
   title,
   count,
+  amount,
   action,
   children,
   className = '',
 }: {
   title: string;
   count?: number;
+  /** Right-aligned total/cost shown in the header (e.g. a per-card rollup). */
+  amount?: ReactNode;
   action?: ReactNode;
   children: ReactNode;
   className?: string;
@@ -24,15 +27,22 @@ export function TableCard({
       className={`rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-4 sm:p-5 ${className}`}
     >
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-[16px] font-semibold text-[var(--hm-fg-primary)]">
-          {title}
+        <h2 className="flex min-w-0 items-center gap-2 text-[16px] font-semibold text-[var(--hm-fg-primary)]">
+          <span className="truncate">{title}</span>
           {count != null && (
-            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--hm-bg-tertiary)] px-1.5 text-[12px] font-semibold tabular-nums text-[var(--hm-fg-secondary)]">
+            <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[var(--hm-bg-tertiary)] px-1.5 text-[12px] font-semibold tabular-nums text-[var(--hm-fg-secondary)]">
               {count}
             </span>
           )}
         </h2>
-        {action}
+        <div className="flex shrink-0 items-center gap-3">
+          {amount != null && (
+            <span className="text-[15px] font-bold tabular-nums text-[var(--hm-fg-primary)]">
+              {amount}
+            </span>
+          )}
+          {action}
+        </div>
       </div>
       {children}
     </section>

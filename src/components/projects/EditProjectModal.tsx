@@ -6,6 +6,7 @@ import { FormGroup, Input, Label, Textarea } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
+import { Building2 } from 'lucide-react';
 import { useState } from 'react';
 
 const STATUS_OPTIONS: { value: string; labelKey: string }[] = [
@@ -144,14 +145,21 @@ export default function EditProjectModal({
             </select>
           </FormGroup>
 
-          <div className="rounded-xl border border-[var(--hm-border-subtle)] p-4">
-            <p className="text-[13px] font-semibold text-[var(--hm-fg-primary)] mb-3">
-              {t('projects.siteDetails')}{' '}
-              <span className="text-[var(--hm-fg-muted)] font-normal">
-                ({t('common.optional')})
+          <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)]/40 p-4 sm:p-5">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]">
+                <Building2 className="h-4 w-4" />
               </span>
-            </p>
-            <div className="space-y-3">
+              <div>
+                <p className="text-[13px] font-semibold text-[var(--hm-fg-primary)]">
+                  {t('projects.siteDetails')}
+                </p>
+                <p className="text-[11px] text-[var(--hm-fg-muted)]">
+                  {t('common.optional')}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3">
               <FormGroup>
                 <Label>{t('projects.cadastralLabel')}</Label>
                 <Input
@@ -182,11 +190,15 @@ export default function EditProjectModal({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2">
+          <div className="mt-1 flex justify-end gap-2 border-t border-[var(--hm-border-subtle)] pt-4">
             <Button variant="outline" onClick={onClose}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={submit} disabled={saving || !form.title.trim()}>
+            <Button
+              onClick={submit}
+              loading={saving}
+              disabled={!form.title.trim()}
+            >
               {t('common.save')}
             </Button>
           </div>

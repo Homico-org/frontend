@@ -1,331 +1,287 @@
 'use client';
 
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useMarketplaceCountry } from "@/hooks/useCountry";
-import { mapCenterForCountry } from "@/data/countries";
+import { Input } from '@/components/ui/input';
+import { mapCenterForCountry } from '@/data/countries';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useMarketplaceCountry } from '@/hooks/useCountry';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
+import { Map as MapIcon, MapPin } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// Local type definitions for Google Maps API
-type GoogleMapsType = any;
-type GoogleMapInstance = any;
-type GoogleMarkerInstance = any;
-type GoogleGeocoderInstance = any;
-type GoogleAutocompleteServiceInstance = any;
-type GooglePlacesServiceInstance = any;
+// Google Maps types are loosely typed (loaded dynamically), so a local alias
+// keeps the file readable.
+type AnyMaps = any;
 
 interface AutocompletePrediction {
   place_id: string;
   description: string;
-  structured_formatting: {
-    main_text: string;
-    secondary_text: string;
-  };
+  structured_formatting: { main_text: string; secondary_text: string };
 }
 
 interface LocationPickerProps {
   value: string;
-  onChange: (address: string, coordinates?: { lat: number; lng: number }) => void;
+  onChange: (
+    address: string,
+    coordinates?: { lat: number; lng: number },
+  ) => void;
   placeholder?: string;
 }
 
-// Extend window with google maps types
 declare global {
   interface Window {
-    google?: {
-      maps: GoogleMapsType;
-    };
+    google?: { maps: AnyMaps };
   }
 }
 
-export default function LocationPicker({ value, onChange, placeholder = 'Enter address' }: LocationPickerProps) {
+// Inline address field: type to get a dropdown of address suggestions
+// (default), or expand a map below to drop/drag a pin when the address isn't
+// in Google's data. Free text is always accepted. No modal.
+export default function LocationPicker({
+  value,
+  onChange,
+  placeholder,
+}: LocationPickerProps) {
   const { t } = useLanguage();
   const country = useMarketplaceCountry();
   const marketCenter = mapCenterForCountry(country);
-  const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState(value);
+  // Share the single app-wide Google Maps loader (loading it twice breaks the
+  // SDK, which silently killed predictions before).
+  const { isLoaded } = useGoogleMaps();
+
+  const [input, setInput] = useState(value);
   const [predictions, setPredictions] = useState<AutocompletePrediction[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<GoogleMapInstance>(null);
-  const markerRef = useRef<GoogleMarkerInstance>(null);
-  const autocompleteServiceRef = useRef<GoogleAutocompleteServiceInstance>(null);
-  const placesServiceRef = useRef<GooglePlacesServiceInstance>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const acRef = useRef<AnyMaps>(null);
+  const psRef = useRef<AnyMaps>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Load Google Maps script
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<AnyMaps>(null);
+  const markerRef = useRef<AnyMaps>(null);
+  const inputRef = useRef(input);
   useEffect(() => {
-    if (window.google?.maps) {
-      setMapLoaded(true);
-      return;
+    inputRef.current = input;
+  }, [input]);
+
+  // Spin up the autocomplete + places services once the SDK is ready.
+  useEffect(() => {
+    if (isLoaded && window.google?.maps && !acRef.current) {
+      acRef.current = new window.google.maps.places.AutocompleteService();
+      psRef.current = new window.google.maps.places.PlacesService(
+        document.createElement('div'),
+      );
     }
+  }, [isLoaded]);
 
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) {
-      console.warn('Google Maps API key not found');
-      return;
-    }
+  // Keep the field in sync if the parent value changes externally.
+  useEffect(() => setInput(value), [value]);
 
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => setMapLoaded(true);
-    document.head.appendChild(script);
-
-    return () => {
-      // Cleanup if needed
+  // Close the dropdown on an outside click.
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
     };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
   }, []);
 
-  // Initialize map when opened
+  const search = useCallback(
+    (q: string) => {
+      if (!acRef.current || q.trim().length < 2) {
+        setPredictions([]);
+        return;
+      }
+      setLoading(true);
+      // `types: ['address']` keeps the (max 5) Google predictions focused on
+      // street addresses rather than businesses/landmarks.
+      acRef.current.getPlacePredictions(
+        {
+          input: q,
+          types: ['address'],
+          componentRestrictions: { country: country.toLowerCase() },
+        },
+        (res: AutocompletePrediction[] | null, status: string) => {
+          setLoading(false);
+          setPredictions(status === 'OK' && res ? res : []);
+        },
+      );
+    },
+    [country],
+  );
+
+  const onInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setInput(v);
+    setOpen(true);
+    onChange(v); // free text stays in sync; coords arrive on pick / map pin
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => search(v), 300);
+  };
+
+  const pick = (p: AutocompletePrediction) => {
+    setInput(p.description);
+    setPredictions([]);
+    setOpen(false);
+    psRef.current?.getDetails(
+      { placeId: p.place_id, fields: ['geometry', 'formatted_address'] },
+      (place: AnyMaps, status: string) => {
+        const addr =
+          status === 'OK' && place?.formatted_address
+            ? place.formatted_address
+            : p.description;
+        const loc = place?.geometry?.location;
+        const c = loc ? { lat: loc.lat(), lng: loc.lng() } : undefined;
+        setInput(addr);
+        if (c) setCoords(c);
+        onChange(addr, c);
+      },
+    );
+  };
+
+  // Build the inline map once it's expanded. Click / drag drops the pin and
+  // reverse-geocodes to fill the address.
   useEffect(() => {
-    if (!isOpen || !mapLoaded || !mapRef.current || mapInstanceRef.current) return;
-    if (!window.google?.maps) return; // Guard against undefined
-
-    const googleMaps = window.google.maps;
-    const defaultCenter = { lat: marketCenter.lat, lng: marketCenter.lng };
-
-    mapInstanceRef.current = new googleMaps.Map(mapRef.current, {
-      center: selectedCoords || defaultCenter,
-      zoom: marketCenter.zoom,
+    if (
+      !showMap ||
+      !isLoaded ||
+      !window.google?.maps ||
+      !mapRef.current ||
+      mapInstanceRef.current
+    ) {
+      return;
+    }
+    const gmaps = window.google.maps;
+    const center = coords || { lat: marketCenter.lat, lng: marketCenter.lng };
+    const map = new gmaps.Map(mapRef.current, {
+      center,
+      zoom: coords ? 16 : marketCenter.zoom,
       disableDefaultUI: true,
       zoomControl: true,
+      clickableIcons: false,
       styles: [
         { featureType: 'poi', stylers: [{ visibility: 'off' }] },
         { featureType: 'transit', stylers: [{ visibility: 'off' }] },
       ],
     });
+    const marker = new gmaps.Marker({ map, draggable: true, position: center });
+    const geocoder = new gmaps.Geocoder();
+    mapInstanceRef.current = map;
+    markerRef.current = marker;
 
-    markerRef.current = new googleMaps.Marker({
-      map: mapInstanceRef.current,
-      draggable: true,
-      position: selectedCoords || defaultCenter,
-    });
-
-    autocompleteServiceRef.current = new googleMaps.places.AutocompleteService();
-    placesServiceRef.current = new googleMaps.places.PlacesService(mapInstanceRef.current);
-
-    // Handle marker drag
-    markerRef.current.addListener('dragend', () => {
-      const pos = markerRef.current?.getPosition();
-      if (pos) {
-        const coords = { lat: pos.lat(), lng: pos.lng() };
-        setSelectedCoords(coords);
-        // Reverse geocode
-        const geocoder = new googleMaps.Geocoder();
-        geocoder.geocode({ location: coords }, (results: any, status: string) => {
-          if (status === 'OK' && results?.[0]) {
-            setInputValue(results[0].formatted_address);
-          }
-        });
-      }
-    });
-
-    // Handle map click
-    mapInstanceRef.current.addListener('click', (e: any) => {
-      if (e.latLng) {
-        const coords = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-        markerRef.current?.setPosition(coords);
-        setSelectedCoords(coords);
-        // Reverse geocode
-        const geocoder = new googleMaps.Geocoder();
-        geocoder.geocode({ location: coords }, (results: any, status: string) => {
-          if (status === 'OK' && results?.[0]) {
-            setInputValue(results[0].formatted_address);
-          }
-        });
-      }
-    });
-  }, [isOpen, mapLoaded, selectedCoords, marketCenter.lat, marketCenter.lng, marketCenter.zoom]);
-
-  // Search for predictions
-  const searchPlaces = useCallback((query: string) => {
-    if (!autocompleteServiceRef.current || query.length < 2) {
-      setPredictions([]);
-      return;
-    }
-
-    setIsLoading(true);
-    // Restrict autocomplete to the active marketplace country. A US
-    // visitor's pinpoint should resolve to NYC addresses, not Tbilisi.
-    autocompleteServiceRef.current.getPlacePredictions(
-      {
-        input: query,
-        componentRestrictions: { country: country.toLowerCase() },
-      },
-      (results: any, status: string) => {
-        setIsLoading(false);
-        if (status === 'OK' && results) {
-          setPredictions(results as AutocompletePrediction[]);
+    const apply = (c: { lat: number; lng: number }) => {
+      setCoords(c);
+      geocoder.geocode({ location: c }, (results: AnyMaps, status: string) => {
+        if (status === 'OK' && results?.[0]) {
+          const addr = results[0].formatted_address as string;
+          setInput(addr);
+          onChange(addr, c);
         } else {
-          setPredictions([]);
+          onChange(inputRef.current, c);
         }
+      });
+    };
+
+    marker.addListener('dragend', () => {
+      const pos = marker.getPosition();
+      if (pos) apply({ lat: pos.lat(), lng: pos.lng() });
+    });
+    map.addListener('click', (e: AnyMaps) => {
+      if (e.latLng) {
+        const c = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+        marker.setPosition(c);
+        apply(c);
       }
-    );
-  }, [country]);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showMap, isLoaded]);
 
-  // Handle input change with debounce
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setInputValue(val);
-
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    debounceRef.current = setTimeout(() => {
-      searchPlaces(val);
-    }, 300);
-  };
-
-  // Handle prediction selection
-  const handleSelectPrediction = (prediction: AutocompletePrediction) => {
-    setInputValue(prediction.description);
-    setPredictions([]);
-
-    if (placesServiceRef.current) {
-      placesServiceRef.current.getDetails(
-        { placeId: prediction.place_id, fields: ['geometry', 'formatted_address'] },
-        (place: any, status: string) => {
-          if (status === 'OK' && place?.geometry?.location) {
-            const coords = {
-              lat: place.geometry.location.lat(),
-              lng: place.geometry.location.lng(),
-            };
-            setSelectedCoords(coords);
-            mapInstanceRef.current?.setCenter(coords);
-            mapInstanceRef.current?.setZoom(16);
-            markerRef.current?.setPosition(coords);
-            if (place.formatted_address) {
-              setInputValue(place.formatted_address);
-            }
-          }
-        }
-      );
-    }
-  };
-
-  // Confirm selection
-  const handleConfirm = () => {
-    onChange(inputValue, selectedCoords || undefined);
-    setIsOpen(false);
-  };
-
-  // Update input when value prop changes
+  // Recenter map + marker when a place is picked from the autocomplete.
   useEffect(() => {
-    setInputValue(value);
-  }, [value]);
+    if (mapInstanceRef.current && coords) {
+      mapInstanceRef.current.setCenter(coords);
+      mapInstanceRef.current.setZoom(16);
+      markerRef.current?.setPosition(coords);
+    }
+  }, [coords]);
+
+  const toggleMap = () => {
+    setShowMap((v) => {
+      if (v) {
+        // Tearing down the map div; drop refs so it re-inits next time.
+        mapInstanceRef.current = null;
+        markerRef.current = null;
+      }
+      return !v;
+    });
+  };
 
   return (
-    <div className="relative">
-      {/* Input trigger */}
-      <div
-        onClick={() => setIsOpen(true)}
-        className="w-full px-4 py-3 border border-[var(--hm-border)] rounded-xl focus:outline-none focus:border-neutral-400 text-sm cursor-pointer flex items-center gap-3 hover:border-[var(--hm-border-strong)] transition-all duration-200 ease-out bg-[var(--hm-bg-elevated)]"
-      >
-        <svg className="w-5 h-5 text-[var(--hm-fg-muted)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-        <span className={value ? 'text-[var(--hm-fg-primary)]' : 'text-[var(--hm-fg-muted)]'}>
-          {value || placeholder}
-        </span>
+    <div ref={boxRef}>
+      <div className="relative">
+        <Input
+          value={input}
+          onChange={onInput}
+          onFocus={() => predictions.length > 0 && setOpen(true)}
+          placeholder={placeholder ?? t('projects.locationPlaceholder')}
+          leftIcon={<MapPin className="h-4 w-4" />}
+          autoComplete="off"
+        />
+        {loading && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <LoadingSpinner size="sm" color="var(--hm-brand-500)" />
+          </div>
+        )}
+        {open && predictions.length > 0 && (
+          <div className="absolute left-0 top-full z-30 mt-1.5 w-full overflow-hidden rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] shadow-lg">
+            {predictions.map((p) => (
+              <button
+                key={p.place_id}
+                type="button"
+                onClick={() => pick(p)}
+                className="flex w-full items-start gap-2.5 border-b border-[var(--hm-border-subtle)] px-3.5 py-2.5 text-left transition-colors last:border-b-0 hover:bg-[var(--hm-bg-tertiary)]"
+              >
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--hm-fg-muted)]" />
+                <span className="min-w-0">
+                  <span className="block truncate text-[14px] text-[var(--hm-fg-primary)]">
+                    {p.structured_formatting.main_text}
+                  </span>
+                  <span className="block truncate text-[12px] text-[var(--hm-fg-muted)]">
+                    {p.structured_formatting.secondary_text}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Modal */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setIsOpen(false)}>
-          <div
-            className="bg-[var(--hm-bg-elevated)] w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-[var(--hm-border-subtle)]">
-              <h3 className="font-semibold text-[var(--hm-fg-primary)]">Select Location</h3>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-[var(--hm-bg-tertiary)] rounded-lg transition-all duration-200 ease-out"
-              >
-                <svg className="w-5 h-5 text-[var(--hm-fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+      {/* Pin-on-map fallback - inline, opt-in. */}
+      <button
+        type="button"
+        onClick={toggleMap}
+        className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--hm-brand-500)] transition-opacity hover:opacity-80"
+      >
+        <MapIcon className="h-3.5 w-3.5" />
+        {showMap ? t('common.hideMap') : t('common.pinOnMap')}
+      </button>
+      {showMap && (
+        <div className="mt-2 overflow-hidden rounded-xl border border-[var(--hm-border)]">
+          {isLoaded ? (
+            <div ref={mapRef} className="h-56 w-full bg-[var(--hm-bg-tertiary)]" />
+          ) : (
+            <div className="flex h-56 w-full items-center justify-center bg-[var(--hm-bg-tertiary)]">
+              <LoadingSpinner size="md" color="var(--hm-brand-500)" />
             </div>
-
-            {/* Search */}
-            <div className="p-4 border-b border-[var(--hm-border-subtle)]">
-              <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--hm-fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  placeholder="Search address..."
-                  className="w-full pl-10 pr-4 py-3 bg-[var(--hm-bg-page)] border border-[var(--hm-border)] rounded-xl focus:outline-none focus:border-neutral-400 text-sm text-[var(--hm-fg-primary)] placeholder:text-[var(--hm-fg-muted)]"
-                  autoFocus
-                />
-                {isLoading && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <LoadingSpinner size="sm" color="#525252" />
-                  </div>
-                )}
-              </div>
-
-              {/* Predictions */}
-              {predictions.length > 0 && (
-                <div className="mt-2 border border-[var(--hm-border)] rounded-xl overflow-hidden">
-                  {predictions.map((prediction) => (
-                    <button
-                      key={prediction.place_id}
-                      onClick={() => handleSelectPrediction(prediction)}
-                      className="w-full px-4 py-3 text-left hover:bg-[var(--hm-bg-page)] border-b border-[var(--hm-border-subtle)] last:border-b-0 transition-all duration-200 ease-out"
-                    >
-                      <div className="flex items-start gap-3">
-                        <svg className="w-5 h-5 text-[var(--hm-fg-muted)] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        </svg>
-                        <div className="min-w-0">
-                          <div className="text-sm text-[var(--hm-fg-primary)] truncate">{prediction.structured_formatting.main_text}</div>
-                          <div className="text-xs text-[var(--hm-fg-muted)] truncate">{prediction.structured_formatting.secondary_text}</div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Map */}
-            {mapLoaded ? (
-              <div ref={mapRef} className="h-64 sm:h-80 bg-[var(--hm-bg-tertiary)]" />
-            ) : (
-              <div className="h-64 sm:h-80 bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
-                <div className="text-center">
-                  <LoadingSpinner size="lg" color="#525252" className="mx-auto mb-2" />
-                  <p className="text-sm text-[var(--hm-fg-muted)]">Loading map...</p>
-                </div>
-              </div>
-            )}
-
-            {/* Footer */}
-            <div className="p-4 border-t border-[var(--hm-border-subtle)]">
-              <button
-                onClick={handleConfirm}
-                disabled={!inputValue}
-                className="w-full py-3 bg-neutral-900 hover:bg-neutral-800 disabled:bg-[var(--hm-bg-tertiary)] disabled:text-[var(--hm-fg-muted)] text-white font-medium rounded-xl transition-all duration-200 ease-out"
-              >
-                Confirm Location
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       )}
     </div>

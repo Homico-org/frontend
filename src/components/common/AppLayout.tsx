@@ -53,6 +53,10 @@ const CUSTOM_LAYOUT_PATHS = [
   // wrapping or it would break the magazine-spread composition.
   '/pro/accountability',
   '/projects',
+  // /shop and /orders live in the (shell) route group and ship the shell's
+  // Header + sidebar; without this they get a second global Header on top.
+  '/shop',
+  '/orders',
   '/for-business',
   '/invite',
   // Post-job has its own action footer (Cancel / Continue) — global mobile

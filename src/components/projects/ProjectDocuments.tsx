@@ -34,6 +34,7 @@ export interface ProjectDocVersion {
   version: number;
   url: string;
   fileType?: string;
+  uploadedBy?: { name?: string; avatar?: string } | string;
   createdAt: string;
 }
 
@@ -56,6 +57,9 @@ export interface ProjectDoc {
   phase?: string;
   engagementId?: string;
   stepId?: string;
+  roomId?: string;
+  group?: string;
+  uploadedBy?: { name?: string; avatar?: string } | string;
   approvalStatus: 'none' | 'pending' | 'approved' | 'changes_requested';
   note?: string;
   version?: number;

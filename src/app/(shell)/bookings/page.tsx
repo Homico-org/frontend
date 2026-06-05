@@ -697,35 +697,6 @@ function BookingsContent() {
 
                 {/* ── Card body ── (left padding accommodates the rail) */}
                 <div className="pl-6 pr-5 pt-4 pb-3">
-                  {/* Status pill at top-left - the first fixation point
-                      on a bookings list ("is this thing waiting on me?")
-                      lands here, not on the avatar. The pulsing dot on
-                      live states is what makes the card feel "alive". */}
-                  <div className="mb-3">
-                    <span
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-semibold uppercase tracking-[0.08em]"
-                      style={{
-                        backgroundColor: sc.bg,
-                        color: sc.text,
-                        boxShadow: `inset 0 0 0 1px ${sc.strip}30`,
-                      }}
-                    >
-                      <span className="relative flex items-center justify-center w-1.5 h-1.5">
-                        {shouldPulse && (
-                          <span
-                            className="absolute inset-0 rounded-full animate-ping opacity-60"
-                            style={{ backgroundColor: sc.strip }}
-                          />
-                        )}
-                        <span
-                          className="relative w-1.5 h-1.5 rounded-full"
-                          style={{ backgroundColor: sc.strip }}
-                        />
-                      </span>
-                      {t(sc.key)}
-                    </span>
-                  </div>
-
                   {/* Header row: calendar-style date block + weekday +
                       time + avatar/name. The mini-calendar block is the
                       iconic premium "this is a scheduled thing" visual
@@ -737,7 +708,7 @@ function BookingsContent() {
                       locale as 'en' | 'ka' | 'ru',
                     );
                     return (
-                      <div className="flex items-center gap-3 mb-3">
+                      <div className="flex items-start gap-3 mb-3">
                         {parts && (
                           <div
                             className="flex flex-col items-center justify-center w-14 h-14 rounded-xl shrink-0"
@@ -762,55 +733,80 @@ function BookingsContent() {
                             </span>
                           </div>
                         )}
-                        <div className="min-w-0 flex-1">
-                          <p
-                            className="text-sm font-semibold leading-tight truncate"
-                            style={{ color: 'var(--hm-fg-primary)' }}
+                        <div className="min-w-0 flex-1 flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p
+                              className="text-sm font-semibold leading-tight truncate"
+                              style={{ color: 'var(--hm-fg-primary)' }}
+                            >
+                              {parts?.weekday}
+                            </p>
+                            <p
+                              className="text-xs tabular-nums mt-0.5"
+                              style={{ color: 'var(--hm-fg-secondary)' }}
+                            >
+                              {formatHour(booking.startHour)}–
+                              {formatHour(booking.endHour)}
+                            </p>
+                          </div>
+                          {/* Status pill - top-right so the eye scans date -> status */}
+                          <span
+                            className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-semibold uppercase tracking-[0.08em]"
+                            style={{
+                              backgroundColor: sc.bg,
+                              color: sc.text,
+                              boxShadow: `inset 0 0 0 1px ${sc.strip}30`,
+                            }}
                           >
-                            {parts?.weekday}
-                          </p>
-                          <p
-                            className="text-xs tabular-nums mt-0.5"
-                            style={{ color: 'var(--hm-fg-secondary)' }}
-                          >
-                            {formatHour(booking.startHour)}–
-                            {formatHour(booking.endHour)}
-                          </p>
+                            <span className="relative flex items-center justify-center w-1.5 h-1.5">
+                              {shouldPulse && (
+                                <span
+                                  className="absolute inset-0 rounded-full animate-ping opacity-60"
+                                  style={{ backgroundColor: sc.strip }}
+                                />
+                              )}
+                              <span
+                                className="relative w-1.5 h-1.5 rounded-full"
+                                style={{ backgroundColor: sc.strip }}
+                              />
+                            </span>
+                            {t(sc.key)}
+                          </span>
                         </div>
                       </div>
                     );
                   })()}
 
-                  {/* Who - avatar with a soft status-colored ring that
-                      ties this row back to the status pill above. Tiny
-                      detail, but it's the kind of considered touch that
-                      separates "premium card" from "list row". */}
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div
-                      className="rounded-full shrink-0"
-                      style={{
-                        padding: '2px',
-                        background: `linear-gradient(135deg, ${sc.strip}40, ${sc.strip}10)`,
-                      }}
-                    >
+                  {/* Who + where on one tidy row (less vertical clutter) */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
                       <Avatar
                         src={other?.avatar}
                         name={other?.name || ''}
                         size="sm"
-                        className="ring-2 ring-[var(--hm-bg-elevated)]"
+                        className="ring-2 ring-[var(--hm-bg-elevated)] shrink-0"
                       />
+                      <Link
+                        href={
+                          isPro
+                            ? '#'
+                            : `/professionals/${other?.id || other?._id}`
+                        }
+                        className="font-medium text-[13px] truncate hover:underline min-w-0"
+                        style={{ color: 'var(--hm-fg-primary)' }}
+                      >
+                        {other?.name || '-'}
+                      </Link>
                     </div>
-                    <Link
-                      href={
-                        isPro
-                          ? '#'
-                          : `/professionals/${other?.id || other?._id}`
-                      }
-                      className="font-medium text-sm truncate hover:underline min-w-0"
-                      style={{ color: 'var(--hm-fg-primary)' }}
-                    >
-                      {other?.name || '-'}
-                    </Link>
+                    {booking.address && (
+                      <span
+                        className="inline-flex items-center gap-1 text-xs min-w-0"
+                        style={{ color: 'var(--hm-fg-muted)' }}
+                      >
+                        <MapPin size={12} className="shrink-0" />
+                        <span className="truncate">{booking.address}</span>
+                      </span>
+                    )}
                   </div>
 
                   {/* SLA accept countdown - pro view only, only while
@@ -833,17 +829,6 @@ function BookingsContent() {
                         />
                       </div>
                     )}
-
-                  {/* Address */}
-                  {booking.address && (
-                    <div
-                      className="flex items-center gap-1.5 mt-2 text-xs"
-                      style={{ color: 'var(--hm-fg-muted)' }}
-                    >
-                      <MapPin size={12} className="shrink-0" />
-                      <span className="truncate">{booking.address}</span>
-                    </div>
-                  )}
 
                   {/* Note */}
                   {booking.note && (

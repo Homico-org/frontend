@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, ModalBody } from '@/components/ui/Modal';
+import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { useCategories } from '@/contexts/CategoriesContext';
@@ -68,46 +68,53 @@ export default function AddRoleModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md" showCloseButton>
-      <ModalBody className="pt-7">
-        <div className="mb-4 flex items-baseline gap-3">
-          <span aria-hidden className="block h-px w-5 bg-[var(--hm-n-900)]" />
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--hm-n-500)]">
-            {t('projects.teamHeaderEyebrow')}
-          </span>
-        </div>
-        <h2 className="mb-5 font-display text-[14px] font-bold italic tracking-[-0.02em] text-[var(--hm-n-900)] sm:text-[16px]">
-          {t('projects.addRoleTitle')}
-        </h2>
+      <ModalHeader
+        title={t('projects.addRoleTitle')}
+        description={t('projects.addRoleSubtitle')}
+      />
+      <ModalBody>
         <SearchInput
           value={query}
           onValueChange={setQuery}
           placeholder={t('common.search')}
           className="mb-4"
         />
-        <div className="grid max-h-[360px] grid-cols-2 gap-1.5 overflow-y-auto">
-          {filtered.map((c) => {
-            const busy = busyKey === c.key;
-            return (
-              <button
-                key={c.key}
-                type="button"
-                onClick={() => addRole(c)}
-                disabled={busyKey !== null}
-                className="flex items-center gap-2 border border-[var(--hm-n-200)] p-2.5 text-left transition-colors hover:border-[var(--hm-n-900)] disabled:opacity-60"
-              >
-                <span
-                  className="h-1.5 w-1.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: c.color || 'var(--hm-brand-500)' }}
-                />
-                <span className="flex-1 truncate text-[12px] text-[var(--hm-n-900)]">
-                  {pick({ en: c.name, ka: c.nameKa })}
-                </span>
-                {busy && (
-                  <LoadingSpinner size="xs" color="var(--hm-brand-500)" />
-                )}
-              </button>
-            );
-          })}
+        <div className="grid max-h-[380px] grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2">
+          {filtered.length === 0 ? (
+            <p className="col-span-full py-6 text-center text-[13px] text-[var(--hm-fg-muted)]">
+              {t('projects.noServicesFound')}
+            </p>
+          ) : (
+            filtered.map((c) => {
+              const busy = busyKey === c.key;
+              return (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={() => addRole(c)}
+                  disabled={busyKey !== null}
+                  className="flex items-center gap-2.5 rounded-xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-3 text-left transition-colors hover:border-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/[0.04] disabled:opacity-60"
+                >
+                  <span
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white"
+                    style={{
+                      backgroundColor: c.color || 'var(--hm-brand-500)',
+                    }}
+                  >
+                    <span className="text-[12px] font-bold">
+                      {pick({ en: c.name, ka: c.nameKa }).charAt(0)}
+                    </span>
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[var(--hm-fg-primary)]">
+                    {pick({ en: c.name, ka: c.nameKa })}
+                  </span>
+                  {busy && (
+                    <LoadingSpinner size="xs" color="var(--hm-brand-500)" />
+                  )}
+                </button>
+              );
+            })
+          )}
         </div>
       </ModalBody>
     </Modal>

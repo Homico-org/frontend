@@ -94,6 +94,12 @@ interface ModalProps extends VariantProps<typeof modalVariants> {
   showCloseButton?: boolean;
   className?: string;
   preventClose?: boolean;
+  /**
+   * Skip the browser-history integration (the back-button-closes-modal entry).
+   * Use on routes where pushing a history entry corrupts navigation - e.g. the
+   * project-creation page, where it was sending Back to the role home.
+   */
+  disableHistory?: boolean;
   /** Accessible name for the dialog. Falls back to "Dialog". Pass an i18n string. */
   ariaLabel?: string;
   /** Accessible label for the close button. Falls back to "Close". */
@@ -113,6 +119,7 @@ export function Modal({
   showCloseButton = false,
   className,
   preventClose = false,
+  disableHistory = false,
   ariaLabel = 'Dialog',
   closeLabel = 'Close',
 }: ModalProps) {
@@ -124,7 +131,11 @@ export function Modal({
 
   // Browser/Android back button closes the modal instead of navigating
   // away. Disabled when `preventClose` is set (e.g. mid-save).
-  useModalHistory({ isOpen, onClose: handleClose, enabled: !preventClose });
+  useModalHistory({
+    isOpen,
+    onClose: handleClose,
+    enabled: !preventClose && !disableHistory,
+  });
 
   // Handle escape key
   useEffect(() => {
