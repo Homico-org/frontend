@@ -407,15 +407,9 @@ export default function ProfessionalDetailClient({
       category: profile.categories?.[0],
     });
 
-    // Optimistically increment view count since backend increments it async
-    // This ensures the displayed count reflects that this visit was counted
-    setProfile((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        profileViewCount: (prev.profileViewCount ?? 0) + 1,
-      };
-    });
+    // No optimistic increment: the backend now dedupes views by IP (24h), so a
+    // local +1 would over-count on refresh / for an already-counted visitor.
+    // The displayed value reflects the real persisted count from the fetch.
   }, [profile?.id, profile?.name, profile?.categories, trackEvent]);
 
   useEffect(() => {
