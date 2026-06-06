@@ -7,8 +7,13 @@ import { useCountryLink } from "@/hooks/useCountry";
 import { storage } from "@/services/storage";
 import { UserRole } from "@/types/shared/enums";
 import {
+  Award,
   Bell,
   Briefcase,
+  Calendar,
+  ClipboardList,
+  Compass,
+  Hammer,
   HelpCircle,
   Home,
   Info,
@@ -16,13 +21,15 @@ import {
   ListChecks,
   LogIn,
   LogOut,
+  Package,
   Plus,
+  Send,
   Settings,
   ShoppingBag,
-  Sparkles,
   Star,
   UserCircle,
   Users,
+  Wrench,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -154,6 +161,12 @@ export default function MobileNavDrawer({
         label: t("header.shop"),
         icon: ShoppingBag,
       },
+      {
+        key: "tools",
+        href: cl("/tools"),
+        label: t("tools.home.title"),
+        icon: Wrench,
+      },
     ],
   });
 
@@ -180,9 +193,9 @@ export default function MobileNavDrawer({
     if (isClient) {
       personalItems.push({
         key: "my-jobs",
-        href: cl("/my-jobs"),
+        href: "/my-jobs",
         label: t("header.myJobs"),
-        icon: Briefcase,
+        icon: ClipboardList,
       });
       personalItems.push({
         key: "post-job",
@@ -190,30 +203,49 @@ export default function MobileNavDrawer({
         label: t("common.post"),
         icon: Plus,
       });
+      personalItems.push({
+        key: "orders",
+        href: "/orders",
+        label: t("header.orders"),
+        icon: Package,
+      });
     }
     if (isPro) {
       personalItems.push({
         key: "my-work",
-        href: cl("/my-work"),
+        href: "/my-work",
         label: t("header.myWork"),
-        icon: Briefcase,
+        icon: Hammer,
       });
       personalItems.push({
         key: "my-proposals",
-        href: cl("/my-proposals"),
+        href: "/my-proposals",
         label: t("header.proposals"),
-        icon: Star,
+        icon: Send,
       });
     }
+    // Shared across roles: appointments, ratings, alerts, account.
+    personalItems.push({
+      key: "bookings",
+      href: "/bookings",
+      label: t("nav.bookings"),
+      icon: Calendar,
+    });
+    personalItems.push({
+      key: "reviews",
+      href: "/my-reviews",
+      label: t("reviews.myReviews"),
+      icon: Star,
+    });
     personalItems.push({
       key: "notifications",
-      href: cl("/notifications"),
+      href: "/notifications",
       label: t("common.notifications"),
       icon: Bell,
     });
     personalItems.push({
       key: "settings",
-      href: cl("/settings"),
+      href: "/settings",
       label: t("common.settings"),
       icon: Settings,
     });
@@ -244,22 +276,23 @@ export default function MobileNavDrawer({
   // RESOURCES - always visible
   sections.push({
     key: "resources",
+    title: t("nav.resources"),
     items: [
       {
         key: "how",
         href: cl("/how-it-works"),
         label: t("header.howItWorks"),
-        icon: Sparkles,
+        icon: Compass,
       },
       {
         key: "about",
-        href: cl("/about"),
+        href: "/about",
         label: t("common.about"),
         icon: Info,
       },
       {
         key: "help",
-        href: cl("/help"),
+        href: "/help",
         label: t("common.help"),
         icon: HelpCircle,
       },
@@ -292,7 +325,7 @@ export default function MobileNavDrawer({
         <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4 border-b border-[var(--hm-border-subtle)]">
           {isAuthenticated && user ? (
             <Link
-              href={cl(isPro ? "/pro/profile" : "/settings")}
+              href={isPro && user.id ? cl(`/professionals/${user.id}`) : "/settings"}
               onClick={onClose}
               className="flex items-center gap-3 min-w-0 flex-1"
             >
@@ -417,7 +450,7 @@ export default function MobileNavDrawer({
               onClick={onClose}
               className="flex items-center justify-center gap-2 w-full h-11 rounded-lg bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] text-white text-[14px] font-semibold transition-colors"
             >
-              <Sparkles className="w-4 h-4" />
+              <Award className="w-4 h-4" />
               {t("header.becomePro")}
             </Link>
           )}

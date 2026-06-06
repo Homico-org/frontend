@@ -125,7 +125,7 @@ export function FeedbackWidget() {
 
   return (
     <>
-      {/* Edge tab trigger — desktop */}
+      {/* Edge tab trigger - desktop */}
       {!isOpen && (
         <button
           ref={tabRef}
@@ -146,25 +146,12 @@ export function FeedbackWidget() {
         </button>
       )}
 
-      {/* Mobile trigger — FAB. Stacks above the AI chat FAB which sits at
-          calc(80 + safe + 20) from bottom. Adds AI FAB height (48px) + 12px
-          gap so the two never collide and both clear the bottom nav. */}
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed flex lg:hidden right-5 z-[51] w-10 h-10 rounded-full shadow-lg items-center justify-center cursor-pointer"
-          style={{
-            backgroundColor: ACCENT_COLOR,
-            color: '#fff',
-            bottom: 'calc(80px + env(safe-area-inset-bottom) + 80px)',
-          }}
-          aria-label={t('feedback.title')}
-        >
-          <MessageSquare className="w-4 h-4" />
-        </button>
-      )}
+      {/* No mobile FAB: two stacked FABs (this + the AI chat) cluttered the
+          small screen and obscured right-aligned prices/totals on order,
+          booking and shop pages. On mobile, feedback lives in the menu/help;
+          desktop keeps the edge tab above. */}
 
-      {/* Side panel — uses generic SidePanel */}
+      {/* Side panel - uses generic SidePanel */}
       <SidePanel isOpen={isOpen} onClose={requestClose} title={t('feedback.title')}>
         <PanelContent
           isSubmitted={isSubmitted}

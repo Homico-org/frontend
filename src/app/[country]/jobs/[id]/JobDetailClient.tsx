@@ -5142,7 +5142,7 @@ export default function JobDetailClient() {
         !isCheckingProposal &&
         isAuthValidated && (
           <div
-            className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 safe-area-bottom transition-all duration-300 ease-out ${
+            className={`lg:hidden fixed bottom-[calc(58px+env(safe-area-inset-bottom))] left-0 right-0 z-40 transition-all duration-300 ease-out ${
               heroOutOfView
                 ? "translate-y-0 opacity-100"
                 : "translate-y-full opacity-0 pointer-events-none"

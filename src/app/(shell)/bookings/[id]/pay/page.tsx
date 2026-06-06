@@ -124,7 +124,7 @@ export default function PayPage() {
           style={{ color: "var(--hm-text-secondary)" }}
         >
           <ArrowLeft size={16} />
-          {t("nav.back")}
+          {t("common.back")}
         </Link>
 
         <Card variant="elevated">

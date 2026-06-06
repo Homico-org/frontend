@@ -340,7 +340,8 @@
     "forBusiness": "For Business",
     "sectionWork": "Work",
     "shopCatalog": "Catalog",
-    "sectionAccount": "Account"
+    "sectionAccount": "Account",
+    "resources": "More"
   },
   "validation": {
     "required": "This field is required",
@@ -2662,7 +2663,7 @@
     "checkoutAddress": "Delivery address",
     "checkoutAddressPlaceholder": "Street, building, city",
     "checkoutPhone": "Phone",
-    "checkoutApartment": "Apartment / floor",
+    "checkoutApartment": "Apartment",
     "checkoutNotes": "Notes",
     "checkoutNotesPlaceholder": "For the courier, entrance code…",
     "checkoutSubtotal": "Subtotal",

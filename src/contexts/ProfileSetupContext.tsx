@@ -906,17 +906,31 @@ export function ProfileSetupProvider({
             setCustomServices(profile.customServices);
           }
 
-          // Merge server data with draft - draft values win when non-empty
+          // Merge server data with draft - draft values win when non-empty.
+          // Fall back to splitting the combined `name` so accounts that only
+          // stored a full name (social login, seed, older signup) still
+          // pre-fill the first/last fields instead of showing blank.
           const draft = draftDataRef.current?.formData;
+          const nameParts = (user?.name || "")
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+          const nameFirst = nameParts[0] || "";
+          const nameLast = nameParts.slice(1).join(" ");
           setFormData((prev) => ({
             ...prev,
             firstName:
               draft?.firstName ||
               profile.firstName ||
               prev.firstName ||
+              nameFirst ||
               "",
             lastName:
-              draft?.lastName || profile.lastName || prev.lastName || "",
+              draft?.lastName ||
+              profile.lastName ||
+              prev.lastName ||
+              nameLast ||
+              "",
             title: draft?.title || profile.title || prev.title || "",
             bio: draft?.bio || profile.bio || prev.bio || "",
             avatar:

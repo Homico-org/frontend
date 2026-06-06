@@ -154,7 +154,7 @@ export default function AdminPayoutsPage() {
             style={{ color: "var(--hm-text-secondary)" }}
           >
             <ArrowLeft size={16} />
-            {t("nav.back")}
+            {t("common.back")}
           </Link>
 
           <div className="flex items-start justify-between gap-3 mb-6">

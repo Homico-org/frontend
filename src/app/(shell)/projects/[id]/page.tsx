@@ -473,7 +473,7 @@ export default function ProjectDashboardPage() {
       const status = (err as { response?: { status?: number } })?.response
         ?.status;
       if (status === 403) {
-        router.replace(cl('/my-work'));
+        router.replace('/my-work');
         return;
       }
       setError(true);
@@ -1042,7 +1042,7 @@ export default function ProjectDashboardPage() {
                 : 'neutral';
           return (
             <Card variant="elevated" className="animate-card-enter overflow-hidden rounded-2xl">
-              <div className="flex items-center gap-4 bg-gradient-to-br from-[var(--hm-brand-500)]/[0.06] to-transparent p-4 sm:gap-5 sm:p-5">
+              <div className="flex items-start gap-4 bg-gradient-to-br from-[var(--hm-brand-500)]/[0.06] to-transparent p-4 sm:items-center sm:gap-5 sm:p-5">
                 {/* Cover thumbnail. Owner taps to change it; viewer to open it. */}
                 <button
                   type="button"
@@ -1082,46 +1082,70 @@ export default function ProjectDashboardPage() {
 
                 {/* Identity */}
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Pill tone={statusTone}>
-                      {statusTone === 'info' && (
-                        <span className="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
-                      )}
-                      {t(`status.${project.status}`)}
-                    </Pill>
-                    {heroAvatars.length > 0 && (
-                      <div className="flex items-center">
-                        <div className="flex -space-x-2">
-                          {heroAvatars.slice(0, 4).map((a, i) => (
-                            <span
-                              key={i}
-                              className="inline-flex h-6 w-6 items-center justify-center overflow-hidden rounded-full ring-2 ring-[var(--hm-bg-elevated)]"
-                            >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={storage.getOptimizedImageUrl(a, 'avatar')}
-                                alt=""
-                                className="h-full w-full object-cover"
-                              />
-                            </span>
-                          ))}
-                        </div>
-                        {moreCount > 0 && (
-                          <span className="ml-1.5 text-[12px] font-medium text-[var(--hm-fg-muted)]">
-                            +{moreCount}
-                          </span>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Pill tone={statusTone}>
+                          {statusTone === 'info' && (
+                            <span className="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
+                          )}
+                          {t(`status.${project.status}`)}
+                        </Pill>
+                        {heroAvatars.length > 0 && (
+                          <div className="flex items-center">
+                            <div className="flex -space-x-2">
+                              {heroAvatars.slice(0, 4).map((a, i) => (
+                                <span
+                                  key={i}
+                                  className="inline-flex h-6 w-6 items-center justify-center overflow-hidden rounded-full ring-2 ring-[var(--hm-bg-elevated)]"
+                                >
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={storage.getOptimizedImageUrl(a, 'avatar')}
+                                    alt=""
+                                    className="h-full w-full object-cover"
+                                  />
+                                </span>
+                              ))}
+                            </div>
+                            {moreCount > 0 && (
+                              <span className="ml-1.5 text-[12px] font-medium text-[var(--hm-fg-muted)]">
+                                +{moreCount}
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
-                    )}
+                      <h1 className="mt-1.5 line-clamp-2 text-[20px] font-bold leading-tight text-[var(--hm-fg-primary)] sm:text-[24px]">
+                        {project.title}
+                      </h1>
+                    </div>
+
+                    {/* Ring + edit - top-right of the identity column */}
+                    <div className="flex shrink-0 flex-col items-end gap-2">
+                      <ProgressRing value={project.progress} />
+                      {!isPro && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowEditProject(true)}
+                          leftIcon={<Pencil />}
+                          aria-label={t('common.edit')}
+                        >
+                          <span className="hidden sm:inline">
+                            {t('common.edit')}
+                          </span>
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <h1 className="mt-1.5 truncate text-[20px] font-bold leading-tight text-[var(--hm-fg-primary)] sm:text-[24px]">
-                    {project.title}
-                  </h1>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[var(--hm-fg-secondary)]">
+
+                  {/* Location + meta - full width beneath the title */}
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[var(--hm-fg-secondary)]">
                     {project.location && (
-                      <span className="inline-flex items-center gap-1.5">
-                        <MapPin className="h-4 w-4 text-[var(--hm-brand-500)]" />
-                        {project.location}
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <MapPin className="h-4 w-4 shrink-0 text-[var(--hm-brand-500)]" />
+                        <span className="min-w-0">{project.location}</span>
                       </span>
                     )}
                     {!!project.landArea && (
@@ -1135,22 +1159,6 @@ export default function ProjectDashboardPage() {
                       </span>
                     )}
                   </div>
-                </div>
-
-                {/* Ring + edit */}
-                <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end sm:gap-2">
-                  <ProgressRing value={project.progress} />
-                  {!isPro && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowEditProject(true)}
-                      leftIcon={<Pencil />}
-                      aria-label={t('common.edit')}
-                    >
-                      <span className="hidden sm:inline">{t('common.edit')}</span>
-                    </Button>
-                  )}
                 </div>
               </div>
             </Card>
@@ -1282,7 +1290,7 @@ export default function ProjectDashboardPage() {
                 });
 
               return (
-                <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
                   {/* LEFT: content stream */}
                   <div className="flex min-w-0 flex-col gap-8">
                     {/* Needs attention - actionable alerts */}
@@ -1947,7 +1955,7 @@ export default function ProjectDashboardPage() {
                 if (eng.status === 'open' && jobId && !isPro)
                   return (
                     <Link
-                      href={cl(`/my-jobs/${jobId}/proposals`)}
+                      href={`/my-jobs/${jobId}/proposals`}
                       className={rowLink}
                     >
                       {t('projects.viewQuotes')}
@@ -1984,7 +1992,7 @@ export default function ProjectDashboardPage() {
                 ) {
                   if (jobId)
                     return (
-                      <Link href={cl(`/my-jobs/${jobId}`)} className={rowLink}>
+                      <Link href={`/my-jobs/${jobId}`} className={rowLink}>
                         {t('projects.openWorkspace')}
                         <ArrowRight className="h-3 w-3" />
                       </Link>
@@ -2600,9 +2608,9 @@ export default function ProjectDashboardPage() {
                             href={p.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 truncate text-[14px] font-medium text-[var(--hm-fg-primary)] hover:text-[var(--hm-brand-500)]"
+                            className="flex min-w-0 items-center gap-1 text-[14px] font-medium text-[var(--hm-fg-primary)] hover:text-[var(--hm-brand-500)]"
                           >
-                            {p.name}
+                            <span className="truncate">{p.name}</span>
                             <ExternalLink className="h-3 w-3 shrink-0" />
                           </a>
                         ) : (
@@ -2619,22 +2627,22 @@ export default function ProjectDashboardPage() {
                         {formatGel((p.unitPrice || 0) * (p.qty || 0))}
                       </span>
                       {!isPro && (
-                        <span className="flex items-center">
+                        <span className="flex shrink-0 items-center">
                           <button
                             type="button"
                             onClick={() => setProductModal({ item: p })}
                             aria-label={t('common.edit')}
-                            className="p-1 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"
+                            className="flex h-9 w-9 items-center justify-center rounded-md text-[var(--hm-fg-muted)] transition-colors hover:text-[var(--hm-fg-primary)]"
                           >
-                            <Pencil className="h-3.5 w-3.5" />
+                            <Pencil className="h-4 w-4" />
                           </button>
                           <button
                             type="button"
                             onClick={() => setRemoveProductId(p.id)}
                             aria-label={t('common.delete')}
-                            className="p-1 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)]"
+                            className="flex h-9 w-9 items-center justify-center rounded-md text-[var(--hm-fg-muted)] transition-colors hover:text-[var(--hm-error-500)]"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </span>
                       )}

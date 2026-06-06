@@ -380,13 +380,18 @@ export default function AddressPicker({
           className={`rounded-2xl overflow-hidden relative group transition-all ${
             required && !selectedAddress
               ? 'ring-2 ring-[var(--hm-brand-500)]/30 ring-offset-2'
-              : selectedAddress
-                ? 'ring-2 ring-emerald-500/30 ring-offset-2'
-                : ''
+              : ''
           }`}
           style={{
             height: '320px',
-            border: required && !selectedAddress ? '2px solid var(--hm-brand-500)' : selectedAddress ? '2px solid rgb(16 185 129 / 0.3)' : '1px solid var(--hm-border)',
+            // Selected = calm, on-brand confirmation (the green pin chip
+            // below already announces success); only the not-yet-picked
+            // required state gets the attention-grabbing brand ring.
+            border: required && !selectedAddress
+              ? '2px solid var(--hm-brand-500)'
+              : selectedAddress
+                ? '1px solid var(--hm-success-500)'
+                : '1px solid var(--hm-border)',
             backgroundColor: isDarkMode ? '#28282c' : '#f8f9fa',
           }}
         >

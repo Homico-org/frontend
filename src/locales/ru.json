@@ -339,7 +339,8 @@
     "forBusiness": "Для бизнеса",
     "sectionWork": "Работа",
     "shopCatalog": "Каталог",
-    "sectionAccount": "Аккаунт"
+    "sectionAccount": "Аккаунт",
+    "resources": "Ещё"
   },
   "validation": {
     "required": "Это поле обязательно",
@@ -2665,7 +2666,7 @@
     "checkoutAddress": "Адрес доставки",
     "checkoutAddressPlaceholder": "Улица, дом, город",
     "checkoutPhone": "Телефон",
-    "checkoutApartment": "Квартира / этаж",
+    "checkoutApartment": "Квартира",
     "checkoutNotes": "Примечание",
     "checkoutNotesPlaceholder": "Для курьера, код подъезда",
     "checkoutSubtotal": "Подытог",

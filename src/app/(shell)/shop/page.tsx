@@ -33,14 +33,14 @@ export default function ShopPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-4 py-7">
-      <header className="mb-7">
-        <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--hm-fg-muted)]">
+      <header className="mb-4 sm:mb-7">
+        <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--hm-fg-muted)] sm:mb-2 sm:text-[11px]">
           {t('header.shop')}
         </p>
-        <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] text-[var(--hm-fg-primary)] sm:text-[34px]">
+        <h1 className="text-[22px] font-bold leading-tight tracking-[-0.03em] text-[var(--hm-fg-primary)] sm:text-[34px]">
           {t('projects.catalogTitle')}
         </h1>
-        <p className="mt-2 max-w-xl text-[14px] text-[var(--hm-fg-muted)]">
+        <p className="mt-1.5 max-w-xl text-[13px] text-[var(--hm-fg-muted)] sm:mt-2 sm:text-[14px]">
           {t('projects.catalogShopSubtitle')}
         </p>
       </header>

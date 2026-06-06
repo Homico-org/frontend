@@ -202,15 +202,16 @@ export default function OrderDetailPage() {
           <button
             type="button"
             onClick={reorder}
-            className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[var(--hm-border)] px-3 text-[12px] font-semibold text-[var(--hm-fg-primary)] transition-colors hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)]"
+            aria-label={t('orders.reorder')}
+            className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[var(--hm-border)] px-2.5 sm:px-3 text-[12px] font-semibold text-[var(--hm-fg-primary)] transition-colors hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)]"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            {t('orders.reorder')}
+            <span className="hidden sm:inline">{t('orders.reorder')}</span>
           </button>
         </div>
       }
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 pb-24 sm:pb-2">
         {/* Payment-pending banner - the path to finish or drop an unpaid order */}
         {isUnpaid && (
           <div className="flex flex-col gap-3 rounded-2xl border border-[var(--hm-warning-500)]/30 bg-[var(--hm-warning-50)] p-4 sm:flex-row sm:items-center sm:justify-between">

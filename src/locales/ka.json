@@ -340,7 +340,8 @@
     "forBusiness": "კომპანიებისთვის",
     "sectionWork": "სამუშაო",
     "shopCatalog": "კატალოგი",
-    "sectionAccount": "ანგარიში"
+    "sectionAccount": "ანგარიში",
+    "resources": "მეტი"
   },
   "validation": {
     "required": "ეს ველი სავალდებულოა",
@@ -2662,7 +2663,7 @@
     "checkoutAddress": "მიწოდების მისამართი",
     "checkoutAddressPlaceholder": "ქუჩა, შენობა, ქალაქი",
     "checkoutPhone": "ტელეფონი",
-    "checkoutApartment": "ბინა / სართული",
+    "checkoutApartment": "ბინა",
     "checkoutNotes": "შენიშვნა",
     "checkoutNotesPlaceholder": "კურიერისთვის, შესასვლელის კოდი",
     "checkoutSubtotal": "ქვეჯამი",

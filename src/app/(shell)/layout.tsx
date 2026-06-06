@@ -52,7 +52,7 @@ const SIDEBAR_COLLAPSED_WIDTH = 56;
 
 type TabShowFor = "all" | "pro" | "client" | "auth";
 
-type TabKey = "my-space" | "my-jobs" | "projects" | "shop" | "bookings" | "jobs" | "professionals";
+type TabKey = "my-space" | "my-jobs" | "projects" | "shop" | "bookings" | "jobs" | "professionals" | "tools";
 
 
 // `countryScoped: true` flags tabs that live under `/{country}/...` and
@@ -132,6 +132,15 @@ const TABS: Array<{
     labelKa: "სპეციალისტები",
     labelRu: "Специалисты",
     icon: Users,
+    showFor: "all" as const,
+  },
+  {
+    key: "tools",
+    route: "/tools",
+    label: "Tools",
+    labelKa: "ხელსაწყოები",
+    labelRu: "Инструменты",
+    icon: Wrench,
     showFor: "all" as const,
   },
 ];
@@ -672,7 +681,9 @@ function ShellContent({ children }: { children: ReactNode }) {
               ? "jobs"
               : (isProfessionalsPage || isPortfolioPage)
                 ? "professionals"
-                : null;
+                : (isToolsPage || isToolsSubpage)
+                  ? "tools"
+                  : null;
 
   const visibleTabs = TABS.filter((tab) => {
     if (tab.key === "bookings" && !features.bookings) return false;

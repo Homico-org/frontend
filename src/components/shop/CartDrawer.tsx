@@ -22,7 +22,10 @@ interface CartDrawerProps {
   busy?: boolean;
 }
 
-const fmt = (n: number) => `${n.toLocaleString()} ₾`;
+// Guard against a missing/NaN price (stale localStorage cart, or a scraped
+// product with no price) - a formatting helper must never white-screen the
+// whole cart drawer.
+const fmt = (n: number) => `${(Number.isFinite(n) ? n : 0).toLocaleString()} ₾`;
 
 export default function CartDrawer({
   isOpen,
@@ -152,7 +155,7 @@ export default function CartDrawer({
                           type="button"
                           onClick={() => setQty(product.id, qty - 1)}
                           aria-label="-"
-                          className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--hm-fg-secondary)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)] active:bg-[var(--hm-bg-tertiary)]"
+                          className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--hm-fg-secondary)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)] active:bg-[var(--hm-bg-tertiary)]"
                         >
                           <Minus className="h-3.5 w-3.5" />
                         </button>
@@ -163,7 +166,7 @@ export default function CartDrawer({
                           type="button"
                           onClick={() => setQty(product.id, qty + 1)}
                           aria-label="+"
-                          className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--hm-fg-secondary)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)] active:bg-[var(--hm-bg-tertiary)]"
+                          className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--hm-fg-secondary)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)] active:bg-[var(--hm-bg-tertiary)]"
                         >
                           <Plus className="h-3.5 w-3.5" />
                         </button>
@@ -175,9 +178,9 @@ export default function CartDrawer({
                         type="button"
                         onClick={() => remove(product.id)}
                         aria-label={t('common.delete')}
-                        className="rounded-md p-1 text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-error-50)] hover:text-[var(--hm-error-500)]"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-error-50)] hover:text-[var(--hm-error-500)]"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
+import { Modal, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { FormGroup, Input, Label } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -21,7 +21,6 @@ import {
   MapPin,
   Package,
   Phone,
-  ShoppingBag,
   StickyNote,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -201,15 +200,19 @@ export default function CheckoutModal({
         </ModalBody>
       ) : (
         <>
-      <ModalHeader
-        variant="accent"
-        icon={<ShoppingBag size={20} color="#fff" />}
-        title={
-          step === 1
+      {/* Clean editorial header (muted mono eyebrow + step title) - the
+          old accent gradient + icon-in-circle read as a generic SaaS
+          dialog and clashed with the warm-paper aesthetic. */}
+      <div className="px-4 pt-1.5 pb-1 sm:px-6 sm:pt-3">
+        <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--hm-fg-muted)]">
+          {t('header.shop')}
+        </p>
+        <h3 className="mt-1 text-[20px] font-bold leading-tight tracking-[-0.02em] text-[var(--hm-fg-primary)]">
+          {step === 1
             ? t('projects.checkoutStepDelivery')
-            : t('projects.checkoutStepReview')
-        }
-      />
+            : t('projects.checkoutStepReview')}
+        </h3>
+      </div>
 
       <ModalBody className="flex flex-col gap-4 pb-0">
         <StepperBars total={2} currentIndex={step - 1} />

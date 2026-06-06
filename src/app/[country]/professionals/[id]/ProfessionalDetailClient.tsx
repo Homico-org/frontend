@@ -2040,7 +2040,7 @@ export default function ProfessionalDetailClient({
                 <button
                   type="button"
                   onClick={handleContact}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-semibold text-sm bg-gradient-to-r from-[var(--hm-brand-500)] to-[#A92B08] shadow-md shadow-[var(--hm-brand-500)]/25"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-semibold text-sm bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] transition-colors"
                 >
                   <Phone className="w-4 h-4" />
                   {t("professional.showPhone")}
@@ -3138,7 +3138,7 @@ export default function ProfessionalDetailClient({
           surface (alpha bg + backdrop-blur) + safe-area-bottom keeps
           the CTA legible above the iOS home indicator. */}
       <div
-        className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 safe-area-bottom transition-all duration-300 ease-out ${
+        className={`lg:hidden fixed bottom-[calc(58px+env(safe-area-inset-bottom))] left-0 right-0 z-40 transition-all duration-300 ease-out ${
           showFloatingButton
             ? "translate-y-0 opacity-100"
             : "translate-y-full opacity-0 pointer-events-none"
@@ -3212,7 +3212,7 @@ export default function ProfessionalDetailClient({
               key="mobile-contact-cta"
               whileTap={{ scale: 0.97 }}
               onClick={handleContact}
-              className="relative w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-white font-semibold text-sm sm:text-base bg-gradient-to-r from-[var(--hm-brand-500)] to-[#A92B08] shadow-xl shadow-[var(--hm-brand-500)]/30 overflow-hidden"
+              className="relative w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-white font-semibold text-sm sm:text-base bg-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-600)] transition-colors shadow-lg shadow-[var(--hm-brand-500)]/25 overflow-hidden"
             >
               {/* Shine sweep */}
               <motion.div

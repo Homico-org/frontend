@@ -128,7 +128,7 @@ export default function AdminCatalogSuggestionsPage() {
         style={{ backgroundColor: "var(--hm-bg-page)" }}
       >
         <div className="max-w-5xl mx-auto">
-          <BackButton href="/admin" variant="minimal" label={t("nav.back")} className="mb-4" />
+          <BackButton href="/admin" variant="minimal" label={t("common.back")} className="mb-4" />
 
           <div className="flex items-start justify-between gap-3 mb-6">
             <div>

@@ -35,10 +35,12 @@ const inputVariants = cva(
         premium:
           "bg-[var(--hm-bg-elevated)] border border-[var(--hm-brand-200)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 transition-colors",
       },
+      // Font is >=16px on mobile so iOS Safari doesn't auto-zoom on focus;
+      // the smaller design size kicks back in at >=sm (desktop).
       inputSize: {
-        sm: "h-8 px-3 py-1.5 text-xs",
-        default: "h-10 px-4 py-2 text-[15px]",
-        lg: "h-12 px-4 py-3 text-[15px]",
+        sm: "h-8 px-3 py-1.5 text-base sm:text-xs",
+        default: "h-10 px-4 py-2 text-base sm:text-[15px]",
+        lg: "h-12 px-4 py-3 text-base sm:text-[15px]",
         xl: "h-14 px-5 py-4 text-base",
       },
     },
@@ -156,8 +158,8 @@ const textareaVariants = cva(
           "bg-[var(--hm-bg-elevated)] border border-[var(--hm-brand-200)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 transition-colors",
       },
       textareaSize: {
-        sm: "min-h-[80px] px-3 py-2 text-xs",
-        default: "min-h-[100px] px-4 py-3 text-[15px]",
+        sm: "min-h-[80px] px-3 py-2 text-base sm:text-xs",
+        default: "min-h-[100px] px-4 py-3 text-base sm:text-[15px]",
         lg: "min-h-[120px] px-5 py-4 text-base",
         xl: "min-h-[150px] px-6 py-5 text-base",
       },

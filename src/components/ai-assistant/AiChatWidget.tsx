@@ -245,9 +245,51 @@ export default function AiChatWidget(): React.ReactElement | null {
   const [inputValue, setInputValue] = useState("");
   // No attention-grabbing pulse on load - FAB stays quiet until the user taps it.
   const [showPulse, setShowPulse] = useState(false);
+  // On mobile the FAB hides while scrolling DOWN (so it never sits over the
+  // content/prices you're reading) and slides back on scroll UP. Desktop, where
+  // the FAB lives in the corner, always shows it.
+  const [scrollHidden, setScrollHidden] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isMobileRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let last = 0;
+    let raf = 0;
+    // Capture phase catches scroll from ANY container - the app shell scrolls
+    // an inner <main>, not the window, so a window listener would never fire on
+    // those pages. We read scrollTop off whichever element actually scrolled.
+    const onScroll = (e: Event) => {
+      const target = e.target as HTMLElement | Document;
+      const y =
+        target === document || target === document.documentElement || !target
+          ? window.scrollY
+          : (target as HTMLElement).scrollTop ?? 0;
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        if (window.innerWidth >= 1024) {
+          setScrollHidden(false);
+          last = y;
+          return;
+        }
+        const delta = y - last;
+        if (Math.abs(delta) < 6) return;
+        if (delta > 0 && y > 50) setScrollHidden(true);
+        else setScrollHidden(false);
+        last = y;
+      });
+    };
+    document.addEventListener("scroll", onScroll, {
+      capture: true,
+      passive: true,
+    });
+    return () => {
+      document.removeEventListener("scroll", onScroll, { capture: true });
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   const { locale, t, pick } = useLanguage();
   const { user, isAuthenticated } = useAuth();
@@ -409,10 +451,15 @@ export default function AiChatWidget(): React.ReactElement | null {
           <motion.button
             key="ai-fab"
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            animate={{
+              scale: 1,
+              opacity: scrollHidden ? 0 : 1,
+              y: scrollHidden ? 100 : 0,
+            }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
             onClick={() => setIsOpen(true)}
+            style={{ pointerEvents: scrollHidden ? "none" : "auto" }}
             className="fixed z-[51] group right-4 lg:right-6 bottom-[calc(80px+env(safe-area-inset-bottom)+20px)] lg:bottom-6"
             aria-label="Open AI Assistant"
           >

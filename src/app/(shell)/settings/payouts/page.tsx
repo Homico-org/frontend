@@ -192,7 +192,7 @@ export default function PayoutsSettingsPage() {
             </span>
           </nav>
 
-          <BackButton href="/settings" variant="minimal" label={t("nav.back")} className="mb-4" />
+          <BackButton href="/settings" variant="minimal" label={t("common.back")} className="mb-4" />
 
           <div className="flex items-start gap-3 mb-6">
             <div

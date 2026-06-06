@@ -1,7 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/contexts/LanguageContext";
-import { ArrowRight, Calculator, Database, FileSearch, Scale, Star } from "lucide-react";
+import { ArrowRight, Calculator, ChevronRight, Database, FileSearch, Scale, Star } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -173,7 +173,7 @@ export default function ToolsPage() {
         })}
 
       {/* Other Tools - Grid */}
-      <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-5">
         {tools
           .filter((tool) => !tool.featured)
           .map((tool, index) => {
@@ -237,12 +237,14 @@ export default function ToolsPage() {
                     }}
                   />
 
-                  {/* Content */}
-                  <div className="relative z-10 p-2.5 sm:p-6 flex flex-col items-center sm:items-start text-center sm:text-left">
+                  {/* Content - readable horizontal row on phones (icon + text +
+                      chevron), vertical card on sm+ so each tool is tappable
+                      and its description stays visible instead of truncated. */}
+                  <div className="relative z-10 flex flex-row items-center gap-3 p-3.5 text-left sm:flex-col sm:items-start sm:gap-0 sm:p-6">
                     {/* Icon */}
                     <div
                       className={`
-                        w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center mb-2 sm:mb-4
+                        w-11 h-11 sm:w-14 sm:h-14 flex items-center justify-center shrink-0 sm:mb-4
                         transition-all duration-500 border
                         bg-gradient-to-br from-[var(--hm-brand-500)]/10 to-[var(--hm-brand-500)]/5 border-[var(--hm-brand-500)]/20
                         ${isHovered ? "sm:scale-110 sm:rotate-6" : ""}
@@ -254,29 +256,34 @@ export default function ToolsPage() {
                       />
                     </div>
 
-                    {/* Title */}
-                    <h2
-                      className={`text-[11px] sm:text-xl font-bold text-[var(--hm-fg-primary)] mb-0 sm:mb-2.5 transition-colors duration-300 leading-tight ${
-                        isHovered ? "sm:text-[var(--hm-brand-500)]" : ""
-                      }`}
-                    >
-                      {toolT.title}
-                    </h2>
+                    <div className="min-w-0 flex-1">
+                      {/* Title */}
+                      <h2
+                        className={`text-[15px] sm:text-xl font-bold text-[var(--hm-fg-primary)] mb-0.5 sm:mb-2.5 transition-colors duration-300 leading-tight ${
+                          isHovered ? "sm:text-[var(--hm-brand-500)]" : ""
+                        }`}
+                      >
+                        {toolT.title}
+                      </h2>
 
-                    {/* Description - desktop only */}
-                    <p className="hidden sm:block text-sm text-[var(--hm-fg-secondary)] mb-4 leading-relaxed line-clamp-2">
-                      {toolT.description}
-                    </p>
+                      {/* Description */}
+                      <p className="text-[12.5px] sm:text-sm text-[var(--hm-fg-secondary)] mb-0 sm:mb-4 leading-snug sm:leading-relaxed line-clamp-2">
+                        {toolT.description}
+                      </p>
 
-                    {/* Tag - desktop only */}
-                    <span
-                      className={`
-                        hidden sm:inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300
-                        bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]
-                      `}
-                    >
-                      {toolT.tag}
-                    </span>
+                      {/* Tag - desktop only */}
+                      <span
+                        className={`
+                          hidden sm:inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300
+                          bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]
+                        `}
+                      >
+                        {toolT.tag}
+                      </span>
+                    </div>
+
+                    {/* Chevron affordance - phones only */}
+                    <ChevronRight className="w-4 h-4 shrink-0 text-[var(--hm-fg-muted)] sm:hidden" />
                   </div>
                 </div>
               </Link>
