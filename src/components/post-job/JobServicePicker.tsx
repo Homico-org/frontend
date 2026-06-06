@@ -10,7 +10,7 @@ import { useCountry } from '@/hooks/useCountry';
 import { currencySymbol } from '@/utils/currency';
 import AiSearchBar from '@/components/common/AiSearchBar';
 import { Check, MessageCircle, X } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export interface JobServiceSelection {
   serviceKey: string;
@@ -90,6 +90,26 @@ export default function JobServicePicker({
       });
     }
   }, [selectedCategory]);
+
+  // Edge fades so the category tab strip reads as swipeable, not clipped.
+  const [stripEdges, setStripEdges] = useState({ left: false, right: false });
+  const updateStripEdges = useCallback(() => {
+    const el = tabStripRef.current;
+    if (!el) return;
+    setStripEdges({
+      left: el.scrollLeft > 4,
+      right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4,
+    });
+  }, []);
+  useEffect(() => {
+    updateStripEdges();
+    window.addEventListener('resize', updateStripEdges);
+    const id = window.setTimeout(updateStripEdges, 200);
+    return () => {
+      window.removeEventListener('resize', updateStripEdges);
+      window.clearTimeout(id);
+    };
+  }, [updateStripEdges]);
 
   // Resolve AI results to actual service items
   const aiMatchedServices = useMemo(() => {
@@ -416,7 +436,8 @@ export default function JobServicePicker({
         // Plain overflow-x-auto keeps the horizontal scroll without
         // that side-effect. Also bumped py to 2 for a slightly larger
         // tap target (44x44 is the iOS minimum recommendation).
-        <div ref={tabStripRef} className="-mx-3 sm:mx-0 overflow-x-auto scrollbar-hide">
+        <div className="relative -mx-3 sm:mx-0">
+        <div ref={tabStripRef} onScroll={updateStripEdges} className="overflow-x-auto scrollbar-hide">
           <div className="flex items-center gap-1.5 px-3 sm:px-0 min-w-min">
             {(() => {
               const isAll = !selectedCategory;
@@ -477,6 +498,25 @@ export default function JobServicePicker({
               );
             })}
           </div>
+        </div>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-0 w-7 transition-opacity duration-200"
+            style={{
+              background:
+                'linear-gradient(to right, var(--hm-bg-page), transparent)',
+              opacity: stripEdges.left ? 1 : 0,
+            }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 w-7 transition-opacity duration-200"
+            style={{
+              background:
+                'linear-gradient(to left, var(--hm-bg-page), transparent)',
+              opacity: stripEdges.right ? 1 : 0,
+            }}
+          />
         </div>
       )}
 

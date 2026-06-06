@@ -1,6 +1,7 @@
 "use client";
 
 import CategoryIcon from "@/components/categories/CategoryIcon";
+import EdgeFadeScroller from "@/components/ui/EdgeFadeScroller";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -205,10 +206,7 @@ export default function CategoryScroller({
 
       {/* Subcategory chips */}
       {activeCategory && activeCategory.subcategories.length > 0 && (
-        <div
-          className="mt-3.5 overflow-x-auto overflow-y-hidden scrollbar-hide overscroll-x-contain"
-          style={{ touchAction: "pan-x" }}
-        >
+        <EdgeFadeScroller wrapperClassName="mt-3.5" className="overscroll-x-contain">
           <div className="flex items-center gap-1.5 pb-1">
             <Chip
               active={selectedSubcategories.length === 0}
@@ -233,7 +231,7 @@ export default function CategoryScroller({
               />
             ))}
           </div>
-        </div>
+        </EdgeFadeScroller>
       )}
     </div>
   );
