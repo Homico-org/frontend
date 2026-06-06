@@ -101,9 +101,37 @@ export function middleware(req: NextRequest) {
   const first = segments[0]?.toLowerCase();
   const firstUpper = first?.toUpperCase();
 
-  // Already a valid country-prefixed URL? Pass through, but refresh the
-  // sticky-preference cookie so future bare-path visits land here too.
+  // Already a valid country-prefixed URL?
   if (firstUpper && (SUPPORTED_COUNTRIES as readonly string[]).includes(firstUpper)) {
+    // Only a handful of routes actually live under `app/[country]/`
+    // (pros, jobs, tools, the marketplace landing, etc.). Everything
+    // else is a GLOBAL route (shop, projects, orders, settings, my-space,
+    // admin, legal...) that has no `[country]` equivalent - so a
+    // country-prefixed URL like `/ge/shop` would 404. When that happens,
+    // strip the prefix and redirect to the canonical bare path so every
+    // route is reachable with OR without a country prefix.
+    const sub = segments[1]?.toLowerCase();
+    const subNext = segments[2]?.toLowerCase();
+    const isCountryScoped =
+      !sub || // bare `/ge` -> marketplace landing
+      COUNTRY_SCOPED_FIRST_SEGMENTS.has(sub) ||
+      (!!subNext && (COUNTRY_SCOPED_NESTED[sub]?.has(subNext) ?? false));
+
+    if (!isCountryScoped) {
+      const url = req.nextUrl.clone();
+      url.pathname = '/' + segments.slice(1).join('/');
+      url.search = search;
+      const res = NextResponse.redirect(url, 307);
+      res.cookies.set(COUNTRY_COOKIE, firstUpper, {
+        path: '/',
+        maxAge: COUNTRY_COOKIE_MAX_AGE,
+        sameSite: 'lax',
+      });
+      return res;
+    }
+
+    // Genuine country-scoped route - pass through, refreshing the
+    // sticky-preference cookie so future bare-path visits land here too.
     const res = NextResponse.next();
     res.cookies.set(COUNTRY_COOKIE, firstUpper, {
       path: '/',
