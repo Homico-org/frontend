@@ -2,11 +2,13 @@
 
 import { SearchInput } from '@/components/ui/SearchInput';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import EdgeFadeScroller from '@/components/ui/EdgeFadeScroller';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
-import { ArrowDownUp, Check, Package, PackageCheck, Wallet, X } from 'lucide-react';
+import { Check, Package, PackageCheck, Store, Wallet, X } from 'lucide-react';
 import SupplierAvatar from './SupplierAvatar';
-import { useEffect, useRef, useState } from 'react';
+import Select from '@/components/common/Select';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import {
   useProductSearch,
   ProductSearchFilters,
@@ -58,10 +60,11 @@ interface CatalogSearchProps {
   addLabelKey?: string;
   /** Cart mode swaps the action icon to a cart. */
   cartMode?: boolean;
+  /** Stick the search + filter bar to the top while scrolling the grid. */
+  sticky?: boolean;
+  /** Rendered inline at the right of the search row (e.g. a cart button). */
+  endSlot?: ReactNode;
 }
-
-const selectCls =
-  'h-9 rounded-full border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] px-3 text-[12px] font-medium text-[var(--hm-fg-primary)] focus:border-[var(--hm-brand-500)] focus:outline-none';
 
 export default function CatalogSearch({
   onPick,
@@ -74,6 +77,8 @@ export default function CatalogSearch({
   onDecrement,
   addLabelKey,
   cartMode,
+  sticky,
+  endSlot,
 }: CatalogSearchProps) {
   const { t } = useLanguage();
   const {
@@ -155,54 +160,108 @@ export default function CatalogSearch({
   const setShop = (key?: string) =>
     setFilters((f) => ({ ...f, supplierKey: key, category: undefined }));
 
+  const totalProducts = suppliers.reduce((sum, s) => sum + (s.productCount || 0), 0);
+  const num = (n: number) => n.toLocaleString('en-US').replace(/,/g, ' ');
+
+  // Shop card - bigger, scannable tile so each shop is easy to spot and
+  // enter (vs the old thin chip row). Selected shop gets a brand ring.
+  const shopCardCls = (active: boolean) =>
+    `group relative flex shrink-0 items-center gap-2.5 rounded-2xl border p-2.5 pr-3.5 text-left transition-all ${
+      active
+        ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/[0.05] ring-1 ring-[var(--hm-brand-500)]'
+        : 'border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] hover:-translate-y-0.5 hover:border-[var(--hm-border)] hover:shadow-[0_8px_22px_-14px_rgba(17,16,13,0.25)]'
+    }`;
+
   return (
     <div className={className}>
-      <SearchInput
-        value={query}
-        onValueChange={setQuery}
-        placeholder={t('projects.catalogSearchPlaceholder')}
-        variant="filled"
-        autoFocus
-      />
-
-      {/* Shop facet - each shop carries its logo */}
+      {/* Shops - bigger cards so each shop is easy to find and enter. One
+          swipeable row; clicking a card scopes the search + categories below
+          to that shop. */}
       {suppliers.length > 1 && (
-        <div className="scrollbar-hide -mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-0.5">
-          <button
-            type="button"
-            onClick={() => setShop(undefined)}
-            className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-              !filters.supplierKey
-                ? 'border border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)] text-white'
-                : 'border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
-            }`}
-          >
-            {t('projects.catalogAllShops')}
-          </button>
-          {suppliers.map((s) => {
-            const active = filters.supplierKey === s.key;
-            return (
-              <button
-                key={s.key}
-                type="button"
-                onClick={() => setShop(s.key)}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full py-1 pl-1 pr-3 text-[12px] font-semibold transition-colors ${
-                  active
-                    ? 'border border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)] text-white'
-                    : 'border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
-                }`}
-              >
-                <SupplierAvatar supplierKey={s.key} size={22} />
-                {supplierLabel(s.key)}
-              </button>
-            );
-          })}
+        <div className="mb-4">
+          <div className="mb-2.5 flex items-center gap-2">
+            <Store className="h-4 w-4 text-[var(--hm-fg-muted)]" strokeWidth={1.8} />
+            <h2 className="text-[13px] font-bold tracking-[-0.01em] text-[var(--hm-fg-primary)]">
+              {t('projects.catalogShops')}
+            </h2>
+            <span className="text-[12px] font-medium tabular-nums text-[var(--hm-fg-muted)]">
+              {suppliers.length}
+            </span>
+          </div>
+          <EdgeFadeScroller className="-mx-1 flex gap-2.5 px-1 pb-1.5">
+            {/* All shops */}
+            <button
+              type="button"
+              onClick={() => setShop(undefined)}
+              className={`${shopCardCls(!filters.supplierKey)} w-[150px]`}
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)]">
+                <Store className="h-5 w-5" strokeWidth={1.7} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13px] font-semibold text-[var(--hm-fg-primary)]">
+                  {t('projects.catalogAllShops')}
+                </span>
+                <span className="mt-0.5 block text-[11px] tabular-nums text-[var(--hm-fg-muted)]">
+                  {num(totalProducts)}
+                </span>
+              </span>
+            </button>
+            {suppliers.map((s) => {
+              const active = filters.supplierKey === s.key;
+              return (
+                <button
+                  key={s.key}
+                  type="button"
+                  // Click a selected shop again to clear it (back to All shops).
+                  onClick={() => setShop(active ? undefined : s.key)}
+                  className={`${shopCardCls(active)} w-[168px]`}
+                >
+                  <SupplierAvatar supplierKey={s.key} size={44} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13px] font-semibold text-[var(--hm-fg-primary)]">
+                      {supplierLabel(s.key)}
+                    </span>
+                    <span className="mt-0.5 flex items-center gap-1 text-[11px] tabular-nums text-[var(--hm-fg-muted)]">
+                      <Package className="h-3 w-3" strokeWidth={1.8} />
+                      {num(s.productCount)}
+                    </span>
+                  </span>
+                  {active && (
+                    <span className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--hm-brand-500)] text-white">
+                      <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </EdgeFadeScroller>
         </div>
       )}
 
+      <div
+        className={
+          sticky
+            ? 'sticky top-0 z-20 -mx-4 border-b border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]/90 px-4 pb-3 pt-3 backdrop-blur-md'
+            : ''
+        }
+      >
+        <div className="flex items-center gap-2.5">
+          <div className="min-w-0 flex-1">
+            <SearchInput
+              value={query}
+              onValueChange={setQuery}
+              placeholder={t('projects.catalogSearchPlaceholder')}
+              variant="filled"
+              autoFocus
+            />
+          </div>
+          {endSlot}
+        </div>
+
       {/* Category rail - scrollable chips, store-style */}
       {categories.length > 0 && (
-        <div className="scrollbar-hide -mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-0.5">
+        <EdgeFadeScroller className="-mx-1 mt-3 flex gap-2 px-1 pb-0.5">
           <button
             type="button"
             onClick={() => setFilters((f) => ({ ...f, category: undefined }))}
@@ -242,27 +301,23 @@ export default function CatalogSearch({
               </span>
             </button>
           ))}
-        </div>
+        </EdgeFadeScroller>
       )}
 
       {/* Sort + in-stock + price - one swipeable row on mobile */}
-      <div className="scrollbar-hide -mx-1 mt-3 flex items-center gap-2 overflow-x-auto px-1 pb-0.5">
-        <div className="relative shrink-0">
-          <ArrowDownUp className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--hm-fg-muted)]" />
-          <select
-            value={filters.sort || 'relevance'}
-            onChange={(e) =>
-              setFilters((f) => ({ ...f, sort: e.target.value as ProductSort }))
-            }
-            className={`${selectCls} pl-8`}
-          >
-            {SORTS.map((s) => (
-              <option key={s} value={s}>
-                {t(SORT_LABEL_KEY[s])}
-              </option>
-            ))}
-          </select>
-        </div>
+      <EdgeFadeScroller className="-mx-1 mt-3 flex items-center gap-2 px-1 pb-0.5">
+        <Select
+          value={filters.sort || 'relevance'}
+          onChange={(v) =>
+            setFilters((f) => ({ ...f, sort: v as ProductSort }))
+          }
+          options={SORTS.map((s) => ({
+            value: s,
+            label: t(SORT_LABEL_KEY[s]),
+          }))}
+          size="sm"
+          className="w-[172px] shrink-0"
+        />
 
         <button
           type="button"
@@ -301,6 +356,8 @@ export default function CatalogSearch({
             </button>
           );
         })}
+      </EdgeFadeScroller>
+
       </div>
 
       {/* Result count + clear-all */}
