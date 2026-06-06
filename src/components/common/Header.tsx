@@ -4,6 +4,8 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { CountBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ACCENT_COLOR } from "@/constants/theme";
+import { api } from "@/lib/api";
+import { storage } from "@/services/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCommandPalette } from "@/contexts/CommandPaletteContext";
@@ -36,11 +38,13 @@ import {
   LogIn,
   LogOut,
   Menu,
+  Package,
   Plus,
   Scale,
   Search,
   Shield,
   ShoppingBag,
+  Store,
   SlidersHorizontal,
   Star,
   UserPlus,
@@ -57,6 +61,17 @@ import MarketplaceSelector from "./MarketplaceSelector";
 import NotificationsDropdown from "./NotificationsDropdown";
 import ThemeToggle from "./ThemeToggle";
 import { features } from "@/config/features";
+
+// Lightweight shape for the Projects mega-dropdown - just what a card needs.
+type HeaderProject = {
+  id?: string;
+  _id?: string;
+  title: string;
+  status?: string;
+  progress?: number;
+  coverImage?: string;
+  photos?: string[];
+};
 
 export default function Header({ fixed = true }: { fixed?: boolean }) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -85,8 +100,15 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   // Which top-bar mega-dropdown is open (null = none). Only one open at a
   // time - matches the convention every site enforces and keeps the close-
   // outside-on-click logic simple.
-  type NavMenuKey = "jobs" | "pros" | "plan" | "activity";
+  type NavMenuKey =
+    | "jobs"
+    | "pros"
+    | "plan"
+    | "projects"
+    | "shop"
+    | "activity";
   const [openMenuKey, setOpenMenuKey] = useState<NavMenuKey | null>(null);
+  const [myProjects, setMyProjects] = useState<HeaderProject[] | null>(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   // Refs to the avatar trigger and the portaled dropdown panel. Click-outside
@@ -100,6 +122,8 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   const jobsTriggerRef = useRef<HTMLButtonElement>(null);
   const prosTriggerRef = useRef<HTMLButtonElement>(null);
   const planTriggerRef = useRef<HTMLButtonElement>(null);
+  const projectsTriggerRef = useRef<HTMLButtonElement>(null);
+  const shopTriggerRef = useRef<HTMLButtonElement>(null);
   const activityTriggerRef = useRef<HTMLButtonElement>(null);
   const navMenuPanelRef = useRef<HTMLDivElement>(null);
 
@@ -203,6 +227,8 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
     if (openMenuKey === "jobs") return jobsTriggerRef.current;
     if (openMenuKey === "pros") return prosTriggerRef.current;
     if (openMenuKey === "plan") return planTriggerRef.current;
+    if (openMenuKey === "projects") return projectsTriggerRef.current;
+    if (openMenuKey === "shop") return shopTriggerRef.current;
     if (openMenuKey === "activity") return activityTriggerRef.current;
     return null;
   };
@@ -224,6 +250,27 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openMenuKey]);
+
+  // The Projects mega-dropdown shows the user's real projects as cards, so
+  // fetch them once authenticated (cheap list; refreshes on auth change).
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setMyProjects(null);
+      return;
+    }
+    let cancelled = false;
+    api
+      .get("/projects")
+      .then((r) => {
+        if (!cancelled) setMyProjects((r.data as HeaderProject[]) || []);
+      })
+      .catch(() => {
+        if (!cancelled) setMyProjects([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
 
   // Check active routes for navigation highlighting. Country-scoped
   // pathnames (`/ge/professionals`) are stripped to their bare form
@@ -311,12 +358,27 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   ];
   const visiblePlanMenuItems = planMenuItems.filter((i) => matchesRole(i.showFor));
 
+  // Projects mega-dropdown - the renovation command center. Auth-only;
+  // mirrors the sidebar Projects group (browse + start a new project).
+  const projectsMenuItems: DropdownItem[] = [
+    { key: "all-projects", href: "/projects", label: t("header.projects"), description: t("header.descriptions.projects"), icon: ListChecks, showFor: "auth" },
+    { key: "new-project", href: "/projects/new", label: t("header.newProject"), description: t("header.descriptions.newProject"), icon: Plus, showFor: "auth", variant: "create" },
+  ];
+  const visibleProjectsMenuItems = projectsMenuItems.filter((i) => matchesRole(i.showFor));
+
+  // Shop mega-dropdown - catalog browse + the user's orders. Mirrors the
+  // sidebar Shop group (Catalog / Orders). Catalog is public; Orders is
+  // auth-only.
+  const shopMenuItems: DropdownItem[] = [
+    { key: "shop-catalog", href: "/shop", label: t("nav.shopCatalog"), description: t("header.descriptions.shopCatalog"), icon: Store, showFor: "all" },
+    { key: "shop-orders", href: "/orders", label: t("header.orders"), description: t("header.descriptions.orders"), icon: Package, showFor: "auth" },
+  ];
+  const visibleShopMenuItems = shopMenuItems.filter((i) => matchesRole(i.showFor));
+
   // My activity mega-dropdown - authenticated personal nav. Same content
   // as previously shipped, just role-gated. Admin gets an extra Admin
   // Panel link appended (handled separately in the JSX).
   const dropdownActivityItems: DropdownItem[] = [
-    { key: "projects", href: "/projects", label: t("header.projects"), description: t("header.descriptions.projects"), icon: ListChecks, showFor: "auth" },
-    { key: "new-project", href: "/projects/new", label: t("header.newProject"), description: t("header.descriptions.newProject"), icon: Plus, showFor: "auth", variant: "create" },
     { key: "my-space", href: "/my-space", label: t("header.mySpace"), description: t("header.descriptions.mySpace"), icon: LayoutDashboard, showFor: "proAndAdmin" },
     { key: "my-jobs-activity", href: "/my-jobs", label: t("header.myJobs"), description: t("header.descriptions.myJobs"), icon: Hammer, showFor: "clientAndAdmin" },
     { key: "my-work-activity", href: "/my-work", label: t("header.myWork"), description: t("header.descriptions.myWork"), icon: Briefcase, showFor: "proAndAdmin" },
@@ -326,7 +388,6 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
     { key: "pro-reviews", href: "/pro/reviews", label: t("header.myReviews"), description: t("header.descriptions.myReviews"), icon: Star, showFor: "pro" },
     { key: "analytics", href: "/pro/analytics", label: t("header.analytics"), description: t("header.descriptions.analytics"), icon: BarChart3, showFor: "proAndAdmin" },
     { key: "portfolio", href: "/pro/portfolio", label: t("header.portfolio"), description: t("header.descriptions.portfolio"), icon: ImageIcon, showFor: "proAndAdmin" },
-    { key: "orders", href: "/orders", label: t("header.orders"), description: t("header.descriptions.orders"), icon: ShoppingBag, showFor: "client" },
   ];
   const visibleDropdownActivityItems = dropdownActivityItems.filter((item) =>
     matchesRole(item.showFor),
@@ -466,7 +527,11 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                       ? visibleProsMenuItems
                       : openMenuKey === "plan"
                         ? visiblePlanMenuItems
-                        : visibleDropdownActivityItems;
+                        : openMenuKey === "projects"
+                          ? visibleProjectsMenuItems
+                          : openMenuKey === "shop"
+                            ? visibleShopMenuItems
+                            : visibleDropdownActivityItems;
                 // Admin gets an extra tile appended to the activity menu. Push
                 // it into the same array so the one tile renderer covers it.
                 const adminItem: DropdownItem | null =
@@ -488,11 +553,25 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                       ? t("header.professionals")
                       : openMenuKey === "plan"
                         ? t("header.plan")
-                        : t("header.myActivity");
+                        : openMenuKey === "projects"
+                          ? t("header.projects")
+                          : openMenuKey === "shop"
+                            ? t("header.shop")
+                            : t("header.myActivity");
                 // "View all" footer links to the menu's primary destination -
                 // always the first tile (the "all jobs / all pros / all tools /
                 // projects" entry).
                 const viewAllHref = tiles[0]?.href ?? "/";
+
+                // The Projects menu is special: instead of static link tiles it
+                // shows the user's real projects as image cards, plus a "new
+                // project" create card. No "view all" footer - the cards ARE the
+                // list.
+                const isProjects = openMenuKey === "projects";
+                const projectList = isProjects ? myProjects ?? [] : [];
+                const newProjectItem = visibleProjectsMenuItems.find(
+                  (i) => i.variant === "create",
+                );
 
                 // Footer summary (activity menu only) - the top two non-zero
                 // activity categories, sage-checked. Mirrors the Paper drawing's
@@ -621,6 +700,112 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                   );
                 };
 
+                // A real project rendered as an image card: cover photo (or a
+                // tinted icon fallback), title, status pill, and a thin
+                // progress bar. The whole card opens the project.
+                const renderProjectCard = (p: HeaderProject) => {
+                  const pid = p.id || p._id;
+                  const cover = p.coverImage || p.photos?.[0];
+                  const pct = Math.max(
+                    0,
+                    Math.min(100, Math.round(p.progress ?? 0)),
+                  );
+                  return (
+                    <Link
+                      key={pid}
+                      href={`/projects/${pid}`}
+                      role="menuitem"
+                      className="group flex flex-col overflow-hidden rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-page)] transition-all hover:-translate-y-0.5 hover:border-[var(--hm-brand-500)] hover:shadow-[var(--hm-shadow-md)]"
+                      onClick={() => {
+                        setOpenMenuKey(null);
+                        trackEvent("nav_click", "project-card");
+                      }}
+                    >
+                      <div className="relative h-24 w-full overflow-hidden bg-[var(--hm-bg-tertiary)]">
+                        {cover ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            referrerPolicy="no-referrer"
+                            src={storage.getOptimizedImageUrl(cover, "feedCard")}
+                            alt=""
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <ListChecks
+                              className="h-7 w-7 text-[var(--hm-fg-muted)]"
+                              strokeWidth={1.6}
+                            />
+                          </div>
+                        )}
+                        {p.status && (
+                          <span className="absolute left-2 top-2 rounded-full bg-[var(--hm-bg-elevated)]/90 px-2 py-0.5 text-[10px] font-semibold text-[var(--hm-fg-secondary)] backdrop-blur-sm">
+                            {(() => {
+                              const s = t(`status.${p.status}`);
+                              return s.startsWith("status.") ? p.status : s;
+                            })()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="p-3">
+                        <p className="truncate text-[13px] font-bold tracking-[-0.005em] text-[var(--hm-fg-primary)]">
+                          {p.title || t("header.projects")}
+                        </p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="h-1 flex-1 overflow-hidden rounded-full bg-[var(--hm-bg-tertiary)]">
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${pct}%`,
+                                background: ACCENT_COLOR,
+                              }}
+                            />
+                          </div>
+                          <span className="font-mono text-[10px] tabular-nums text-[var(--hm-fg-muted)]">
+                            {pct}%
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                };
+
+                // The "start a new project" card - matches the create-tile
+                // vermillion dashed styling, sized to sit in the card grid.
+                const renderCreateCard = (item: DropdownItem) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.key}
+                      href={item.href}
+                      role="menuitem"
+                      className="group flex flex-col items-center justify-center gap-2 rounded-xl p-4 text-center transition-colors hover:bg-[var(--hm-bg-tertiary)]"
+                      style={{
+                        background: `${ACCENT_COLOR}0A`,
+                        border: `1px dashed ${ACCENT_COLOR}`,
+                      }}
+                      onClick={() => {
+                        setOpenMenuKey(null);
+                        trackEvent("nav_click", item.key);
+                      }}
+                    >
+                      <div
+                        className="flex h-10 w-10 items-center justify-center rounded-[10px]"
+                        style={{ background: ACCENT_COLOR }}
+                      >
+                        <Icon
+                          className="h-[18px] w-[18px]"
+                          style={{ color: "#fff" }}
+                          strokeWidth={1.8}
+                        />
+                      </div>
+                      <span className="text-[13px] font-bold text-[var(--hm-fg-primary)]">
+                        {item.label}
+                      </span>
+                    </Link>
+                  );
+                };
+
                 return (
                   <div
                     ref={navMenuPanelRef}
@@ -645,17 +830,30 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                         </span>
                         <div className="grow h-px bg-[var(--hm-border)]" />
                         <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--hm-fg-muted)] whitespace-nowrap">
-                          {t("header.menuSectionCount", { count: tiles.length })}
+                          {t("header.menuSectionCount", {
+                            count: isProjects
+                              ? projectList.length
+                              : tiles.length,
+                          })}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
-                        {tiles.map(renderTile)}
-                      </div>
+                      {isProjects ? (
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                          {projectList.map(renderProjectCard)}
+                          {newProjectItem && renderCreateCard(newProjectItem)}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
+                          {tiles.map(renderTile)}
+                        </div>
+                      )}
 
                       {/* Footer - real activity stats (sage-checked) on the
                           left, "view all" link to the menu's primary
-                          destination on the right. */}
+                          destination on the right. Hidden for Projects, where
+                          the cards are the full list (no "view all"). */}
+                      {!isProjects && (
                       <div className="flex items-center justify-between gap-4 pt-5 mt-6 border-t border-[var(--hm-border)]">
                         <div className="flex items-center gap-5 min-w-0">
                           {activityStats.map((stat) => (
@@ -688,6 +886,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                           />
                         </Link>
                       </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -705,7 +904,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
             its items center; hidden on mobile so the bar collapses to
             wordmark + actions. */}
         <nav
-          className="hidden md:flex flex-1 items-center justify-center gap-5 lg:gap-8"
+          className="hidden md:flex flex-1 items-center justify-center gap-2.5 lg:gap-5"
           aria-label="Primary"
         >
           <NavTrigger
@@ -744,29 +943,33 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
             label={t("header.plan")}
             icon={<LayoutGrid className="w-4 h-4" strokeWidth={1.7} />}
           />
-          {/* Shop: a standalone destination (not an AI tool) - its own link. */}
-          <Link
-            href="/shop"
-            onClick={() => setOpenMenuKey(null)}
-            className="relative inline-flex items-center gap-1.5 px-2.5 h-8 text-[13px] tracking-[-0.005em] transition-colors whitespace-nowrap hover:text-[var(--hm-brand-500)]"
-            style={{
-              color: isShopActive
-                ? "var(--hm-brand-500)"
-                : "var(--hm-fg-primary)",
-              fontWeight: isShopActive ? 600 : 500,
-            }}
-          >
-            <ShoppingBag className="w-4 h-4" strokeWidth={1.7} />
-            {t("header.shop")}
-            <span
-              aria-hidden
-              className="absolute left-2.5 right-2.5 -bottom-[1px] h-[2px] rounded-full transition-opacity duration-200"
-              style={{
-                background: "var(--hm-brand-500)",
-                opacity: isShopActive ? 1 : 0,
-              }}
+          {/* Projects: the client's renovation command center. Auth-only -
+              mirrors the sidebar Projects group so the top bar exposes it
+              too (browse projects + start a new one). */}
+          {isAuthenticated && visibleProjectsMenuItems.length > 0 && (
+            <NavTrigger
+              triggerRef={projectsTriggerRef}
+              active={openMenuKey === "projects" || isPathActive("/projects")}
+              open={openMenuKey === "projects"}
+              onClick={() =>
+                setOpenMenuKey(openMenuKey === "projects" ? null : "projects")
+              }
+              label={t("header.projects")}
+              icon={<ListChecks className="w-4 h-4" strokeWidth={1.7} />}
             />
-          </Link>
+          )}
+          {/* Shop: now a mega-dropdown (Catalog / Orders) to match the
+              sidebar Shop group, instead of a single link. */}
+          <NavTrigger
+            triggerRef={shopTriggerRef}
+            active={openMenuKey === "shop" || isShopActive}
+            open={openMenuKey === "shop"}
+            onClick={() =>
+              setOpenMenuKey(openMenuKey === "shop" ? null : "shop")
+            }
+            label={t("header.shop")}
+            icon={<ShoppingBag className="w-4 h-4" strokeWidth={1.7} />}
+          />
           {isAuthenticated && visibleDropdownActivityItems.length > 0 && (
             <NavTrigger
               triggerRef={activityTriggerRef}
@@ -1579,6 +1782,22 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                   />
                   <span className="text-sm text-[var(--hm-fg-secondary)]">
                     {t("header.plan")}
+                  </span>
+                </Link>
+                <Link
+                  href="/shop"
+                  onClick={() => {
+                    setShowMobileMenu(false);
+                    trackEvent("nav_click", "shop");
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-[var(--hm-bg-tertiary)]/50 transition-all"
+                >
+                  <Store
+                    className="w-5 h-5 text-[var(--hm-fg-muted)]"
+                    strokeWidth={1.5}
+                  />
+                  <span className="text-sm text-[var(--hm-fg-secondary)]">
+                    {t("header.shop")}
                   </span>
                 </Link>
                 <Link
