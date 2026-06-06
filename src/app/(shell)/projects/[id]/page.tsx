@@ -1146,8 +1146,9 @@ export default function ProjectDashboardPage() {
                       size="sm"
                       onClick={() => setShowEditProject(true)}
                       leftIcon={<Pencil />}
+                      aria-label={t('common.edit')}
                     >
-                      {t('common.edit')}
+                      <span className="hidden sm:inline">{t('common.edit')}</span>
                     </Button>
                   )}
                 </div>

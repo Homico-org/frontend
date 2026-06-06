@@ -1,19 +1,19 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
 import AddProductModal from '@/components/projects/AddProductModal';
 import CatalogPickerModal from '@/components/projects/CatalogPickerModal';
+import ProductCard from '@/components/shop/ProductCard';
 import { FilterPills } from '@/components/projects/TableCard';
 import { Room } from '@/components/projects/ProjectRooms';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
-import { storage } from '@/services/storage';
 import {
   Check,
   ChevronDown,
   Clock,
-  ExternalLink,
   Package,
   Pencil,
   Plus,
@@ -278,125 +278,100 @@ export default function ProjectShopping({
     ...rooms.map((r) => ({ id: r.id, label: r.name })),
   ];
 
-  const productRow = (p: ProjectProduct) => {
+  // Reuses the shared <ProductCard> (same tile as the shop) with the project's
+  // management footer: change status, edit, delete.
+  const productCard = (p: ProjectProduct) => {
     const busy = busyId === p.id;
     const line = (p.unitPrice || 0) * (p.qty || 0);
     return (
-      <div key={p.id} className="flex items-center gap-2.5 py-2">
-        <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]">
-          {p.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              referrerPolicy="no-referrer"
-              src={storage.getOptimizedImageUrl(p.imageUrl, 'feedCard')}
-              alt=""
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <Package className="h-4 w-4" />
-          )}
-          <span
-            className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--hm-bg-elevated)]"
-            style={{ backgroundColor: STATUS_DOT[p.status] }}
-          />
-        </span>
-
-        <div className="min-w-0 flex-1">
-          {p.url ? (
-            <a
-              href={p.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 truncate text-[13px] font-medium text-[var(--hm-fg-primary)] hover:text-[var(--hm-brand-500)]"
+      <ProductCard
+        key={p.id}
+        name={p.name}
+        imageUrl={p.imageUrl}
+        priceLabel={fmt(line)}
+        supplierKey={p.vendor ? p.vendor.toLowerCase() : undefined}
+        vendorLabel={p.vendor}
+        externalUrl={p.url}
+        subline={`${p.qty} × ${fmt(p.unitPrice || 0)} · ${
+          roomName(p.roomId) || t('projects.wholeObject')
+        }`}
+        topRight={
+          !canManage ? (
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[9px] font-bold uppercase tracking-[0.06em] shadow-sm ${STATUS_PILL[p.status]}`}
             >
-              {p.name}
-              <ExternalLink className="h-3 w-3 shrink-0" />
-            </a>
-          ) : (
-            <span className="block truncate text-[13px] font-medium text-[var(--hm-fg-primary)]">
-              {p.name}
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: STATUS_DOT[p.status] }}
+              />
+              {t(STATUS_LABEL_KEY[p.status])}
             </span>
-          )}
-          <div className="truncate text-[11px] text-[var(--hm-fg-muted)]">
-            {p.qty} × {fmt(p.unitPrice || 0)}
-            {p.vendor ? ` · ${p.vendor}` : ''}
-            {` · ${roomName(p.roomId) || t('projects.wholeObject')}`}
-          </div>
-        </div>
-
-        <span className="shrink-0 text-[13px] font-semibold tabular-nums text-[var(--hm-fg-primary)]">
-          {fmt(line)}
-        </span>
-
-        {canManage ? (
-          <div className="relative shrink-0">
-            <select
-              value={p.status}
-              disabled={busy}
-              onChange={(e) => setStatus(p.id, e.target.value as ProductStatus)}
-              className={`h-7 cursor-pointer appearance-none rounded-full pl-2.5 pr-6 text-[11px] font-semibold transition-colors focus:outline-none ${STATUS_PILL[p.status]}`}
-            >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {t(STATUS_LABEL_KEY[s])}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              aria-hidden
-              className="pointer-events-none absolute right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 opacity-60"
-            />
-          </div>
-        ) : (
-          <span
-            className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_PILL[p.status]}`}
-          >
-            {t(STATUS_LABEL_KEY[p.status])}
-          </span>
-        )}
-
-        {canManage && (
-          <span className="flex shrink-0 items-center">
-            <button
-              type="button"
-              onClick={() => setModal({ item: p })}
-              aria-label={t('common.edit')}
-              className="rounded-md p-1 text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => remove(p.id)}
-              disabled={busy}
-              aria-label={t('common.delete')}
-              className="rounded-md p-1 text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-error-50)] hover:text-[var(--hm-error-500)]"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
-          </span>
-        )}
-      </div>
+          ) : undefined
+        }
+        footer={
+          canManage ? (
+            <div className="flex items-center gap-1.5">
+              <div className="relative min-w-0 flex-1">
+                <select
+                  value={p.status}
+                  disabled={busy}
+                  onChange={(e) =>
+                    setStatus(p.id, e.target.value as ProductStatus)
+                  }
+                  className={`h-8 w-full cursor-pointer appearance-none rounded-lg pl-2.5 pr-6 text-[11px] font-semibold transition-colors focus:outline-none ${STATUS_PILL[p.status]}`}
+                >
+                  {STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {t(STATUS_LABEL_KEY[s])}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  aria-hidden
+                  className="pointer-events-none absolute right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 opacity-60"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setModal({ item: p })}
+                aria-label={t('common.edit')}
+                className="shrink-0 rounded-md p-1.5 text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => remove(p.id)}
+                disabled={busy}
+                aria-label={t('common.delete')}
+                className="shrink-0 rounded-md p-1.5 text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-error-50)] hover:text-[var(--hm-error-500)]"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : undefined
+        }
+      />
     );
   };
 
   return (
     <section>
-      <div className="flex items-center justify-between gap-3 mb-5">
-        <h2 className="inline-flex items-center gap-2 text-[18px] font-bold text-[var(--hm-fg-primary)]">
-          <ShoppingCart className="w-5 h-5 text-[var(--hm-brand-500)]" />
-          {t('projects.shoppingTitle')}
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="inline-flex min-w-0 items-center gap-2 text-[18px] font-bold text-[var(--hm-fg-primary)]">
+          <ShoppingCart className="h-5 w-5 shrink-0 text-[var(--hm-brand-500)]" />
+          <span className="truncate">{t('projects.shoppingTitle')}</span>
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
-            variant={showHistory ? 'default' : 'outline'}
-            onClick={() => setShowHistory((v) => !v)}
+            variant="outline"
+            onClick={() => setShowHistory(true)}
             leftIcon={<Clock className="w-4 h-4" />}
           >
             {t('projects.shopHistory')}
           </Button>
-          {canManage && !showHistory && (
+          {canManage && (
             <>
               <Button
                 size="sm"
@@ -417,48 +392,6 @@ export default function ProjectShopping({
           )}
         </div>
       </div>
-
-      {/* ── History timeline ── */}
-      {showHistory ? (
-        history.length === 0 ? (
-          <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-10 text-center text-[14px] text-[var(--hm-fg-muted)]">
-            {t('projects.shopHistoryEmpty')}
-          </div>
-        ) : (
-          <ol className="overflow-hidden rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] divide-y divide-[var(--hm-border-subtle)]">
-            {history.map((e, i) => {
-              const meta = LOG_META[e.action];
-              const Icon = LOG_ICON[e.action] || Pencil;
-              return (
-                <li key={i} className="flex items-center gap-3 px-4 py-2.5">
-                  <span
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
-                    style={{
-                      backgroundColor: `${meta?.tone ?? 'var(--hm-fg-muted)'}1a`,
-                      color: meta?.tone ?? 'var(--hm-fg-muted)',
-                    }}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-[13px] text-[var(--hm-fg-primary)]">
-                      <span className="font-semibold">
-                        {t(meta?.labelKey ?? 'projects.logEdited')}
-                      </span>
-                      {e.name ? ` · ${e.name}` : ''}
-                    </span>
-                  </div>
-                  <span className="shrink-0 text-[11px] tabular-nums text-[var(--hm-fg-muted)]">
-                    {fmtWhen(e.at)}
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
-        )
-      ) : (
-      <>
-      {/* ── End history, normal shopping below ── */}
 
       {/* Summary - compact total + status counts */}
       {products.length > 0 && (
@@ -538,13 +471,13 @@ export default function ProjectShopping({
 
       {/* Status filter - segmented control */}
       {products.length > 0 && (
-        <div className="mb-4 inline-flex rounded-full bg-[var(--hm-bg-tertiary)] p-1">
+        <div className="scrollbar-hide mb-4 inline-flex max-w-full overflow-x-auto rounded-full bg-[var(--hm-bg-tertiary)] p-1 align-top">
           {(['all', ...STATUSES] as const).map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setFilter(s as 'all' | ProductStatus)}
-              className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors ${
+              className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors ${
                 filter === s
                   ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[0_1px_2px_rgba(17,16,13,0.06)]'
                   : 'text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
@@ -667,8 +600,8 @@ export default function ProjectShopping({
                   )}
                 </div>
                 {open && (
-                  <div className="ml-[26px] mr-3 mb-1 divide-y divide-[var(--hm-border-subtle)] border-l border-[var(--hm-border-subtle)] pl-3">
-                    {items.map(productRow)}
+                  <div className="grid grid-cols-2 gap-3 p-3 pt-1 sm:grid-cols-3 lg:grid-cols-4">
+                    {items.map(productCard)}
                   </div>
                 )}
               </div>
@@ -676,8 +609,56 @@ export default function ProjectShopping({
           })}
         </div>
       )}
-      </>
-      )}
+
+      {/* History - opens as an overlay so the shopping list and its actions
+          stay put (no destructive view swap, no hidden buttons). */}
+      <Modal
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        size="md"
+        showCloseButton
+        ariaLabel={t('projects.shopHistory')}
+      >
+        <ModalHeader title={t('projects.shopHistory')} />
+        <ModalBody>
+          {history.length === 0 ? (
+            <p className="py-8 text-center text-[14px] text-[var(--hm-fg-muted)]">
+              {t('projects.shopHistoryEmpty')}
+            </p>
+          ) : (
+            <ol className="overflow-hidden rounded-2xl border border-[var(--hm-border-subtle)] divide-y divide-[var(--hm-border-subtle)]">
+              {history.map((e, i) => {
+                const meta = LOG_META[e.action];
+                const Icon = LOG_ICON[e.action] || Pencil;
+                return (
+                  <li key={i} className="flex items-center gap-3 px-4 py-2.5">
+                    <span
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                      style={{
+                        backgroundColor: `${meta?.tone ?? 'var(--hm-fg-muted)'}1a`,
+                        color: meta?.tone ?? 'var(--hm-fg-muted)',
+                      }}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[13px] text-[var(--hm-fg-primary)]">
+                        <span className="font-semibold">
+                          {t(meta?.labelKey ?? 'projects.logEdited')}
+                        </span>
+                        {e.name ? ` · ${e.name}` : ''}
+                      </span>
+                    </div>
+                    <span className="shrink-0 text-[11px] tabular-nums text-[var(--hm-fg-muted)]">
+                      {fmtWhen(e.at)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </ModalBody>
+      </Modal>
     </section>
   );
 }
