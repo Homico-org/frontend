@@ -287,6 +287,7 @@ export default function ProjectShopping({
           {p.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
+              referrerPolicy="no-referrer"
               src={storage.getOptimizedImageUrl(p.imageUrl, 'feedCard')}
               alt=""
               className="h-full w-full object-cover"

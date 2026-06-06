@@ -86,6 +86,7 @@ export default function CatalogProductCard({
         {hasImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
+            referrerPolicy="no-referrer"
             src={storage.getOptimizedImageUrl(product.imageUrl!, 'feedCard')}
             alt=""
             loading="lazy"

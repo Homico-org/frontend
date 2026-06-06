@@ -130,7 +130,7 @@ export default function OrderDetailPage() {
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]">
                     {it.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={it.imageUrl} alt="" className="h-full w-full object-cover" />
+                      <img src={it.imageUrl} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
                     ) : (
                       <Package className="h-4 w-4" />
                     )}

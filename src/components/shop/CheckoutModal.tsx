@@ -263,6 +263,7 @@ export default function CheckoutModal({
                           {it.imageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
+                              referrerPolicy="no-referrer"
                               src={storage.getOptimizedImageUrl(it.imageUrl, 'feedCard')}
                               alt=""
                               className="h-full w-full object-cover"

@@ -52,6 +52,7 @@ export default function ProductDetailModal({
             {isRealProductImage(product.imageUrl) && !imgFailed ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
+                referrerPolicy="no-referrer"
                 src={storage.getOptimizedImageUrl(product.imageUrl!, 'feedCard')}
                 alt=""
                 onError={() => setImgFailed(true)}

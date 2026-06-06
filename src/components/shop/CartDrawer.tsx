@@ -112,6 +112,7 @@ export default function CartDrawer({
                     {product.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
+                        referrerPolicy="no-referrer"
                         src={storage.getOptimizedImageUrl(
                           product.imageUrl,
                           'feedCard',

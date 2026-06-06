@@ -91,14 +91,14 @@ export default function SidebarProjectsGroup({
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
         className={`group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-[12.5px] transition-colors ${
-          active || expanded
+          active
             ? 'bg-[var(--hm-brand-500)]/[0.10] font-semibold text-[var(--hm-brand-500)]'
             : 'font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]'
         }`}
       >
         <ListChecks
           className="h-[18px] w-[18px] flex-shrink-0"
-          strokeWidth={active || expanded ? 2.1 : 1.75}
+          strokeWidth={active ? 2.1 : 1.75}
         />
         <span className="flex-1 text-left">{label}</span>
         {projects && projects.length > 0 && (
@@ -109,7 +109,7 @@ export default function SidebarProjectsGroup({
         <ChevronDown
           className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${
             expanded ? '' : '-rotate-90'
-          } ${active || expanded ? 'text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-muted)]'}`}
+          } ${active ? 'text-[var(--hm-brand-500)]' : 'text-[var(--hm-fg-muted)]'}`}
         />
       </button>
 

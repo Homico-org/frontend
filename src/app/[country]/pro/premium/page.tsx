@@ -181,7 +181,6 @@ function PremiumCard({
   const { t, pick } = useLanguage();
   const country = useCountry();
   const TierIcon = tier.icon;
-  const isElite = tier.id === "elite";
   // Price + currency resolved from the active marketplace (added 2026-05).
   // Israeli pros see shekel pricing, US pros see USD, etc.
   const tierPrices = getPremiumTierPrices(country, tier.id);
@@ -192,220 +191,106 @@ function PremiumCard({
   return (
     <div
       onClick={onSelect}
-      className={`
-        relative rounded-3xl cursor-pointer transition-all duration-500 group
-        ${isSelected ? "scale-[1.03] z-10" : "hover:scale-[1.01]"}
-      `}
-      style={{
-        animationDelay: `${index * 100}ms`,
-      }}
+      style={{ animationDelay: `${index * 80}ms` }}
+      className={`animate-card-enter relative flex h-full cursor-pointer flex-col rounded-2xl bg-[var(--hm-bg-elevated)] p-7 transition-all duration-300 ${
+        tier.popular
+          ? "border-2 border-[var(--hm-brand-500)] shadow-[0_24px_60px_-32px_rgba(239,78,36,0.45)] md:-mt-4"
+          : "border border-[var(--hm-border-subtle)] hover:border-[var(--hm-border-strong)]"
+      } ${isSelected && !tier.popular ? "ring-1 ring-[var(--hm-brand-500)]/25" : ""}`}
     >
-      {/* Glow Effect */}
-      <div
-        className={`absolute -inset-1 rounded-3xl blur-xl transition-opacity duration-500 ${
-          isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-50"
-        }`}
-        style={{ background: tier.glowColor }}
-      />
+      {/* Popular pill - the one vermillion moment */}
+      {tier.popular && (
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--hm-brand-500)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
+          {tier.highlightKey ? t(tier.highlightKey) : ""}
+        </span>
+      )}
 
-      {/* Gradient Border */}
-      <div
-        className={`absolute inset-0 rounded-3xl p-px transition-opacity duration-300 ${
-          isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-        }`}
-        style={{ background: `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})` }}
-      >
-        <div className="w-full h-full rounded-3xl bg-[var(--hm-bg-elevated)]" />
-      </div>
-
-      {/* Card Content */}
-      <div
-        className={`relative rounded-3xl p-8 h-full overflow-hidden ${
-          isSelected ? "" : "border border-[var(--hm-border-subtle)]"
-        }`}
-        style={{ background: "var(--hm-bg-elevated)" }}
-      >
-        {/* Shine Effect */}
-        <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-          style={{
-            background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.8) 50%, transparent 60%)",
-            transform: "translateX(-100%)",
-            animation: isSelected ? "none" : undefined,
-          }}
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <TierIcon
+          className="h-[18px] w-[18px]"
+          style={{ color: tier.popular ? "var(--hm-brand-500)" : "var(--hm-fg-muted)" }}
         />
-
-        {/* Elite special background */}
-        {isElite && (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div 
-              className="absolute -top-24 -right-24 w-48 h-48 rounded-full opacity-10"
-              style={{ background: `radial-gradient(circle, ${COLORS.gold} 0%, transparent 70%)` }}
-            />
-            <div 
-              className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full opacity-10"
-              style={{ background: `radial-gradient(circle, ${COLORS.gold} 0%, transparent 70%)` }}
-            />
-          </div>
-        )}
-
-        {/* Popular Badge */}
-        {tier.popular && (
-          <div className="absolute -top-px left-1/2 -translate-x-1/2">
-            <div
-              className="px-4 py-1.5 rounded-b-xl text-xs font-bold text-white tracking-wider flex items-center gap-1.5 shadow-lg"
-              style={{ background: `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})` }}
-            >
-              <Star className="w-3 h-3" />
-              {tier.highlightKey ? t(tier.highlightKey) : ''}
-            </div>
-          </div>
-        )}
-
-        {/* Elite Crown */}
-        {isElite && isSelected && (
-          <div className="absolute top-4 right-4">
-            <div 
-              className="w-10 h-10 rounded-full flex items-center justify-center animate-pulse"
-              style={{ background: `linear-gradient(135deg, ${COLORS.gold}30, ${COLORS.goldDark}20)` }}
-            >
-              <Crown className="w-5 h-5" style={{ color: COLORS.gold }} />
-            </div>
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="mb-8 mt-2">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
-            style={{
-              background: `linear-gradient(135deg, ${tier.gradientFrom}20, ${tier.gradientTo}10)`,
-              boxShadow: isSelected ? `0 8px 32px ${tier.glowColor}` : "none",
-            }}
-          >
-            <TierIcon className="w-7 h-7" style={{ color: tier.accentColor }} />
-          </div>
-          <h3
-            className="text-2xl font-bold text-[var(--hm-fg-primary)] mb-2"
-            style={{ fontFamily: "var(--font-sans)" }}
-          >
-            {pick({ en: tier.name.en, ka: tier.name.ka })}
-          </h3>
-          <p className="text-[var(--hm-fg-muted)] text-sm">
-            {pick({ en: tier.tagline.en, ka: tier.tagline.ka })}
-          </p>
-        </div>
-
-        {/* Price */}
-        <div className="mb-8">
-          <div className="flex items-baseline gap-1">
-            <span 
-              className="text-5xl font-bold"
-              style={{ 
-                fontFamily: "var(--font-sans)",
-                background: isElite 
-                  ? `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.goldDark})`
-                  : `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})`,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              {currency}{price}
-            </span>
-            <span className="text-[var(--hm-fg-muted)] text-lg">
-              /{billingPeriod === "monthly" ? (t('premium.mo')) : (t('premium.yr'))}
-            </span>
-          </div>
-          {billingPeriod === "yearly" && (
-            <div 
-              className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full text-sm font-medium"
-              style={{ background: "#ECFDF5", color: "#059669" }}
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              {t('premium.saveAmount', { currency, amount: tierPrices.monthly * 12 - tierPrices.yearly })}
-            </div>
-          )}
-        </div>
-
-        {/* Features */}
-        <ul className="space-y-4 mb-8">
-          {tier.features.map((feature, i) => {
-            const FeatureIcon = feature.icon;
-            return (
-              <li 
-                key={i} 
-                className={`flex items-center gap-3 transition-all duration-300 ${
-                  feature.included ? "opacity-60" : ""
-                }`}
-              >
-                <div
-                  className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
-                  style={{ 
-                    backgroundColor: feature.included ? "#F3F4F6" : `${tier.accentColor}15`,
-                  }}
-                >
-                  {feature.included ? (
-                    <Check className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
-                  ) : (
-                    <FeatureIcon className="w-3.5 h-3.5" style={{ color: tier.accentColor }} />
-                  )}
-                </div>
-                <span className={`text-sm ${feature.included ? "text-[var(--hm-fg-muted)]" : "text-[var(--hm-fg-secondary)]"}`}>
-                  {pick({ en: feature.text.en, ka: feature.text.ka })}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-
-        {/* CTA Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onChoose();
-          }}
-          disabled={isCurrent}
-          className={`
-            relative w-full py-4 rounded-xl font-bold text-sm transition-all duration-300 
-            flex items-center justify-center gap-2 overflow-hidden group/btn
-            ${isCurrent
-              ? "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] cursor-not-allowed"
-              : isSelected
-                ? "text-white shadow-xl hover:shadow-2xl"
-                : "text-[var(--hm-fg-secondary)] hover:shadow-lg"
-            }
-          `}
-          style={{
-            background: isSelected && !isCurrent
-              ? `linear-gradient(135deg, ${tier.gradientFrom}, ${tier.gradientTo})`
-              : isCurrent 
-                ? undefined 
-                : COLORS.platinum,
-            boxShadow: isSelected && !isCurrent ? `0 8px 32px ${tier.glowColor}` : undefined,
-          }}
-        >
-          {/* Button shine effect */}
-          {isSelected && !isCurrent && (
-            <div 
-              className="absolute inset-0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500"
-              style={{
-                background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)",
-              }}
-            />
-          )}
-          <span className="relative z-10 flex items-center gap-2">
-            {isCurrent ? (
-              <>{t('premium.currentPlan')}</>
-            ) : (
-              <>
-                {isElite && <Crown className="w-4 h-4" />}
-                {t('premium.getStarted')}
-                <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-              </>
-            )}
-          </span>
-        </button>
+        <h3 className="text-[19px] font-bold tracking-[-0.01em] text-[var(--hm-fg-primary)]">
+          {pick({ en: tier.name.en, ka: tier.name.ka })}
+        </h3>
       </div>
+      <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--hm-fg-muted)]">
+        {pick({ en: tier.tagline.en, ka: tier.tagline.ka })}
+      </p>
+
+      {/* Price */}
+      <div className="mt-6">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-[42px] font-bold leading-none tabular-nums tracking-[-0.03em] text-[var(--hm-fg-primary)]">
+            {currency}
+            {price}
+          </span>
+          <span className="text-[14px] text-[var(--hm-fg-muted)]">
+            /{billingPeriod === "monthly" ? t("premium.mo") : t("premium.yr")}
+          </span>
+        </div>
+        {billingPeriod === "yearly" && (
+          <p className="mt-2 text-[12px] font-semibold text-[var(--hm-success-600)]">
+            {t("premium.saveAmount", {
+              currency,
+              amount: tierPrices.monthly * 12 - tierPrices.yearly,
+            })}
+          </p>
+        )}
+      </div>
+
+      <div className="my-6 h-px bg-[var(--hm-border-subtle)]" />
+
+      {/* Features */}
+      <ul className="flex-1 space-y-3">
+        {tier.features.map((feature, i) => (
+          <li key={i} className="flex items-start gap-2.5">
+            <Check
+              className="mt-0.5 h-4 w-4 shrink-0"
+              style={{
+                color: feature.included
+                  ? "var(--hm-fg-subtle)"
+                  : "var(--hm-brand-500)",
+              }}
+            />
+            <span
+              className={`text-[13.5px] leading-snug ${
+                feature.included
+                  ? "text-[var(--hm-fg-muted)]"
+                  : "text-[var(--hm-fg-secondary)]"
+              }`}
+            >
+              {pick({ en: feature.text.en, ka: feature.text.ka })}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      {/* CTA */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onChoose();
+        }}
+        disabled={isCurrent}
+        className={`mt-7 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-xl text-[14px] font-semibold transition-colors ${
+          isCurrent
+            ? "cursor-not-allowed bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]"
+            : tier.popular
+              ? "bg-[var(--hm-brand-500)] text-white hover:bg-[var(--hm-brand-600)]"
+              : "border border-[var(--hm-border-strong)] text-[var(--hm-fg-primary)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)]"
+        }`}
+      >
+        {isCurrent ? (
+          t("premium.currentPlan")
+        ) : (
+          <>
+            {t("premium.getStarted")}
+            <ArrowRight className="h-4 w-4" />
+          </>
+        )}
+      </button>
     </div>
   );
 }
@@ -659,42 +544,20 @@ export default function PremiumPlansPage() {
       <main className={`relative transition-all duration-1000 ${isVisible ? "opacity-100" : "opacity-0"}`}>
         
         {/* ========== HERO SECTION ========== */}
-        <section className="relative pt-16 pb-24 overflow-hidden">
-          {/* Animated Background */}
-          <AnimatedStars />
-          
-          {/* Gradient Orbs */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div 
-              className="absolute top-0 left-1/4 w-[800px] h-[800px] rounded-full blur-[200px] opacity-30"
-              style={{ background: `radial-gradient(circle, ${COLORS.terracotta}40 0%, transparent 70%)` }}
-            />
-            <div 
-              className="absolute bottom-0 right-1/4 w-[600px] h-[600px] rounded-full blur-[150px] opacity-20"
-              style={{ background: `radial-gradient(circle, ${COLORS.gold}40 0%, transparent 70%)` }}
-            />
-          </div>
+        <section className="relative overflow-hidden pt-14 pb-20">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
 
-          {/* Decorative Lines */}
-          <div 
-            className="absolute top-1/4 left-0 right-0 h-px opacity-30"
-            style={{ background: `linear-gradient(to right, transparent, ${COLORS.terracotta}40, transparent)` }}
-          />
-
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
-            
-            {/* Trust Badge */}
-            <div className="flex justify-center mb-10">
-              <div className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-sm border border-[var(--hm-border-subtle)] shadow-lg">
+            {/* Trust badge */}
+            <div className="flex justify-center mb-8">
+              <div className="flex items-center gap-3 rounded-full border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] px-4 py-2 shadow-sm">
                 <div className="flex -space-x-2">
                   {["NM", "GT", "DK", "LS"].map((initials, i) => (
                     <div
                       key={i}
-                      className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold text-white shadow-md"
-                      style={{ 
-                        background: i === 0 
-                          ? `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.goldDark})` 
-                          : `linear-gradient(135deg, ${COLORS.terracotta}, ${COLORS.terracottaDark})`,
+                      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--hm-bg-elevated)] text-[10px] font-bold text-white"
+                      style={{
+                        background: "var(--hm-brand-500)",
+                        opacity: 1 - i * 0.12,
                         zIndex: 4 - i,
                       }}
                     >
@@ -702,86 +565,53 @@ export default function PremiumPlansPage() {
                     </div>
                   ))}
                 </div>
-                <div className="text-sm">
+                <div className="text-[13px]">
                   <span className="font-bold text-[var(--hm-fg-primary)]">500+</span>{" "}
                   <span className="text-[var(--hm-fg-muted)]">{t('premium.professionalsTrustUs')}</span>
                 </div>
               </div>
             </div>
 
-            {/* Main Headline */}
-            <div className="text-center max-w-4xl mx-auto mb-16">
-              <h1
-                className="text-5xl sm:text-6xl lg:text-7xl font-bold text-[var(--hm-fg-primary)] mb-6 leading-[1.1]"
-                style={{ fontFamily: "var(--font-sans)" }}
-              >
+            {/* Headline */}
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--hm-fg-muted)]">
+                Homico Premium
+              </p>
+              <h1 className="text-[40px] sm:text-[56px] lg:text-[64px] font-bold leading-[1.05] tracking-[-0.035em] text-[var(--hm-fg-primary)]">
                 {t('premium.headlinePrefix')}{" "}
-                <span className="relative inline-block">
-                  <span
-                    style={{
-                      background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.terracotta})`,
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                    }}
-                  >
-                    {t('premium.headlineHighlight')}
-                  </span>
-                  <div
-                    className="absolute -bottom-2 left-0 right-0 h-1 rounded-full"
-                    style={{ background: `linear-gradient(to right, ${COLORS.gold}, ${COLORS.terracotta})` }}
-                  />
+                <span className="italic text-[var(--hm-brand-500)]">
+                  {t('premium.headlineHighlight')}
                 </span>
               </h1>
-              <p className="text-lg sm:text-xl text-[var(--hm-fg-muted)] max-w-2xl mx-auto leading-relaxed">
+              <p className="mt-5 text-[16px] sm:text-[18px] text-[var(--hm-fg-muted)] max-w-xl mx-auto leading-relaxed">
                 {t('premium.joinEliteProfessionalsAndUnlock')}
               </p>
             </div>
 
-            {/* Billing Toggle */}
-            <div className="flex items-center justify-center mb-14">
-              <div className="relative flex items-center gap-1 p-1.5 rounded-full bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] shadow-lg">
-                <button
-                  onClick={() => setBillingPeriod("monthly")}
-                  className={`relative px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
-                    billingPeriod === "monthly" ? "text-white" : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
-                  }`}
-                >
-                  {billingPeriod === "monthly" && (
-                    <div
-                      className="absolute inset-0 rounded-full shadow-lg"
-                      style={{ background: `linear-gradient(135deg, ${COLORS.terracotta}, ${COLORS.terracottaDark})` }}
-                    />
-                  )}
-                  <span className="relative z-10">{t('premium.monthly')}</span>
-                </button>
-                <button
-                  onClick={() => setBillingPeriod("yearly")}
-                  className={`relative px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
-                    billingPeriod === "yearly" ? "text-white" : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]"
-                  }`}
-                >
-                  {billingPeriod === "yearly" && (
-                    <div
-                      className="absolute inset-0 rounded-full shadow-lg"
-                      style={{ background: `linear-gradient(135deg, ${COLORS.terracotta}, ${COLORS.terracottaDark})` }}
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center gap-2">
-                    {t('premium.yearly')}
-                  </span>
-                </button>
-                {/* Save badge */}
-                <div 
-                  className="absolute -top-3 -right-2 px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg animate-pulse"
-                  style={{ background: `linear-gradient(135deg, #10B981, #059669)` }}
-                >
-                  -17%
-                </div>
+            {/* Billing toggle - clean segmented */}
+            <div className="flex items-center justify-center gap-3 mb-12">
+              <div className="inline-flex items-center rounded-full bg-[var(--hm-bg-tertiary)] p-1">
+                {(["monthly", "yearly"] as BillingPeriod[]).map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => setBillingPeriod(period)}
+                    className={`rounded-full px-5 py-2 text-[13px] font-semibold transition-colors ${
+                      billingPeriod === period
+                        ? "bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[0_1px_2px_rgba(17,16,13,0.06)]"
+                        : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"
+                    }`}
+                  >
+                    {period === "monthly" ? t('premium.monthly') : t('premium.yearly')}
+                  </button>
+                ))}
               </div>
+              <span className="rounded-full bg-[var(--hm-success-500)]/[0.12] px-2.5 py-1 text-[12px] font-semibold text-[var(--hm-success-600)]">
+                -17%
+              </span>
             </div>
 
             {/* Pricing Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 max-w-5xl mx-auto items-stretch pt-4">
               {Object.values(PREMIUM_TIERS).map((tier, index) => (
                 <PremiumCard
                   key={tier.id}
@@ -796,14 +626,12 @@ export default function PremiumPlansPage() {
               ))}
             </div>
 
-            {/* Guarantee Badge */}
-            <div className="flex justify-center mt-12">
-              <div className="flex items-center gap-3 px-6 py-3 rounded-full bg-[var(--hm-success-50)] border border-emerald-100">
-                <Shield className="w-5 h-5 text-[var(--hm-success-500)]" />
-                <span className="text-sm font-medium text-[var(--hm-success-500)]">
-                  {t('premium.7dayMoneybackGuaranteeNoQuestions')}
-                </span>
-              </div>
+            {/* Guarantee */}
+            <div className="flex justify-center mt-10">
+              <span className="inline-flex items-center gap-2 text-[13px] text-[var(--hm-fg-muted)]">
+                <Shield className="w-4 h-4 text-[var(--hm-success-500)]" />
+                {t('premium.7dayMoneybackGuaranteeNoQuestions')}
+              </span>
             </div>
           </div>
         </section>
