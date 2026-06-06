@@ -102,6 +102,8 @@ const SUPPLIER_LABELS: Record<string, string> = {
   homevision: 'Home Vision',
   qebuli: 'Qebuli Climate',
   maxtherm: 'Maxtherm',
+  cavoli: 'Cavoli',
+  contempo: 'Contempo',
   domino: 'Domino',
 };
 
@@ -127,6 +129,8 @@ const SUPPLIER_DOMAINS: Record<string, string> = {
   thermocenter: 'thermocenter.ge',
   vitra: 'vitra.com.ge',
   imart: 'imart.ge',
+  cavoli: 'cavoligeorgia.ge',
+  contempo: 'contempo.ge',
   domino: 'domino.ge',
 };
 
