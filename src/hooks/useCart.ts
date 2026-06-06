@@ -1,7 +1,7 @@
 'use client';
 
 import { CatalogProduct } from '@/components/shop/types';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 export interface CartItem {
   product: CatalogProduct;
@@ -11,69 +11,109 @@ export interface CartItem {
 const KEY = 'homico:shop-cart:v1';
 
 /**
- * A small localStorage-backed shopping cart for the supplier catalog.
- * Survives reloads on this device. Checkout is link-out per supplier (v1);
- * the cart's purpose is to collect products and push them into a project's
- * shopping list in one go.
+ * A small localStorage-backed shopping cart for the supplier catalog, exposed
+ * as a single shared store via useSyncExternalStore. Every `useCart()` caller -
+ * the shop grid, a product page, the cart drawer, the header indicator - reads
+ * and mutates the SAME state and re-renders together. Survives reloads on this
+ * device and syncs across tabs (storage event).
  */
+
+const EMPTY: CartItem[] = [];
+let items: CartItem[] = EMPTY;
+let hydrated = false;
+let storageBound = false;
+const listeners = new Set<() => void>();
+
+function read(): CartItem[] {
+  try {
+    const raw = localStorage.getItem(KEY);
+    const parsed = raw ? (JSON.parse(raw) as CartItem[]) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function emit() {
+  listeners.forEach((l) => l());
+}
+
+function commit(next: CartItem[]) {
+  items = next;
+  try {
+    localStorage.setItem(KEY, JSON.stringify(items));
+  } catch {
+    /* ignore */
+  }
+  emit();
+}
+
+function subscribe(cb: () => void): () => void {
+  // Hydrate from storage on the first subscription (client only).
+  if (!hydrated && typeof window !== 'undefined') {
+    items = read();
+    hydrated = true;
+  }
+  // Cross-tab sync - bind the storage listener once for the whole store.
+  if (!storageBound && typeof window !== 'undefined') {
+    storageBound = true;
+    window.addEventListener('storage', (e) => {
+      if (e.key === KEY) {
+        items = read();
+        emit();
+      }
+    });
+  }
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+}
+
+function getSnapshot(): CartItem[] {
+  return items;
+}
+
+function getServerSnapshot(): CartItem[] {
+  return EMPTY;
+}
+
 export function useCart() {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const hydrated = useRef(false);
-
-  // Load once on mount.
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setItems(JSON.parse(raw) as CartItem[]);
-    } catch {
-      /* ignore */
-    } finally {
-      hydrated.current = true;
-    }
-  }, []);
-
-  // Persist after hydration (never clobber storage before the first read).
-  useEffect(() => {
-    if (!hydrated.current) return;
-    try {
-      localStorage.setItem(KEY, JSON.stringify(items));
-    } catch {
-      /* ignore */
-    }
-  }, [items]);
+  const list = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const add = useCallback((product: CatalogProduct, qty = 1) => {
-    setItems((prev) => {
-      const i = prev.findIndex((x) => x.product.id === product.id);
-      if (i === -1) return [...prev, { product, qty }];
-      const next = [...prev];
+    const i = items.findIndex((x) => x.product.id === product.id);
+    if (i === -1) {
+      commit([...items, { product, qty }]);
+    } else {
+      const next = [...items];
       next[i] = { ...next[i], qty: next[i].qty + qty };
-      return next;
-    });
+      commit(next);
+    }
   }, []);
 
   const setQty = useCallback((id: string, qty: number) => {
-    setItems((prev) =>
+    commit(
       qty <= 0
-        ? prev.filter((x) => x.product.id !== id)
-        : prev.map((x) => (x.product.id === id ? { ...x, qty } : x)),
+        ? items.filter((x) => x.product.id !== id)
+        : items.map((x) => (x.product.id === id ? { ...x, qty } : x)),
     );
   }, []);
 
   const remove = useCallback(
-    (id: string) => setItems((prev) => prev.filter((x) => x.product.id !== id)),
+    (id: string) => commit(items.filter((x) => x.product.id !== id)),
     [],
   );
 
-  const clear = useCallback(() => setItems([]), []);
+  const clear = useCallback(() => commit([]), []);
 
   const qtyOf = useCallback(
-    (id: string) => items.find((x) => x.product.id === id)?.qty ?? 0,
-    [items],
+    (id: string) => list.find((x) => x.product.id === id)?.qty ?? 0,
+    [list],
   );
 
-  const count = items.reduce((s, x) => s + x.qty, 0);
-  const total = items.reduce((s, x) => s + x.product.priceGel * x.qty, 0);
+  const count = list.reduce((s, x) => s + x.qty, 0);
+  const total = list.reduce((s, x) => s + x.product.priceGel * x.qty, 0);
 
-  return { items, count, total, add, setQty, remove, clear, qtyOf };
+  return { items: list, count, total, add, setQty, remove, clear, qtyOf };
 }

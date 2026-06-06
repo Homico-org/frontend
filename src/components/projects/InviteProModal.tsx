@@ -119,7 +119,7 @@ export default function InviteProModal({
     p.verificationStatus === 'verified' || p.verificationStatus === 'approved';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg" showCloseButton disableHistory>
+    <Modal isOpen={isOpen} onClose={onClose} size="lg" showCloseButton>
       <ModalBody className="pt-7">
         <div className="mb-3 flex items-baseline gap-3">
           <span aria-hidden className="block h-px w-5 bg-[var(--hm-brand-500)]" />

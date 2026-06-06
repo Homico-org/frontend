@@ -40,6 +40,15 @@ interface UseModalHistoryArgs {
 export function useModalHistory({ isOpen, onClose, enabled = true }: UseModalHistoryArgs) {
   const pushedRef = useRef(false);
   const closingFromPopRef = useRef(false);
+  // Set right before WE call history.back() during teardown. In React 18 dev
+  // Strict Mode a modal that mounts already-open is mounted -> unmounted ->
+  // remounted; the teardown's history.back() fires a popstate that the
+  // remounted listener would otherwise catch and treat as "user pressed back,"
+  // closing the modal the instant it opens. This flag makes that one
+  // self-induced popstate a no-op. Refs persist across the Strict remount, so
+  // the guard survives; in production (no double-invoke) it never trips, so
+  // behavior is unchanged. A genuine back press still closes the modal.
+  const ignorePopRef = useRef(false);
 
   useEffect(() => {
     if (!enabled) return;
@@ -53,6 +62,11 @@ export function useModalHistory({ isOpen, onClose, enabled = true }: UseModalHis
       pushedRef.current = true;
 
       const handlePop = () => {
+        if (ignorePopRef.current) {
+          // Self-induced pop from a Strict-Mode teardown - swallow it.
+          ignorePopRef.current = false;
+          return;
+        }
         closingFromPopRef.current = true;
         onClose();
       };
@@ -69,7 +83,11 @@ export function useModalHistory({ isOpen, onClose, enabled = true }: UseModalHis
       pushedRef.current = false;
       if (!closingFromPopRef.current) {
         // Guard against double-pop edge cases by checking that the
-        // current state is still ours before going back.
+        // current state is still ours before going back. The listener has
+        // already been removed by the effect cleanup, so this back() can't
+        // re-enter handlePop - no ignore flag needed here (setting it would
+        // leave a stale guard that swallows the next real back press on an
+        // always-mounted modal's reopen).
         if ((window.history.state as { [k: string]: unknown } | null)?.[SENTINEL]) {
           window.history.back();
         }
@@ -84,6 +102,7 @@ export function useModalHistory({ isOpen, onClose, enabled = true }: UseModalHis
     return () => {
       if (pushedRef.current && typeof window !== "undefined") {
         if ((window.history.state as { [k: string]: unknown } | null)?.[SENTINEL]) {
+          ignorePopRef.current = true;
           window.history.back();
         }
         pushedRef.current = false;

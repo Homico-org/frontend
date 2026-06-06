@@ -8,30 +8,6 @@ interface Props {
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://homico.co";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "homico";
-const DEFAULT_OG_IMAGE = `${APP_URL}/og-image.png`;
-
-// Helper: build an absolute OG-friendly image URL from whatever the backend returns
-function getAbsoluteImageUrl(path: string | undefined): string {
-  if (!path) return DEFAULT_OG_IMAGE;
-
-  // Already absolute (Cloudinary, S3, etc.)
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    // Cloudinary: inject OG-optimised transformation
-    if (path.includes("cloudinary.com") && path.includes("/upload/")) {
-      return path.replace("/upload/", "/upload/w_1200,h_630,c_fill,q_auto,f_auto/");
-    }
-    return path;
-  }
-
-  // Relative path starting with /uploads → prepend API URL
-  if (path.startsWith("/uploads")) {
-    return `${API_URL}${path}`;
-  }
-
-  // Bare filename → assume Cloudinary public_id
-  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_1200,h_630,c_fill,q_auto,f_auto/${path}`;
-}
 
 // Format budget into a display string. Uses the job's stored currency
 // (set when posted), falling back to the job's marketplace country so
@@ -60,18 +36,6 @@ function formatPrice(job: Record<string, unknown>): string {
   return "შეთანხმებით";
 }
 
-// Pick the first usable image from the job
-function pickImage(job: Record<string, unknown>): string | undefined {
-  const media = job.media as Array<{ type: string; url: string }> | undefined;
-  const images = job.images as string[] | undefined;
-
-  const fromMedia = media?.find((m) => m.type === "image")?.url;
-  if (fromMedia) return fromMedia;
-
-  if (images && images.length > 0) return images[0];
-  return undefined;
-}
-
 // Generate dynamic metadata for social sharing (Facebook, Twitter, etc.)
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { country, id } = await params;
@@ -91,22 +55,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const job = await response.json();
 
     const priceText = formatPrice(job);
-    const title = `${job.title} • ${priceText}`;
+    const title = `${job.title} · ${priceText}`;
     const rawDesc = (job.description as string) || "";
-    const shortDescription = rawDesc.length > 200 ? rawDesc.slice(0, 200) + "..." : rawDesc;
-    const ogDescription = `💰 ${priceText} • ${rawDesc.length > 150 ? rawDesc.slice(0, 150) + "..." : rawDesc}`;
-    const imageUrl = getAbsoluteImageUrl(pickImage(job));
+
+    // Rich, native description: price + location lead, then a snippet of the
+    // brief. Plain separators only (no emoji clutter, no em-dash).
+    const snippet =
+      rawDesc.length > 150 ? rawDesc.slice(0, 150).trimEnd() + "…" : rawDesc;
+    const location = job.location as string | undefined;
+    const lead = [priceText, location].filter(Boolean).join(" · ");
+    const richDescription = snippet ? `${lead} · ${snippet}` : `${lead} · სამუშაო Homico-ზე. ნახეთ დეტალები და გააგზავნეთ შეთავაზება.`;
+    const shortDescription = snippet || "სამუშაო Homico-ზე. ნახეთ დეტალები და გააგზავნეთ შეთავაზება.";
+
+    // Branded share card - always shows the current Homico logo + job
+    // details, whether or not the job has a photo. Never falls back to the
+    // old static /og-image.png.
+    const imageUrl = `${APP_URL}/api/og/job?id=${id}`;
     // Canonical URL includes the marketplace country segment (added
     // 2026-05). Share links carry the marketplace context so the
     // recipient lands on the same /[country]/jobs/[id] page.
     const jobUrl = `${APP_URL}/${country}/jobs/${id}`;
-
-    // Client info for richer preview
-    const clientName = (job.clientId as Record<string, unknown>)?.name as string | undefined;
-    const location = job.location as string | undefined;
-    const locationText = location ? ` • 📍 ${location}` : "";
-    const clientText = clientName ? ` • 👤 ${clientName}` : "";
-    const richDescription = `${ogDescription}${locationText}${clientText}`;
 
     return {
       title: `${job.title} | ${priceText} | Homico`,

@@ -16,12 +16,15 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowRight,
+  Clock,
+  Lock,
   MapPin,
   Package,
   Phone,
   ShoppingBag,
   StickyNote,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { supplierLabel } from './types';
 
@@ -33,10 +36,19 @@ interface QuoteItem {
   qty: number;
   lineTotalMinor: number;
 }
+type DeliveryMode = 'all' | 'bulk' | 'by_items';
+const DELIVERY_MODES: DeliveryMode[] = ['all', 'bulk', 'by_items'];
+
 interface Quote {
   items: QuoteItem[];
   subtotalMinor: number;
   feeMinor: number;
+  deliveryMode: DeliveryMode;
+  deliveryFeeMinor: number;
+  /** Fee for each delivery mode for this cart. */
+  deliveryOptions: Record<DeliveryMode, number>;
+  /** Subtotal that unlocks free delivery (0 = disabled). */
+  deliveryFreeOverMinor: number;
   totalMinor: number;
   repriced: boolean;
   unavailable: string[];
@@ -60,9 +72,11 @@ export default function CheckoutModal({
   const { t, locale } = useLanguage();
   const { user } = useAuth();
   const toast = useToast();
+  const router = useRouter();
 
   const [step, setStep] = useState<1 | 2>(1);
   const [quote, setQuote] = useState<Quote | null>(null);
+  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('all');
   const [paying, setPaying] = useState(false);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [addr, setAddr] = useState({
@@ -88,6 +102,7 @@ export default function CheckoutModal({
   useEffect(() => {
     if (!isOpen) return;
     setStep(1);
+    setDeliveryMode('all');
     setAddr((a) => ({ ...a, phone: a.phone || user?.phone || '' }));
     setQuote(null);
     api
@@ -108,6 +123,7 @@ export default function CheckoutModal({
     try {
       const { data } = await api.post<{ redirectUrl: string }>('/orders', {
         items: orderItemsPayload(),
+        deliveryMode,
         deliveryAddress: {
           formattedAddress: addr.formattedAddress.trim(),
           phone: addr.phone.trim(),
@@ -120,7 +136,19 @@ export default function CheckoutModal({
         },
       });
       onOrderPlaced();
-      window.location.href = data.redirectUrl;
+      // Internal target (mock / return page) -> fast client nav; external
+      // gateway (Bank of Georgia) -> full redirect. Keeps `paying` true so the
+      // processing view stays up until the route actually changes.
+      let internalPath: string | null = null;
+      try {
+        const u = new URL(data.redirectUrl, window.location.origin);
+        if (u.origin === window.location.origin)
+          internalPath = u.pathname + u.search;
+      } catch {
+        if (data.redirectUrl.startsWith('/')) internalPath = data.redirectUrl;
+      }
+      if (internalPath) router.push(internalPath);
+      else window.location.href = data.redirectUrl;
     } catch (err) {
       toast.error(
         t('projects.tryAgain'),
@@ -140,8 +168,39 @@ export default function CheckoutModal({
     {},
   );
 
+  // Delivery fee for the chosen mode + the live total (recomputed instantly on
+  // mode change; the server re-validates the mode when the order is placed).
+  const deliveryFee = quote ? quote.deliveryOptions[deliveryMode] : 0;
+  const total = quote
+    ? quote.subtotalMinor + quote.feeMinor + deliveryFee
+    : 0;
+
+  // While the order is being created + payment intent prepared, swap the whole
+  // modal for a clear processing state (and block close) so the few-second wait
+  // reads as "working", not a frozen dialog. The redirect happens in pay().
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg" showCloseButton>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="lg"
+      showCloseButton
+      preventClose={paying}
+      ariaLabel={paying ? t('projects.checkoutPlacing') : undefined}
+    >
+      {paying ? (
+        <ModalBody className="flex flex-col items-center gap-4 py-16 text-center">
+          <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
+          <div>
+            <p className="text-[16px] font-bold text-[var(--hm-fg-primary)]">
+              {t('projects.checkoutPlacing')}
+            </p>
+            <p className="mt-1 text-[13px] text-[var(--hm-fg-muted)]">
+              {t('projects.checkoutPlacingHint')}
+            </p>
+          </div>
+        </ModalBody>
+      ) : (
+        <>
       <ModalHeader
         variant="accent"
         icon={<ShoppingBag size={20} color="#fff" />}
@@ -285,6 +344,83 @@ export default function CheckoutModal({
               </div>
             )}
 
+            {/* Delivery mode - mandatory; the customer picks how it arrives */}
+            {quote && quote.items.length > 0 && (
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--hm-fg-muted)]">
+                    {t('projects.deliveryWhen')}
+                  </p>
+                  {quote.deliveryFreeOverMinor > 0 &&
+                    quote.subtotalMinor < quote.deliveryFreeOverMinor && (
+                      <span className="text-[11px] font-semibold text-[var(--hm-success-600)]">
+                        {t('projects.deliveryFreeHint', {
+                          amount: fmt(
+                            quote.deliveryFreeOverMinor - quote.subtotalMinor,
+                          ),
+                        })}
+                      </span>
+                    )}
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  {DELIVERY_MODES.map((mode) => {
+                    const active = deliveryMode === mode;
+                    return (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setDeliveryMode(mode)}
+                        className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                          active
+                            ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/[0.06]'
+                            : 'border-[var(--hm-border-subtle)] hover:border-[var(--hm-border-strong)]'
+                        }`}
+                      >
+                        <span className="flex items-start gap-2.5">
+                          <span
+                            className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
+                              active
+                                ? 'border-[var(--hm-brand-500)]'
+                                : 'border-[var(--hm-border-strong)]'
+                            }`}
+                          >
+                            {active && (
+                              <span className="h-2 w-2 rounded-full bg-[var(--hm-brand-500)]" />
+                            )}
+                          </span>
+                          <span>
+                            <span className="block text-[13px] font-semibold text-[var(--hm-fg-primary)]">
+                              {t(`projects.delivery_${mode}`)}
+                            </span>
+                            <span className="block text-[11px] text-[var(--hm-fg-muted)]">
+                              {t(`projects.delivery_${mode}_desc`)}
+                            </span>
+                          </span>
+                        </span>
+                        <span className="flex shrink-0 flex-col items-end gap-0.5">
+                          <span
+                            className={`text-[13px] font-bold tabular-nums ${
+                              quote.deliveryOptions[mode] === 0
+                                ? 'text-[var(--hm-success-600)]'
+                                : 'text-[var(--hm-fg-primary)]'
+                            }`}
+                          >
+                            {quote.deliveryOptions[mode] === 0
+                              ? t('projects.deliveryFree')
+                              : fmt(quote.deliveryOptions[mode])}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[10px] text-[var(--hm-fg-muted)]">
+                            <Clock className="h-3 w-3" />
+                            {t(`projects.delivery_${mode}_eta`)}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Price breakdown */}
             {quote && (
               <div className="rounded-xl bg-[var(--hm-bg-tertiary)] p-4 text-[13px]">
@@ -293,22 +429,38 @@ export default function CheckoutModal({
                   <span className="tabular-nums">{fmt(quote.subtotalMinor)}</span>
                 </div>
                 <div className="mt-1.5 flex items-center justify-between text-[var(--hm-fg-muted)]">
-                  <span>{t('projects.checkoutFee')}</span>
-                  <span className="tabular-nums">{fmt(quote.feeMinor)}</span>
+                  <span>{t('projects.checkoutDelivery')}</span>
+                  <span
+                    className={`tabular-nums ${deliveryFee === 0 ? 'font-semibold text-[var(--hm-success-600)]' : ''}`}
+                  >
+                    {deliveryFee === 0 ? t('projects.deliveryFree') : fmt(deliveryFee)}
+                  </span>
                 </div>
+                {quote.feeMinor > 0 && (
+                  <div className="mt-1.5 flex items-center justify-between text-[var(--hm-fg-muted)]">
+                    <span>{t('projects.checkoutFee')}</span>
+                    <span className="tabular-nums">{fmt(quote.feeMinor)}</span>
+                  </div>
+                )}
                 <div className="mt-2.5 flex items-baseline justify-between border-t border-[var(--hm-border-subtle)] pt-2.5">
                   <span className="text-[14px] font-bold text-[var(--hm-fg-primary)]">
                     {t('projects.checkoutTotal')}
                   </span>
-                  <span className="text-[22px] font-bold tabular-nums text-[var(--hm-fg-primary)]">
-                    {fmt(quote.totalMinor)}
+                  <span className="text-[22px] font-bold tabular-nums text-[var(--hm-brand-500)]">
+                    {fmt(total)}
                   </span>
                 </div>
               </div>
             )}
-            <p className="text-center text-[11px] text-[var(--hm-fg-muted)]">
-              {t('projects.checkoutFeeNote')}
-            </p>
+            <div className="flex flex-col items-center gap-1">
+              <p className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--hm-fg-secondary)]">
+                <Lock className="h-3.5 w-3.5 text-[var(--hm-success-600)]" />
+                {t('projects.checkoutSecure')}
+              </p>
+              <p className="text-center text-[11px] text-[var(--hm-fg-muted)]">
+                {t('projects.checkoutFeeNote')}
+              </p>
+            </div>
           </div>
         )}
       </ModalBody>
@@ -341,11 +493,13 @@ export default function CheckoutModal({
               disabled={!quote}
               onClick={pay}
             >
-              {t('projects.checkoutPay')} · {quote ? fmt(quote.totalMinor) : ''}
+              {t('projects.checkoutPay')} · {quote ? fmt(total) : ''}
             </Button>
           </div>
         )}
       </ModalFooter>
+        </>
+      )}
     </Modal>
   );
 }

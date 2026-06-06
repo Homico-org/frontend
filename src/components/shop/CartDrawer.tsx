@@ -3,7 +3,8 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { storage } from '@/services/storage';
 import { CartItem } from '@/hooks/useCart';
-import { Minus, Package, Plus, ShoppingCart, Trash2, X } from 'lucide-react';
+import { ArrowRight, Minus, Package, Plus, ShoppingCart, Trash2, X } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supplierLabel } from './types';
@@ -88,14 +89,26 @@ export default function CartDrawer({
 
         {/* Items */}
         {items.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
-            <Package className="h-8 w-8 text-[var(--hm-fg-muted)]" />
-            <p className="text-[15px] font-semibold text-[var(--hm-fg-primary)]">
-              {t('projects.cartEmpty')}
-            </p>
-            <p className="text-[13px] text-[var(--hm-fg-muted)]">
-              {t('projects.cartEmptyHint')}
-            </p>
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]">
+              <ShoppingCart className="h-7 w-7" strokeWidth={1.6} />
+            </span>
+            <div>
+              <p className="text-[15px] font-semibold text-[var(--hm-fg-primary)]">
+                {t('projects.cartEmpty')}
+              </p>
+              <p className="mt-1 text-[13px] text-[var(--hm-fg-muted)]">
+                {t('projects.cartEmptyHint')}
+              </p>
+            </div>
+            <Link
+              href="/shop"
+              onClick={onClose}
+              className="mt-1 inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[var(--hm-brand-500)] px-5 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--hm-brand-600)]"
+            >
+              {t('header.shop')}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto px-3 py-3">
@@ -189,7 +202,7 @@ export default function CartDrawer({
               <span className="text-[13px] font-medium text-[var(--hm-fg-muted)]">
                 {t('projects.cartTotal')}
               </span>
-              <span className="text-[22px] font-bold tabular-nums text-[var(--hm-fg-primary)]">
+              <span className="text-[22px] font-bold tabular-nums text-[var(--hm-brand-500)]">
                 {fmt(total)}
               </span>
             </div>
@@ -201,6 +214,7 @@ export default function CartDrawer({
             >
               <ShoppingCart className="h-4 w-4" />
               {t('projects.checkoutCta')}
+              <span className="tabular-nums">· {fmt(total)}</span>
             </button>
             <button
               type="button"

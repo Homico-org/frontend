@@ -13,6 +13,7 @@ import { CriticalNotificationProvider } from '@/contexts/CriticalNotificationCon
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import NavigationProvider from '@/components/common/NavigationProvider';
 import { CommandPaletteProvider } from '@/contexts/CommandPaletteContext';
+import { CartUIProvider } from '@/contexts/CartUIContext';
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -39,7 +40,9 @@ export default function Providers({
                     <ToastProvider>
                       <ConfirmProvider>
                         <CommandPaletteProvider>
-                          <NavigationProvider>{children}</NavigationProvider>
+                          <CartUIProvider>
+                            <NavigationProvider>{children}</NavigationProvider>
+                          </CartUIProvider>
                         </CommandPaletteProvider>
                       </ConfirmProvider>
                     </ToastProvider>

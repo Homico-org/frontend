@@ -16,27 +16,7 @@ async function getProfile(id: string) {
   }
 }
 
-// Helper to get absolute image URL for OG
-function getAbsoluteImageUrl(avatar: string | undefined): string {
-  if (!avatar) {
-    // Default Homico OG image
-    return "https://homico.ge/og-image.png";
-  }
-
-  // If already absolute URL (including Cloudinary)
-  if (avatar.startsWith("http://") || avatar.startsWith("https://")) {
-    // For Cloudinary URLs, add transformation for OG size
-    if (avatar.includes("cloudinary.com") && avatar.includes("/upload/")) {
-      // Insert transformation before the version/public_id part
-      return avatar.replace("/upload/", "/upload/w_1200,h_630,c_fill,g_face/");
-    }
-    return avatar;
-  }
-
-  // Construct Cloudinary URL from path
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "homico";
-  return `https://res.cloudinary.com/${cloudName}/image/upload/w_1200,h_630,c_fill,g_face/${avatar}`;
-}
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://homico.co";
 
 export async function generateMetadata({
   params
@@ -57,7 +37,9 @@ export async function generateMetadata({
     ? profile.bio.slice(0, 160)
     : `${profile.name} is a ${profile.title} on Homico. ${profile.avgRating ? `Rating: ${profile.avgRating.toFixed(1)}/5` : ""} ${profile.totalReviews ? `(${profile.totalReviews} reviews)` : ""}`.trim();
 
-  const imageUrl = getAbsoluteImageUrl(profile.avatar);
+  // Branded share card - current Homico logo + avatar + name + rating.
+  // Never falls back to the old static og-image.png.
+  const imageUrl = `${APP_URL}/api/og/pro?id=${params.id}`;
   // Canonical URL includes the marketplace country segment (added
   // 2026-05). Country comes from the route param so cross-marketplace
   // share links resolve back to the right /{country}/professionals/{id}.

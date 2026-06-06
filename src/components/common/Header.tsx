@@ -9,6 +9,8 @@ import { storage } from "@/services/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCommandPalette } from "@/contexts/CommandPaletteContext";
+import { useCartUI } from "@/contexts/CartUIContext";
+import { useCart } from "@/hooks/useCart";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useCountryLink } from "@/hooks/useCountry";
@@ -44,6 +46,7 @@ import {
   Search,
   Shield,
   ShoppingBag,
+  ShoppingCart,
   Store,
   SlidersHorizontal,
   Star,
@@ -1135,6 +1138,10 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
             <MarketplaceSelector hideCountry={!features.marketplaceSelector} />
           </div>
 
+          {/* Cart - shows only when it has items, opens the shared drawer from
+              anywhere in the app. */}
+          <CartButton />
+
           {isLoading ? (
             <Skeleton className="w-9 h-9 rounded-xl" />
           ) : isAuthenticated && user ? (
@@ -2037,6 +2044,32 @@ function NavTrigger({
           opacity: active ? 1 : 0,
         }}
       />
+    </button>
+  );
+}
+
+// Cart access for the whole app. Renders only when the cart has items, so it
+// stays out of the way until you're actually shopping; then it surfaces the
+// count and opens the shared cart drawer from any page.
+function CartButton() {
+  const { count } = useCart();
+  const { openCart } = useCartUI();
+  const { t } = useLanguage();
+  if (count <= 0) return null;
+  return (
+    <button
+      type="button"
+      onClick={openCart}
+      aria-label={t("projects.cartOpen")}
+      className="relative flex items-center justify-center w-9 h-9 rounded-[10px] bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-primary)] transition-colors hover:bg-[var(--hm-n-200)] hover:text-[var(--hm-brand-500)]"
+    >
+      <ShoppingCart className="w-4 h-4" strokeWidth={1.8} />
+      <span
+        className="absolute -top-1.5 -right-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold tabular-nums text-white ring-2 ring-[var(--hm-bg-elevated)]"
+        style={{ background: "var(--hm-brand-500)" }}
+      >
+        {count > 99 ? "99+" : count}
+      </span>
     </button>
   );
 }

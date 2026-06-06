@@ -55,20 +55,6 @@ async function getProProfile(id: string) {
   }
 }
 
-function getImageUrl(path: string | undefined, forOG = false): string {
-  if (!path) return '';
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  // For OG images, ensure we use the public API URL. Falls back to the
-  // legacy api.homico.ge host when no override is configured so existing
-  // production deploys keep working without env changes.
-  const baseUrl = forOG
-    ? process.env.NEXT_PUBLIC_PUBLIC_API_URL || 'https://api.homico.ge'
-    : apiUrl;
-  if (path.startsWith('/')) return `${baseUrl}${path}`;
-  return `${baseUrl}/uploads/${path}`;
-}
-
 function getCategoryLabels(categories: string[] | undefined): string {
   if (!categories || categories.length === 0) return '';
   return categories
@@ -83,7 +69,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://homico.co';
   const seg = country.toLowerCase();
   const pageUrl = `${siteUrl}/${seg}/professionals/${id}`;
-  const defaultImage = `${siteUrl}/og-image.png`;
+  // Branded share card - always the current Homico logo + the pro's avatar,
+  // name, rating and trades. Never the old static /og-image.png.
+  const brandedImage = `${siteUrl}/api/og/pro?id=${id}`;
   const ogLocale = OG_LOCALE_BY_COUNTRY[country.toUpperCase()] || 'ka_GE';
 
   if (!profile) {
@@ -96,7 +84,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         url: pageUrl,
         siteName: 'Homico',
         type: 'website',
-        images: [{ url: defaultImage, width: 1200, height: 630, alt: 'Homico' }],
+        images: [{ url: brandedImage, width: 1200, height: 630, alt: 'Homico' }],
         locale: ogLocale,
       },
     };
@@ -117,9 +105,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? descriptionParts.join(' | ')
     : (profile.bio ? profile.bio.slice(0, 160) : `${profile.name} - პროფესიონალი Homico-ზე`);
 
-  // Use avatar for OG image, with absolute URL
-  const avatarUrl = getImageUrl(profile.avatar, true);
-  const ogImage = avatarUrl || defaultImage;
+  // Branded 1200x630 share card (logo + avatar + name + rating + trades).
+  const ogImage = brandedImage;
 
   return {
     title,
@@ -133,15 +120,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: [
         {
           url: ogImage,
-          width: 400,
-          height: 400,
+          width: 1200,
+          height: 630,
           alt: profile.name,
         },
       ],
       locale: ogLocale,
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
       title: `${profile.name} | Homico`,
       description,
       images: [ogImage],

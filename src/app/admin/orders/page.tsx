@@ -6,6 +6,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
+import { Truck } from 'lucide-react';
 import { supplierLabel } from '@/components/shop/types';
 import {
   ORDER_STATUS_TONE,
@@ -22,12 +23,14 @@ interface AdminOrderItem {
   lineTotalMinor: number;
 }
 interface AdminOrder {
-  _id: string;
+  id: string;
   orderNumber: string;
   status: string;
   items: AdminOrderItem[];
   subtotalMinor: number;
   feeMinor: number;
+  deliveryMode?: 'all' | 'bulk' | 'by_items';
+  deliveryFeeMinor?: number;
   totalMinor: number;
   refundedAmountMinor: number;
   deliveryAddress: { formattedAddress: string; phone: string; apartment?: string; notes?: string };
@@ -130,19 +133,19 @@ export default function AdminOrdersPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {orders.map((o) => {
-              const open = openId === o._id;
+              const open = openId === o.id;
               const byShop = o.items.reduce<Record<string, AdminOrderItem[]>>((m, it) => {
                 (m[it.supplierKey] ??= []).push(it);
                 return m;
               }, {});
               return (
                 <div
-                  key={o._id}
+                  key={o.id}
                   className="overflow-hidden rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]"
                 >
                   <button
                     type="button"
-                    onClick={() => setOpenId(open ? null : o._id)}
+                    onClick={() => setOpenId(open ? null : o.id)}
                     className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
                   >
                     <span className="flex items-center gap-2">
@@ -182,16 +185,21 @@ export default function AdminOrdersPage() {
                         <strong>{o.deliveryAddress.formattedAddress}</strong> · {o.deliveryAddress.phone}
                         {o.deliveryAddress.notes ? ` · ${o.deliveryAddress.notes}` : ''}
                         {o.customerNote ? ` · "${o.customerNote}"` : ''}
+                        <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-[var(--hm-brand-500)]/[0.1] px-2 py-0.5 text-[11px] font-semibold text-[var(--hm-brand-500)]">
+                          <Truck className="h-3.5 w-3.5" />
+                          {t(`projects.delivery_${o.deliveryMode || 'all'}`)}
+                          {o.deliveryFeeMinor != null && <> · {fmt(o.deliveryFeeMinor)}</>}
+                        </div>
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2">
                         {(NEXT[o.status] || []).map((s) => (
-                          <Button key={s} size="sm" variant={s === 'cancelled' ? 'outline' : 'default'} disabled={busy} onClick={() => setStatus(o._id, s)}>
+                          <Button key={s} size="sm" variant={s === 'cancelled' ? 'outline' : 'default'} disabled={busy} onClick={() => setStatus(o.id, s)}>
                             {t(`admin.orders.action.${s}`)}
                           </Button>
                         ))}
                         {['paid', 'processing', 'shipped', 'delivered'].includes(o.status) && o.refundedAmountMinor === 0 && (
-                          <Button size="sm" variant="destructive" disabled={busy} onClick={() => refund(o._id)}>
+                          <Button size="sm" variant="destructive" disabled={busy} onClick={() => refund(o.id)}>
                             {t('admin.orders.refund')}
                           </Button>
                         )}

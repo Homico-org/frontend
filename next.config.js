@@ -80,7 +80,12 @@ const nextConfigWithAnalyzer = withBundleAnalyzer(nextConfig);
 const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
+  // skipWaiting + clientsClaim = a freshly-deployed service worker activates
+  // AND takes control of already-open tabs immediately, so a deploy is picked
+  // up without users having to fully close the app. (Navigations are already
+  // NetworkFirst and JS/CSS are content-hashed, so no stale bundles ship.)
   skipWaiting: true,
+  clientsClaim: true,
   disable: process.env.NODE_ENV !== 'production',
   fallbacks: {
     document: '/offline',

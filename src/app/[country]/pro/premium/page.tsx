@@ -3,7 +3,6 @@ import { ACCENT_COLOR } from "@/constants/theme";
 
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
@@ -15,7 +14,6 @@ import {
   Award,
   BadgeCheck,
   Check,
-  CheckCircle2,
   ChevronDown,
   Clock,
   Crown,
@@ -133,32 +131,6 @@ const PREMIUM_TIERS: Record<string, PremiumTier> = {
 type BillingPeriod = "monthly" | "yearly";
 
 // Animated Sparkle Component
-function AnimatedStars() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(20)].map((_, i) => (
-        <div
-          key={i}
-          className="absolute animate-float"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 5}s`,
-            animationDuration: `${3 + Math.random() * 4}s`,
-          }}
-        >
-          <Star
-            className="text-[var(--hm-warning-500)]/20"
-            style={{
-              width: `${8 + Math.random() * 12}px`,
-              height: `${8 + Math.random() * 12}px`,
-            }}
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // Premium Card Component
 function PremiumCard({
@@ -295,82 +267,51 @@ function PremiumCard({
   );
 }
 
-// Testimonial Component
-function TestimonialCard({ 
-  name, 
-  role, 
-  text, 
-  rating,
+// Testimonial Component - editorial quote card (trust comes from the words)
+function TestimonialCard({
+  name,
+  role,
+  text,
   avatar,
-  tier,
   index,
-}: { 
-  name: string; 
-  role: string; 
-  text: string; 
-  rating: number;
+}: {
+  name: string;
+  role: string;
+  text: string;
   avatar: string;
-  tier: string;
   index: number;
 }) {
-  const tierColors: Record<string, { bg: string; text: string }> = {
-    elite: { bg: `${COLORS.gold}20`, text: COLORS.goldDark },
-    pro: { bg: `${COLORS.terracotta}20`, text: COLORS.terracottaDark },
-    premium: { bg: "#4A9B9B20", text: "#3D8585" },
-  };
-  const colors = tierColors[tier] || tierColors.premium;
-
   return (
-    <div 
-      className="relative bg-[var(--hm-bg-elevated)] rounded-2xl p-6 border border-[var(--hm-border-subtle)] shadow-sm hover:shadow-xl transition-all duration-500 group"
-      style={{ animationDelay: `${index * 100}ms` }}
+    <figure
+      className="animate-card-enter flex h-full flex-col rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-7 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_44px_-24px_rgba(17,16,13,0.22)]"
+      style={{ animationDelay: `${index * 90}ms` }}
     >
-      {/* Quote mark */}
-      <div 
-        className="absolute top-4 right-4 text-5xl font-serif opacity-10"
-        style={{ color: COLORS.terracotta }}
+      <span
+        aria-hidden
+        className="font-serif text-[52px] leading-[0.6] text-[var(--hm-brand-500)]/25"
       >
         &ldquo;
-      </div>
-
-      <div className="flex items-start gap-4 mb-4">
-        <div 
-          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-          style={{ background: `linear-gradient(135deg, ${COLORS.terracotta}, ${COLORS.terracottaDark})` }}
+      </span>
+      <blockquote className="mt-3 flex-1 text-[16px] italic leading-relaxed text-[var(--hm-fg-primary)]">
+        {text}
+      </blockquote>
+      <figcaption className="mt-6 flex items-center gap-3 border-t border-[var(--hm-border-subtle)] pt-5">
+        <span
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[13px] font-bold text-white"
+          style={{ background: "var(--hm-brand-500)" }}
         >
           {avatar}
-        </div>
-        <div>
-          <h4 className="font-semibold text-[var(--hm-fg-primary)]">{name}</h4>
-          <p className="text-sm text-[var(--hm-fg-muted)]">{role}</p>
-        </div>
-        <div 
-          className="ml-auto px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
-          style={{ background: colors.bg, color: colors.text }}
-        >
-          {tier}
-        </div>
-      </div>
-
-      <p className="text-[var(--hm-fg-secondary)] text-sm leading-relaxed mb-4">{text}</p>
-
-      <div className="flex items-center gap-0.5">
-        {[...Array(5)].map((_, i) => (
-          <Star 
-            key={i} 
-            className={`w-4 h-4 ${i < rating ? "fill-amber-400 text-[var(--hm-warning-500)]" : "text-[var(--hm-border)]"}`}
-          />
-        ))}
-      </div>
-
-      {/* Hover glow */}
-      <div 
-        className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-        style={{ 
-          background: `linear-gradient(135deg, ${COLORS.terracotta}20, transparent 50%, ${COLORS.gold}20)`,
-        }}
-      />
-    </div>
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-[14px] font-semibold text-[var(--hm-fg-primary)]">
+            {name}
+          </span>
+          <span className="block truncate text-[12px] text-[var(--hm-fg-muted)]">
+            {role}
+          </span>
+        </span>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -642,18 +583,14 @@ export default function PremiumPlansPage() {
           className="py-24 bg-[var(--hm-bg-page)]"
         >
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-14">
-              <Badge variant="premium" size="sm" className="mb-4">
-                <Star className="w-3.5 h-3.5" />
+            <div className="text-center mb-12">
+              <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--hm-fg-muted)]">
                 {t('premium.realResults')}
-              </Badge>
-              <h2 
-                className="text-4xl font-bold text-[var(--hm-fg-primary)] mb-4"
-                style={{ fontFamily: "var(--font-sans)" }}
-              >
+              </p>
+              <h2 className="text-[32px] sm:text-[40px] font-bold leading-tight tracking-[-0.03em] text-[var(--hm-fg-primary)]">
                 {t('premium.whatOurMembersSay')}
               </h2>
-              <p className="text-[var(--hm-fg-muted)] max-w-xl mx-auto">
+              <p className="mt-3 max-w-xl mx-auto text-[15px] text-[var(--hm-fg-muted)]">
                 {t('premium.joinHundredsOfSuccessfulProfessionals')}
               </p>
             </div>
@@ -669,38 +606,22 @@ export default function PremiumPlansPage() {
         </section>
 
         {/* ========== STATS SECTION ========== */}
-        <section className="py-20 bg-[var(--hm-bg-elevated)]">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <section className="border-y border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6">
+            <div className="grid grid-cols-2 gap-y-10 md:grid-cols-4 md:gap-y-0 md:divide-x md:divide-[var(--hm-border-subtle)]">
               {[
-                { icon: Shield, value: "7", label: t('premium.dayGuarantee'), color: "#10B981" },
-                { icon: Crown, value: "500+", label: t('premium.eliteMembers'), color: COLORS.gold },
-                { icon: Star, value: "4.9", label: t('premium.avgRating'), color: "#F59E0B" },
-                { icon: TrendingUp, value: "10x", label: t('premium.moreViews'), color: COLORS.terracotta },
+                { value: "7", label: t('premium.dayGuarantee') },
+                { value: "500+", label: t('premium.eliteMembers') },
+                { value: "4.9", label: t('premium.avgRating') },
+                { value: "10x", label: t('premium.moreViews') },
               ].map((stat, i) => (
-                <div
-                  key={i}
-                  className="relative text-center p-8 rounded-2xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border-subtle)] shadow-sm hover:shadow-xl transition-all duration-500 group overflow-hidden"
-                >
-                  {/* Hover glow */}
-                  <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    style={{ background: `radial-gradient(circle at center, ${stat.color}10 0%, transparent 70%)` }}
-                  />
-                  
-                  <div 
-                    className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
-                    style={{ background: `${stat.color}15` }}
-                  >
-                    <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
-                  </div>
-                  <p 
-                    className="text-4xl font-bold text-[var(--hm-fg-primary)] mb-2"
-                    style={{ fontFamily: "var(--font-sans)" }}
-                  >
+                <div key={i} className="px-2 text-center">
+                  <p className="text-[44px] font-bold leading-none tabular-nums tracking-[-0.04em] text-[var(--hm-fg-primary)] sm:text-[52px]">
                     {stat.value}
                   </p>
-                  <p className="text-[var(--hm-fg-muted)] text-sm">{stat.label}</p>
+                  <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--hm-fg-muted)]">
+                    {stat.label}
+                  </p>
                 </div>
               ))}
             </div>
@@ -710,11 +631,11 @@ export default function PremiumPlansPage() {
         {/* ========== FAQ SECTION ========== */}
         <section className="py-24 bg-[var(--hm-bg-page)]">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12">
-              <h2 
-                className="text-3xl font-bold text-[var(--hm-fg-primary)] mb-4"
-                style={{ fontFamily: "var(--font-sans)" }}
-              >
+            <div className="text-center mb-10">
+              <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--hm-fg-muted)]">
+                FAQ
+              </p>
+              <h2 className="text-[28px] sm:text-[34px] font-bold leading-tight tracking-[-0.03em] text-[var(--hm-fg-primary)]">
                 {t('premium.frequentlyAskedQuestions')}
               </h2>
             </div>
@@ -733,64 +654,40 @@ export default function PremiumPlansPage() {
           </div>
         </section>
 
-        {/* ========== FINAL CTA ========== */}
-        <section className="py-24 relative overflow-hidden">
-          {/* Background */}
-          <div 
-            className="absolute inset-0"
-            style={{ background: `linear-gradient(135deg, ${COLORS.terracotta}, ${COLORS.terracottaDark})` }}
-          />
-          <div 
-            className="absolute inset-0 opacity-20"
-            style={{ 
-              backgroundImage: `radial-gradient(circle at 20% 30%, ${COLORS.gold}60 0%, transparent 40%), 
-                               radial-gradient(circle at 80% 70%, rgba(255,255,255,0.2) 0%, transparent 40%)`,
-            }}
-          />
-          <AnimatedStars />
-
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 relative text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm mb-8">
-              <Gem className="w-4 h-4 text-white" />
-              <span className="text-white/90 text-sm font-medium">
-                {t('premium.becomeEliteToday')}
-              </span>
-            </div>
-
-            <h2 
-              className="text-4xl sm:text-5xl font-bold text-white mb-6"
-              style={{ fontFamily: "var(--font-sans)" }}
-            >
+        {/* ========== FINAL CTA - one bold vermillion fold ========== */}
+        <section
+          className="relative overflow-hidden py-24"
+          style={{ background: "var(--hm-brand-500)" }}
+        >
+          <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
+            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-white/70">
+              {t('premium.becomeEliteToday')}
+            </p>
+            <h2 className="text-[34px] font-bold leading-[1.08] tracking-[-0.03em] text-white sm:text-[46px]">
               {t('premium.readyForSuccess')}
             </h2>
-            <p className="text-white/80 text-lg max-w-xl mx-auto mb-10">
+            <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-white/85">
               {t('premium.joinTheBestProfessionalsAnd')}
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button
-                onClick={() => handleSelectPlan("elite")}
-                variant="secondary"
-                size="lg"
-                rightIcon={<Crown className="w-5 h-5" />}
-                className="shadow-2xl hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-              >
-                {t('premium.chooseElite')}
-              </Button>
-              <Button
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <button
                 onClick={() => handleSelectPlan("pro")}
-                variant="ghost"
-                size="lg"
-                className="text-white border-white/30 hover:bg-white/10"
-                rightIcon={<ArrowRight className="w-5 h-5" />}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white px-7 text-[14px] font-semibold text-[var(--hm-brand-500)] transition-colors hover:bg-white/90"
               >
                 {t('premium.proPlan')}
-              </Button>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => handleSelectPlan("elite")}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/40 px-7 text-[14px] font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                {t('premium.chooseElite')}
+              </button>
             </div>
 
-            {/* Final guarantee */}
-            <p className="text-white/60 text-sm mt-8 flex items-center justify-center gap-2">
-              <Shield className="w-4 h-4" />
+            <p className="mt-8 inline-flex items-center justify-center gap-2 text-[13px] text-white/70">
+              <Shield className="h-4 w-4" />
               {t('premium.7dayMoneybackGuarantee')}
             </p>
           </div>

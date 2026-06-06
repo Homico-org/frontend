@@ -164,7 +164,7 @@ export default function AddSpaceModal({
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="md" showCloseButton disableHistory>
+    <Modal isOpen={isOpen} onClose={onClose} size="md" showCloseButton>
       <ModalHeader title={isEdit ? t('common.edit') : t('projects.roomAdd')} />
       <ModalBody>
         <div className="flex flex-col gap-4">

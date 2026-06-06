@@ -135,12 +135,23 @@ const SUPPLIER_DOMAINS: Record<string, string> = {
 };
 
 const faviconUrl = (domain: string) =>
-  `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+  `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 
 /** A favicon URL for the supplier's shop, or undefined when domain unknown. */
 export function supplierLogo(key: string): string | undefined {
   const domain = SUPPLIER_DOMAINS[key];
   return domain ? faviconUrl(domain) : undefined;
+}
+
+// Official logo files for shops we have proper assets for. Drop a file in
+// `frontend/public/logos/` and map it here - it takes priority over the
+// favicon and renders full-size + razor-sharp at any tile size (favicons cap
+// out around 32px). Example: `legoroom: '/logos/legoroom.svg'`.
+const SUPPLIER_LOGO_FILES: Record<string, string> = {};
+
+/** A high-res logo file for the shop, when we have one bundled. */
+export function supplierLogoFile(key?: string): string | undefined {
+  return key ? SUPPLIER_LOGO_FILES[key] : undefined;
 }
 
 /**

@@ -185,7 +185,9 @@ export function Tabs({
       aria-orientation="horizontal"
       className={cn(
         tabsContainerVariants({ variant, size }),
-        scrollable && 'overflow-x-auto scrollbar-hide',
+        // Non-full-width tab rows scroll instead of overflowing on narrow
+        // screens; full-width tabs already fill the row so they never need it.
+        (scrollable || !fullWidth) && 'overflow-x-auto scrollbar-hide',
         className
       )}
     >

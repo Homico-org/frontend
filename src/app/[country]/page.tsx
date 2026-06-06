@@ -51,7 +51,7 @@ export default function HomePage() {
       name: "Homico",
       description: m.tagline,
       url: `${APP_URL}/${country.toLowerCase()}`,
-      image: `${APP_URL}/og-image.png`,
+      image: `${APP_URL}/api/og`,
       address: {
         "@type": "PostalAddress",
         addressLocality: m.city,

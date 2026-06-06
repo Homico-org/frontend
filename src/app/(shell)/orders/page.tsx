@@ -3,9 +3,11 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { PageShell } from '@/components/ui/PageShell';
+import { Skeleton } from '@/components/ui/Skeleton';
 import EmptyState from '@/components/common/EmptyState';
-import { Package } from 'lucide-react';
+import { formatDate } from '@/utils/dateUtils';
+import { ChevronRight, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
@@ -14,7 +16,7 @@ import {
 } from '@/components/shop/orderStatus';
 
 interface OrderRow {
-  _id: string;
+  id: string;
   orderNumber: string;
   totalMinor: number;
   status: string;
@@ -22,11 +24,11 @@ interface OrderRow {
   items: { name: string; qty: number }[];
 }
 
-const fmt = (minor: number) => `${(minor / 100).toLocaleString()} ₾`;
+const fmt = (minor: number) => `${(minor / 100).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
 
 export default function ClientOrdersPage() {
   const { isAuthenticated, isLoading } = useAuth();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [orders, setOrders] = useState<OrderRow[] | null>(null);
 
   useEffect(() => {
@@ -37,23 +39,36 @@ export default function ClientOrdersPage() {
       .catch(() => setOrders([]));
   }, [isLoading, isAuthenticated]);
 
+  const headerProps = {
+    icon: Package,
+    title: t('orders.myOrders'),
+    subtitle: t('orders.trackYourOngoingAndCompleted'),
+    bodyContentClassName: 'mx-auto max-w-3xl',
+  } as const;
+
   if (isLoading || orders === null) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <LoadingSpinner size="lg" color="var(--hm-brand-500)" />
-      </div>
+      <PageShell {...headerProps}>
+        <div className="flex flex-col gap-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-[84px] rounded-2xl" />
+          ))}
+        </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 pb-12 pt-5 sm:px-6">
-      <h1 className="mb-1 text-[24px] font-bold text-[var(--hm-fg-primary)]">
-        {t('orders.myOrders')}
-      </h1>
-      <p className="mb-6 text-[14px] text-[var(--hm-fg-muted)]">
-        {t('orders.trackYourOngoingAndCompleted')}
-      </p>
-
+    <PageShell
+      {...headerProps}
+      rightContent={
+        orders.length > 0 ? (
+          <span className="inline-flex items-center justify-center rounded-full bg-[var(--hm-brand-500)]/10 px-2.5 py-1 text-xs font-semibold text-[var(--hm-brand-500)] tabular-nums">
+            {orders.length}
+          </span>
+        ) : undefined
+      }
+    >
       {orders.length === 0 ? (
         <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]">
           <EmptyState
@@ -68,34 +83,48 @@ export default function ClientOrdersPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {orders.map((o) => (
-            <Link
-              key={o._id}
-              href={`/orders/${o._id}`}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-4 transition-colors hover:border-[var(--hm-brand-500)]"
-            >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-[14px] font-bold text-[var(--hm-fg-primary)]">
-                    {o.orderNumber}
-                  </span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${ORDER_STATUS_TONE[o.status] || ''}`}
-                  >
-                    {t(orderStatusLabelKey(o.status))}
+          {orders.map((o) => {
+            const itemCount = o.items.reduce((s, i) => s + i.qty, 0);
+            return (
+              <Link
+                key={o.id}
+                href={`/orders/${o.id}`}
+                className="group flex items-center gap-4 rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-3.5 transition-all hover:border-[var(--hm-brand-500)] hover:shadow-[var(--hm-shadow-sm)]"
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] transition-colors group-hover:bg-[var(--hm-brand-500)]/10 group-hover:text-[var(--hm-brand-500)]">
+                  <Package className="h-5 w-5" strokeWidth={1.8} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[14px] font-bold text-[var(--hm-fg-primary)]">
+                      {o.orderNumber}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${ORDER_STATUS_TONE[o.status] || ''}`}
+                    >
+                      {t(orderStatusLabelKey(o.status))}
+                    </span>
+                  </div>
+                  <p className="mt-1 truncate text-[12px] text-[var(--hm-fg-secondary)]">
+                    {o.items.map((i) => `${i.qty}× ${i.name}`).join(', ')}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-[var(--hm-fg-muted)] tabular-nums">
+                    {formatDate(o.createdAt, locale)} · {itemCount}×
+                  </p>
+                </div>
+
+                <div className="shrink-0 text-right">
+                  <span className="text-[15px] font-bold tabular-nums text-[var(--hm-fg-primary)]">
+                    {fmt(o.totalMinor)}
                   </span>
                 </div>
-                <p className="mt-1 truncate text-[12px] text-[var(--hm-fg-muted)]">
-                  {o.items.map((i) => `${i.qty}× ${i.name}`).join(', ')}
-                </p>
-              </div>
-              <span className="shrink-0 text-[15px] font-bold tabular-nums text-[var(--hm-fg-primary)]">
-                {fmt(o.totalMinor)}
-              </span>
-            </Link>
-          ))}
+                <ChevronRight className="h-4 w-4 shrink-0 text-[var(--hm-fg-muted)] transition-colors group-hover:text-[var(--hm-brand-500)]" />
+              </Link>
+            );
+          })}
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }
