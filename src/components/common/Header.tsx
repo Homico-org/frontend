@@ -73,6 +73,16 @@ type HeaderProject = {
   photos?: string[];
 };
 
+// Lightweight shape for the Shop mega-dropdown's recent-order cards.
+type HeaderOrder = {
+  id?: string;
+  _id?: string;
+  orderNumber: string;
+  status: string;
+  totalMinor: number;
+  items?: { name: string; qty: number; imageUrl?: string }[];
+};
+
 export default function Header({ fixed = true }: { fixed?: boolean }) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
@@ -109,6 +119,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
     | "activity";
   const [openMenuKey, setOpenMenuKey] = useState<NavMenuKey | null>(null);
   const [myProjects, setMyProjects] = useState<HeaderProject[] | null>(null);
+  const [myOrders, setMyOrders] = useState<HeaderOrder[] | null>(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   // Refs to the avatar trigger and the portaled dropdown panel. Click-outside
@@ -251,11 +262,13 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openMenuKey]);
 
-  // The Projects mega-dropdown shows the user's real projects as cards, so
-  // fetch them once authenticated (cheap list; refreshes on auth change).
+  // The Projects + Shop mega-dropdowns show the user's real projects / recent
+  // orders as cards, so fetch both once authenticated (cheap lists; refresh on
+  // auth change).
   useEffect(() => {
     if (!isAuthenticated) {
       setMyProjects(null);
+      setMyOrders(null);
       return;
     }
     let cancelled = false;
@@ -266,6 +279,14 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
       })
       .catch(() => {
         if (!cancelled) setMyProjects([]);
+      });
+    api
+      .get("/orders")
+      .then((r) => {
+        if (!cancelled) setMyOrders((r.data as HeaderOrder[]) || []);
+      })
+      .catch(() => {
+        if (!cancelled) setMyOrders([]);
       });
     return () => {
       cancelled = true;
@@ -573,6 +594,14 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                   (i) => i.variant === "create",
                 );
 
+                // The Shop menu mirrors Projects: a prominent "browse catalog"
+                // card + the user's recent orders as cards, no "view all".
+                const isShop = openMenuKey === "shop";
+                const orderList = isShop ? (myOrders ?? []).slice(0, 7) : [];
+                const catalogItem = visibleShopMenuItems.find(
+                  (i) => i.key === "shop-catalog",
+                );
+
                 // Footer summary (activity menu only) - the top two non-zero
                 // activity categories, sage-checked. Mirrors the Paper drawing's
                 // "3 new invitations / 2 awaiting reply" stat row, driven by the
@@ -806,6 +835,101 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                   );
                 };
 
+                // A recent order rendered as a compact card: the first item's
+                // thumbnail, the order number, a status pill, and the total.
+                const renderOrderCard = (o: HeaderOrder) => {
+                  const oid = o.id || o._id;
+                  const thumb = o.items?.find((i) => i.imageUrl)?.imageUrl;
+                  const count = (o.items ?? []).reduce(
+                    (n, i) => n + (i.qty || 1),
+                    0,
+                  );
+                  return (
+                    <Link
+                      key={oid}
+                      href={`/orders/${oid}`}
+                      role="menuitem"
+                      className="group flex flex-col overflow-hidden rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-page)] transition-all hover:-translate-y-0.5 hover:border-[var(--hm-brand-500)] hover:shadow-[var(--hm-shadow-md)]"
+                      onClick={() => {
+                        setOpenMenuKey(null);
+                        trackEvent("nav_click", "order-card");
+                      }}
+                    >
+                      <div className="relative flex h-24 w-full items-center justify-center overflow-hidden bg-[var(--hm-bg-tertiary)]">
+                        {thumb ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            referrerPolicy="no-referrer"
+                            src={storage.getOptimizedImageUrl(thumb, "feedCard")}
+                            alt=""
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        ) : (
+                          <Package
+                            className="h-7 w-7 text-[var(--hm-fg-muted)]"
+                            strokeWidth={1.6}
+                          />
+                        )}
+                        <span className="absolute left-2 top-2 rounded-full bg-[var(--hm-bg-elevated)]/90 px-2 py-0.5 text-[10px] font-semibold text-[var(--hm-fg-secondary)] backdrop-blur-sm">
+                          {(() => {
+                            const s = t(`orders.status.${o.status}`);
+                            return s.startsWith("orders.status.")
+                              ? o.status
+                              : s;
+                          })()}
+                        </span>
+                      </div>
+                      <div className="p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate text-[13px] font-bold text-[var(--hm-fg-primary)]">
+                            {o.orderNumber}
+                          </span>
+                          <span className="shrink-0 text-[12px] font-bold tabular-nums text-[var(--hm-fg-primary)]">
+                            {(o.totalMinor / 100).toLocaleString()} ₾
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-[11px] text-[var(--hm-fg-muted)]">
+                          {t("header.menuSectionCount", { count })}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                };
+
+                // Prominent "browse catalog" card that opens /shop - the shop
+                // menu's primary action, sitting first in the order-card grid.
+                const renderCatalogCard = (item: DropdownItem) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.key}
+                      href={item.href}
+                      role="menuitem"
+                      className="group flex flex-col justify-between rounded-xl p-4 text-white transition-transform hover:-translate-y-0.5"
+                      style={{ background: ACCENT_COLOR }}
+                      onClick={() => {
+                        setOpenMenuKey(null);
+                        trackEvent("nav_click", item.key);
+                      }}
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-white/20">
+                        <Icon
+                          className="h-[18px] w-[18px] text-white"
+                          strokeWidth={1.8}
+                        />
+                      </div>
+                      <div className="mt-3">
+                        <span className="block text-[14px] font-bold">
+                          {item.label}
+                        </span>
+                        <span className="mt-0.5 block text-[11px] text-white/80">
+                          {item.description}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                };
+
                 return (
                   <div
                     ref={navMenuPanelRef}
@@ -833,7 +957,9 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                           {t("header.menuSectionCount", {
                             count: isProjects
                               ? projectList.length
-                              : tiles.length,
+                              : isShop
+                                ? orderList.length
+                                : tiles.length,
                           })}
                         </span>
                       </div>
@@ -843,6 +969,11 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                           {projectList.map(renderProjectCard)}
                           {newProjectItem && renderCreateCard(newProjectItem)}
                         </div>
+                      ) : isShop ? (
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                          {catalogItem && renderCatalogCard(catalogItem)}
+                          {orderList.map(renderOrderCard)}
+                        </div>
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
                           {tiles.map(renderTile)}
@@ -851,9 +982,9 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
 
                       {/* Footer - real activity stats (sage-checked) on the
                           left, "view all" link to the menu's primary
-                          destination on the right. Hidden for Projects, where
-                          the cards are the full list (no "view all"). */}
-                      {!isProjects && (
+                          destination on the right. Hidden for Projects/Shop,
+                          where the cards are the full list (no "view all"). */}
+                      {!isProjects && !isShop && (
                       <div className="flex items-center justify-between gap-4 pt-5 mt-6 border-t border-[var(--hm-border)]">
                         <div className="flex items-center gap-5 min-w-0">
                           {activityStats.map((stat) => (
