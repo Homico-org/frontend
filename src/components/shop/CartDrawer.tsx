@@ -152,9 +152,9 @@ export default function CartDrawer({
                           type="button"
                           onClick={() => setQty(product.id, qty - 1)}
                           aria-label="-"
-                          className="flex h-6 w-6 items-center justify-center rounded-full text-[var(--hm-fg-secondary)] transition-colors hover:text-[var(--hm-fg-primary)]"
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--hm-fg-secondary)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)] active:bg-[var(--hm-bg-tertiary)]"
                         >
-                          <Minus className="h-3 w-3" />
+                          <Minus className="h-3.5 w-3.5" />
                         </button>
                         <span className="w-6 text-center text-[12px] font-semibold tabular-nums text-[var(--hm-fg-primary)]">
                           {qty}
@@ -163,9 +163,9 @@ export default function CartDrawer({
                           type="button"
                           onClick={() => setQty(product.id, qty + 1)}
                           aria-label="+"
-                          className="flex h-6 w-6 items-center justify-center rounded-full text-[var(--hm-fg-secondary)] transition-colors hover:text-[var(--hm-fg-primary)]"
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--hm-fg-secondary)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)] active:bg-[var(--hm-bg-tertiary)]"
                         >
-                          <Plus className="h-3 w-3" />
+                          <Plus className="h-3.5 w-3.5" />
                         </button>
                       </div>
                       <span className="text-[13px] font-bold tabular-nums text-[var(--hm-fg-primary)]">
