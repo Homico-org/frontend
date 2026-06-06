@@ -27,7 +27,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 
 interface MobileNavDrawerProps {
   isOpen: boolean;
@@ -41,6 +42,14 @@ interface NavLink {
   icon: typeof Home;
   onClick?: () => void;
   external?: boolean;
+  // Indented, muted sub-row (e.g. an individual project under "Projects").
+  subtle?: boolean;
+}
+
+interface ProjectLite {
+  id?: string;
+  _id?: string;
+  title: string;
 }
 
 interface NavSection {
@@ -61,6 +70,27 @@ export default function MobileNavDrawer({
   const isPro = user?.role === UserRole.PRO;
   const isClient = user?.role === UserRole.CLIENT;
   const isAdmin = user?.role === UserRole.ADMIN;
+
+  // The user's real projects, listed as sub-rows under "Projects".
+  const [projects, setProjects] = useState<ProjectLite[] | null>(null);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setProjects(null);
+      return;
+    }
+    let cancelled = false;
+    api
+      .get("/projects")
+      .then((r) => {
+        if (!cancelled) setProjects((r.data as ProjectLite[]) || []);
+      })
+      .catch(() => {
+        if (!cancelled) setProjects([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
 
   // Lock body scroll while open. Restore on close/unmount.
   useEffect(() => {
@@ -135,6 +165,17 @@ export default function MobileNavDrawer({
       href: "/projects",
       label: t("header.projects"),
       icon: ListChecks,
+    });
+    // Each real project as an indented sub-row under "Projects".
+    (projects ?? []).slice(0, 6).forEach((p) => {
+      const pid = p.id || p._id;
+      personalItems.push({
+        key: `proj-${pid}`,
+        href: `/projects/${pid}`,
+        label: p.title || t("header.projects"),
+        icon: ListChecks,
+        subtle: true,
+      });
     });
     if (isClient) {
       personalItems.push({
@@ -316,7 +357,14 @@ export default function MobileNavDrawer({
               <ul className="space-y-0.5">
                 {section.items.map((item) => {
                   const Icon = item.icon;
-                  const content = (
+                  const content = item.subtle ? (
+                    <>
+                      <span className="ml-[7px] mr-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--hm-border-strong)]" />
+                      <span className="flex-1 truncate text-[14px] text-[var(--hm-fg-secondary)]">
+                        {item.label}
+                      </span>
+                    </>
+                  ) : (
                     <>
                       <Icon
                         className="w-5 h-5 text-[var(--hm-fg-secondary)] shrink-0"
@@ -327,8 +375,9 @@ export default function MobileNavDrawer({
                       </span>
                     </>
                   );
-                  const className =
-                    "flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-[var(--hm-bg-tertiary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40 transition-colors text-left";
+                  const className = item.subtle
+                    ? "flex items-center gap-3 w-full pl-7 pr-3 py-2 rounded-lg hover:bg-[var(--hm-bg-tertiary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40 transition-colors text-left"
+                    : "flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-[var(--hm-bg-tertiary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40 transition-colors text-left";
 
                   if (item.onClick) {
                     return (
