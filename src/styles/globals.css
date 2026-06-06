@@ -306,6 +306,12 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Stop iOS/Android from auto-inflating text in landscape (breaks layouts). */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Remove the grey/blue flash when tapping buttons & links - native feel.
+       Visible focus/active states are still provided by component styles. */
+    -webkit-tap-highlight-color: transparent;
   }
 
   html {

@@ -186,7 +186,7 @@ export function Modal({
         aria-label={ariaLabel}
         className={cn(
           modalVariants({ size }),
-          'max-h-[92vh] sm:max-h-[90vh] overflow-y-auto',
+          'max-h-[92vh] sm:max-h-[90vh] overflow-y-auto overscroll-contain',
           '',
           'animate-slide-up-sheet sm:animate-fade-in',
           className
