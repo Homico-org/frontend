@@ -45,7 +45,7 @@ export default function CategoryGrid({ onIntakeOpen }: CategoryGridProps) {
           </h2>
         </AnimatedSection>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-3 sm:gap-4">
           {categories.slice(0, 6).map((cat, i) => {
             const accent = cat.color || "var(--hm-brand-500)";
             return (

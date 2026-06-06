@@ -937,3 +937,14 @@ input[type='number'] {
     animation: none;
   }
 }
+
+/* Mobile: keep form fields >=16px so iOS Safari doesn't auto-zoom the
+   viewport when a field is focused. Components can use smaller type at >=sm
+   (desktop) where zoom isn't a concern. Excludes checkbox/radio. */
+@media (max-width: 639.98px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
