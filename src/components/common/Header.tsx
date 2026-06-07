@@ -596,6 +596,37 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                 const newProjectItem = visibleProjectsMenuItems.find(
                   (i) => i.variant === "create",
                 );
+                // Simple, consistent rows: each project becomes a standard nav
+                // tile (icon + name + a quiet status/progress line), rendered
+                // through the same renderTile used by every other menu. No
+                // cover images / progress bars - keeps the dropdown calm and
+                // scannable. New-project tile sits last.
+                const projectTiles: DropdownItem[] = projectList.map((p) => {
+                  const pct = Math.max(
+                    0,
+                    Math.min(100, Math.round(p.progress ?? 0)),
+                  );
+                  const statusRaw = p.status
+                    ? t(`status.${p.status}`)
+                    : "";
+                  const statusLabel =
+                    statusRaw && !statusRaw.startsWith("status.")
+                      ? statusRaw
+                      : p.status || "";
+                  return {
+                    key: (p.id || p._id) as string,
+                    href: `/projects/${p.id || p._id}`,
+                    label: p.title || t("header.projects"),
+                    description: [statusLabel, `${pct}%`]
+                      .filter(Boolean)
+                      .join(" · "),
+                    icon: ListChecks,
+                    showFor: "auth",
+                  };
+                });
+                const projectMenuTiles = newProjectItem
+                  ? [...projectTiles, newProjectItem]
+                  : projectTiles;
 
                 // The Shop menu mirrors Projects: a prominent "browse catalog"
                 // card + the user's recent orders as cards, no "view all".
@@ -732,112 +763,6 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                   );
                 };
 
-                // A real project rendered as an image card: cover photo (or a
-                // tinted icon fallback), title, status pill, and a thin
-                // progress bar. The whole card opens the project.
-                const renderProjectCard = (p: HeaderProject) => {
-                  const pid = p.id || p._id;
-                  const cover = p.coverImage || p.photos?.[0];
-                  const pct = Math.max(
-                    0,
-                    Math.min(100, Math.round(p.progress ?? 0)),
-                  );
-                  return (
-                    <Link
-                      key={pid}
-                      href={`/projects/${pid}`}
-                      role="menuitem"
-                      className="group flex flex-col overflow-hidden rounded-xl border border-[var(--hm-border)] bg-[var(--hm-bg-page)] transition-all hover:-translate-y-0.5 hover:border-[var(--hm-brand-500)] hover:shadow-[var(--hm-shadow-md)]"
-                      onClick={() => {
-                        setOpenMenuKey(null);
-                        trackEvent("nav_click", "project-card");
-                      }}
-                    >
-                      <div className="relative h-24 w-full overflow-hidden bg-[var(--hm-bg-tertiary)]">
-                        {cover ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            referrerPolicy="no-referrer"
-                            src={storage.getOptimizedImageUrl(cover, "feedCard")}
-                            alt=""
-                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center">
-                            <ListChecks
-                              className="h-7 w-7 text-[var(--hm-fg-muted)]"
-                              strokeWidth={1.6}
-                            />
-                          </div>
-                        )}
-                        {p.status && (
-                          <span className="absolute left-2 top-2 rounded-full bg-[var(--hm-bg-elevated)]/90 px-2 py-0.5 text-[10px] font-semibold text-[var(--hm-fg-secondary)] backdrop-blur-sm">
-                            {(() => {
-                              const s = t(`status.${p.status}`);
-                              return s.startsWith("status.") ? p.status : s;
-                            })()}
-                          </span>
-                        )}
-                      </div>
-                      <div className="p-3">
-                        <p className="truncate text-[13px] font-bold tracking-[-0.005em] text-[var(--hm-fg-primary)]">
-                          {p.title || t("header.projects")}
-                        </p>
-                        <div className="mt-2 flex items-center gap-2">
-                          <div className="h-1 flex-1 overflow-hidden rounded-full bg-[var(--hm-bg-tertiary)]">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${pct}%`,
-                                background: ACCENT_COLOR,
-                              }}
-                            />
-                          </div>
-                          <span className="font-mono text-[10px] tabular-nums text-[var(--hm-fg-muted)]">
-                            {pct}%
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                };
-
-                // The "start a new project" card - matches the create-tile
-                // vermillion dashed styling, sized to sit in the card grid.
-                const renderCreateCard = (item: DropdownItem) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.key}
-                      href={item.href}
-                      role="menuitem"
-                      className="group flex flex-col items-center justify-center gap-2 rounded-xl p-4 text-center transition-colors hover:bg-[var(--hm-bg-tertiary)]"
-                      style={{
-                        background: `${ACCENT_COLOR}0A`,
-                        border: `1px dashed ${ACCENT_COLOR}`,
-                      }}
-                      onClick={() => {
-                        setOpenMenuKey(null);
-                        trackEvent("nav_click", item.key);
-                      }}
-                    >
-                      <div
-                        className="flex h-10 w-10 items-center justify-center rounded-[10px]"
-                        style={{ background: ACCENT_COLOR }}
-                      >
-                        <Icon
-                          className="h-[18px] w-[18px]"
-                          style={{ color: "#fff" }}
-                          strokeWidth={1.8}
-                        />
-                      </div>
-                      <span className="text-[13px] font-bold text-[var(--hm-fg-primary)]">
-                        {item.label}
-                      </span>
-                    </Link>
-                  );
-                };
-
                 // A recent order rendered as a compact card: the first item's
                 // thumbnail, the order number, a status pill, and the total.
                 const renderOrderCard = (o: HeaderOrder) => {
@@ -968,9 +893,8 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
                       </div>
 
                       {isProjects ? (
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                          {projectList.map(renderProjectCard)}
-                          {newProjectItem && renderCreateCard(newProjectItem)}
+                        <div className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-3">
+                          {projectMenuTiles.map(renderTile)}
                         </div>
                       ) : isShop ? (
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
