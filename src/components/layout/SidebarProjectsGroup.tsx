@@ -54,14 +54,16 @@ export default function SidebarProjectsGroup({
     setExpanded(onProjectPage);
   }, [onProjectPage]);
 
+  // Fetch eagerly on mount (not lazily on first expand) so the project
+  // count badge is shown immediately, whether the group is collapsed or not.
   useEffect(() => {
-    if (!expanded || fetchedRef.current) return;
+    if (fetchedRef.current) return;
     fetchedRef.current = true;
     api
       .get('/projects')
       .then((r) => setProjects((r.data as ProjectLite[]) || []))
       .catch(() => setProjects([]));
-  }, [expanded]);
+  }, []);
 
   // Collapsed rail: just the icon link, no tree.
   if (isCollapsed) {
