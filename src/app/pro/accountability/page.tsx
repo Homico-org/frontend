@@ -269,9 +269,11 @@ export default function ProAccountabilityPage() {
           background-color: var(--acct-paper);
           color: var(--acct-ink);
           min-height: 100vh;
-          /* Paper grain via a tiny SVG noise turbulence. Cheap (data
-             URI), tile-friendly, no extra requests. Layered under the
-             content with low alpha so it never reads as a pattern. */
+          /* Soft warm vignettes over the paper ground. (A raw inline-SVG
+             noise data-URI used to live here as a third layer, but its
+             unescaped <svg>/quote characters broke the styled-jsx CSS
+             parser - silently killing this rule and every rule after it,
+             which collapsed the whole page to unstyled defaults.) */
           background-image:
             radial-gradient(
               ellipse at top left,
@@ -282,9 +284,7 @@ export default function ProAccountabilityPage() {
               ellipse at bottom right,
               rgba(169, 43, 8, 0.03),
               transparent 50%
-            ),
-            url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0.08 0 0 0 0 0.07 0 0 0 0 0.05 0 0 0 0.18 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-          background-blend-mode: multiply;
+            );
           font-family: var(--acct-body), -apple-system, BlinkMacSystemFont, sans-serif;
           font-weight: 400;
           font-size: 17px;

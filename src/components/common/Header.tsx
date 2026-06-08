@@ -411,7 +411,6 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
     { key: "my-reviews", href: "/my-reviews", label: t("header.myReviews"), description: t("header.descriptions.myReviews"), icon: Star, showFor: "clientAndAdmin" },
     { key: "pro-reviews", href: "/pro/reviews", label: t("header.myReviews"), description: t("header.descriptions.myReviews"), icon: Star, showFor: "pro" },
     { key: "analytics", href: "/pro/analytics", label: t("header.analytics"), description: t("header.descriptions.analytics"), icon: BarChart3, showFor: "proAndAdmin" },
-    { key: "portfolio", href: "/pro/portfolio", label: t("header.portfolio"), description: t("header.descriptions.portfolio"), icon: ImageIcon, showFor: "proAndAdmin" },
   ];
   const visibleDropdownActivityItems = dropdownActivityItems.filter((item) =>
     matchesRole(item.showFor),
