@@ -1045,6 +1045,7 @@ export default function ProjectDashboardPage() {
     return (
       <ProjectClientView
         project={project}
+        projectId={projectId}
         onSeeFullDetails={(tab) => {
           if (tab) setActiveTab(tab);
           setClientSimpleView(false);

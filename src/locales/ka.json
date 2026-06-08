@@ -2654,6 +2654,10 @@
       "needApprove": "დაამტკიცეთ: {item}",
       "aDocument": "დოკუმენტი",
       "needApproveDesign": "დაამტკიცეთ დიზაინი ({role})",
+      "needApprovePlan": "დაამტკიცეთ გადახდის გეგმა ({role})",
+      "needFund": "გადაიხადეთ: {label} - {amount}",
+      "needConfirm": "დაადასტურეთ შესრულება: {label}",
+      "aPro": "ოსტატი",
       "latestPhotos": "ბოლო ფოტოები",
       "budget": "ბიუჯეტი",
       "notSet": "არ არის მითითებული",
@@ -4636,7 +4640,8 @@
     "activationTitle": "დაიწყეთ რემონტი",
     "activationSubtitle": "შექმენით პროექტი სამუშაოს დასაგეგმად და გუნდის ასაყვანად, ან განათავსეთ ცალკე სამუშაო ფასების მისაღებად.",
     "activationStartProject": "პროექტის შექმნა",
-    "activationPostJob": "სამუშაოს განთავსება"
+    "activationPostJob": "სამუშაოს განთავსება",
+    "activationBannerSub": "შექმენით პროექტი ან განათავსეთ სამუშაო - ერთ წუთში."
   },
   "feedback": {
     "title": "უკუკავშირი",

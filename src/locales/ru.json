@@ -2657,6 +2657,10 @@
       "needApprove": "Утвердите: {item}",
       "aDocument": "документ",
       "needApproveDesign": "Утвердите дизайн ({role})",
+      "needApprovePlan": "Утвердите план оплаты ({role})",
+      "needFund": "Оплатите: {label} - {amount}",
+      "needConfirm": "Подтвердите работу: {label}",
+      "aPro": "мастер",
       "latestPhotos": "Последние фото",
       "budget": "Бюджет",
       "notSet": "Не указан",
@@ -4631,7 +4635,8 @@
     "activationTitle": "Начните ремонт",
     "activationSubtitle": "Создайте проект, чтобы спланировать работу и собрать команду, или разместите отдельную работу для расчёта цены.",
     "activationStartProject": "Создать проект",
-    "activationPostJob": "Разместить работу"
+    "activationPostJob": "Разместить работу",
+    "activationBannerSub": "Создайте проект или разместите работу - это займёт минуту."
   },
   "feedback": {
     "title": "Обратная связь",

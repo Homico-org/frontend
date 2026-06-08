@@ -1,18 +1,20 @@
 'use client';
 
 import Avatar from '@/components/common/Avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/contexts/ToastContext';
+import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
 import {
   ArrowRight,
   CheckCircle2,
   ChevronRight,
   ClipboardCheck,
-  Image as ImageIcon,
+  Wallet,
 } from 'lucide-react';
 import Image from 'next/image';
+import { useCallback, useEffect, useState } from 'react';
 
 // Minimal subset of the dashboard payload the client view reads. The page
 // passes its full `project` object, which is a superset of this.
@@ -44,6 +46,25 @@ interface ClientProject {
   documents?: { id: string; name?: string; approvalStatus?: string }[];
 }
 
+interface MilestonePayment {
+  id?: string;
+  _id?: string;
+  engagementId: string;
+  label: string;
+  amountMinor: number;
+  roleLabel?: string;
+  status: string;
+}
+
+// A pending thing the client must do. `onClick` either jumps into the full
+// view (for surfaces that live there) or fires a money action inline.
+interface NeedItem {
+  id: string;
+  label: string;
+  onClick: () => void;
+  money?: boolean;
+}
+
 const PHASES: { key: string; labelKey: string }[] = [
   { key: 'design', labelKey: 'projects.phaseDesign' },
   { key: 'permits', labelKey: 'projects.phasePermits' },
@@ -51,11 +72,14 @@ const PHASES: { key: string; labelKey: string }[] = [
   { key: 'finishing', labelKey: 'projects.phaseFinishing' },
 ];
 
-const money = (n: number) =>
+const money = (minor: number) =>
+  `${Math.round(minor / 100).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
+const moneyMajor = (n: number) =>
   `${Math.round(n).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
 
 interface Props {
   project: ClientProject;
+  projectId: string;
   onSeeFullDetails: (tab?: string) => void;
 }
 
@@ -64,10 +88,77 @@ interface Props {
  * instead of the full project-management tabs. Answers the only three things a
  * client actually wants - is it on track, do I need to do anything, what's it
  * costing - and hides the engagement/step machinery behind "See full details".
- * Rendered only when viewerRole === 'client'.
+ * The "needs you" list now includes live money actions (approve / fund /
+ * confirm milestone payments). Rendered only when viewerRole === 'client'.
  */
-export default function ProjectClientView({ project, onSeeFullDetails }: Props) {
+export default function ProjectClientView({
+  project,
+  projectId,
+  onSeeFullDetails,
+}: Props) {
   const { t } = useLanguage();
+  const toast = useToast();
+
+  const [mps, setMps] = useState<MilestonePayment[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  const refetchMps = useCallback(() => {
+    api
+      .get<MilestonePayment[]>(`/milestone-payments/project/${projectId}`)
+      .then((r) => setMps(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setMps([]));
+  }, [projectId]);
+  useEffect(() => {
+    refetchMps();
+  }, [refetchMps]);
+
+  const approvePlan = async (engagementId: string) => {
+    setBusy(true);
+    try {
+      await api.post('/milestone-payments/approve', {
+        projectId,
+        engagementId,
+      });
+      toast.success(t('common.success'), t('projects.savedChanges'));
+      refetchMps();
+    } catch {
+      toast.error(t('common.error'), t('common.tryAgain'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const fund = async (id: string) => {
+    setBusy(true);
+    try {
+      const r = await api.post<{ redirectUrl?: string }>(
+        `/milestone-payments/${id}/fund`,
+      );
+      const url = r.data?.redirectUrl;
+      if (url) {
+        window.location.href = url;
+        return;
+      }
+      refetchMps();
+    } catch {
+      toast.error(t('common.error'), t('common.tryAgain'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const confirmWork = async (id: string) => {
+    setBusy(true);
+    try {
+      await api.post(`/milestone-payments/${id}/confirm`);
+      toast.success(t('common.success'), t('projects.savedChanges'));
+      refetchMps();
+    } catch {
+      toast.error(t('common.error'), t('common.tryAgain'));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const progress = Math.max(0, Math.min(100, Math.round(project.progress || 0)));
   const activeMilestone = (project.milestones || []).find(
@@ -80,33 +171,75 @@ export default function ProjectClientView({ project, onSeeFullDetails }: Props) 
   const focusText = activeMilestone?.title || currentPhaseLabel;
 
   // ---- "Needs you" - every pending client decision in one place ----
-  const actions: { id: string; label: string; tab: string }[] = [];
+  const needs: NeedItem[] = [];
+
+  // Money first - it's the highest-stakes action and the one most likely to
+  // stall a project if the client doesn't notice it.
+  const proposedEngagements = new Map<string, string>();
+  mps.forEach((m) => {
+    if (m.status === 'proposed') {
+      proposedEngagements.set(m.engagementId, m.roleLabel || '');
+    }
+  });
+  proposedEngagements.forEach((roleLabel, engagementId) => {
+    needs.push({
+      id: `mp-approve-${engagementId}`,
+      label: t('projects.client.needApprovePlan', {
+        role: roleLabel || t('projects.client.aPro'),
+      }),
+      onClick: () => !busy && approvePlan(engagementId),
+      money: true,
+    });
+  });
+  mps.forEach((m) => {
+    const id = m.id || m._id || '';
+    if (m.status === 'approved') {
+      needs.push({
+        id: `mp-fund-${id}`,
+        label: t('projects.client.needFund', {
+          label: m.label,
+          amount: money(m.amountMinor),
+        }),
+        onClick: () => !busy && fund(id),
+        money: true,
+      });
+    } else if (m.status === 'submitted') {
+      needs.push({
+        id: `mp-confirm-${id}`,
+        label: t('projects.client.needConfirm', { label: m.label }),
+        onClick: () => !busy && confirmWork(id),
+        money: true,
+      });
+    }
+  });
+
+  // Decisions that live in the full view - link there.
   (project.selections || []).forEach((s) => {
     if ((s.options?.length ?? 0) > 0 && !s.chosenOptionId) {
-      actions.push({
+      needs.push({
         id: `sel-${s.id}`,
         label: t('projects.client.needChoose', { item: s.title }),
-        tab: 'materials',
+        onClick: () => onSeeFullDetails('materials'),
       });
     }
   });
   (project.documents || []).forEach((d) => {
     if (d.approvalStatus === 'pending') {
-      actions.push({
+      needs.push({
         id: `doc-${d.id}`,
         label: t('projects.client.needApprove', {
           item: d.name || t('projects.client.aDocument'),
         }),
-        tab: 'library',
+        onClick: () => onSeeFullDetails('library'),
       });
     }
   });
   (project.engagements || []).forEach((e) => {
     if (e.designApproval?.status === 'pending') {
-      actions.push({
+      needs.push({
         id: `eng-${e.id}`,
         label: t('projects.client.needApproveDesign', { role: e.roleLabel }),
-        tab: 'team',
+        onClick: () => onSeeFullDetails('team'),
       });
     }
   });
@@ -118,7 +251,8 @@ export default function ProjectClientView({ project, onSeeFullDetails }: Props) 
     )
     .filter((p): p is { name?: string; avatar?: string } => !!p);
 
-  const agreed = project.budget?.planned || project.budgetMax || project.budgetMin || 0;
+  const agreed =
+    project.budget?.planned || project.budgetMax || project.budgetMin || 0;
   const committed = project.budget?.committed || 0;
 
   const ring = 2 * Math.PI * 34;
@@ -241,7 +375,7 @@ export default function ProjectClientView({ project, onSeeFullDetails }: Props) 
         >
           {t('projects.client.needsYou')}
         </p>
-        {actions.length === 0 ? (
+        {needs.length === 0 ? (
           <div
             className="flex items-center gap-3 rounded-2xl px-4 py-4"
             style={{
@@ -268,12 +402,13 @@ export default function ProjectClientView({ project, onSeeFullDetails }: Props) 
               border: `1px solid color-mix(in srgb, var(--hm-brand-500) 30%, transparent)`,
             }}
           >
-            {actions.map((a, i) => (
+            {needs.map((a, i) => (
               <button
                 key={a.id}
                 type="button"
-                onClick={() => onSeeFullDetails(a.tab)}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--hm-bg-tertiary)]"
+                disabled={busy}
+                onClick={a.onClick}
+                className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--hm-bg-tertiary)] disabled:opacity-60"
                 style={{
                   borderTop:
                     i === 0 ? 'none' : '1px solid var(--hm-border-subtle)',
@@ -286,10 +421,17 @@ export default function ProjectClientView({ project, onSeeFullDetails }: Props) 
                       'color-mix(in srgb, var(--hm-brand-500) 12%, transparent)',
                   }}
                 >
-                  <ClipboardCheck
-                    className="h-4 w-4"
-                    style={{ color: 'var(--hm-brand-500)' }}
-                  />
+                  {a.money ? (
+                    <Wallet
+                      className="h-4 w-4"
+                      style={{ color: 'var(--hm-brand-500)' }}
+                    />
+                  ) : (
+                    <ClipboardCheck
+                      className="h-4 w-4"
+                      style={{ color: 'var(--hm-brand-500)' }}
+                    />
+                  )}
                 </span>
                 <span
                   className="min-w-0 flex-1 truncate text-[13px] font-medium"
@@ -347,24 +489,18 @@ export default function ProjectClientView({ project, onSeeFullDetails }: Props) 
             border: '1px solid var(--hm-border-subtle)',
           }}
         >
-          <p
-            className="text-[11px]"
-            style={{ color: 'var(--hm-fg-muted)' }}
-          >
+          <p className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
             {t('projects.client.budget')}
           </p>
           <p
             className="mt-1 text-[20px] font-bold tabular-nums"
             style={{ color: 'var(--hm-fg-primary)' }}
           >
-            {agreed > 0 ? money(agreed) : t('projects.client.notSet')}
+            {agreed > 0 ? moneyMajor(agreed) : t('projects.client.notSet')}
           </p>
           {committed > 0 && (
-            <p
-              className="mt-0.5 text-[11px]"
-              style={{ color: 'var(--hm-fg-muted)' }}
-            >
-              {t('projects.client.committed', { amount: money(committed) })}
+            <p className="mt-0.5 text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
+              {t('projects.client.committed', { amount: moneyMajor(committed) })}
             </p>
           )}
         </div>
@@ -376,10 +512,7 @@ export default function ProjectClientView({ project, onSeeFullDetails }: Props) 
             border: '1px solid var(--hm-border-subtle)',
           }}
         >
-          <p
-            className="text-[11px]"
-            style={{ color: 'var(--hm-fg-muted)' }}
-          >
+          <p className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
             {t('projects.client.yourTeam')}
           </p>
           {team.length === 0 ? (
