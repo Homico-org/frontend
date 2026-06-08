@@ -1530,6 +1530,24 @@
         "title": "Сообщено о проблеме",
         "message": "По «{label}» сообщено о проблеме"
       },
+      "new_order": {
+        "title": "Новый оплаченный заказ",
+        "message": "Заказ {orderNumber} ({amount} ₾) готов к обработке"
+      },
+      "order_update": {
+        "title": "Обновление заказа"
+      },
+      "order_status": {
+        "paid": "Заказ {orderNumber} оплачен",
+        "processing": "Заказ {orderNumber} обрабатывается",
+        "shipped": "Заказ {orderNumber} отправлен",
+        "delivered": "Заказ {orderNumber} доставлен",
+        "cancelled": "Заказ {orderNumber} отменён"
+      },
+      "order_refunded": {
+        "title": "Возврат средств",
+        "message": "Заказ {orderNumber}: средства возвращены"
+      },
       "new_booking": {
         "title": "Новый запрос на бронирование",
         "message": "У вас новый запрос на бронирование на {date} в {time}"
@@ -3550,6 +3568,12 @@
       "approvedToast": "Одобрено",
       "rejectedToast": "Отклонено",
       "failedToReject": "Не удалось отклонить",
+      "feature": "Выделить",
+      "unfeature": "Убрать выделение",
+      "featured": "Выделенный",
+      "featuredToast": "Выделено",
+      "unfeaturedToast": "Выделение снято",
+      "failedToFeature": "Не удалось обновить",
       "noPendingProfessionals": "Нет специалистов на рассмотрении",
       "noProfessionalsFound": "Специалисты не найдены"
     },

@@ -1528,6 +1528,24 @@
         "title": "Issue reported",
         "message": "An issue was reported on \"{label}\""
       },
+      "new_order": {
+        "title": "New paid order",
+        "message": "Order {orderNumber} ({amount} ₾) is ready to fulfil"
+      },
+      "order_update": {
+        "title": "Order update"
+      },
+      "order_status": {
+        "paid": "Order {orderNumber} is paid",
+        "processing": "Order {orderNumber} is being prepared",
+        "shipped": "Order {orderNumber} has shipped",
+        "delivered": "Order {orderNumber} was delivered",
+        "cancelled": "Order {orderNumber} was cancelled"
+      },
+      "order_refunded": {
+        "title": "Order refunded",
+        "message": "Order {orderNumber}: amount refunded"
+      },
       "new_booking": {
         "title": "New Booking Request",
         "message": "You have a new booking request for {date} at {time}"
@@ -3555,6 +3573,12 @@
       "approvedToast": "Approved",
       "rejectedToast": "Rejected",
       "failedToReject": "Failed to reject",
+      "feature": "Feature",
+      "unfeature": "Unfeature",
+      "featured": "Featured",
+      "featuredToast": "Featured",
+      "unfeaturedToast": "Removed from featured",
+      "failedToFeature": "Failed to update featured",
       "noPendingProfessionals": "No pending professionals",
       "noProfessionalsFound": "No professionals found"
     },

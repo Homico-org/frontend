@@ -1528,6 +1528,24 @@
         "title": "დაფიქსირდა პრობლემა",
         "message": "„{label}\"-ზე დაფიქსირდა პრობლემა"
       },
+      "new_order": {
+        "title": "ახალი გადახდილი შეკვეთა",
+        "message": "შეკვეთა {orderNumber} ({amount} ₾) მზადაა დასამუშავებლად"
+      },
+      "order_update": {
+        "title": "შეკვეთის განახლება"
+      },
+      "order_status": {
+        "paid": "შეკვეთა {orderNumber} გადახდილია",
+        "processing": "შეკვეთა {orderNumber} მუშავდება",
+        "shipped": "შეკვეთა {orderNumber} გაიგზავნა",
+        "delivered": "შეკვეთა {orderNumber} მიწოდებულია",
+        "cancelled": "შეკვეთა {orderNumber} გაუქმდა"
+      },
+      "order_refunded": {
+        "title": "თანხის დაბრუნება",
+        "message": "შეკვეთა {orderNumber}: თანხა დაბრუნდა"
+      },
       "new_booking": {
         "title": "ახალი ჯავშნის მოთხოვნა",
         "message": "გაქვთ ახალი ჯავშნის მოთხოვნა {date} {time}-ზე"
@@ -3555,6 +3573,12 @@
       "approvedToast": "დამტკიცებულია",
       "rejectedToast": "უარყოფილია",
       "failedToReject": "ვერ მოხერხდა უარყოფა",
+      "feature": "გამორჩევა",
+      "unfeature": "გამორჩევის გაუქმება",
+      "featured": "გამორჩეული",
+      "featuredToast": "გამორჩეულია",
+      "unfeaturedToast": "გამორჩევა მოიხსნა",
+      "failedToFeature": "განახლება ვერ მოხერხდა",
       "noPendingProfessionals": "მოლოდინში არ არის პროფესიონალები",
       "noProfessionalsFound": "პროფესიონალები ვერ მოიძებნა"
     },
