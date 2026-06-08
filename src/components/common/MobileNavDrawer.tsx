@@ -13,7 +13,6 @@ import {
   Calendar,
   ClipboardList,
   Compass,
-  Hammer,
   HelpCircle,
   Home,
   Info,
@@ -189,10 +188,10 @@ export default function MobileNavDrawer({
     }
     if (isPro) {
       personalItems.push({
-        key: "my-work",
-        href: "/my-work",
-        label: t("header.myWork"),
-        icon: Hammer,
+        key: "my-space",
+        href: "/my-space",
+        label: t("header.mySpace"),
+        icon: LayoutDashboard,
       });
       personalItems.push({
         key: "my-proposals",

@@ -335,7 +335,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
     { key: "all-jobs", href: cl("/jobs"), label: t("header.allJobs"), description: t("header.descriptions.allJobs"), icon: Briefcase, showFor: "all" },
     { key: "post-job", href: cl("/post-job"), label: t("header.postJob"), description: t("header.descriptions.postJob"), icon: Plus, showFor: "all", variant: "create" },
     { key: "my-jobs", href: "/my-jobs", label: t("header.myJobs"), description: t("header.descriptions.myJobs"), icon: Hammer, showFor: "clientAndAdmin" },
-    { key: "my-work", href: "/my-work", label: t("header.myWork"), description: t("header.descriptions.myWork"), icon: LayoutDashboard, showFor: "proAndAdmin" },
+    { key: "my-space-jobs", href: "/my-space", label: t("header.mySpace"), description: t("header.descriptions.mySpace"), icon: LayoutDashboard, showFor: "proAndAdmin" },
   ];
   const visibleJobsMenuItems = jobsMenuItems.filter((i) => matchesRole(i.showFor));
 
@@ -387,7 +387,6 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   const dropdownActivityItems: DropdownItem[] = [
     { key: "my-space", href: "/my-space", label: t("header.mySpace"), description: t("header.descriptions.mySpace"), icon: LayoutDashboard, showFor: "proAndAdmin" },
     { key: "my-jobs-activity", href: "/my-jobs", label: t("header.myJobs"), description: t("header.descriptions.myJobs"), icon: Hammer, showFor: "clientAndAdmin" },
-    { key: "my-work-activity", href: "/my-work", label: t("header.myWork"), description: t("header.descriptions.myWork"), icon: Briefcase, showFor: "proAndAdmin" },
     { key: "my-proposals", href: "/my-proposals", label: t("header.myProposals"), description: t("header.descriptions.myProposals"), icon: ExternalLink, showFor: "proAndAdmin" },
     { key: "bookings", href: "/bookings", label: t("header.bookings"), description: t("header.descriptions.bookings"), icon: Calendar, showFor: "auth" },
     { key: "my-reviews", href: "/my-reviews", label: t("header.myReviews"), description: t("header.descriptions.myReviews"), icon: Star, showFor: "clientAndAdmin" },
@@ -407,8 +406,10 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   // Which activity-category count (if any) badges a given tile.
   const tileBadgeCount = (key: string): number => {
     switch (key) {
-      case "my-work":
-      case "my-work-activity":
+      // Project-engagement invites now live in My Space (the retired
+      // /my-work surface folded in), so they badge the My Space tiles.
+      case "my-space":
+      case "my-space-jobs":
         return activityCounts.invitations;
       case "my-jobs":
       case "my-jobs-activity":

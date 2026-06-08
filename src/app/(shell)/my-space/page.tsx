@@ -3,6 +3,7 @@
 import AuthGuard from "@/components/common/AuthGuard";
 import Avatar from "@/components/common/Avatar";
 import JobCard from "@/components/common/JobCard";
+import { ProjectInvitations } from "@/components/projects/ProjectInvitations";
 import ReviewItem from "@/components/professionals/ReviewItem";
 import type { Review } from "@/components/professionals/ReviewItem";
 import { Badge } from "@/components/ui/badge";
@@ -499,7 +500,8 @@ function MySpaceContent() {
     return () => window.removeEventListener('focus', handleFocus);
   }, [fetchData]);
 
-  /* ── Active work ── */
+  /* ── My work: active + completed (the retired /my-work page now lives
+     here as tabs). ── */
   const activeWork = useMemo(() => {
     return workProposals
       .filter((p) => p.status === "accepted" && p.projectTracking?.currentStage !== "completed")
@@ -509,6 +511,23 @@ function MySpaceContent() {
         return bT - aT;
       });
   }, [workProposals]);
+
+  const completedWork = useMemo(() => {
+    return workProposals
+      .filter(
+        (p) =>
+          p.projectTracking?.currentStage === "completed" ||
+          p.status === "completed",
+      )
+      .sort((a, b) => {
+        const aT = a.projectTracking?.completedAt ? new Date(a.projectTracking.completedAt).getTime() : 0;
+        const bT = b.projectTracking?.completedAt ? new Date(b.projectTracking.completedAt).getTime() : 0;
+        return bT - aT;
+      });
+  }, [workProposals]);
+
+  const [workTab, setWorkTab] = useState<"active" | "completed">("active");
+  const workList = workTab === "active" ? activeWork : completedWork;
 
   /* ── Review actions ── */
   const copyLink = async () => {
@@ -951,23 +970,55 @@ function MySpaceContent() {
            not a dead-end). */}
       {(isPro || isAdmin) && (
         <motion.section variants={itemVariants} className="mb-6">
+          {/* Pending project-engagement invites (renders nothing when empty). */}
+          <ProjectInvitations />
           <SectionHeader
-            title={t("mySpace.activeWork")}
-            count={activeWork.length}
-            viewAllHref={activeWork.length > 0 ? "/my-work" : undefined}
-            viewAllLabel={t("common.viewAll")}
+            title={t("mySpace.myWork")}
+            count={workList.length}
           />
-          {activeWork.length > 0 ? (
+          {/* Active / Completed tabs - the full work list (was a separate
+              /my-work page) now lives here. */}
+          <div className="mb-3 flex gap-2">
+            {(["active", "completed"] as const).map((tab) => {
+              const n = tab === "active" ? activeWork.length : completedWork.length;
+              const on = workTab === tab;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setWorkTab(tab)}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                    on
+                      ? "bg-[var(--hm-brand-500)] text-white"
+                      : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]"
+                  }`}
+                >
+                  {tab === "active"
+                    ? t("mySpace.activeWork")
+                    : t("common.completed")}
+                  {n > 0 && (
+                    <span className="tabular-nums opacity-80">{n}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          {workList.length > 0 ? (
             <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-2">
-              {activeWork.slice(0, 3).map((p, i) => renderWorkCard(p, i))}
+              {workList.map((p, i) => renderWorkCard(p, i))}
             </motion.div>
-          ) : (
+          ) : workTab === "active" ? (
             <EmptyBlock
               icon={Briefcase}
               text={t("mySpace.noActiveWork")}
               subtext={t("mySpace.workWillAppear")}
               actionLabel={t("mySpace.findNewJobs")}
               actionHref={cl("/jobs")}
+            />
+          ) : (
+            <EmptyBlock
+              icon={Briefcase}
+              text={t("mySpace.noCompletedWork")}
             />
           )}
         </motion.section>
