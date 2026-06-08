@@ -26,6 +26,10 @@ const PWAInstallPrompt = dynamic(() => import("./PWAInstallPrompt"), {
   ssr: false,
 });
 
+const EmailCapturePrompt = dynamic(() => import("./EmailCapturePrompt"), {
+  ssr: false,
+});
+
 interface ClientLayoutProps {
   children: React.ReactNode;
 }
@@ -44,6 +48,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       <LoginModal />
       <CriticalNotificationBanner />
       <CriticalNotificationOverlay />
+      <EmailCapturePrompt />
       {/* <PWAInstallPrompt /> */}
     </>
   );
