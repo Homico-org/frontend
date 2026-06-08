@@ -22,7 +22,7 @@ import { useClickOutside } from '@/hooks/useClickOutside';
 import { api } from '@/lib/api';
 import DatePicker from '@/components/common/DatePicker';
 import Checkbox from '@/components/ui/Checkbox';
-import { AlertTriangle, Bell, BriefcaseBusiness, Calendar, CreditCard, EyeOff, Lock, Mail, MessageCircle, RefreshCw, Shield, Smartphone, Trash2, User, X } from 'lucide-react';
+import { AlertTriangle, Bell, BriefcaseBusiness, Calendar, CreditCard, EyeOff, Landmark, Lock, Mail, MessageCircle, RefreshCw, Shield, Smartphone, Trash2, User, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -931,6 +931,26 @@ function SettingsPageContent() {
                 className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--hm-brand-500)] hover:underline"
               >
                 {t('payments.viewHistory')} →
+              </Link>
+            </div>
+          </section>
+        )}
+
+        {/* Payout account - pro-only: the bank account Homico sends escrow
+            earnings to. Was previously unreachable (no link), stranding pros
+            who couldn't set up where they get paid. */}
+        {user?.role === 'pro' && (
+          <section className="bg-[var(--hm-bg-elevated)] rounded-xl border border-[var(--hm-border-subtle)] overflow-hidden shadow-[0_1px_2px_0_rgba(15,23,42,0.04),0_4px_12px_-2px_rgba(15,23,42,0.04)]">
+            <SectionHeader icon={Landmark} label={t('settings.payouts')} />
+            <div className="p-4">
+              <p className="text-[13px] text-[var(--hm-fg-secondary)]">
+                {t('settings.payoutsDesc')}
+              </p>
+              <Link
+                href="/settings/payouts"
+                className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--hm-brand-500)] hover:underline"
+              >
+                {t('settings.managePayout')} →
               </Link>
             </div>
           </section>

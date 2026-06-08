@@ -13,6 +13,7 @@ import { getAdminActivityColor } from '@/utils/statusUtils';
 import {
   Activity as ActivityIcon,
   AlertCircle,
+  Flag,
   ArrowUpRight,
   BarChart3,
   Briefcase,
@@ -560,6 +561,7 @@ function AdminDashboardPageContent() {
             { label: t('admin.aiIndex'), icon: Zap, href: '/admin/ai-index', color: '#A855F7' },
             { label: t('admin.orders.title'), icon: ShoppingBag, href: '/admin/orders', color: '#0EA5E9' },
             { label: t('admin.disputes'), icon: AlertCircle, href: '/admin/disputes', color: '#EF4E24' },
+            { label: t('admin.reports'), icon: Flag, href: '/admin/reports', color: '#F43F5E' },
             { label: t('admin.payouts'), icon: Banknote, href: '/admin/payouts', color: '#10B981' },
             { label: t('admin.catalogSuggestions'), icon: Lightbulb, href: '/admin/catalog-suggestions', color: '#A855F7' },
             { label: t('admin.invites'), icon: Send, href: '/admin/invites', color: 'var(--hm-brand-500)', count: undefined },
