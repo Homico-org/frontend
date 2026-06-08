@@ -1546,6 +1546,10 @@
         "title": "Order refunded",
         "message": "Order {orderNumber}: amount refunded"
       },
+      "supply_gap": {
+        "title": "Supply gap",
+        "message": "No available pros for {jobTitle} ({category}). Source a pro or contact the client."
+      },
       "new_booking": {
         "title": "New Booking Request",
         "message": "You have a new booking request for {date} at {time}"
@@ -4619,6 +4623,10 @@
     "bugPlaceholder": "Describe the bug you encountered...",
     "featurePlaceholder": "Describe the feature you'd like...",
     "email": "Your email (optional)",
+    "emailOptional": "Email (optional)",
+    "phone": "Phone number",
+    "phonePlaceholder": "5XX XX XX XX",
+    "phoneRequired": "Please enter your phone number so we can reach you",
     "submit": "Send Feedback",
     "submitted": "Thank you!",
     "submittedMessage": "Your feedback has been received",
@@ -5245,6 +5253,29 @@
     "proUtilizationSub": "{hired} of {total} pros hired",
     "signups7d": "Signups 7d",
     "clients": "Clients",
+    "supplyTitle": "Supply & demand",
+    "ratio": "Pros per client",
+    "ratioSub": "{pros} pros : {clients} clients",
+    "newPros7d": "New pros 7d",
+    "newClients7d": "New clients 7d",
+    "clientShare7d": "Client share 7d",
+    "clientShare7dSub": "of new signups",
+    "activationTitle": "Client activation",
+    "clientsActivated": "Activated",
+    "activationRate": "Activation rate",
+    "activationRateSub": "{activated} of {total} did something",
+    "newClients30d": "New clients 30d",
+    "qualityTitle": "Supply quality",
+    "verifiedPros": "Verified",
+    "withPortfolio": "With portfolio",
+    "portfolioRateSub": "{rate}% of pros",
+    "withPricing": "With pricing",
+    "withReviews": "With reviews",
+    "inviteTitle": "Invite channel",
+    "invitesSent": "Invites sent",
+    "invitesActivated": "Activated",
+    "inviteRate": "Activation rate",
+    "inviteRateSub": "{activated} of {sent}",
     "footer": "Live from the database. Active project = non-draft, has a team, updated in the last 7 days."
   },
   "adminFunnel": {

@@ -1548,6 +1548,10 @@
         "title": "Возврат средств",
         "message": "Заказ {orderNumber}: средства возвращены"
       },
+      "supply_gap": {
+        "title": "Дефицит мастеров",
+        "message": "Нет доступных мастеров: {jobTitle} ({category}). Найдите мастера или свяжитесь с клиентом."
+      },
       "new_booking": {
         "title": "Новый запрос на бронирование",
         "message": "У вас новый запрос на бронирование на {date} в {time}"
@@ -4613,6 +4617,10 @@
     "bugPlaceholder": "Опишите обнаруженную ошибку...",
     "featurePlaceholder": "Опишите желаемую функцию...",
     "email": "Ваш email (необязательно)",
+    "emailOptional": "Email (необязательно)",
+    "phone": "Номер телефона",
+    "phonePlaceholder": "5XX XX XX XX",
+    "phoneRequired": "Укажите номер телефона, чтобы мы могли связаться с вами",
     "submit": "Отправить отзыв",
     "submitted": "Спасибо!",
     "submittedMessage": "Ваш отзыв получен",
@@ -5239,6 +5247,29 @@
     "proUtilizationSub": "{hired} из {total} нанято",
     "signups7d": "Регистрации 7д",
     "clients": "Клиенты",
+    "supplyTitle": "Спрос и предложение",
+    "ratio": "Мастеров на клиента",
+    "ratioSub": "{pros} мастеров : {clients} клиентов",
+    "newPros7d": "Новые мастера 7д",
+    "newClients7d": "Новые клиенты 7д",
+    "clientShare7d": "Доля клиентов 7д",
+    "clientShare7dSub": "из новых регистраций",
+    "activationTitle": "Активация клиентов",
+    "clientsActivated": "Активны",
+    "activationRate": "Уровень активации",
+    "activationRateSub": "{activated} из {total} что-то сделали",
+    "newClients30d": "Новые клиенты 30д",
+    "qualityTitle": "Качество предложения",
+    "verifiedPros": "Проверенные",
+    "withPortfolio": "С портфолио",
+    "portfolioRateSub": "{rate}% мастеров",
+    "withPricing": "С ценами",
+    "withReviews": "С отзывами",
+    "inviteTitle": "Канал приглашений",
+    "invitesSent": "Отправлено приглашений",
+    "invitesActivated": "Активировано",
+    "inviteRate": "Уровень активации",
+    "inviteRateSub": "{activated} из {sent}",
     "footer": "Данные из базы. Активный проект = не черновик, есть команда, обновлён за последние 7 дней."
   },
   "adminFunnel": {

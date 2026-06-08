@@ -16,6 +16,7 @@ import {
   Shield,
   Star,
   UserCheck,
+  UserX,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -43,6 +44,7 @@ const typeIcon: Record<string, IconType> = {
   booking_completed: CheckCheck,
   review_prompt: Star,
   system_announcement: Megaphone,
+  supply_gap: UserX,
 };
 
 const titleToTypeMap: Record<string, string> = {

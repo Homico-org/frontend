@@ -1546,6 +1546,10 @@
         "title": "თანხის დაბრუნება",
         "message": "შეკვეთა {orderNumber}: თანხა დაბრუნდა"
       },
+      "supply_gap": {
+        "title": "მიწოდების ხარვეზი",
+        "message": "ხელმისაწვდომი ოსტატი არ არის: {jobTitle} ({category}). მოძებნეთ ოსტატი ან დაუკავშირდით კლიენტს."
+      },
       "new_booking": {
         "title": "ახალი ჯავშნის მოთხოვნა",
         "message": "გაქვთ ახალი ჯავშნის მოთხოვნა {date} {time}-ზე"
@@ -4618,6 +4622,10 @@
     "bugPlaceholder": "აღწერეთ აღმოჩენილი ხარვეზი...",
     "featurePlaceholder": "აღწერეთ სასურველი ფუნქცია...",
     "email": "ელფოსტა (არასავალდებულო)",
+    "emailOptional": "ელფოსტა (არასავალდებულო)",
+    "phone": "ტელეფონის ნომერი",
+    "phonePlaceholder": "5XX XX XX XX",
+    "phoneRequired": "შეიყვანეთ ნომერი, რომ დაგიკავშირდეთ",
     "submit": "გაგზავნა",
     "submitted": "გმადლობთ!",
     "submittedMessage": "უკუკავშირი მიღებულია",
@@ -5244,6 +5252,29 @@
     "proUtilizationSub": "{hired}/{total} დაქირავებული",
     "signups7d": "რეგისტრაციები 7დ",
     "clients": "კლიენტები",
+    "supplyTitle": "მიწოდება და მოთხოვნა",
+    "ratio": "ოსტატი ერთ კლიენტზე",
+    "ratioSub": "{pros} ოსტატი : {clients} კლიენტი",
+    "newPros7d": "ახალი ოსტატები 7დ",
+    "newClients7d": "ახალი კლიენტები 7დ",
+    "clientShare7d": "კლიენტების წილი 7დ",
+    "clientShare7dSub": "ახალ რეგისტრაციებში",
+    "activationTitle": "კლიენტის აქტივაცია",
+    "clientsActivated": "აქტიური",
+    "activationRate": "აქტივაციის მაჩვენებელი",
+    "activationRateSub": "{total}-დან {activated}-მა იმოქმედა",
+    "newClients30d": "ახალი კლიენტები 30დ",
+    "qualityTitle": "მიწოდების ხარისხი",
+    "verifiedPros": "გადამოწმებული",
+    "withPortfolio": "პორტფოლიოთი",
+    "portfolioRateSub": "ოსტატების {rate}%",
+    "withPricing": "ფასებით",
+    "withReviews": "შეფასებებით",
+    "inviteTitle": "მოწვევის არხი",
+    "invitesSent": "გაგზავნილი მოწვევები",
+    "invitesActivated": "აქტივირებული",
+    "inviteRate": "აქტივაციის მაჩვენებელი",
+    "inviteRateSub": "{sent}-დან {activated}",
     "footer": "მონაცემები ბაზიდან. აქტიური პროექტი = არა-დრაფტი, გუნდით, განახლებული ბოლო 7 დღეში."
   },
   "adminFunnel": {
