@@ -2644,6 +2644,11 @@
     "title": "პროექტი",
     "completeProject": "პროექტის დასრულება",
     "addToProject": "პროექტში დამატება",
+    "designer": {
+      "actionNeeded": "საჭიროა ქმედება ({count})",
+      "assignPro": "დანიშნეთ ოსტატი: {role}",
+      "addOptions": "დაამატეთ ვარიანტები: {item}"
+    },
     "phaseDesign": "დიზაინი",
     "client": {
       "currently": "მიმდინარეობს: {focus}",
@@ -2662,6 +2667,7 @@
       "budget": "ბიუჯეტი",
       "notSet": "არ არის მითითებული",
       "committed": "გამოყოფილია {amount}",
+      "paidOf": "გადახდილია {paid} / {total}",
       "yourTeam": "თქვენი გუნდი",
       "noTeamYet": "ჯერ არავინ არის დანიშნული",
       "peopleCount": "{count} ადამიანი",
@@ -4641,7 +4647,11 @@
     "activationSubtitle": "შექმენით პროექტი სამუშაოს დასაგეგმად და გუნდის ასაყვანად, ან განათავსეთ ცალკე სამუშაო ფასების მისაღებად.",
     "activationStartProject": "პროექტის შექმნა",
     "activationPostJob": "სამუშაოს განთავსება",
-    "activationBannerSub": "შექმენით პროექტი ან განათავსეთ სამუშაო - ერთ წუთში."
+    "activationBannerSub": "შექმენით პროექტი ან განათავსეთ სამუშაო - ერთ წუთში.",
+    "portfolioNudgeEyebrow": "დასაქმება",
+    "portfolioNudgeTitle": "მიიღეთ მეტი შეკვეთა",
+    "portfolioNudgeSub": "კლიენტები ირჩევენ ოსტატებს, ვისი ნამუშევარიც უნახავთ. დაამატეთ რამდენიმე ფოტო და მიიღეთ მეტი შეკვეთა.",
+    "portfolioNudgeCta": "ნამუშევრების დამატება"
   },
   "feedback": {
     "title": "უკუკავშირი",

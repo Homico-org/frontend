@@ -255,6 +255,19 @@ export default function ProjectClientView({
     project.budget?.planned || project.budgetMax || project.budgetMin || 0;
   const committed = project.budget?.committed || 0;
 
+  // Paid-so-far / remaining from the milestone schedule - the homeowner's real
+  // "what have I paid" question, in actual money-moved terms.
+  const PAID_STATUSES = ['funded', 'submitted', 'confirmed', 'released'];
+  const SCHEDULED_STATUSES = ['proposed', 'approved', ...PAID_STATUSES];
+  const scheduledMinor = mps
+    .filter((m) => SCHEDULED_STATUSES.includes(m.status))
+    .reduce((s, m) => s + (m.amountMinor || 0), 0);
+  const paidMinor = mps
+    .filter((m) => PAID_STATUSES.includes(m.status))
+    .reduce((s, m) => s + (m.amountMinor || 0), 0);
+  const paidPct =
+    scheduledMinor > 0 ? Math.round((paidMinor / scheduledMinor) * 100) : 0;
+
   const ring = 2 * Math.PI * 34;
 
   return (
@@ -498,11 +511,36 @@ export default function ProjectClientView({
           >
             {agreed > 0 ? moneyMajor(agreed) : t('projects.client.notSet')}
           </p>
-          {committed > 0 && (
+          {scheduledMinor > 0 ? (
+            <div className="mt-2.5">
+              <div
+                className="h-1.5 overflow-hidden rounded-full"
+                style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}
+              >
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${paidPct}%`,
+                    backgroundColor: 'var(--hm-success-500)',
+                    transition: 'width 0.5s ease',
+                  }}
+                />
+              </div>
+              <p
+                className="mt-1.5 text-[11px]"
+                style={{ color: 'var(--hm-fg-muted)' }}
+              >
+                {t('projects.client.paidOf', {
+                  paid: money(paidMinor),
+                  total: money(scheduledMinor),
+                })}
+              </p>
+            </div>
+          ) : committed > 0 ? (
             <p className="mt-0.5 text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
               {t('projects.client.committed', { amount: moneyMajor(committed) })}
             </p>
-          )}
+          ) : null}
         </div>
 
         <div

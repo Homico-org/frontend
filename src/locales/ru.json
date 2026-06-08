@@ -2647,6 +2647,11 @@
     "title": "Проект",
     "completeProject": "Завершить проект",
     "addToProject": "Добавить в проект",
+    "designer": {
+      "actionNeeded": "Требует внимания ({count})",
+      "assignPro": "Назначьте мастера: {role}",
+      "addOptions": "Добавьте варианты: {item}"
+    },
     "phaseDesign": "Дизайн",
     "client": {
       "currently": "Сейчас: {focus}",
@@ -2665,6 +2670,7 @@
       "budget": "Бюджет",
       "notSet": "Не указан",
       "committed": "Выделено {amount}",
+      "paidOf": "Оплачено {paid} из {total}",
       "yourTeam": "Ваша команда",
       "noTeamYet": "Пока никто не назначен",
       "peopleCount": "{count} чел.",
@@ -4636,7 +4642,11 @@
     "activationSubtitle": "Создайте проект, чтобы спланировать работу и собрать команду, или разместите отдельную работу для расчёта цены.",
     "activationStartProject": "Создать проект",
     "activationPostJob": "Разместить работу",
-    "activationBannerSub": "Создайте проект или разместите работу - это займёт минуту."
+    "activationBannerSub": "Создайте проект или разместите работу - это займёт минуту.",
+    "portfolioNudgeEyebrow": "Получить заказы",
+    "portfolioNudgeTitle": "Получайте больше заказов",
+    "portfolioNudgeSub": "Клиенты выбирают мастеров, чьи работы видят. Добавьте несколько фото - и получайте больше заказов.",
+    "portfolioNudgeCta": "Добавить работы"
   },
   "feedback": {
     "title": "Обратная связь",

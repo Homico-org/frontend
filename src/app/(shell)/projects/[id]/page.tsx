@@ -2,6 +2,7 @@
 
 import InviteProModal from '@/components/projects/InviteProModal';
 import ProjectClientView from '@/components/projects/ProjectClientView';
+import ProjectDesignerActions from '@/components/projects/ProjectDesignerActions';
 import ProjectDocuments, {
   ProjectDoc,
 } from '@/components/projects/ProjectDocuments';
@@ -1086,6 +1087,18 @@ export default function ProjectDashboardPage() {
             closing tags balanced). */}
         <div>
           <div className="min-w-0">
+
+        {/* Designer/editor focus strip: the few things the project lead must
+            act on, kept visible while they work in any non-overview tab (the
+            overview already carries its own "needs attention" notice, so we
+            skip it there to avoid duplicating). Renders nothing when clear. */}
+        {project.viewerRole === 'editor' && activeTab !== 'overview' && (
+          <ProjectDesignerActions
+            engagements={project.engagements}
+            selections={project.selections}
+            onGoTo={(tab) => setActiveTab(tab)}
+          />
+        )}
 
         {/* ---- Hero header ------------------------------------------- */}
         {(() => {

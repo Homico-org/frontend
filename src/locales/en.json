@@ -2644,6 +2644,11 @@
     "title": "Project",
     "completeProject": "Complete Project",
     "addToProject": "Add to project",
+    "designer": {
+      "actionNeeded": "Action needed ({count})",
+      "assignPro": "Assign a pro: {role}",
+      "addOptions": "Add options: {item}"
+    },
     "phaseDesign": "Design",
     "client": {
       "currently": "Currently: {focus}",
@@ -2662,6 +2667,7 @@
       "budget": "Budget",
       "notSet": "Not set",
       "committed": "{amount} committed",
+      "paidOf": "{paid} of {total} paid",
       "yourTeam": "Your team",
       "noTeamYet": "No one assigned yet",
       "peopleCount": "{count} people",
@@ -4642,7 +4648,11 @@
     "activationSubtitle": "Create a project to plan the work and hire a team, or post a single job to get quotes from pros.",
     "activationStartProject": "Create a project",
     "activationPostJob": "Post a job",
-    "activationBannerSub": "Create a project or post a job - it takes a minute."
+    "activationBannerSub": "Create a project or post a job - it takes a minute.",
+    "portfolioNudgeEyebrow": "Get hired",
+    "portfolioNudgeTitle": "Get hired faster",
+    "portfolioNudgeSub": "Clients hire the pros they can see. Add a few photos of your past work to win more jobs.",
+    "portfolioNudgeCta": "Add your work"
   },
   "feedback": {
     "title": "Feedback",
