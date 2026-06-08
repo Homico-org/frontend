@@ -28,6 +28,18 @@ interface FunnelData {
     reviewRate: number;
   };
   avgHoursToFirstProposal: number | null;
+  byCategory: SegRow[];
+  byCountry: SegRow[];
+}
+
+interface SegRow {
+  key: string;
+  jobsPosted: number;
+  withProposal: number;
+  hired: number;
+  anyProposalRate: number;
+  proposalIn24hRate: number;
+  hireRate: number;
 }
 
 function AdminFunnelContent() {
@@ -238,6 +250,77 @@ function AdminFunnelContent() {
                 </div>
               )}
             </div>
+
+            {/* Where liquidity is weak: per-segment breakdown, worst-first by
+                volume. The "got a proposal" rate is each segment's health flag
+                (green = supply responding, red = supply gap). */}
+            {(
+              [
+                { title: t("adminFunnel.byCategory"), colKey: t("adminFunnel.colCategory"), rows: data.byCategory, hint: t("adminFunnel.byCategoryHint") },
+                ...(data.byCountry.length > 1
+                  ? [{ title: t("adminFunnel.byCountry"), colKey: t("adminFunnel.colCountry"), rows: data.byCountry, hint: "" }]
+                  : []),
+              ] as { title: string; colKey: string; rows: SegRow[]; hint: string }[]
+            )
+              .filter((b) => b.rows.length > 0)
+              .map((b) => (
+                <div
+                  key={b.title}
+                  className="rounded-2xl p-4 sm:p-5"
+                  style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
+                >
+                  <h2 className="text-sm font-semibold" style={{ color: THEME.text }}>
+                    {b.title}
+                  </h2>
+                  {b.hint && (
+                    <p className="mb-3 mt-0.5 text-[11px]" style={{ color: THEME.textDim }}>
+                      {b.hint}
+                    </p>
+                  )}
+                  <div className="mt-2 overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr style={{ color: THEME.textDim }}>
+                          <th className="py-1.5 pr-3 text-left font-medium">{b.colKey}</th>
+                          <th className="py-1.5 px-2 text-right font-medium">{t("adminFunnel.colJobs")}</th>
+                          <th className="py-1.5 px-2 text-right font-medium">{t("adminFunnel.colProposal")}</th>
+                          <th className="py-1.5 px-2 text-right font-medium">{t("adminFunnel.colIn24h")}</th>
+                          <th className="py-1.5 pl-2 text-right font-medium">{t("adminFunnel.colHire")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {b.rows.map((row) => {
+                          const health =
+                            row.anyProposalRate >= 50
+                              ? THEME.success
+                              : row.anyProposalRate >= 20
+                                ? THEME.warning
+                                : THEME.error;
+                          return (
+                            <tr key={row.key} style={{ borderTop: `1px solid ${THEME.border}` }}>
+                              <td className="py-1.5 pr-3 capitalize" style={{ color: THEME.text }}>
+                                {row.key}
+                              </td>
+                              <td className="py-1.5 px-2 text-right tabular-nums" style={{ color: THEME.textMuted }}>
+                                {row.jobsPosted}
+                              </td>
+                              <td className="py-1.5 px-2 text-right font-semibold tabular-nums" style={{ color: health }}>
+                                {row.anyProposalRate}%
+                              </td>
+                              <td className="py-1.5 px-2 text-right tabular-nums" style={{ color: THEME.textMuted }}>
+                                {row.proposalIn24hRate}%
+                              </td>
+                              <td className="py-1.5 pl-2 text-right tabular-nums" style={{ color: THEME.textMuted }}>
+                                {row.hireRate}%
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
           </>
         )}
       </div>
