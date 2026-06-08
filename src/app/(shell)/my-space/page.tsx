@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import SchedulePanel from "@/components/settings/SchedulePanel";
+import ProPortfolioNudge from "@/components/dashboard/ProPortfolioNudge";
 import SlaStatusBanner from "@/components/sla/SlaStatusBanner";
 import SidePanel from "@/components/ui/SidePanel";
 import { features } from "@/config/features";
@@ -906,6 +907,20 @@ function MySpaceContent() {
           </div>
         </motion.div>
       )}
+
+      {/* ── Portfolio activation hero ── The #1 supply lever: only ~5% of pros
+           have any work samples, and a portfolio is what converts a browsing
+           client into a hire. Surfaced at the top (not buried in the
+           completion checklist) for pros with an empty portfolio; self-hides
+           once they add one. */}
+      {isPro && !!proProfile &&
+        ((proProfile.portfolioProjects as unknown[] | undefined)?.length ?? 0) === 0 && (
+          <motion.div variants={itemVariants}>
+            <ProPortfolioNudge
+              onAdd={() => router.push("/pro/profile-setup/portfolio")}
+            />
+          </motion.div>
+        )}
 
       {/* ── "Needs your attention" queue ── THE HERO. Replaces the passive
            KPI count strip with a worklist: each row is a task to DO, not a

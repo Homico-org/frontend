@@ -26,6 +26,36 @@ interface Traction {
     signups7d: number;
     prosHired: number;
   };
+  supply: {
+    pros: number;
+    clients: number;
+    ratio: number | null;
+    proSignups7d: number;
+    clientSignups7d: number;
+    proSignups30d: number;
+    clientSignups30d: number;
+    clientShare7d: number;
+  };
+  proQuality: {
+    total: number;
+    verified: number;
+    withPortfolio: number;
+    withPricing: number;
+    withReviews: number;
+    portfolioRate: number;
+  };
+  clientFunnel: {
+    total: number;
+    activated: number;
+    activationRate: number;
+    new7d: number;
+    new30d: number;
+  };
+  invites: {
+    sent: number;
+    activated: number;
+    activationRate: number;
+  };
 }
 
 const fmtGel = (minor: number) =>
@@ -157,6 +187,87 @@ function TractionContent() {
                   className="h-full rounded-full transition-all"
                   style={{ width: `${pct}%`, background: THEME.primary }}
                 />
+              </div>
+            </div>
+
+            {/* Supply & demand - the cold-start health signal */}
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textDim }}>
+                {t("adminTraction.supplyTitle")}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {metric(
+                  t("adminTraction.ratio"),
+                  data.supply.ratio != null ? `${data.supply.ratio}:1` : "-",
+                  t("adminTraction.ratioSub", { pros: data.supply.pros, clients: data.supply.clients }),
+                  (data.supply.ratio ?? 0) >= 5 ? THEME.error : (data.supply.ratio ?? 0) >= 2 ? THEME.warning : THEME.success,
+                )}
+                {metric(t("adminTraction.newPros7d"), data.supply.proSignups7d)}
+                {metric(
+                  t("adminTraction.newClients7d"),
+                  data.supply.clientSignups7d,
+                  undefined,
+                  data.supply.clientSignups7d > 0 ? THEME.text : THEME.warning,
+                )}
+                {metric(
+                  t("adminTraction.clientShare7d"),
+                  `${data.supply.clientShare7d}%`,
+                  t("adminTraction.clientShare7dSub"),
+                  data.supply.clientShare7d >= 30 ? THEME.success : data.supply.clientShare7d >= 15 ? THEME.warning : THEME.error,
+                )}
+              </div>
+            </div>
+
+            {/* Client activation - the leak that matters */}
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textDim }}>
+                {t("adminTraction.activationTitle")}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {metric(
+                  t("adminTraction.activationRate"),
+                  `${data.clientFunnel.activationRate}%`,
+                  t("adminTraction.activationRateSub", { activated: data.clientFunnel.activated, total: data.clientFunnel.total }),
+                  data.clientFunnel.activationRate >= 30 ? THEME.success : data.clientFunnel.activationRate >= 10 ? THEME.warning : THEME.error,
+                )}
+                {metric(t("adminTraction.clientsActivated"), data.clientFunnel.activated)}
+                {metric(t("adminTraction.newClients7d"), data.clientFunnel.new7d)}
+                {metric(t("adminTraction.newClients30d"), data.clientFunnel.new30d)}
+              </div>
+            </div>
+
+            {/* Supply quality - empty profiles don't convert */}
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textDim }}>
+                {t("adminTraction.qualityTitle")}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {metric(
+                  t("adminTraction.withPortfolio"),
+                  data.proQuality.withPortfolio,
+                  t("adminTraction.portfolioRateSub", { rate: data.proQuality.portfolioRate }),
+                  data.proQuality.portfolioRate >= 50 ? THEME.success : data.proQuality.portfolioRate >= 20 ? THEME.warning : THEME.error,
+                )}
+                {metric(t("adminTraction.withPricing"), data.proQuality.withPricing)}
+                {metric(t("adminTraction.withReviews"), data.proQuality.withReviews)}
+                {metric(t("adminTraction.verifiedPros"), data.proQuality.verified)}
+              </div>
+            </div>
+
+            {/* Invite channel ROI */}
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textDim }}>
+                {t("adminTraction.inviteTitle")}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {metric(t("adminTraction.invitesSent"), data.invites.sent.toLocaleString("en-US").replace(/,/g, " "))}
+                {metric(t("adminTraction.invitesActivated"), data.invites.activated)}
+                {metric(
+                  t("adminTraction.inviteRate"),
+                  `${data.invites.activationRate}%`,
+                  t("adminTraction.inviteRateSub", { activated: data.invites.activated, sent: data.invites.sent }),
+                  data.invites.activationRate >= 5 ? THEME.success : data.invites.activationRate >= 1 ? THEME.warning : THEME.error,
+                )}
               </div>
             </div>
 

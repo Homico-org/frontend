@@ -1,5 +1,6 @@
 'use client';
 
+import ClientActivationCard from '@/components/dashboard/ClientActivationCard';
 import RecentlyDeletedModal from '@/components/projects/RecentlyDeletedModal';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -49,6 +50,29 @@ export default function ProjectsIndexPage() {
   }, [user, router]);
 
   if (empty) {
+    // A client with no projects gets the richer activation hero (create a
+    // project OR post a job) instead of the bare placeholder - this is one of
+    // the surfaces a fresh client actually reaches. Pros keep the plain state.
+    if (user?.role === 'client') {
+      return (
+        <div className="mx-auto w-full max-w-2xl px-4 py-10">
+          <ClientActivationCard ignoreJobs />
+          <button
+            type="button"
+            onClick={() => setTrashOpen(true)}
+            className="mt-2 inline-flex items-center gap-2 text-[13px] font-medium text-[var(--hm-fg-muted)] transition-colors hover:text-[var(--hm-fg-secondary)]"
+          >
+            <Trash2 className="h-4 w-4" />
+            {t('projects.recentlyDeleted')}
+          </button>
+          <RecentlyDeletedModal
+            isOpen={trashOpen}
+            onClose={() => setTrashOpen(false)}
+            onRestored={(id) => router.push(`/projects/${id}`)}
+          />
+        </div>
+      );
+    }
     return (
       <div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-4 px-4 text-center">
         <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--hm-brand-500)]/[0.10] text-[var(--hm-brand-500)]">

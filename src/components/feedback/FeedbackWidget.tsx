@@ -5,10 +5,11 @@ import { usePathname } from 'next/navigation';
 import { Bug, Lightbulb, MessageSquare, ChevronLeft, Send, X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea, Input } from '@/components/ui/input';
+import { PhoneInput, type CountryCode } from '@/components/ui/PhoneInput';
 import { SelectionGroup, type SelectionOption } from '@/components/ui/SelectionGroup';
 import { ConfirmModal } from '@/components/ui/Modal';
 import SidePanel from '@/components/ui/SidePanel';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, countries } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
@@ -35,13 +36,18 @@ export function FeedbackWidget() {
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('general');
   const [message, setMessage] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>('GE');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const isHidden = HIDDEN_ROUTES.some((route) => pathname.startsWith(route));
 
-  const isDirty = message.trim().length > 0 || email.trim().length > 0;
+  const isDirty =
+    message.trim().length > 0 ||
+    email.trim().length > 0 ||
+    phone.trim().length > 0;
 
   const typeOptions: SelectionOption<FeedbackType>[] = [
     { value: 'bug', label: t('feedback.bugReport'), icon: <Bug className="w-4 h-4" /> },
@@ -61,6 +67,8 @@ export function FeedbackWidget() {
     setFeedbackType('general');
     setMessage('');
     setEmail('');
+    setPhone('');
+    setPhoneCountry('GE');
     setIsSubmitted(false);
   }, []);
 
@@ -90,6 +98,13 @@ export function FeedbackWidget() {
       return;
     }
 
+    // Unauthenticated submitters must leave a phone number so support can
+    // reach them - there's no account to reply into.
+    if (!user && phone.trim().length < 5) {
+      toast.error(t('feedback.phoneRequired'));
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       if (user) {
@@ -101,10 +116,14 @@ export function FeedbackWidget() {
           priority: 'medium',
         });
       } else {
+        const fullPhone = phone.trim()
+          ? `${countries[phoneCountry].phonePrefix} ${phone.trim()}`
+          : undefined;
         await api.post('/support/contact', {
           type: 'feedback',
           message: `[${SUBJECT_MAP[feedbackType]}] ${message.trim()}\n\n---\nPage: ${pathname}`,
           contactEmail: email.trim() || undefined,
+          contactPhone: fullPhone,
         });
       }
 
@@ -162,6 +181,10 @@ export function FeedbackWidget() {
           setMessage={setMessage}
           email={email}
           setEmail={setEmail}
+          phone={phone}
+          setPhone={setPhone}
+          phoneCountry={phoneCountry}
+          setPhoneCountry={setPhoneCountry}
           user={user}
           typeOptions={typeOptions}
           placeholder={getPlaceholder()}
@@ -197,6 +220,10 @@ interface PanelContentProps {
   setMessage: (msg: string) => void;
   email: string;
   setEmail: (email: string) => void;
+  phone: string;
+  setPhone: (phone: string) => void;
+  phoneCountry: CountryCode;
+  setPhoneCountry: (c: CountryCode) => void;
   user: ReturnType<typeof useAuth>['user'];
   typeOptions: SelectionOption<FeedbackType>[];
   placeholder: string;
@@ -215,6 +242,10 @@ function PanelContent({
   setMessage,
   email,
   setEmail,
+  phone,
+  setPhone,
+  phoneCountry,
+  setPhoneCountry,
   user,
   typeOptions,
   placeholder,
@@ -278,14 +309,28 @@ function PanelContent({
           )}
         </div>
 
-        {/* Email for unauthenticated users */}
+        {/* Contact details for unauthenticated users - we have no account to
+            reply into, so a phone number is required and email is optional. */}
         {!user && (
-          <div>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-[var(--hm-fg-secondary)] mb-1.5">
+                {t('feedback.phone')}
+                <span className="text-[var(--hm-error-500)]"> *</span>
+              </label>
+              <PhoneInput
+                value={phone}
+                onChange={setPhone}
+                country={phoneCountry}
+                onCountryChange={setPhoneCountry}
+                placeholder={t('feedback.phonePlaceholder')}
+              />
+            </div>
             <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={t('feedback.email')}
+              placeholder={t('feedback.emailOptional')}
               inputSize="default"
               autoComplete="email"
               inputMode="email"
@@ -298,7 +343,9 @@ function PanelContent({
       <div className="pt-4 border-t border-[var(--hm-border-subtle)]">
         <Button
           onClick={onSubmit}
-          disabled={message.trim().length < 10}
+          disabled={
+            message.trim().length < 10 || (!user && phone.trim().length < 5)
+          }
           loading={isSubmitting}
           className="w-full"
           leftIcon={<Send className="w-4 h-4" />}

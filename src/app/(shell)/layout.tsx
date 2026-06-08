@@ -132,28 +132,31 @@ const TABS: Array<{
     key: "jobs",
     route: "/jobs",
     countryScoped: true,
-    label: "Jobs",
-    labelKa: "სამუშაოები",
-    labelRu: "Работы",
+    label: "Find work",
+    labelKa: "სამუშაოს პოვნა",
+    labelRu: "Найти работу",
     icon: Briefcase,
-    showFor: "all" as const,
+    // The work feed is where PROS find jobs. Clients seeing both "Find work"
+    // and "My Jobs" was the single biggest nav confusion - hide it from
+    // clients (and anon, who'd otherwise land on a near-empty feed).
+    showFor: "pro" as const,
   },
   {
     key: "professionals",
     route: "/professionals",
     countryScoped: true,
-    label: "Professionals",
-    labelKa: "სპეციალისტები",
-    labelRu: "Специалисты",
+    label: "Find a pro",
+    labelKa: "ხელოსნის პოვნა",
+    labelRu: "Найти мастера",
     icon: Users,
     showFor: "all" as const,
   },
   {
     key: "tools",
     route: "/tools",
-    label: "Tools",
-    labelKa: "AI ხელსაწყოები",
-    labelRu: "Инструменты",
+    label: "AI Plan",
+    labelKa: "AI დაგეგმვა",
+    labelRu: "AI Планирование",
     icon: Wrench,
     showFor: "all" as const,
   },
@@ -871,7 +874,7 @@ function ShellContent({ children }: { children: ReactNode }) {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-[var(--hm-bg-page)] max-w-full">
-      <Header fixed={false} />
+      <Header fixed={false} showNav={false} />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Left Sidebar */}

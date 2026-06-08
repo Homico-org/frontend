@@ -2,6 +2,8 @@
 
 import AuthGuard from "@/components/common/AuthGuard";
 import Avatar from "@/components/common/Avatar";
+import ClientActivationCard from "@/components/dashboard/ClientActivationCard";
+import { useMyProjects } from "@/hooks/useMyProjects";
 import EmptyState from "@/components/common/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -104,6 +106,12 @@ function getJobBudget(job: Job, t: (key: string) => string): string {
 
 function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // A client with no projects yet - drives the first-run activation hero
+  // (which then doubles as the zero-jobs empty state for fresh clients).
+  const myProjects = useMyProjects(user?.role === "client");
+  const isFreshClient =
+    user?.role === "client" && myProjects !== null && myProjects.length === 0;
 
   const { t } = useLanguage();
   const { getCategoryLabel, locale } = useCategoryLabels();
@@ -523,28 +531,34 @@ function MyJobsPageContent({ embedded }: { embedded?: boolean }) {
 
         {/* ==================== JOB CARDS ZONE ==================== */}
         {visibleJobs.length === 0 ? (
-          /* Empty state. Previously used the EmptyState component's
-             `titleKa` / `descriptionKa` side-channel which (a) skipped
-             Russian entirely and (b) violated the project rule "never
-             hardcode user-facing strings, always use t()". The
-             EmptyState component still supports the side-channel for
-             legacy callers; new copy threads through proper i18n keys
-             instead. */
-          <EmptyState
-            icon={Briefcase}
-            title={t(jobs.length === 0 ? "job.noJobsYet" : "job.noJobsMatchSearch")}
-            description={t(
-              jobs.length === 0 ? "job.noJobsYetBody" : "job.noJobsMatchSearchBody",
-            )}
-            actionLabel={jobs.length === 0 ? t("job.postJob") : undefined}
-            actionHref={jobs.length === 0 ? "/post-job" : undefined}
-            variant="illustrated"
-            // Zero-jobs is a first-impression moment - bump to `lg`
-            // so the CTA gets the full hero treatment. Filtered-empty
-            // (user already has jobs, just narrowed them out) stays
-            // `md` so it doesn't shove the rest of the page down.
-            size={jobs.length === 0 ? "lg" : "md"}
-          />
+          jobs.length === 0 && isFreshClient ? (
+            /* Fresh client (no jobs AND no projects): the activation hero is
+               the empty state - two real first actions instead of a dead-end. */
+            <ClientActivationCard />
+          ) : (
+            /* Empty state. Previously used the EmptyState component's
+               `titleKa` / `descriptionKa` side-channel which (a) skipped
+               Russian entirely and (b) violated the project rule "never
+               hardcode user-facing strings, always use t()". The
+               EmptyState component still supports the side-channel for
+               legacy callers; new copy threads through proper i18n keys
+               instead. */
+            <EmptyState
+              icon={Briefcase}
+              title={t(jobs.length === 0 ? "job.noJobsYet" : "job.noJobsMatchSearch")}
+              description={t(
+                jobs.length === 0 ? "job.noJobsYetBody" : "job.noJobsMatchSearchBody",
+              )}
+              actionLabel={jobs.length === 0 ? t("job.postJob") : undefined}
+              actionHref={jobs.length === 0 ? "/post-job" : undefined}
+              variant="illustrated"
+              // Zero-jobs is a first-impression moment - bump to `lg`
+              // so the CTA gets the full hero treatment. Filtered-empty
+              // (user already has jobs, just narrowed them out) stays
+              // `md` so it doesn't shove the rest of the page down.
+              size={jobs.length === 0 ? "lg" : "md"}
+            />
+          )
         ) : (
           <div className="space-y-3">
             {visibleJobs.map((job) => {

@@ -74,7 +74,16 @@ type HeaderOrder = {
   items?: { name: string; qty: number; imageUrl?: string }[];
 };
 
-export default function Header({ fixed = true }: { fixed?: boolean }) {
+export default function Header({
+  fixed = true,
+  showNav = true,
+}: {
+  fixed?: boolean;
+  // The app shell (sidebar layout) passes `false` so the top bar doesn't
+  // duplicate the sidebar's navigation - the sidebar is the single nav surface
+  // there. Landing / public pages keep the centered nav (default true).
+  showNav?: boolean;
+}) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { t } = useLanguage();
@@ -943,6 +952,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
             via shared `openMenuKey`. `flex-1` lets the nav fill the middle so
             its items center; hidden on mobile so the bar collapses to
             wordmark + actions. */}
+        {showNav && (
         <nav
           className="hidden md:flex flex-1 items-center justify-center gap-2.5 lg:gap-5"
           aria-label="Primary"
@@ -1025,6 +1035,7 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
             />
           )}
         </nav>
+        )}
 
         {/* Right side - Actions + Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 min-w-0">

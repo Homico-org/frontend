@@ -1,6 +1,7 @@
 "use client";
 
 import ServiceBookingModal from "@/components/booking/ServiceBookingModal";
+import ClientActivationCard from "@/components/dashboard/ClientActivationCard";
 import EmptyState from "@/components/common/EmptyState";
 import ProCard from "@/components/common/ProCard";
 import BrowseFilterBar from "@/components/browse/BrowseFilterBar";
@@ -314,6 +315,10 @@ export default function ProfessionalsPage() {
         isRefreshing={pullState.isRefreshing}
       />
       <BrowseFilterBar />
+      {/* Fresh-client activation banner - browse is where clients land after
+          signup, so this is the surface most likely to catch them before they
+          bounce. Slim + dismissible; self-hides once they have any activity. */}
+      <ClientActivationCard variant="banner" />
       {/* "Save search" affordance - only when filters are active.
           Persists the URL query to localStorage so the combo can
           be re-run from the Cmd+K palette. Flips to a filled

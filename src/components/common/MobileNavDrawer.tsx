@@ -113,37 +113,45 @@ export default function MobileNavDrawer({
   // Build nav sections by auth state.
   const sections: NavSection[] = [];
 
-  // BROWSE - always visible
+  // BROWSE - always visible. Mirrors the desktop sidebar primary tabs so the
+  // app's "map" is the same on every device.
+  const browseItems: NavLink[] = [
+    { key: "home", href: cl("/"), label: t("nav.home"), icon: Home },
+    {
+      key: "pros",
+      href: cl("/professionals"),
+      label: t("nav.findPro"),
+      icon: Users,
+    },
+  ];
+  // The work feed is a pro surface - clients seeing both "Find work" and
+  // "My Jobs" was the biggest nav confusion, so gate it to pros.
+  if (isPro) {
+    browseItems.push({
+      key: "jobs",
+      href: cl("/jobs"),
+      label: t("nav.findWork"),
+      icon: Briefcase,
+    });
+  }
+  browseItems.push(
+    {
+      key: "shop",
+      href: "/shop",
+      label: t("header.shop"),
+      icon: ShoppingBag,
+    },
+    {
+      key: "tools",
+      href: cl("/tools"),
+      label: t("nav.plan"),
+      icon: Wrench,
+    },
+  );
   sections.push({
     key: "browse",
     title: t("nav.sectionWork"),
-    items: [
-      { key: "home", href: cl("/"), label: t("nav.home"), icon: Home },
-      {
-        key: "pros",
-        href: cl("/professionals"),
-        label: t("header.professionals"),
-        icon: Users,
-      },
-      {
-        key: "jobs",
-        href: cl("/jobs"),
-        label: t("nav.jobs"),
-        icon: Briefcase,
-      },
-      {
-        key: "shop",
-        href: "/shop",
-        label: t("header.shop"),
-        icon: ShoppingBag,
-      },
-      {
-        key: "tools",
-        href: cl("/tools"),
-        label: t("tools.home.title"),
-        icon: Wrench,
-      },
-    ],
+    items: browseItems,
   });
 
   // PERSONAL - auth only
