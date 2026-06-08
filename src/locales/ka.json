@@ -189,7 +189,6 @@
     "thisMonth": "ამ თვეში",
     "member": "წევრი",
     "since": "წევრობა",
-    "client": "კლიენტი",
     "professional": "პროფესიონალი",
     "verified": "ვერიფიცირებული",
     "premium": "პრემიუმ",
@@ -341,7 +340,10 @@
     "sectionWork": "სამუშაო",
     "shopCatalog": "კატალოგი",
     "sectionAccount": "ანგარიში",
-    "resources": "მეტი"
+    "resources": "მეტი",
+    "findPro": "ხელოსნის პოვნა",
+    "findWork": "სამუშაოს პოვნა",
+    "plan": "AI დაგეგმვა"
   },
   "validation": {
     "required": "ეს ველი სავალდებულოა",
@@ -463,7 +465,7 @@
   "header": {
     "home": "მთავარი",
     "browse": "დათვალიერება",
-    "professionals": "სპეციალისტები",
+    "professionals": "ხელოსნის პოვნა",
     "country": "ქვეყანა",
     "jobs": "სამუშაოები",
     "postJob": "განცხადების დამატება",
@@ -2643,6 +2645,24 @@
     "completeProject": "პროექტის დასრულება",
     "addToProject": "პროექტში დამატება",
     "phaseDesign": "დიზაინი",
+    "client": {
+      "currently": "მიმდინარეობს: {focus}",
+      "gettingStarted": "იწყება",
+      "needsYou": "თქვენი გადასაწყვეტი",
+      "allSet": "ყველაფერი რიგზეა - ამჟამად არაფერია საჭირო.",
+      "needChoose": "აირჩიეთ: {item}",
+      "needApprove": "დაამტკიცეთ: {item}",
+      "aDocument": "დოკუმენტი",
+      "needApproveDesign": "დაამტკიცეთ დიზაინი ({role})",
+      "latestPhotos": "ბოლო ფოტოები",
+      "budget": "ბიუჯეტი",
+      "notSet": "არ არის მითითებული",
+      "committed": "გამოყოფილია {amount}",
+      "yourTeam": "თქვენი გუნდი",
+      "noTeamYet": "ჯერ არავინ არის დანიშნული",
+      "peopleCount": "{count} ადამიანი",
+      "seeFullDetails": "სრული დეტალები"
+    },
     "phasePermits": "ნებართვები",
     "phaseConstruction": "მშენებლობა",
     "phaseFinishing": "მოპირკეთება",
@@ -4611,7 +4631,12 @@
     "setServiceAreas": "დააყენეთ სერვისის ზონები",
     "addPortfolioProjects": "დაამატეთ პორტფოლიოს პროექტები",
     "getFirstReview": "მიიღეთ პირველი შეფასება",
-    "shareReviewLink": "გააზიარეთ შეფასების ლინკი"
+    "shareReviewLink": "გააზიარეთ შეფასების ლინკი",
+    "activationEyebrow": "დაწყება",
+    "activationTitle": "დაიწყეთ რემონტი",
+    "activationSubtitle": "შექმენით პროექტი სამუშაოს დასაგეგმად და გუნდის ასაყვანად, ან განათავსეთ ცალკე სამუშაო ფასების მისაღებად.",
+    "activationStartProject": "პროექტის შექმნა",
+    "activationPostJob": "სამუშაოს განთავსება"
   },
   "feedback": {
     "title": "უკუკავშირი",

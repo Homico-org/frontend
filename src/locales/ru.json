@@ -190,7 +190,6 @@
     "thisMonth": "В этом месяце",
     "member": "Участник",
     "since": "С",
-    "client": "Клиент",
     "professional": "Специалист",
     "premium": "Премиум",
     "topRated": "Топ рейтинг",
@@ -340,7 +339,10 @@
     "sectionWork": "Работа",
     "shopCatalog": "Каталог",
     "sectionAccount": "Аккаунт",
-    "resources": "Ещё"
+    "resources": "Ещё",
+    "findPro": "Найти мастера",
+    "findWork": "Найти работу",
+    "plan": "AI Планирование"
   },
   "validation": {
     "required": "Это поле обязательно",
@@ -462,7 +464,7 @@
   "header": {
     "home": "Главная",
     "browse": "Обзор",
-    "professionals": "Специалисты",
+    "professionals": "Найти мастера",
     "country": "Страна",
     "jobs": "Работы",
     "postJob": "Разместить заказ",
@@ -2646,6 +2648,24 @@
     "completeProject": "Завершить проект",
     "addToProject": "Добавить в проект",
     "phaseDesign": "Дизайн",
+    "client": {
+      "currently": "Сейчас: {focus}",
+      "gettingStarted": "Начинается",
+      "needsYou": "Нужно от вас",
+      "allSet": "Всё в порядке - сейчас ничего не требуется.",
+      "needChoose": "Выберите: {item}",
+      "needApprove": "Утвердите: {item}",
+      "aDocument": "документ",
+      "needApproveDesign": "Утвердите дизайн ({role})",
+      "latestPhotos": "Последние фото",
+      "budget": "Бюджет",
+      "notSet": "Не указан",
+      "committed": "Выделено {amount}",
+      "yourTeam": "Ваша команда",
+      "noTeamYet": "Пока никто не назначен",
+      "peopleCount": "{count} чел.",
+      "seeFullDetails": "Все подробности"
+    },
     "phasePermits": "Разрешения",
     "phaseConstruction": "Строительство",
     "phaseFinishing": "Отделка",
@@ -4606,7 +4626,12 @@
     "setServiceAreas": "Укажите зоны обслуживания",
     "addPortfolioProjects": "Добавьте проекты в портфолио",
     "getFirstReview": "Получите первый отзыв",
-    "shareReviewLink": "Поделитесь ссылкой для отзыва"
+    "shareReviewLink": "Поделитесь ссылкой для отзыва",
+    "activationEyebrow": "Начало",
+    "activationTitle": "Начните ремонт",
+    "activationSubtitle": "Создайте проект, чтобы спланировать работу и собрать команду, или разместите отдельную работу для расчёта цены.",
+    "activationStartProject": "Создать проект",
+    "activationPostJob": "Разместить работу"
   },
   "feedback": {
     "title": "Обратная связь",

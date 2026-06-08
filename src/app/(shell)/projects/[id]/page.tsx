@@ -1,6 +1,7 @@
 'use client';
 
 import InviteProModal from '@/components/projects/InviteProModal';
+import ProjectClientView from '@/components/projects/ProjectClientView';
 import ProjectDocuments, {
   ProjectDoc,
 } from '@/components/projects/ProjectDocuments';
@@ -457,6 +458,13 @@ export default function ProjectDashboardPage() {
     if (tp && legacyMap[tp]) return legacyMap[tp];
     return 'overview';
   });
+
+  // Clients default to the simplified "Status & Decisions" view; "See full
+  // details" drops them into the same tabbed view editors/workers see. A
+  // `?tab=` deep-link (e.g. from a notification) opens the full view directly.
+  const [clientSimpleView, setClientSimpleView] = useState(
+    () => !searchParams.get('tab'),
+  );
 
   useEffect(() => {
     const current = searchParams.get('tab') || 'overview';
@@ -1030,6 +1038,20 @@ export default function ProjectDashboardPage() {
       )}
     </div>
   );
+
+  // Client lens: a calm status & decisions view instead of the full
+  // project-management tabs. Editors/workers always get the tabbed view below.
+  if (isClient && clientSimpleView) {
+    return (
+      <ProjectClientView
+        project={project}
+        onSeeFullDetails={(tab) => {
+          if (tab) setActiveTab(tab);
+          setClientSimpleView(false);
+        }}
+      />
+    );
+  }
 
   return (
     <>

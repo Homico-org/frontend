@@ -190,7 +190,6 @@
     "thisMonth": "This month",
     "member": "Member",
     "since": "Since",
-    "client": "Client",
     "professional": "Professional",
     "premium": "Premium",
     "topRated": "Top Rated",
@@ -341,7 +340,10 @@
     "sectionWork": "Work",
     "shopCatalog": "Catalog",
     "sectionAccount": "Account",
-    "resources": "More"
+    "resources": "More",
+    "findPro": "Find a pro",
+    "findWork": "Find work",
+    "plan": "AI Plan"
   },
   "validation": {
     "required": "This field is required",
@@ -463,7 +465,7 @@
   "header": {
     "home": "Home",
     "browse": "Browse",
-    "professionals": "Professionals",
+    "professionals": "Find a pro",
     "country": "Country",
     "jobs": "Jobs",
     "postJob": "Post a Job",
@@ -2643,6 +2645,24 @@
     "completeProject": "Complete Project",
     "addToProject": "Add to project",
     "phaseDesign": "Design",
+    "client": {
+      "currently": "Currently: {focus}",
+      "gettingStarted": "Getting started",
+      "needsYou": "Needs you",
+      "allSet": "You're all set - nothing needed right now.",
+      "needChoose": "Choose: {item}",
+      "needApprove": "Approve: {item}",
+      "aDocument": "a document",
+      "needApproveDesign": "Approve design ({role})",
+      "latestPhotos": "Latest photos",
+      "budget": "Budget",
+      "notSet": "Not set",
+      "committed": "{amount} committed",
+      "yourTeam": "Your team",
+      "noTeamYet": "No one assigned yet",
+      "peopleCount": "{count} people",
+      "seeFullDetails": "See full details"
+    },
     "phasePermits": "Permits",
     "phaseConstruction": "Construction",
     "phaseFinishing": "Finishing",
@@ -4612,7 +4632,12 @@
     "setServiceAreas": "Set service areas",
     "addPortfolioProjects": "Add portfolio projects",
     "getFirstReview": "Get your first review",
-    "shareReviewLink": "Share review link"
+    "shareReviewLink": "Share review link",
+    "activationEyebrow": "Get started",
+    "activationTitle": "Start your renovation",
+    "activationSubtitle": "Create a project to plan the work and hire a team, or post a single job to get quotes from pros.",
+    "activationStartProject": "Create a project",
+    "activationPostJob": "Post a job"
   },
   "feedback": {
     "title": "Feedback",
