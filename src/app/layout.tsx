@@ -4,6 +4,7 @@ import { AiChatWidgetMount } from "@/components/ai-assistant/AiChatWidgetMount";
 import ClientLayout from "@/components/common/ClientLayout";
 import CommandPalette from "@/components/common/CommandPalette";
 import CommandPaletteHint from "@/components/common/CommandPaletteHint";
+import DevServiceWorkerKiller from "@/components/common/DevServiceWorkerKiller";
 import MetaPixelPageView from "@/components/common/MetaPixelPageView";
 import OfflineBanner from "@/components/common/OfflineBanner";
 import Providers from "@/components/common/Providers";
@@ -404,6 +405,7 @@ fbq('track', 'PageView');`,
           initialLocale={initialLocale}
           initialCountry={initialCountry}
         >
+          <DevServiceWorkerKiller />
           <SkipToMainLink />
           <ClientLayout>{children}</ClientLayout>
           <RouteProgressBar />

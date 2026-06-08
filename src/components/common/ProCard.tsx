@@ -680,6 +680,7 @@ export default function ProCard({
               size="xs"
               max={2}
               exclude={["verified", "topRated"]}
+              tooltip={false}
               className="mt-1.5"
             />
           </div>
@@ -806,13 +807,16 @@ export default function ProCard({
 
         {/* Hover-reveal "open" affordance - sits over the bottom-right
             corner. Hidden until hover so it doesn't compete with the card
-            content at rest. */}
-        <div
-          aria-hidden
-          className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none"
-        >
-          <ArrowUpRight className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
-        </div>
+            content at rest. Suppressed when the Book CTA is shown, otherwise
+            the two collide on the bottom-right on hover. */}
+        {!(onBook && hasBookableServices) && (
+          <div
+            aria-hidden
+            className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none"
+          >
+            <ArrowUpRight className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+          </div>
+        )}
       </div>
     </Link>
   );

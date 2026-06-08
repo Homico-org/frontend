@@ -26,6 +26,7 @@ import {
   MapPin,
   Phone,
   RefreshCw,
+  Crown,
   UserCheck,
   Users,
   X,
@@ -67,6 +68,7 @@ interface PendingPro {
   yearsExperience?: number;
   isProfileCompleted?: boolean;
   verificationStatus?: 'pending' | 'verified' | 'rejected';
+  isFeatured?: boolean;
   adminRejectionReason?: string;
   createdAt: string;
   portfolioProjects?: Array<{
@@ -213,6 +215,22 @@ function AdminPendingProsPageContent() {
     } catch (error) {
       console.error('Error rejecting pro:', error);
       toast.error(t('admin.pendingPros.failedToReject'));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleToggleFeatured = async (proId: string, next: boolean) => {
+    if (!proId) return;
+    try {
+      setActionLoading(proId);
+      await api.patch(`/admin/pros/${proId}/featured`, { featured: next });
+      toast.success(next ? t('admin.pendingPros.featuredToast') : t('admin.pendingPros.unfeaturedToast'));
+      fetchPendingPros();
+      setSelectedPro((prev) => (prev && getProId(prev) === proId ? { ...prev, isFeatured: next } : prev));
+    } catch (error) {
+      console.error('Error toggling featured:', error);
+      toast.error(t('admin.pendingPros.failedToFeature'));
     } finally {
       setActionLoading(null);
     }
@@ -472,6 +490,13 @@ function AdminPendingProsPageContent() {
                             {t('common.pending')}
                           </span>
                         )}
+                        {pro.isFeatured && (
+                          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium flex-shrink-0 inline-flex items-center gap-1"
+                            style={{ background: `${THEME.primary}20`, color: THEME.primary }}>
+                            <Crown className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />
+                            {t('admin.pendingPros.featured')}
+                          </span>
+                        )}
                       </div>
 
                       {/* Contact info - simplified on mobile */}
@@ -556,6 +581,25 @@ function AdminPendingProsPageContent() {
                             {t('admin.approve')}
                           </Button>
                         </>
+                      )}
+                      {pro.verificationStatus === 'verified' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleFeatured(getProId(pro), !pro.isFeatured);
+                          }}
+                          disabled={actionLoading === getProId(pro)}
+                          style={
+                            pro.isFeatured
+                              ? { background: THEME.primary, color: '#fff', borderColor: THEME.primary }
+                              : { borderColor: THEME.border, color: THEME.textMuted }
+                          }
+                        >
+                          <Crown className={`w-4 h-4 mr-1 ${pro.isFeatured ? 'fill-current' : ''}`} />
+                          {pro.isFeatured ? t('admin.pendingPros.featured') : t('admin.pendingPros.feature')}
+                        </Button>
                       )}
                       <Link
                         href={`/professionals/${pro.uid || getProId(pro)}`}
@@ -888,16 +932,34 @@ function AdminPendingProsPageContent() {
                     </Button>
                   </div>
                 ) : (
-                  <Link
-                    href={`/professionals/${selectedPro.uid || getProId(selectedPro)}`}
-                    target="_blank"
-                    className="block"
-                  >
-                    <Button variant="outline" className="w-full h-12 sm:h-9 text-base sm:text-sm">
-                      <Eye className="w-4 h-4 mr-2" />
-                      {t('common.viewProfile')}
-                    </Button>
-                  </Link>
+                  <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
+                    <Link
+                      href={`/professionals/${selectedPro.uid || getProId(selectedPro)}`}
+                      target="_blank"
+                      className="sm:flex-1"
+                    >
+                      <Button variant="outline" className="w-full h-12 sm:h-9 text-base sm:text-sm">
+                        <Eye className="w-4 h-4 mr-2" />
+                        {t('common.viewProfile')}
+                      </Button>
+                    </Link>
+                    {selectedPro.verificationStatus === 'verified' && (
+                      <Button
+                        onClick={() => handleToggleFeatured(getProId(selectedPro), !selectedPro.isFeatured)}
+                        disabled={actionLoading === getProId(selectedPro)}
+                        variant={selectedPro.isFeatured ? 'default' : 'outline'}
+                        className="sm:flex-1 h-12 sm:h-9 font-medium text-base sm:text-sm"
+                        style={
+                          selectedPro.isFeatured
+                            ? { background: THEME.primary, color: '#fff', borderColor: THEME.primary }
+                            : undefined
+                        }
+                      >
+                        <Crown className={`w-4 h-4 mr-2 ${selectedPro.isFeatured ? 'fill-current' : ''}`} />
+                        {selectedPro.isFeatured ? t('admin.pendingPros.unfeature') : t('admin.pendingPros.feature')}
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

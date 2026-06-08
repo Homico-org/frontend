@@ -17,6 +17,7 @@ import { ConfirmModal, Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusPill } from "@/components/ui/StatusPill";
+import ProBadges from "@/components/professionals/ProBadges";
 import { features } from "@/config/features";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
@@ -1830,6 +1831,16 @@ export default function ProfessionalDetailClient({
                   {profile.status === 'away' && (
                     <StatusPill variant="away" size="sm" locale={locale as 'en' | 'ka' | 'ru'} />
                   )}
+                  {/* Trust badges (auto-derived + admin Featured). Verified is
+                      excluded here because the avatar already carries the
+                      verified check. */}
+                  <ProBadges
+                    pro={profile}
+                    locale={locale as 'en' | 'ka' | 'ru'}
+                    size="sm"
+                    max={4}
+                    exclude={["verified"]}
+                  />
                   {canEdit && (
                     <Button
                       variant="ghost"
@@ -2256,6 +2267,17 @@ export default function ProfessionalDetailClient({
                     )
                   )}
 
+                  {/* Trust badges (icon-only). Verified excluded - the avatar
+                      already carries the verified check. */}
+                  <ProBadges
+                    pro={profile}
+                    locale={locale as 'en' | 'ka' | 'ru'}
+                    size="sm"
+                    max={4}
+                    exclude={["verified"]}
+                    className="justify-center mb-3"
+                  />
+
                   {/* Location */}
                   {profile.serviceAreas?.length > 0 && (
                     <div className="flex items-center gap-1.5 text-xs text-[var(--hm-fg-muted)] mb-3">
@@ -2400,29 +2422,19 @@ export default function ProfessionalDetailClient({
                           </motion.button>
                         )}
                       {canEdit && (
-                        <>
-                          {features.bookings && (
-                            <motion.button
-                              whileHover={{ scale: 1.02, y: -1 }}
-                              whileTap={{ scale: 0.97 }}
-                              onClick={() => setShowSchedulePanel(true)}
-                              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[var(--hm-brand-500)] font-medium text-sm bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 transition-colors"
-                            >
-                              <Calendar className="w-4 h-4" />
-                              {t("settings.availability")}
-                            </motion.button>
-                          )}
-                          <motion.button
-                            whileHover={{ scale: 1.02, y: -1 }}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => setShowShareMenu(true)}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm border transition-colors"
-                            style={{ borderColor: 'var(--hm-border-subtle)', color: 'var(--hm-fg-secondary)' }}
-                          >
-                            <Share2 className="w-4 h-4" />
-                            {t("common.share")}
-                          </motion.button>
-                        </>
+                        // Schedule/availability lives in the standalone owner
+                        // button above; here we only add Share so admins viewing
+                        // the pro don't see "availability" twice.
+                        <motion.button
+                          whileHover={{ scale: 1.02, y: -1 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => setShowShareMenu(true)}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm border transition-colors"
+                          style={{ borderColor: 'var(--hm-border-subtle)', color: 'var(--hm-fg-secondary)' }}
+                        >
+                          <Share2 className="w-4 h-4" />
+                          {t("common.share")}
+                        </motion.button>
                       )}
                     </div>
                   )}

@@ -64,6 +64,16 @@ interface ProBadgesProps {
   max?: number;
   /** Skip these variants (e.g. ones a surface already renders elsewhere). */
   exclude?: StatusPillVariant[];
+  /**
+   * Render as quiet icon-only chips with hover tooltips (default) instead of
+   * text pills. Trust badges read as a calm signal row, not a colored stack.
+   */
+  iconOnly?: boolean;
+  /**
+   * Enable the hover pop + label tooltip on the chips. Turn off on dense /
+   * clipped surfaces like cards (overflow-hidden cuts the popped tooltip).
+   */
+  tooltip?: boolean;
   className?: string;
 }
 
@@ -73,6 +83,8 @@ export default function ProBadges({
   size = 'sm',
   max = 3,
   exclude,
+  iconOnly = true,
+  tooltip = true,
   className,
 }: ProBadgesProps) {
   let badges = deriveProBadges(pro, max + (exclude?.length ?? 0));
@@ -82,7 +94,14 @@ export default function ProBadges({
   return (
     <div className={cn('flex flex-wrap items-center gap-1', className)}>
       {badges.map((variant) => (
-        <StatusPill key={variant} variant={variant} size={size} locale={locale} />
+        <StatusPill
+          key={variant}
+          variant={variant}
+          size={size}
+          locale={locale}
+          iconOnly={iconOnly}
+          tooltip={tooltip}
+        />
       ))}
     </div>
   );

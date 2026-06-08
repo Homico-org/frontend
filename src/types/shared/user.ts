@@ -201,6 +201,7 @@ export interface ProProfile extends BaseEntity {
   isPhoneVerified: boolean;
   verificationStatus?: VerificationStatus;
   isPremium: boolean;
+  isFeatured?: boolean;
   premiumTier?: string;
   
   // Admin Approval (legacy - use verificationStatus instead)
@@ -264,6 +265,7 @@ export interface ProCard {
   completedJobs: number;
   yearsExperience: number;
   isPremium: boolean;
+  isFeatured?: boolean;
   isAvailable: boolean;
   status: ProStatus;
   basePrice?: number;
