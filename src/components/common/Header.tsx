@@ -17,6 +17,7 @@ import { useCountryLink } from "@/hooks/useCountry";
 import { stripCountryPrefix } from "@/utils/countryLink";
 import { useSupportUnread } from "@/hooks/useSupportUnread";
 import { trackEvent } from "@/hooks/useTracker";
+import { useMyProjects } from "@/hooks/useMyProjects";
 import {
   ArrowRight,
   Activity,
@@ -65,17 +66,6 @@ import NotificationsDropdown from "./NotificationsDropdown";
 import ThemeToggle from "./ThemeToggle";
 import { features } from "@/config/features";
 
-// Lightweight shape for the Projects mega-dropdown - just what a card needs.
-type HeaderProject = {
-  id?: string;
-  _id?: string;
-  title: string;
-  status?: string;
-  progress?: number;
-  coverImage?: string;
-  photos?: string[];
-};
-
 // Lightweight shape for the Shop mega-dropdown's recent-order cards.
 type HeaderOrder = {
   id?: string;
@@ -121,7 +111,9 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
     | "shop"
     | "activity";
   const [openMenuKey, setOpenMenuKey] = useState<NavMenuKey | null>(null);
-  const [myProjects, setMyProjects] = useState<HeaderProject[] | null>(null);
+  // Projects come from a shared cache so the sidebar group and this dropdown
+  // make ONE `/projects` request between them, not one each.
+  const myProjects = useMyProjects(isAuthenticated);
   const [myOrders, setMyOrders] = useState<HeaderOrder[] | null>(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -265,24 +257,14 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openMenuKey]);
 
-  // The Projects + Shop mega-dropdowns show the user's real projects / recent
-  // orders as cards, so fetch both once authenticated (cheap lists; refresh on
-  // auth change).
+  // The Shop mega-dropdown shows recent orders, so fetch them once
+  // authenticated (projects are handled by the shared `useMyProjects` hook).
   useEffect(() => {
     if (!isAuthenticated) {
-      setMyProjects(null);
       setMyOrders(null);
       return;
     }
     let cancelled = false;
-    api
-      .get("/projects")
-      .then((r) => {
-        if (!cancelled) setMyProjects((r.data as HeaderProject[]) || []);
-      })
-      .catch(() => {
-        if (!cancelled) setMyProjects([]);
-      });
     api
       .get("/orders")
       .then((r) => {

@@ -34,8 +34,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { useEffect } from "react";
+import { useMyProjects } from "@/hooks/useMyProjects";
 
 interface MobileNavDrawerProps {
   isOpen: boolean;
@@ -51,12 +51,6 @@ interface NavLink {
   external?: boolean;
   // Indented, muted sub-row (e.g. an individual project under "Projects").
   subtle?: boolean;
-}
-
-interface ProjectLite {
-  id?: string;
-  _id?: string;
-  title: string;
 }
 
 interface NavSection {
@@ -78,26 +72,9 @@ export default function MobileNavDrawer({
   const isClient = user?.role === UserRole.CLIENT;
   const isAdmin = user?.role === UserRole.ADMIN;
 
-  // The user's real projects, listed as sub-rows under "Projects".
-  const [projects, setProjects] = useState<ProjectLite[] | null>(null);
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setProjects(null);
-      return;
-    }
-    let cancelled = false;
-    api
-      .get("/projects")
-      .then((r) => {
-        if (!cancelled) setProjects((r.data as ProjectLite[]) || []);
-      })
-      .catch(() => {
-        if (!cancelled) setProjects([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated]);
+  // The user's real projects, listed as sub-rows under "Projects". Shared
+  // with the header dropdown + sidebar group via one cached `/projects` fetch.
+  const projects = useMyProjects(isAuthenticated);
 
   // Lock body scroll while open. Restore on close/unmount.
   useEffect(() => {

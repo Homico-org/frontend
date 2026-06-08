@@ -1,18 +1,11 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { api } from '@/lib/api';
+import { useMyProjects } from '@/hooks/useMyProjects';
 import { ChevronDown, ListChecks, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-
-interface ProjectLite {
-  id?: string;
-  _id?: string;
-  title: string;
-  status?: string;
-}
+import { useEffect, useState } from 'react';
 
 const STATUS_DOT: Record<string, string> = {
   draft: 'var(--hm-n-300)',
@@ -44,8 +37,9 @@ export default function SidebarProjectsGroup({
   const onProjectPage = /\/projects\/[^/]+/.test(pathname);
   const currentId = pathname.match(/\/projects\/([^/]+)/)?.[1];
   const [expanded, setExpanded] = useState(onProjectPage);
-  const [projects, setProjects] = useState<ProjectLite[] | null>(null);
-  const fetchedRef = useRef(false);
+  // Shared with the header projects dropdown - one `/projects` request between
+  // them. Loaded eagerly so the count badge shows whether expanded or not.
+  const projects = useMyProjects(true);
 
   // Follow the section: expand when entering a project page, collapse when
   // leaving it (e.g. clicking Shop). Manual toggles within a section persist
@@ -53,17 +47,6 @@ export default function SidebarProjectsGroup({
   useEffect(() => {
     setExpanded(onProjectPage);
   }, [onProjectPage]);
-
-  // Fetch eagerly on mount (not lazily on first expand) so the project
-  // count badge is shown immediately, whether the group is collapsed or not.
-  useEffect(() => {
-    if (fetchedRef.current) return;
-    fetchedRef.current = true;
-    api
-      .get('/projects')
-      .then((r) => setProjects((r.data as ProjectLite[]) || []))
-      .catch(() => setProjects([]));
-  }, []);
 
   // Collapsed rail: just the icon link, no tree.
   if (isCollapsed) {
