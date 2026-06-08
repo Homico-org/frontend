@@ -23,6 +23,7 @@ import DocumentReviewModal from '@/components/projects/DocumentReviewModal';
 import SpaceModal from '@/components/projects/SpaceModal';
 import ImageLightbox from '@/components/common/ImageLightbox';
 import EditProjectModal from '@/components/projects/EditProjectModal';
+import MilestonePaymentsPanel from '@/components/projects/MilestonePaymentsPanel';
 import EditRoleModal from '@/components/projects/EditRoleModal';
 import EditStepModal from '@/components/projects/EditStepModal';
 import { ConfirmModal } from '@/components/ui/Modal';
@@ -2068,8 +2069,9 @@ export default function ProjectDashboardPage() {
                 return (
                   <div
                     key={eng.id}
-                    className="flex flex-col gap-2 border-b border-[var(--hm-border-subtle)] py-2.5 last:border-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                    className="border-b border-[var(--hm-border-subtle)] py-2.5 last:border-0"
                   >
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                     <div className="flex min-w-0 items-center gap-2.5">
                       <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--hm-bg-tertiary)]">
                         {proObj?.avatar ? (
@@ -2160,6 +2162,19 @@ export default function ProjectDashboardPage() {
                         </>
                       )}
                     </div>
+                  </div>
+                  {isClient &&
+                    proObj &&
+                    ['hired', 'in_progress', 'completed'].includes(
+                      eng.status,
+                    ) && (
+                      <MilestonePaymentsPanel
+                        projectId={projectId}
+                        engagementId={eng.id}
+                        role="client"
+                        onChanged={load}
+                      />
+                    )}
                   </div>
                 );
               };

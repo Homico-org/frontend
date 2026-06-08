@@ -1506,6 +1506,30 @@
     "newWillAppear": "Новые уведомления появятся здесь",
     "related": "связанных",
     "types": {
+      "milestone_proposed": {
+        "title": "Предложен график платежей",
+        "message": "{role} предложил график платежей по вашему проекту"
+      },
+      "milestone_approved": {
+        "title": "График утверждён",
+        "message": "Ваш график платежей утверждён - можно оплачивать"
+      },
+      "milestone_funded": {
+        "title": "Этап оплачен",
+        "message": "«{label}» оплачен и надёжно хранится"
+      },
+      "milestone_submitted": {
+        "title": "Работа отмечена как выполнена",
+        "message": "Подтвердите «{label}», чтобы выплатить"
+      },
+      "milestone_released": {
+        "title": "Платёж в пути",
+        "message": "«{label}» подтверждён - будет выплачено {amount}"
+      },
+      "milestone_disputed": {
+        "title": "Сообщено о проблеме",
+        "message": "По «{label}» сообщено о проблеме"
+      },
       "new_booking": {
         "title": "Новый запрос на бронирование",
         "message": "У вас новый запрос на бронирование на {date} в {time}"
@@ -3051,6 +3075,12 @@
     "mpProPrompt": "Предложите клиенту график платежей за эту работу.",
     "mpAddInstallment": "Предложить график",
     "mpAddRow": "Добавить ещё",
+    "mpSuggestSplit": "Предложить разбивку: аванс / этап / финал",
+    "mpSuggestFromScope": "На основе {count} позиций · {amount}",
+    "mpSuggestFromBudget": "На основе согласованного бюджета · {amount}",
+    "mpSplitDeposit": "Аванс",
+    "mpSplitProgress": "Этап",
+    "mpSplitFinal": "По завершении",
     "mpLabelPlaceholder": "напр. Аванс, После демонтажа",
     "mpPropose": "Отправить клиенту",
     "mpApprove": "Утвердить график",

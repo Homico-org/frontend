@@ -19,7 +19,12 @@ interface Traction {
   };
   jobs: { total: number; hired: number; posted7d: number };
   orders: { paid: number; gmvMinor: number };
-  users: { pros: number; clients: number; signups7d: number };
+  users: {
+    pros: number;
+    clients: number;
+    signups7d: number;
+    prosHired: number;
+  };
 }
 
 const fmtGel = (minor: number) =>
@@ -176,8 +181,13 @@ function TractionContent() {
                 {metric("Jobs hired", data.jobs.hired, `of ${data.jobs.total} posted`)}
                 {metric("Jobs posted 7d", data.jobs.posted7d)}
                 {metric("Orders paid", data.orders.paid, fmtGel(data.orders.gmvMinor) + " GMV", THEME.success)}
+                {metric(
+                  "Pro utilization",
+                  `${data.users.pros > 0 ? Math.round((data.users.prosHired / data.users.pros) * 100) : 0}%`,
+                  `${data.users.prosHired} of ${data.users.pros} pros hired`,
+                  data.users.prosHired > 0 ? THEME.success : THEME.warning,
+                )}
                 {metric("Signups 7d", data.users.signups7d)}
-                {metric("Pros", data.users.pros)}
                 {metric("Clients", data.users.clients)}
               </div>
             </div>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import BeforeAfterSlider from "@/components/ui/BeforeAfterSlider";
 import { StarRating } from "@/components/ui/StarRating";
 import { StatusPill } from "@/components/ui/StatusPill";
+import ProBadges from "@/components/professionals/ProBadges";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
@@ -671,6 +672,16 @@ export default function ProCard({
                 {memberSinceLabel}
               </p>
             )}
+            {/* Trust badges - verified/topRated already render in the header
+                row above, so exclude them here to avoid doubling up. */}
+            <ProBadges
+              pro={profile}
+              locale={locale}
+              size="xs"
+              max={2}
+              exclude={["verified", "topRated"]}
+              className="mt-1.5"
+            />
           </div>
 
           {/* Stats row */}

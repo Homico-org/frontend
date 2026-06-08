@@ -54,6 +54,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, ReactNode } from "react";
+import ProMilestonePayments from "@/components/projects/ProMilestonePayments";
 
 type WorkProposal = Omit<Proposal, "jobId"> & { jobId: Job };
 
@@ -1023,6 +1024,10 @@ function MySpaceContent() {
           )}
         </motion.section>
       )}
+
+      {/* ── Milestone payments ── propose schedules + mark work done, per
+           engagement. Renders nothing when the pro has no payable work. */}
+      <ProMilestonePayments />
 
       {/* ── Find New Jobs ── the growth engine, kept prominent right
            below active work. */}

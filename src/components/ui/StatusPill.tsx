@@ -1,12 +1,13 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { BadgeCheck, Star, Plus, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft, Moon } from 'lucide-react';
+import { BadgeCheck, Star, Plus, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft, Moon, Award } from 'lucide-react';
 import { ACCENT_COLOR } from '@/constants/theme';
 
 export type StatusPillVariant =
   | 'verified'
   | 'topRated'
+  | 'experienced'
   | 'new'
   | 'urgent'
   | 'applied'
@@ -69,6 +70,13 @@ const variantConfig: Record<StatusPillVariant, {
     icon: Star,
     labelEn: 'Top Rated',
     labelKa: 'საუკეთესო',
+  },
+  experienced: {
+    bgClass: 'bg-[var(--hm-bg-tertiary)]',
+    textClass: 'text-[var(--hm-fg-secondary)]',
+    icon: Award,
+    labelEn: 'Experienced',
+    labelKa: 'გამოცდილი',
   },
   new: {
     bgClass: 'bg-[var(--hm-info-50)]',

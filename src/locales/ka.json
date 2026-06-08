@@ -1504,6 +1504,30 @@
     "newWillAppear": "ახალი შეტყობინებები აქ გამოჩნდება",
     "related": "სხვა",
     "types": {
+      "milestone_proposed": {
+        "title": "შემოთავაზებულია გადახდის გრაფიკი",
+        "message": "{role}-მა შემოგთავაზათ გადახდის გრაფიკი"
+      },
+      "milestone_approved": {
+        "title": "გრაფიკი დადასტურდა",
+        "message": "თქვენი გადახდის გრაფიკი დადასტურდა - დაფინანსება შესაძლებელია"
+      },
+      "milestone_funded": {
+        "title": "ეტაპი დაფინანსდა",
+        "message": "„{label}\" დაფინანსებულია და დაცულად ინახება"
+      },
+      "milestone_submitted": {
+        "title": "სამუშაო მონიშნულია დასრულებულად",
+        "message": "დაადასტურეთ „{label}\" თანხის გასაცემად"
+      },
+      "milestone_released": {
+        "title": "თანხა იგზავნება",
+        "message": "„{label}\" დადასტურდა - გაიცემა {amount}"
+      },
+      "milestone_disputed": {
+        "title": "დაფიქსირდა პრობლემა",
+        "message": "„{label}\"-ზე დაფიქსირდა პრობლემა"
+      },
       "new_booking": {
         "title": "ახალი ჯავშნის მოთხოვნა",
         "message": "გაქვთ ახალი ჯავშნის მოთხოვნა {date} {time}-ზე"
@@ -3058,6 +3082,12 @@
     "mpProPrompt": "შესთავაზეთ კლიენტს გადახდის გრაფიკი ამ სამუშაოსთვის.",
     "mpAddInstallment": "გრაფიკის შეთავაზება",
     "mpAddRow": "კიდევ დამატება",
+    "mpSuggestSplit": "ავანსი / მიმდინარე / საბოლოო - გაყოფის შეთავაზება",
+    "mpSuggestFromScope": "{count} პოზიციის მიხედვით · {amount}",
+    "mpSuggestFromBudget": "შეთანხმებული ბიუჯეტის მიხედვით · {amount}",
+    "mpSplitDeposit": "ავანსი",
+    "mpSplitProgress": "მიმდინარე",
+    "mpSplitFinal": "დასრულებისას",
     "mpLabelPlaceholder": "მაგ. ავანსი, დემონტაჟის შემდეგ",
     "mpPropose": "კლიენტთან გაგზავნა",
     "mpApprove": "გრაფიკის დადასტურება",

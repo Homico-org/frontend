@@ -1504,6 +1504,30 @@
     "newWillAppear": "New notifications will appear here",
     "related": "related",
     "types": {
+      "milestone_proposed": {
+        "title": "Payment schedule proposed",
+        "message": "{role} proposed a payment schedule for your project"
+      },
+      "milestone_approved": {
+        "title": "Schedule approved",
+        "message": "Your payment schedule was approved - funding can begin"
+      },
+      "milestone_funded": {
+        "title": "Milestone funded",
+        "message": "\"{label}\" is funded and held safely - start when ready"
+      },
+      "milestone_submitted": {
+        "title": "Work marked done",
+        "message": "Confirm \"{label}\" to release the payment"
+      },
+      "milestone_released": {
+        "title": "Payment on its way",
+        "message": "\"{label}\" was confirmed - {amount} will be paid out"
+      },
+      "milestone_disputed": {
+        "title": "Issue reported",
+        "message": "An issue was reported on \"{label}\""
+      },
       "new_booking": {
         "title": "New Booking Request",
         "message": "You have a new booking request for {date} at {time}"
@@ -3058,6 +3082,12 @@
     "mpProPrompt": "Propose a milestone payment schedule for this work.",
     "mpAddInstallment": "Propose schedule",
     "mpAddRow": "Add another",
+    "mpSuggestSplit": "Suggest a deposit / progress / final split",
+    "mpSuggestFromScope": "Based on {count} scope items · {amount}",
+    "mpSuggestFromBudget": "Based on the agreed budget · {amount}",
+    "mpSplitDeposit": "Deposit",
+    "mpSplitProgress": "Progress",
+    "mpSplitFinal": "On completion",
     "mpLabelPlaceholder": "e.g. Deposit, After demolition",
     "mpPropose": "Send to client",
     "mpApprove": "Approve schedule",

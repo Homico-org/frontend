@@ -29,9 +29,7 @@ import {
   Calendar,
   Check,
   ChevronRight,
-  Database,
   ExternalLink,
-  FileSearch,
   Hammer,
   HelpCircle,
   Image as ImageIcon,
@@ -354,10 +352,12 @@ export default function Header({ fixed = true }: { fixed?: boolean }) {
   // both clients (estimating their renovation) and pros (validating bids)
   // benefit. Name deliberately avoids "tools" - in Georgian / Russian that
   // reads as physical hammers/saws given the renovation context.
+  // Trimmed to the hub + the two tools that actually get used (calculator,
+  // compare). The analyzer + price-database tools drew ~0 nav traffic, so they
+  // no longer take a premium dropdown slot - they stay reachable via the
+  // "all tools" hub, which lists every tool as a card.
   const planMenuItems: DropdownItem[] = [
     { key: "all-tools", href: cl("/tools"), label: t("header.allTools"), description: t("header.descriptions.allTools"), icon: LayoutGrid, showFor: "all" },
-    { key: "analyzer", href: cl("/tools/analyzer"), label: t("header.estimateAnalyzer"), description: t("header.descriptions.estimateAnalyzer"), icon: FileSearch, showFor: "all" },
-    { key: "prices", href: cl("/tools/prices"), label: t("header.priceDatabase"), description: t("header.descriptions.priceDatabase"), icon: Database, showFor: "all" },
     { key: "calculator", href: cl("/tools/calculator"), label: t("header.renovationCalculator"), description: t("header.descriptions.renovationCalculator"), icon: Calculator, showFor: "all" },
     { key: "compare", href: cl("/tools/compare"), label: t("header.compareEstimates"), description: t("header.descriptions.compareEstimates"), icon: Scale, showFor: "all" },
     { key: "for-business", href: cl("/for-business"), label: t("header.forBusiness"), description: t("header.descriptions.forBusiness"), icon: Building2, showFor: "all" },
