@@ -17,6 +17,7 @@ import { ConfirmModal, Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { features } from "@/config/features";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
@@ -62,6 +63,7 @@ import {
   Edit3,
   Facebook,
   Link2,
+  type LucideIcon,
   MapPin,
   MessageCircle,
   MessageSquare,
@@ -73,6 +75,7 @@ import {
   Share2,
   ShoppingCart,
   Star,
+  Trophy,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -152,6 +155,14 @@ function AnimatedCounter({
   return <>{display}</>;
 }
 
+// Maps a badge's `icon` name (from the backend registry) to a lucide icon.
+// Add a new badge → add its icon name here. Falls back to Star if unknown.
+const BADGE_ICONS: Record<string, LucideIcon> = {
+  trophy: Trophy,
+  "badge-check": BadgeCheck,
+  "message-square": MessageSquare,
+};
+
 export default function ProfessionalDetailClient({
   initialProfile,
 }: {
@@ -185,6 +196,10 @@ export default function ProfessionalDetailClient({
   >([]);
   const [reviews, setReviews] = useState<PageReview[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
+  // Gamification badges this user has unlocked (read-only, shown under the name).
+  const [badges, setBadges] = useState<
+    { key: string; icon: string; titleKey: string; descKey: string; unlockedAt: string }[]
+  >([]);
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -309,6 +324,25 @@ export default function ProfessionalDetailClient({
       window.removeEventListener("resize", handleScroll);
     };
   }, [isOwner]);
+
+  // Fetch the unlocked badges for this profile. Best-effort: badges are a
+  // decorative trust signal, so a failure just renders nothing.
+  useEffect(() => {
+    const uid = profile?.id;
+    if (!uid) return;
+    let cancelled = false;
+    api
+      .get(`/badges/user/${uid}`)
+      .then((res) => {
+        if (!cancelled) setBadges(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setBadges([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.id]);
 
   useEffect(() => {
     if (!paramId) return;
@@ -1885,6 +1919,25 @@ export default function ProfessionalDetailClient({
                   </p>
                 );
               })()}
+
+              {/* Achievement badges - icon-only; the label shows on hover. */}
+              {badges.length > 0 && (
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  {badges.map((b) => {
+                    const Icon = BADGE_ICONS[b.icon] ?? Star;
+                    return (
+                      <Tooltip key={b.key} content={t(b.titleKey)}>
+                        <span
+                          aria-label={t(b.titleKey)}
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-[var(--hm-brand-100)] bg-[var(--hm-brand-50)]"
+                        >
+                          <Icon className="w-3.5 h-3.5 text-[var(--hm-brand-600)]" />
+                        </span>
+                      </Tooltip>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
@@ -2264,6 +2317,25 @@ export default function ProfessionalDetailClient({
                     </div>
                   )}
 
+                  {/* Achievement badges - icon-only; the label shows on hover. */}
+                  {badges.length > 0 && (
+                    <div className="mb-3 flex flex-wrap items-center gap-1.5">
+                      {badges.map((b) => {
+                        const Icon = BADGE_ICONS[b.icon] ?? Star;
+                        return (
+                          <Tooltip key={b.key} content={t(b.titleKey)}>
+                            <span
+                              aria-label={t(b.titleKey)}
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-[var(--hm-brand-100)] bg-[var(--hm-brand-50)]"
+                            >
+                              <Icon className="w-3.5 h-3.5 text-[var(--hm-brand-600)]" />
+                            </span>
+                          </Tooltip>
+                        );
+                      })}
+                    </div>
+                  )}
+
                   {/* Schedule button for owner */}
                   {features.bookings && canEdit && (
                     <div className="w-full mb-1">
@@ -2590,13 +2662,13 @@ export default function ProfessionalDetailClient({
                                                           const discounted = Math.round(entries[0].price * (1 - tier.percent / 100));
                                                           const savings = entries[0].price - discounted;
                                                           return (
-                                                            <div key={i} className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg text-[12px]" style={{ backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)' }}>
+                                                            <div key={i} className="flex items-center gap-1.5 py-1.5 px-2 rounded-lg text-[12px]" style={{ backgroundColor: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)' }}>
                                                               <span className="font-semibold" style={{ color: 'var(--hm-fg-primary)' }}>{tier.minQuantity}+</span>
                                                               <span style={{ color: 'var(--hm-fg-muted)' }}>{t("professional.unitsShort")}</span>
                                                               <span className="mx-0.5" style={{ color: 'var(--hm-fg-muted)' }}>→</span>
                                                               <span className="font-bold text-[var(--hm-success-500)]">{discounted}{sym}</span>
                                                               <span className="text-[10px] line-through opacity-40" style={{ color: 'var(--hm-fg-secondary)' }}>{entries[0].price}{sym}</span>
-                                                              <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--hm-success-100)]/30 text-[var(--hm-success-500)] font-semibold">{t("professional.saveShort")} {savings}{sym}</span>
+                                                              <span className="ml-auto shrink-0 whitespace-nowrap text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--hm-success-100)]/30 text-[var(--hm-success-500)] font-semibold">−{savings}{sym}</span>
                                                             </div>
                                                           );
                                                         })}

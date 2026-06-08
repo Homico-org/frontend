@@ -1,4 +1,21 @@
 {
+  "badges": {
+    "notification": {
+      "title": "Badge unlocked!"
+    },
+    "first_review": {
+      "title": "First Review",
+      "desc": "Left their first review on Homico"
+    },
+    "ten_jobs": {
+      "title": "10 Jobs Done",
+      "desc": "Completed 10 or more jobs on Homico"
+    },
+    "verified_pro": {
+      "title": "Verified",
+      "desc": "Identity verified by Homico"
+    }
+  },
   "adminRequests": {
     "title": "Service requests",
     "subtitle": "Incoming Homico team requests - triage, contact, quote, close.",
