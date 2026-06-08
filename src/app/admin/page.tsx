@@ -548,6 +548,7 @@ function AdminDashboardPageContent() {
         <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 mb-4 sm:mb-8">
           {[
             { label: t('adminAnalytics.title'), icon: BarChart3, href: '/admin/analytics', color: THEME.info },
+            { label: t('adminFunnel.title'), icon: TrendingUp, href: '/admin/funnel', color: THEME.success },
             { label: t('admin.users'), icon: Users, href: '/admin/users', color: THEME.primary, count: stats?.users.total },
             { label: t('admin.approvals'), icon: UserCheck, href: '/admin/pending-pros', color: '#f59e0b', count: pendingProsCount, badge: pendingProsCount > 0 ? pendingProsCount : undefined },
             { label: t('admin.jobs'), icon: Briefcase, href: '/admin/jobs', color: THEME.info, count: stats?.jobs.total },
