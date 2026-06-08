@@ -14,11 +14,20 @@ import {
   ORDER_STATUS_TONE,
   orderStatusLabelKey,
 } from '@/components/shop/orderStatus';
-import { formatDate } from '@/utils/dateUtils';
-import { CreditCard, Check, MapPin, Package, RotateCcw } from 'lucide-react';
+import { formatDate, formatDateShort } from '@/utils/dateUtils';
+import {
+  CreditCard,
+  Check,
+  MapPin,
+  Package,
+  PackageCheck,
+  RotateCcw,
+  Truck,
+  type LucideIcon,
+} from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, Fragment, useState } from 'react';
 
 interface OrderItem {
   supplierProductId?: string;
@@ -31,6 +40,10 @@ interface OrderItem {
   qty: number;
   lineTotalMinor: number;
 }
+interface StatusEvent {
+  status: string;
+  at: string;
+}
 interface Order {
   id: string;
   orderNumber: string;
@@ -38,13 +51,29 @@ interface Order {
   items: OrderItem[];
   subtotalMinor: number;
   feeMinor: number;
+  deliveryFeeMinor?: number;
   totalMinor: number;
   deliveryAddress: { formattedAddress: string; phone: string; apartment?: string; notes?: string };
+  statusHistory?: StatusEvent[];
   createdAt: string;
 }
 
 const fmt = (minor: number) =>
   `${(minor / 100).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
+
+// Per-step icon + one-line hint for the fulfilment timeline.
+const STEP_ICON: Record<string, LucideIcon> = {
+  paid: CreditCard,
+  processing: Package,
+  shipped: Truck,
+  delivered: PackageCheck,
+};
+const STEP_HINT_KEY: Record<string, string> = {
+  paid: 'orders.fulfilHintPaid',
+  processing: 'orders.fulfilHintProcessing',
+  shipped: 'orders.fulfilHintShipped',
+  delivered: 'orders.fulfilHintDelivered',
+};
 
 export default function OrderDetailPage() {
   const { t, locale } = useLanguage();
@@ -69,6 +98,21 @@ export default function OrderDetailPage() {
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  // Re-fetch when the tab regains focus - returning from the payment gateway
+  // (or the /return page) lands here, and the GET re-syncs payment status, so
+  // a just-paid order flips from "awaiting" to "paid" without a manual reload.
+  useEffect(() => {
+    const onFocus = () => {
+      if (document.visibilityState === 'visible') load();
+    };
+    document.addEventListener('visibilitychange', onFocus);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', onFocus);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [load]);
 
   // Resume an unfinished payment: get a fresh gateway/return URL and go.
@@ -186,6 +230,13 @@ export default function OrderDetailPage() {
   }, {});
 
   const isUnpaid = ['awaiting_payment', 'payment_failed'].includes(order.status);
+  const itemCount = order.items.reduce((s, it) => s + (it.qty || 0), 0);
+  // The most recent timestamp recorded for a given step, if any.
+  const stepDate = (step: string): string | null => {
+    const ev = (order.statusHistory ?? []).filter((e) => e.status === step).pop();
+    return ev ? formatDateShort(ev.at, locale) : null;
+  };
+  const currentHintKey = STEP_HINT_KEY[order.status];
 
   return (
     <PageShell
@@ -249,35 +300,68 @@ export default function OrderDetailPage() {
         )}
 
         {/* Fulfilment timeline */}
-        {!isCancelled && (
-          <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] px-5 py-5">
-            <div className="flex items-center gap-1.5">
+        {!isCancelled && activeStep >= 0 && (
+          <div className="overflow-hidden rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]">
+            {/* Current-status headline */}
+            <div className="flex items-center gap-3 border-b border-[var(--hm-border-subtle)] px-5 py-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]">
+                {(() => {
+                  const Icon = STEP_ICON[order.status] ?? Package;
+                  return <Icon className="h-5 w-5" strokeWidth={1.9} />;
+                })()}
+              </span>
+              <div className="min-w-0">
+                <p className="text-[15px] font-bold text-[var(--hm-fg-primary)]">
+                  {t(orderStatusLabelKey(order.status))}
+                </p>
+                {currentHintKey && (
+                  <p className="text-[13px] text-[var(--hm-fg-muted)]">
+                    {t(currentHintKey)}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Stepper - icon per step, current step ringed, date when known */}
+            <div className="flex items-start px-4 py-5">
               {FULFILMENT_STEPS.map((step, i) => {
                 const done = i <= activeStep;
+                const current = i === activeStep;
+                const Icon = STEP_ICON[step] ?? Package;
+                const date = done ? stepDate(step) : null;
                 return (
-                  <div key={step} className="flex flex-1 flex-col items-center gap-1.5">
-                    <div className="flex w-full items-center gap-1.5">
+                  <Fragment key={step}>
+                    <div className="flex flex-1 flex-col items-center gap-1.5 text-center">
                       <span
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
                           done
                             ? 'bg-[var(--hm-brand-500)] text-white'
                             : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
-                        }`}
+                        } ${current ? 'ring-4 ring-[var(--hm-brand-500)]/15' : ''}`}
                       >
-                        {done ? <Check className="h-3.5 w-3.5" strokeWidth={2.5} /> : i + 1}
+                        {done && !current ? (
+                          <Check className="h-4 w-4" strokeWidth={2.6} />
+                        ) : (
+                          <Icon className="h-4 w-4" strokeWidth={2} />
+                        )}
                       </span>
-                      {i < FULFILMENT_STEPS.length - 1 && (
-                        <span
-                          className={`h-0.5 flex-1 rounded-full ${i < activeStep ? 'bg-[var(--hm-brand-500)]' : 'bg-[var(--hm-bg-tertiary)]'}`}
-                        />
+                      <span
+                        className={`px-0.5 text-[10px] leading-tight ${done ? 'font-semibold text-[var(--hm-fg-primary)]' : 'text-[var(--hm-fg-muted)]'}`}
+                      >
+                        {t(orderStatusLabelKey(step))}
+                      </span>
+                      {date && (
+                        <span className="text-[9px] tabular-nums text-[var(--hm-fg-subtle)]">
+                          {date}
+                        </span>
                       )}
                     </div>
-                    <span
-                      className={`text-[10px] ${done ? 'font-semibold text-[var(--hm-fg-primary)]' : 'text-[var(--hm-fg-muted)]'}`}
-                    >
-                      {t(orderStatusLabelKey(step))}
-                    </span>
-                  </div>
+                    {i < FULFILMENT_STEPS.length - 1 && (
+                      <span
+                        className={`mx-0.5 mt-[18px] h-0.5 flex-1 rounded-full ${i < activeStep ? 'bg-[var(--hm-brand-500)]' : 'bg-[var(--hm-bg-tertiary)]'}`}
+                      />
+                    )}
+                  </Fragment>
                 );
               })}
             </div>
@@ -305,9 +389,13 @@ export default function OrderDetailPage() {
                         <Package className="h-4 w-4" />
                       )}
                     </span>
-                    <span className="min-w-0 flex-1 text-[13px] text-[var(--hm-fg-primary)]">
-                      <span className="font-semibold tabular-nums text-[var(--hm-fg-muted)]">{it.qty}× </span>
-                      {it.name}
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[13px] font-medium text-[var(--hm-fg-primary)]">
+                        {it.name}
+                      </span>
+                      <span className="mt-0.5 block text-[11px] text-[var(--hm-fg-muted)] tabular-nums">
+                        {it.qty} × {fmt(it.unitPriceMinor)}
+                      </span>
                     </span>
                     <span className="shrink-0 text-[13px] font-semibold tabular-nums text-[var(--hm-fg-primary)]">
                       {fmt(it.lineTotalMinor)}
@@ -329,6 +417,12 @@ export default function OrderDetailPage() {
             <span>{t('projects.checkoutFee')}</span>
             <span className="tabular-nums">{fmt(order.feeMinor)}</span>
           </div>
+          {order.deliveryFeeMinor != null && order.deliveryFeeMinor > 0 && (
+            <div className="mt-1 flex justify-between text-[var(--hm-fg-muted)]">
+              <span>{t('projects.checkoutDelivery')}</span>
+              <span className="tabular-nums">{fmt(order.deliveryFeeMinor)}</span>
+            </div>
+          )}
           <div className="mt-2 flex items-baseline justify-between border-t border-[var(--hm-border-subtle)] pt-2">
             <span className="text-[14px] font-bold text-[var(--hm-fg-primary)]">{t('projects.checkoutTotal')}</span>
             <span className="text-[18px] font-bold tabular-nums text-[var(--hm-brand-500)]">{fmt(order.totalMinor)}</span>

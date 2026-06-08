@@ -31,7 +31,6 @@ import SpecCard from "@/components/jobs/SpecCard";
 import PollsTab from "@/components/polls/PollsTab";
 import PortfolioCompletionModal from "@/components/projects/PortfolioCompletionModal";
 import ProjectChat from "@/components/projects/ProjectChat";
-import ProjectWorkspace from "@/components/projects/ProjectWorkspace";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Checkbox from "@/components/ui/Checkbox";
@@ -766,7 +765,6 @@ export default function JobDetailClient() {
   // Unread counts for sidebar badges
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [unreadPollsCount, setUnreadPollsCount] = useState(0);
-  const [unreadResourcesCount, setUnreadResourcesCount] = useState(0);
 
   // History state
   type HistoryEventType =
@@ -950,7 +948,6 @@ export default function JobDetailClient() {
   // own their own data fetch. Children watch these as a useEffect dep to
   // re-pull from the server when the other participant mutates state.
   const [pollsRefreshTick, setPollsRefreshTick] = useState(0);
-  const [materialsRefreshTick, setMaterialsRefreshTick] = useState(0);
 
   const allMedia: MediaItem[] = job
     ? [
@@ -999,18 +996,13 @@ export default function JobDetailClient() {
       },
     );
 
-    // Bump a refresh tick so PollsTab / ProjectWorkspace refetch when the
-    // other side creates/votes/closes/deletes a poll or edits the
-    // materials board. Previously these listeners were no-ops and the
-    // children stayed on their initial fetch until the user clicked
+    // Bump a refresh tick so PollsTab refetches when the other side
+    // creates/votes/closes/deletes a poll. Previously this listener was a
+    // no-op and the child stayed on its initial fetch until the user clicked
     // away and back; both sides would see stale state during a live
     // back-and-forth.
     socketRef.current.on("projectPollUpdate", () => {
       setPollsRefreshTick((tick) => tick + 1);
-    });
-
-    socketRef.current.on("projectMaterialsUpdate", () => {
-      setMaterialsRefreshTick((tick) => tick + 1);
     });
 
     return () => {
@@ -1646,7 +1638,6 @@ export default function JobDetailClient() {
         );
         setUnreadChatCount(response.data.chat || 0);
         setUnreadPollsCount(response.data.polls || 0);
-        setUnreadResourcesCount(response.data.materials || 0);
       } catch (err) {
         // Silently fail (and ignore CanceledError from Strict Mode remount)
       }
@@ -1672,16 +1663,11 @@ export default function JobDetailClient() {
       api.post(`/jobs/projects/${job.id}/polls/viewed`).catch(() => {});
       setUnreadPollsCount(0);
     }
-    if (activeSidebarTab === "resources" && unreadResourcesCount > 0) {
-      api.post(`/jobs/projects/${job.id}/materials/viewed`).catch(() => {});
-      setUnreadResourcesCount(0);
-    }
   }, [
     activeSidebarTab,
     job?.id,
     unreadChatCount,
     unreadPollsCount,
-    unreadResourcesCount,
   ]);
 
   // Handle stage change (for pro)
@@ -2940,7 +2926,6 @@ export default function JobDetailClient() {
                 locale={locale}
                 unreadChatCount={unreadChatCount}
                 unreadPollsCount={unreadPollsCount}
-                unreadResourcesCount={unreadResourcesCount}
               />
             </div>
           )}
@@ -2964,7 +2949,6 @@ export default function JobDetailClient() {
                     locale={locale}
                     unreadChatCount={unreadChatCount}
                     unreadPollsCount={unreadPollsCount}
-                    unreadResourcesCount={unreadResourcesCount}
                   />
                 </div>
               </div>
@@ -3019,20 +3003,9 @@ export default function JobDetailClient() {
                   </div>
                 )}
 
-              {/* RESOURCES TAB CONTENT - hidden in MVP mode */}
-              {isHired &&
-                (isOwner || isHiredPro) &&
-                activeSidebarTab === "resources" && (
-                  <div className="bg-[var(--hm-bg-elevated)] rounded-2xl border border-[var(--hm-border-subtle)] p-4 md:p-6 min-h-[300px]">
-                    <ProjectWorkspace
-                      jobId={job.id}
-                      locale={locale}
-                      isClient={isOwner || false}
-                      embedded={true}
-                      refreshTick={materialsRefreshTick}
-                    />
-                  </div>
-                )}
+              {/* Materials board removed - the Project is the single source of
+                  truth for materials/shopping. (Job workspace keeps chat,
+                  polls, history.) */}
 
               {/* HISTORY TAB CONTENT - hidden in MVP mode */}
               {isHired &&

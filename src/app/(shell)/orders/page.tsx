@@ -3,13 +3,14 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
+import { storage } from '@/services/storage';
 import { PageShell } from '@/components/ui/PageShell';
 import { Skeleton } from '@/components/ui/Skeleton';
 import EmptyState from '@/components/common/EmptyState';
 import { formatDate } from '@/utils/dateUtils';
 import { ChevronRight, Package } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ORDER_STATUS_TONE,
   orderStatusLabelKey,
@@ -21,7 +22,7 @@ interface OrderRow {
   totalMinor: number;
   status: string;
   createdAt: string;
-  items: { name: string; qty: number }[];
+  items: { name: string; qty: number; imageUrl?: string }[];
 }
 
 const fmt = (minor: number) => `${(minor / 100).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
@@ -31,13 +32,31 @@ export default function ClientOrdersPage() {
   const { t, locale } = useLanguage();
   const [orders, setOrders] = useState<OrderRow[] | null>(null);
 
-  useEffect(() => {
+  const loadOrders = useCallback(() => {
     if (isLoading || !isAuthenticated) return;
     api
       .get<OrderRow[]>('/orders')
       .then((r) => setOrders(r.data || []))
       .catch(() => setOrders([]));
   }, [isLoading, isAuthenticated]);
+
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
+
+  // Refresh on tab focus so returning from a payment shows the synced status
+  // (the list endpoint re-syncs awaiting orders) without a manual reload.
+  useEffect(() => {
+    const onFocus = () => {
+      if (document.visibilityState === 'visible') loadOrders();
+    };
+    document.addEventListener('visibilitychange', onFocus);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', onFocus);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [loadOrders]);
 
   const headerProps = {
     icon: Package,
@@ -91,8 +110,21 @@ export default function ClientOrdersPage() {
                 href={`/orders/${o.id}`}
                 className="group flex items-center gap-4 rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-3.5 transition-all hover:border-[var(--hm-brand-500)] hover:shadow-[var(--hm-shadow-sm)]"
               >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] transition-colors group-hover:bg-[var(--hm-brand-500)]/10 group-hover:text-[var(--hm-brand-500)]">
-                  <Package className="h-5 w-5" strokeWidth={1.8} />
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] transition-colors group-hover:bg-[var(--hm-brand-500)]/10 group-hover:text-[var(--hm-brand-500)]">
+                  {o.items.find((i) => i.imageUrl)?.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      referrerPolicy="no-referrer"
+                      src={storage.getOptimizedImageUrl(
+                        o.items.find((i) => i.imageUrl)!.imageUrl!,
+                        'feedCard',
+                      )}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Package className="h-5 w-5" strokeWidth={1.8} />
+                  )}
                 </div>
 
                 <div className="min-w-0 flex-1">

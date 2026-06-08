@@ -5,14 +5,13 @@ import { ACCENT_COLOR as ACCENT } from "@/constants/theme";
 import {
   BarChart3,
   FileText,
-  FolderOpen,
   History,
   MessageCircle,
 } from "lucide-react";
 import React from "react";
 
 import { useLanguage } from "@/contexts/LanguageContext";
-export type ProjectSidebarTab = "details" | "chat" | "polls" | "resources" | "history";
+export type ProjectSidebarTab = "details" | "chat" | "polls" | "history";
 
 interface ProjectSidebarProps {
   activeTab: ProjectSidebarTab;
@@ -20,7 +19,6 @@ interface ProjectSidebarProps {
   locale: string;
   unreadChatCount?: number;
   unreadPollsCount?: number;
-  unreadResourcesCount?: number;
 }
 
 interface SidebarMenuItem {
@@ -36,7 +34,6 @@ export default function ProjectSidebar({
   onTabChange,
   unreadChatCount = 0,
   unreadPollsCount = 0,
-  unreadResourcesCount = 0,
 }: ProjectSidebarProps) {
   const { pick } = useLanguage();
   const menuItems: SidebarMenuItem[] = [
@@ -59,13 +56,6 @@ export default function ProjectSidebar({
       label: "Polls",
       labelKa: "გამოკითხვები",
       badge: unreadPollsCount,
-    },
-    {
-      key: "resources",
-      icon: <FolderOpen className="w-5 h-5" />,
-      label: "Resources",
-      labelKa: "მასალები",
-      badge: unreadResourcesCount,
     },
     {
       key: "history",
@@ -139,7 +129,6 @@ export function ProjectSidebarMobile({
   onTabChange,
   unreadChatCount = 0,
   unreadPollsCount = 0,
-  unreadResourcesCount = 0,
 }: ProjectSidebarProps) {
   const { pick } = useLanguage();
   const menuItems: SidebarMenuItem[] = [
@@ -162,13 +151,6 @@ export function ProjectSidebarMobile({
       label: "Polls",
       labelKa: "გამოკითხვები",
       badge: unreadPollsCount,
-    },
-    {
-      key: "resources",
-      icon: <FolderOpen className="w-4 h-4" />,
-      label: "Resources",
-      labelKa: "მასალები",
-      badge: unreadResourcesCount,
     },
     {
       key: "history",

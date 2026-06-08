@@ -1,10 +1,11 @@
 'use client';
 
+import RecentlyDeletedModal from '@/components/projects/RecentlyDeletedModal';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useMyProjects } from '@/hooks/useMyProjects';
-import { ChevronDown, ListChecks, Plus } from 'lucide-react';
+import { invalidateMyProjects, useMyProjects } from '@/hooks/useMyProjects';
+import { ChevronDown, ListChecks, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const STATUS_DOT: Record<string, string> = {
@@ -34,9 +35,11 @@ export default function SidebarProjectsGroup({
 }: Props) {
   const pathname = usePathname() || '';
   const { t } = useLanguage();
+  const router = useRouter();
   const onProjectPage = /\/projects\/[^/]+/.test(pathname);
   const currentId = pathname.match(/\/projects\/([^/]+)/)?.[1];
   const [expanded, setExpanded] = useState(onProjectPage);
+  const [trashOpen, setTrashOpen] = useState(false);
   // Shared with the header projects dropdown - one `/projects` request between
   // them. Loaded eagerly so the count badge shows whether expanded or not.
   const projects = useMyProjects(true);
@@ -151,8 +154,26 @@ export default function SidebarProjectsGroup({
             <Plus className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{t('projects.newProject')}</span>
           </Link>
+
+          <button
+            type="button"
+            onClick={() => setTrashOpen(true)}
+            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-secondary)]"
+          >
+            <Trash2 className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{t('projects.recentlyDeleted')}</span>
+          </button>
         </div>
       )}
+
+      <RecentlyDeletedModal
+        isOpen={trashOpen}
+        onClose={() => setTrashOpen(false)}
+        onRestored={(id) => {
+          invalidateMyProjects();
+          router.push(`/projects/${id}`);
+        }}
+      />
     </div>
   );
 }

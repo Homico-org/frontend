@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
 import AddProductModal from '@/components/projects/AddProductModal';
 import CatalogPickerModal from '@/components/projects/CatalogPickerModal';
+import CheckoutModal from '@/components/shop/CheckoutModal';
 import ProductCard from '@/components/shop/ProductCard';
+import type { CartItem } from '@/hooks/useCart';
 import { FilterPills } from '@/components/projects/TableCard';
 import { Room } from '@/components/projects/ProjectRooms';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -35,6 +37,9 @@ export interface ProjectProduct {
   vendor?: string;
   url?: string;
   imageUrl?: string;
+  /** Catalog link - present makes the row orderable via checkout. */
+  supplierProductId?: string;
+  supplierKey?: string;
   phase?: string;
   engagementId?: string;
   roomId?: string;
@@ -117,6 +122,7 @@ export default function ProjectShopping({
   const [roomFilter, setRoomFilter] = useState<string>('all');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   // The add/edit modal: { item } edits, { category } adds into that group.
   const [modal, setModal] = useState<{
@@ -188,6 +194,30 @@ export default function ProjectShopping({
 
   const fmt = (n: number) => `${n.toLocaleString()} ₾`;
 
+  // Catalog-linked, not-yet-delivered rows can be ordered through the real
+  // checkout. Map them to the cart shape CheckoutModal consumes; it re-quotes
+  // against the live catalog (by supplierProductId) and offers the
+  // all / bulk / by-item delivery modes - so "quick order" is one click here.
+  const orderable: CartItem[] = useMemo(
+    () =>
+      products
+        .filter((p) => p.supplierProductId && p.status !== 'delivered')
+        .map((p) => ({
+          product: {
+            id: p.supplierProductId as string,
+            supplierKey: p.supplierKey || (p.vendor || '').toLowerCase(),
+            name: p.name,
+            priceGel: p.unitPrice || 0,
+            currency: 'GEL',
+            imageUrl: p.imageUrl,
+            externalUrl: p.url || '',
+            category: p.category,
+            isAvailable: true,
+          },
+          qty: p.qty || 1,
+        })),
+    [products],
+  );
 
   const setStatus = async (id: string, status: ProductStatus) => {
     setBusyId(id);
@@ -383,11 +413,21 @@ export default function ProjectShopping({
               </Button>
               <Button
                 size="sm"
+                variant="outline"
                 onClick={() => setModal({})}
                 leftIcon={<Plus className="w-4 h-4" />}
               >
                 {t('projects.shopAddItem')}
               </Button>
+              {orderable.length > 0 && (
+                <Button
+                  size="sm"
+                  onClick={() => setCheckoutOpen(true)}
+                  leftIcon={<ShoppingCart className="w-4 h-4" />}
+                >
+                  {t('projects.quickOrder', { count: orderable.length })}
+                </Button>
+              )}
             </>
           )}
         </div>
@@ -456,6 +496,20 @@ export default function ProjectShopping({
             roomFilter !== 'all' && roomFilter !== 'none' ? roomFilter : undefined
           }
           onSaved={onChanged}
+        />
+      )}
+
+      {/* Quick order - feed the catalog-linked rows straight into the shared
+          checkout (delivery mode + BoG payment live inside CheckoutModal). */}
+      {canManage && checkoutOpen && orderable.length > 0 && (
+        <CheckoutModal
+          isOpen={checkoutOpen}
+          onClose={() => setCheckoutOpen(false)}
+          items={orderable}
+          onOrderPlaced={() => {
+            setCheckoutOpen(false);
+            void onChanged();
+          }}
         />
       )}
 

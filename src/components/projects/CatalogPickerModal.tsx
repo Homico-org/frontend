@@ -34,6 +34,8 @@ function toPrefill(p: CatalogProduct): CatalogPrefill {
     vendor: supplierLabel(p.supplierKey),
     url: p.externalUrl,
     imageUrl: p.imageUrl,
+    supplierProductId: p.id,
+    supplierKey: p.supplierKey,
   };
 }
 
@@ -74,6 +76,9 @@ export default function CatalogPickerModal({
         vendor: supplierLabel(p.supplierKey),
         url: p.externalUrl,
         imageUrl: p.imageUrl || undefined,
+        // Catalog link so this row is orderable via checkout.
+        supplierProductId: p.id,
+        supplierKey: p.supplierKey,
         roomId: roomId || '',
       };
       // Group by shop, not the scraped leaf category - those are too granular

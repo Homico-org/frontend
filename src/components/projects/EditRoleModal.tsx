@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, ModalBody } from '@/components/ui/Modal';
+import { Modal, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { FormGroup, Input, Label, Textarea } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -136,25 +136,25 @@ export default function EditRoleModal({
             </FormGroup>
           </div>
 
-          <div className="mt-2 flex justify-end gap-2 border-t border-[var(--hm-n-200)] pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="border border-[var(--hm-n-200)] px-3 py-2 text-[11px] font-semibold text-[var(--hm-n-700)] transition-colors hover:border-[var(--hm-n-900)] hover:text-[var(--hm-n-900)]"
-            >
-              {t('common.cancel')}
-            </button>
-            <button
-              type="button"
-              onClick={submit}
-              disabled={saving}
-              className="bg-[var(--hm-n-900)] px-3 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-[var(--hm-brand-500)] disabled:opacity-60"
-            >
-              {saving ? '...' : t('common.save')}
-            </button>
-          </div>
         </div>
       </ModalBody>
+      <ModalFooter className="justify-end">
+        <button
+          type="button"
+          onClick={onClose}
+          className="border border-[var(--hm-n-200)] px-3 py-2 text-[11px] font-semibold text-[var(--hm-n-700)] transition-colors hover:border-[var(--hm-n-900)] hover:text-[var(--hm-n-900)]"
+        >
+          {t('common.cancel')}
+        </button>
+        <button
+          type="button"
+          onClick={submit}
+          disabled={saving}
+          className="bg-[var(--hm-n-900)] px-3 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-[var(--hm-brand-500)] disabled:opacity-60"
+        >
+          {saving ? '...' : t('common.save')}
+        </button>
+      </ModalFooter>
     </Modal>
   );
 }

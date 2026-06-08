@@ -197,4 +197,7 @@ export interface CatalogPrefill {
   vendor: string;
   url: string;
   imageUrl?: string;
+  /** Catalog link carried through so a prefilled row stays orderable. */
+  supplierProductId?: string;
+  supplierKey?: string;
 }

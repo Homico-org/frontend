@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { FormGroup, Input, Label } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -135,19 +135,19 @@ export default function AddFilesModal({
           </div>
         )}
 
-        <div className="flex justify-end gap-2 border-t border-[var(--hm-border-subtle)] pt-4">
-          <Button variant="ghost" onClick={onClose}>
-            {t('common.cancel')}
-          </Button>
-          <Button
-            onClick={save}
-            loading={saving}
-            disabled={!label.trim() || files.length === 0}
-          >
-            {t('common.save')}
-          </Button>
-        </div>
       </ModalBody>
+      <ModalFooter className="justify-end">
+        <Button variant="ghost" onClick={onClose}>
+          {t('common.cancel')}
+        </Button>
+        <Button
+          onClick={save}
+          loading={saving}
+          disabled={!label.trim() || files.length === 0}
+        >
+          {t('common.save')}
+        </Button>
+      </ModalFooter>
     </Modal>
   );
 }

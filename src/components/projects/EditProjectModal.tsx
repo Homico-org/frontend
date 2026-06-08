@@ -1,12 +1,14 @@
 'use client';
 
-import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { FormGroup, Input, Label, Textarea } from '@/components/ui/input';
+import { useConfirm } from '@/contexts/ConfirmContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
+import { invalidateMyProjects } from '@/hooks/useMyProjects';
 import { api } from '@/lib/api';
-import { Building2 } from 'lucide-react';
+import { Building2, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 const STATUS_OPTIONS: { value: string; labelKey: string }[] = [
@@ -34,6 +36,10 @@ interface EditProjectModalProps {
   projectId: string;
   initial: EditProjectInitial;
   onSaved: () => Promise<void> | void;
+  /** Owner-only: show the delete (danger) zone. */
+  canDelete?: boolean;
+  /** Called after the project is deleted (parent navigates away). */
+  onDeleted?: () => void;
 }
 
 export default function EditProjectModal({
@@ -42,9 +48,13 @@ export default function EditProjectModal({
   projectId,
   initial,
   onSaved,
+  canDelete = false,
+  onDeleted,
 }: EditProjectModalProps) {
   const { t } = useLanguage();
   const toast = useToast();
+  const confirm = useConfirm();
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({
     title: initial.title || '',
     description: initial.description || '',
@@ -85,6 +95,32 @@ export default function EditProjectModal({
       );
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    const ok = await confirm({
+      title: t('projects.deleteProjectTitle'),
+      description: t('projects.deleteProjectConfirm', { name: initial.title }),
+      confirmLabel: t('projects.deleteProjectCta'),
+      cancelLabel: t('common.cancel'),
+      variant: 'danger',
+    });
+    if (!ok) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/projects/${projectId}`);
+      invalidateMyProjects();
+      toast.success(t('projects.projectDeleted'));
+      onClose();
+      onDeleted?.();
+    } catch (err) {
+      toast.error(
+        t('projects.tryAgain'),
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message,
+      );
+      setDeleting(false);
     }
   };
 
@@ -190,20 +226,41 @@ export default function EditProjectModal({
             </div>
           </div>
 
-          <div className="mt-1 flex justify-end gap-2 border-t border-[var(--hm-border-subtle)] pt-4">
-            <Button variant="outline" onClick={onClose}>
-              {t('common.cancel')}
-            </Button>
-            <Button
-              onClick={submit}
-              loading={saving}
-              disabled={!form.title.trim()}
-            >
-              {t('common.save')}
-            </Button>
-          </div>
+          {canDelete && (
+            <div className="mt-1 border-t border-[var(--hm-border-subtle)] pt-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--hm-error-500)]">
+                {t('projects.dangerZone')}
+              </p>
+              <div className="mt-2 flex flex-col gap-3 rounded-2xl border border-[var(--hm-error-500)]/25 bg-[var(--hm-error-500)]/[0.04] p-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-[13px] text-[var(--hm-fg-secondary)]">
+                  {t('projects.deleteProjectHint')}
+                </p>
+                <Button
+                  variant="destructive"
+                  leftIcon={<Trash2 className="h-4 w-4" />}
+                  loading={deleting}
+                  onClick={handleDelete}
+                  className="shrink-0"
+                >
+                  {t('projects.deleteProject')}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </ModalBody>
+      <ModalFooter className="justify-end">
+        <Button variant="outline" onClick={onClose}>
+          {t('common.cancel')}
+        </Button>
+        <Button
+          onClick={submit}
+          loading={saving}
+          disabled={!form.title.trim()}
+        >
+          {t('common.save')}
+        </Button>
+      </ModalFooter>
     </Modal>
   );
 }

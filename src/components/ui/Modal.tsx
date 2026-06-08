@@ -289,18 +289,26 @@ interface ModalFooterProps {
 }
 
 /**
- * Modal footer for actions
+ * Modal footer for actions.
+ *
+ * Pinned to the bottom of the scrolling modal container (`sticky bottom-0`) so
+ * the body content scrolls *behind* the actions instead of pushing them off
+ * screen. A solid surface, hairline top border and soft upward shadow separate
+ * it from the content underneath. The safe-area inset keeps the buttons clear
+ * of the iOS home indicator without over-padding non-notched devices.
  */
 export function ModalFooter({ children, className }: ModalFooterProps) {
-  // pb-8 (32px) was barely clearing the iOS home indicator (34px tall)
-  // on phones - footer buttons sat right against the gesture bar. The
-  // safe-area-inset-bottom env var lifts the bottom padding by exactly
-  // whatever the device chrome eats, giving every iPhone the right
-  // breathing room without over-padding non-notched devices.
   return (
     <div
-      className={cn('flex gap-3 px-4 sm:px-6 pt-3 pb-6', className)}
-      style={{ paddingBottom: 'max(1.5rem, calc(1rem + env(safe-area-inset-bottom)))' }}
+      className={cn(
+        'sticky bottom-0 z-20 flex gap-3 border-t border-[var(--hm-border-subtle)] px-4 pt-3 sm:px-6',
+        className,
+      )}
+      style={{
+        backgroundColor: 'var(--hm-bg-page)',
+        paddingBottom: 'max(1.5rem, calc(0.75rem + env(safe-area-inset-bottom)))',
+        boxShadow: '0 -10px 20px -16px rgba(21,17,12,0.25)',
+      }}
     >
       {children}
     </div>

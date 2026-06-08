@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { FormGroup, Input, Label, Textarea } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -134,16 +134,16 @@ export default function EditStepModal({
             </div>
           </FormGroup>
 
-          <div className="mt-2 flex justify-end gap-2 border-t border-[var(--hm-border-subtle)] pt-4">
-            <Button variant="ghost" onClick={onClose}>
-              {t('common.cancel')}
-            </Button>
-            <Button onClick={submit} loading={saving}>
-              {t('common.save')}
-            </Button>
-          </div>
         </div>
       </ModalBody>
+      <ModalFooter className="justify-end">
+        <Button variant="ghost" onClick={onClose}>
+          {t('common.cancel')}
+        </Button>
+        <Button onClick={submit} loading={saving}>
+          {t('common.save')}
+        </Button>
+      </ModalFooter>
     </Modal>
   );
 }

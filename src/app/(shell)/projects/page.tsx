@@ -1,11 +1,12 @@
 'use client';
 
+import RecentlyDeletedModal from '@/components/projects/RecentlyDeletedModal';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
-import { FolderOpen, Plus } from 'lucide-react';
+import { FolderOpen, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -20,6 +21,7 @@ export default function ProjectsIndexPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const [empty, setEmpty] = useState(false);
+  const [trashOpen, setTrashOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) router.replace('/');
@@ -63,6 +65,19 @@ export default function ProjectsIndexPage() {
         <Button asChild leftIcon={<Plus className="h-4 w-4" />}>
           <Link href="/projects/new">{t('projects.newProject')}</Link>
         </Button>
+        <button
+          type="button"
+          onClick={() => setTrashOpen(true)}
+          className="inline-flex items-center gap-2 text-[13px] font-medium text-[var(--hm-fg-muted)] transition-colors hover:text-[var(--hm-fg-secondary)]"
+        >
+          <Trash2 className="h-4 w-4" />
+          {t('projects.recentlyDeleted')}
+        </button>
+        <RecentlyDeletedModal
+          isOpen={trashOpen}
+          onClose={() => setTrashOpen(false)}
+          onRestored={(id) => router.push(`/projects/${id}`)}
+        />
       </div>
     );
   }

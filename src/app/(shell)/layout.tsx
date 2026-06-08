@@ -13,9 +13,9 @@ import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { JobsProvider, useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useCountryLink } from "@/hooks/useCountry";
-import { getCategoryLabelStatic } from "@/hooks/useCategoryLabels";
 import { useAiServiceSearch } from "@/hooks/useAiServiceSearch";
+import { getCategoryLabelStatic } from "@/hooks/useCategoryLabels";
+import { useCountryLink } from "@/hooks/useCountry";
 import api from "@/lib/api";
 import { stripCountryPrefix } from "@/utils/countryLink";
 import {
@@ -44,7 +44,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ReactNode,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 // Sidebar width constants
 const SIDEBAR_EXPANDED_WIDTH = 256; // 16rem
@@ -52,8 +59,15 @@ const SIDEBAR_COLLAPSED_WIDTH = 56;
 
 type TabShowFor = "all" | "pro" | "client" | "auth";
 
-type TabKey = "my-space" | "my-jobs" | "projects" | "shop" | "bookings" | "jobs" | "professionals" | "tools";
-
+type TabKey =
+  | "my-space"
+  | "my-jobs"
+  | "projects"
+  | "shop"
+  | "bookings"
+  | "jobs"
+  | "professionals"
+  | "tools";
 
 // `countryScoped: true` flags tabs that live under `/{country}/...` and
 // should be wrapped in `cl(...)` before being passed to <Link href>. The
@@ -138,7 +152,7 @@ const TABS: Array<{
     key: "tools",
     route: "/tools",
     label: "Tools",
-    labelKa: "ხელსაწყოები",
+    labelKa: "AI ხელსაწყოები",
     labelRu: "Инструменты",
     icon: Wrench,
     showFor: "all" as const,
@@ -180,7 +194,11 @@ function JobsSearchInput() {
     if (aiResults && aiResults.length > 0) {
       const match = aiResults[0];
       if (match.key !== filters.subcategory) {
-        setFilters({ ...filters, category: match.category, subcategory: match.key });
+        setFilters({
+          ...filters,
+          category: match.category,
+          subcategory: match.key,
+        });
       }
     }
   }, [aiResults]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -350,30 +368,43 @@ function BrowseSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
     setSelectedSubcategories,
   } = useBrowseContext();
 
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [expandedCategories, setExpandedCategories] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     if (selectedSubcategories.length > 0) {
       const toExpand: string[] = [];
       for (const subKey of selectedSubcategories) {
         for (const cat of categories) {
-          if (getSubcategoriesForCategory(cat.key).some(s => s.key === subKey)) {
+          if (
+            getSubcategoriesForCategory(cat.key).some((s) => s.key === subKey)
+          ) {
             if (!toExpand.includes(cat.key)) toExpand.push(cat.key);
             break;
           }
         }
       }
       if (toExpand.length > 0) {
-        setExpandedCategories(prev => {
+        setExpandedCategories((prev) => {
           const next = { ...prev };
-          toExpand.forEach(k => { next[k] = true; });
+          toExpand.forEach((k) => {
+            next[k] = true;
+          });
           return next;
         });
       }
     } else if (selectedCategory) {
-      setExpandedCategories(prev => prev[selectedCategory] ? prev : { ...prev, [selectedCategory]: true });
+      setExpandedCategories((prev) =>
+        prev[selectedCategory] ? prev : { ...prev, [selectedCategory]: true },
+      );
     }
-  }, [selectedCategory, selectedSubcategories, categories, getSubcategoriesForCategory]);
+  }, [
+    selectedCategory,
+    selectedSubcategories,
+    categories,
+    getSubcategoriesForCategory,
+  ]);
 
   const hasActive = selectedSubcategories.length > 0;
 
@@ -398,12 +429,14 @@ function BrowseSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
       setExpandedCategories={setExpandedCategories}
       hasActive={hasActive}
       onClear={handleClear}
-      isCategoryActive={(catKey) => selectedSubcategories.some(s =>
-        getSubcategoriesForCategory(catKey).some(sub => sub.key === s)
-      )}
+      isCategoryActive={(catKey) =>
+        selectedSubcategories.some((s) =>
+          getSubcategoriesForCategory(catKey).some((sub) => sub.key === s),
+        )
+      }
       isSubSelected={(subKey) => selectedSubcategories.includes(subKey)}
       onCategoryClick={(catKey) => {
-        setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }));
+        setExpandedCategories((prev) => ({ ...prev, [catKey]: !prev[catKey] }));
       }}
       onSubClick={handleSubToggle}
     />
@@ -416,20 +449,33 @@ function JobsSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
   const { categories, getSubcategoriesForCategory } = useCategories();
   const { filters, setFilters } = useJobsContext();
 
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [expandedCategories, setExpandedCategories] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     if (filters.subcategory) {
       for (const cat of categories) {
-        if (getSubcategoriesForCategory(cat.key).some(s => s.key === filters.subcategory)) {
-          setExpandedCategories(prev => ({ ...prev, [cat.key]: true }));
+        if (
+          getSubcategoriesForCategory(cat.key).some(
+            (s) => s.key === filters.subcategory,
+          )
+        ) {
+          setExpandedCategories((prev) => ({ ...prev, [cat.key]: true }));
           break;
         }
       }
     } else if (filters.category) {
-      setExpandedCategories(prev => prev[filters.category!] ? prev : { ...prev, [filters.category!]: true });
+      setExpandedCategories((prev) =>
+        prev[filters.category!] ? prev : { ...prev, [filters.category!]: true },
+      );
     }
-  }, [filters.category, filters.subcategory, categories, getSubcategoriesForCategory]);
+  }, [
+    filters.category,
+    filters.subcategory,
+    categories,
+    getSubcategoriesForCategory,
+  ]);
 
   const subs = filters.subcategories || [];
   const hasActive = subs.length > 0;
@@ -443,19 +489,33 @@ function JobsSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
       expandedCategories={expandedCategories}
       setExpandedCategories={setExpandedCategories}
       hasActive={hasActive}
-      onClear={() => setFilters({ ...filters, category: null, subcategory: null, subcategories: [] })}
-      isCategoryActive={(catKey) => subs.some(s =>
-        getSubcategoriesForCategory(catKey).some(sub => sub.key === s)
-      )}
+      onClear={() =>
+        setFilters({
+          ...filters,
+          category: null,
+          subcategory: null,
+          subcategories: [],
+        })
+      }
+      isCategoryActive={(catKey) =>
+        subs.some((s) =>
+          getSubcategoriesForCategory(catKey).some((sub) => sub.key === s),
+        )
+      }
       isSubSelected={(subKey) => subs.includes(subKey)}
       onCategoryClick={(catKey) => {
-        setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }));
+        setExpandedCategories((prev) => ({ ...prev, [catKey]: !prev[catKey] }));
       }}
       onSubClick={(_catKey, subKey) => {
         const newSubs = subs.includes(subKey)
-          ? subs.filter(s => s !== subKey)
+          ? subs.filter((s) => s !== subKey)
           : [...subs, subKey];
-        setFilters({ ...filters, category: null, subcategory: newSubs[0] || null, subcategories: newSubs });
+        setFilters({
+          ...filters,
+          category: null,
+          subcategory: newSubs[0] || null,
+          subcategories: newSubs,
+        });
       }}
     />
   );
@@ -478,10 +538,14 @@ function SidebarCategoriesUI({
 }: {
   isCollapsed: boolean;
   categories: { key: string; name: string; nameKa: string }[];
-  getSubcategoriesForCategory: (key: string) => { key: string; name: string; nameKa: string }[];
+  getSubcategoriesForCategory: (
+    key: string,
+  ) => { key: string; name: string; nameKa: string }[];
   locale: string;
   expandedCategories: Record<string, boolean>;
-  setExpandedCategories: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  setExpandedCategories: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
   hasActive: boolean;
   onClear: () => void;
   isCategoryActive: (catKey: string) => boolean;
@@ -503,7 +567,14 @@ function SidebarCategoriesUI({
               className={`w-9 h-9 flex items-center justify-center transition-all ${
                 active ? "" : "hover:bg-[var(--hm-bg-tertiary)]"
               }`}
-              style={active ? { backgroundColor: 'var(--hm-brand-50)', color: 'var(--hm-brand-700)' } : {}}
+              style={
+                active
+                  ? {
+                      backgroundColor: "var(--hm-brand-50)",
+                      color: "var(--hm-brand-700)",
+                    }
+                  : {}
+              }
               title={getCategoryLabelStatic(cat.key, locale)}
             >
               <CategoryIcon type={cat.key} className="w-4 h-4" />
@@ -532,8 +603,10 @@ function SidebarCategoriesUI({
         const active = isCategoryActive(catKey);
         const subcategories = getSubcategoriesForCategory(catKey);
         const isExpanded = expandedCategories[catKey] ?? false;
-        const label = pick({ en: cat.name, ka: cat.nameKa }) || getCategoryLabelStatic(catKey, locale);
-        const hasSelectedSub = subcategories.some(s => isSubSelected(s.key));
+        const label =
+          pick({ en: cat.name, ka: cat.nameKa }) ||
+          getCategoryLabelStatic(catKey, locale);
+        const hasSelectedSub = subcategories.some((s) => isSubSelected(s.key));
 
         return (
           <div key={catKey}>
@@ -547,7 +620,9 @@ function SidebarCategoriesUI({
             >
               <span
                 className="transition-transform duration-200 group-hover:scale-110 flex-shrink-0"
-                style={{ color: active || hasSelectedSub ? ACCENT_COLOR : undefined }}
+                style={{
+                  color: active || hasSelectedSub ? ACCENT_COLOR : undefined,
+                }}
               >
                 <CategoryIcon type={catKey} className="w-4 h-4" />
               </span>
@@ -564,7 +639,10 @@ function SidebarCategoriesUI({
                 <ChevronDown
                   onClick={(e) => {
                     e.stopPropagation();
-                    setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }));
+                    setExpandedCategories((prev) => ({
+                      ...prev,
+                      [catKey]: !prev[catKey],
+                    }));
                   }}
                   className={`w-3 h-3 text-[var(--hm-fg-muted)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer hover:text-[var(--hm-fg-secondary)] flex-shrink-0 ${
                     isExpanded ? "rotate-180" : "rotate-0"
@@ -577,7 +655,9 @@ function SidebarCategoriesUI({
               <div className="ml-5 mt-0.5 space-y-0.5 pb-0.5">
                 {subcategories.map((sub) => {
                   const selected = isSubSelected(sub.key);
-                  const subLabel = pick({ en: sub.name, ka: sub.nameKa }) || getCategoryLabelStatic(sub.key, locale);
+                  const subLabel =
+                    pick({ en: sub.name, ka: sub.nameKa }) ||
+                    getCategoryLabelStatic(sub.key, locale);
                   return (
                     <button
                       key={sub.key}
@@ -594,10 +674,17 @@ function SidebarCategoriesUI({
                             ? "border-transparent"
                             : "border-[var(--hm-border-strong)]"
                         }`}
-                        style={selected ? { backgroundColor: 'var(--hm-brand-500)' } : {}}
+                        style={
+                          selected
+                            ? { backgroundColor: "var(--hm-brand-500)" }
+                            : {}
+                        }
                       >
                         {selected && (
-                          <Check className="w-2 h-2 text-white" strokeWidth={3} />
+                          <Check
+                            className="w-2 h-2 text-white"
+                            strokeWidth={3}
+                          />
                         )}
                       </div>
                       <span
@@ -638,8 +725,9 @@ function ShellContent({ children }: { children: ReactNode }) {
   // Fetch pending booking count for badge
   useEffect(() => {
     if (!isAuthenticated || !features.bookings) return;
-    api.get('/bookings/my/pending-count')
-      .then(res => setPendingBookingCount(res.data?.count || 0))
+    api
+      .get("/bookings/my/pending-count")
+      .then((res) => setPendingBookingCount(res.data?.count || 0))
       .catch(() => {});
   }, [isAuthenticated, pathname]);
 
@@ -654,7 +742,8 @@ function ShellContent({ children }: { children: ReactNode }) {
   const isProfessionalsPage = localPath.startsWith("/professionals");
   const isPortfolioPage = localPath.startsWith("/portfolio"); // redirects to /professionals
   const isToolsPage = localPath === "/tools";
-  const isToolsSubpage = localPath.startsWith("/tools/") && localPath !== "/tools";
+  const isToolsSubpage =
+    localPath.startsWith("/tools/") && localPath !== "/tools";
 
   const isSettingsPage = localPath.startsWith("/settings");
   const isMyWorkPage = localPath.startsWith("/my-work");
@@ -673,15 +762,15 @@ function ShellContent({ children }: { children: ReactNode }) {
       ? "my-jobs"
       : isProjectsPage
         ? "projects"
-        : (isShopPage || isOrdersPage)
+        : isShopPage || isOrdersPage
           ? "shop"
           : isBookingsPage
             ? "bookings"
             : isJobsPage
               ? "jobs"
-              : (isProfessionalsPage || isPortfolioPage)
+              : isProfessionalsPage || isPortfolioPage
                 ? "professionals"
-                : (isToolsPage || isToolsSubpage)
+                : isToolsPage || isToolsSubpage
                   ? "tools"
                   : null;
 
@@ -696,33 +785,87 @@ function ShellContent({ children }: { children: ReactNode }) {
 
   const pageHeader = useMemo(() => {
     if (isMySpacePage) {
-      return { icon: LayoutDashboard, title: t("mySpace.title"), subtitle: t("mySpace.subtitle") };
+      return {
+        icon: LayoutDashboard,
+        title: t("mySpace.title"),
+        subtitle: t("mySpace.subtitle"),
+      };
     }
     if (isMyWorkPage) {
-      return { icon: FileText, title: t("job.myWork"), subtitle: t("job.myWorkSubtitle") };
+      return {
+        icon: FileText,
+        title: t("job.myWork"),
+        subtitle: t("job.myWorkSubtitle"),
+      };
     }
     if (isMyJobsPage) {
-      return { icon: Hammer, title: t("job.myJobs"), subtitle: t("job.myJobsSubtitle") };
+      return {
+        icon: Hammer,
+        title: t("job.myJobs"),
+        subtitle: t("job.myJobsSubtitle"),
+      };
     }
     if (isJobsPage) {
-      return { icon: Briefcase, title: t("browse.jobs"), subtitle: t("browse.jobsSubtitle") };
+      return {
+        icon: Briefcase,
+        title: t("browse.jobs"),
+        subtitle: t("browse.jobsSubtitle"),
+      };
     }
     if (isProfessionalsPage || isPortfolioPage) {
-      return { icon: Users, title: t("browse.professionals"), subtitle: t("browse.professionalsSubtitle") };
+      return {
+        icon: Users,
+        title: t("browse.professionals"),
+        subtitle: t("browse.professionalsSubtitle"),
+      };
     }
     if (isBookingsPage) {
-      return { icon: Calendar, title: t("booking.title"), subtitle: t("booking.subtitle") };
+      return {
+        icon: Calendar,
+        title: t("booking.title"),
+        subtitle: t("booking.subtitle"),
+      };
     }
     if (localPath.startsWith("/tools")) {
-      return { icon: Wrench, title: t("tools.home.title"), subtitle: t("tools.home.subtitle") };
+      return {
+        icon: Wrench,
+        title: t("tools.home.title"),
+        subtitle: t("tools.home.subtitle"),
+      };
     }
     return { icon: Users, title: t("browse.title"), subtitle: undefined };
-  }, [isMySpacePage, isJobsPage, isPortfolioPage, isProfessionalsPage, isMyJobsPage, isMyWorkPage, isBookingsPage, localPath, t]);
+  }, [
+    isMySpacePage,
+    isJobsPage,
+    isPortfolioPage,
+    isProfessionalsPage,
+    isMyJobsPage,
+    isMyWorkPage,
+    isBookingsPage,
+    localPath,
+    t,
+  ]);
 
   const HeaderIcon = pageHeader.icon;
 
-  const showHeaderRow = !isToolsSubpage && !isMySpacePage && !isSettingsPage && !isProjectsPage && !isShopPage && !isOrdersPage;
-  const showSearchFilters = !isToolsSubpage && !isToolsPage && !isMyJobsPage && !isMyWorkPage && !isMySpacePage && !isSettingsPage && !isBookingsPage && !isProjectsPage && !isShopPage && !isOrdersPage;
+  const showHeaderRow =
+    !isToolsSubpage &&
+    !isMySpacePage &&
+    !isSettingsPage &&
+    !isProjectsPage &&
+    !isShopPage &&
+    !isOrdersPage;
+  const showSearchFilters =
+    !isToolsSubpage &&
+    !isToolsPage &&
+    !isMyJobsPage &&
+    !isMyWorkPage &&
+    !isMySpacePage &&
+    !isSettingsPage &&
+    !isBookingsPage &&
+    !isProjectsPage &&
+    !isShopPage &&
+    !isOrdersPage;
 
   useEffect(() => setMounted(true), []);
 
@@ -731,13 +874,12 @@ function ShellContent({ children }: { children: ReactNode }) {
       <Header fixed={false} />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
-
         {/* Left Sidebar */}
         <aside
           className="hidden lg:flex flex-col flex-shrink-0 border-r transition-all duration-300 ease-in-out relative"
           style={{
-            borderColor: 'var(--hm-border)',
-            backgroundColor: 'var(--hm-bg-page)',
+            borderColor: "var(--hm-border)",
+            backgroundColor: "var(--hm-bg-page)",
             width: isHydrated
               ? isCollapsed
                 ? SIDEBAR_COLLAPSED_WIDTH
@@ -746,35 +888,37 @@ function ShellContent({ children }: { children: ReactNode }) {
           }}
         >
           {/* Post Job - top of sidebar */}
-          <div className={`pt-3 pb-1.5 flex-shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}>
+          <div
+            className={`pt-3 pb-1.5 flex-shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}
+          >
             <Link
               href="/post-job"
               className={`group flex items-center justify-center border transition-all mb-2 ${
-                isCollapsed
-                  ? "w-9 h-9 mx-auto"
-                  : "w-full gap-2 py-1.5"
+                isCollapsed ? "w-9 h-9 mx-auto" : "w-full gap-2 py-1.5"
               } hover:shadow-md`}
               style={{
-                borderColor: 'var(--hm-brand-500)',
-                backgroundColor: 'var(--hm-brand-500)',
-                color: '#fff',
+                borderColor: "var(--hm-brand-500)",
+                backgroundColor: "var(--hm-brand-500)",
+                color: "#fff",
               }}
               title={isCollapsed ? t("browse.postAJob") : undefined}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--hm-brand-600)';
+                e.currentTarget.style.backgroundColor = "var(--hm-brand-600)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--hm-brand-500)';
+                e.currentTarget.style.backgroundColor = "var(--hm-brand-500)";
               }}
             >
               <Plus className="w-4 h-4 flex-shrink-0 transition-transform group-hover:rotate-90" />
-              {!isCollapsed && <span className="text-[13px] font-semibold">{t("browse.postAJob")}</span>}
+              {!isCollapsed && (
+                <span className="text-[13px] font-semibold">
+                  {t("browse.postAJob")}
+                </span>
+              )}
             </Link>
 
             {!isCollapsed && (
-              <div
-                className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-3 pb-2"
-              >
+              <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-3 pb-2">
                 {t("nav.sectionWork")}
               </div>
             )}
@@ -787,7 +931,11 @@ function ShellContent({ children }: { children: ReactNode }) {
                   return (
                     <SidebarProjectsGroup
                       key="projects"
-                      label={pick({ en: tab.label, ka: tab.labelKa, ru: tab.labelRu })}
+                      label={pick({
+                        en: tab.label,
+                        ka: tab.labelKa,
+                        ru: tab.labelRu,
+                      })}
                       isCollapsed={isCollapsed}
                       active={isActive}
                     />
@@ -798,7 +946,11 @@ function ShellContent({ children }: { children: ReactNode }) {
                   return (
                     <SidebarShopGroup
                       key="shop"
-                      label={pick({ en: tab.label, ka: tab.labelKa, ru: tab.labelRu })}
+                      label={pick({
+                        en: tab.label,
+                        ka: tab.labelKa,
+                        ru: tab.labelRu,
+                      })}
                       isCollapsed={isCollapsed}
                       active={isActive}
                     />
@@ -809,22 +961,40 @@ function ShellContent({ children }: { children: ReactNode }) {
                     key={tab.key}
                     href={tab.route}
                     className={`group relative flex items-center rounded-xl text-[12.5px] transition-colors ${
-                      isCollapsed ? "justify-center px-2 py-2" : "gap-2.5 px-2.5 py-2"
+                      isCollapsed
+                        ? "justify-center px-2 py-2"
+                        : "gap-2.5 px-2.5 py-2"
                     } ${
                       isActive
                         ? "bg-[var(--hm-brand-500)]/[0.10] font-semibold text-[var(--hm-brand-500)]"
                         : "font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
                     }`}
-                    title={isCollapsed ? pick({ en: tab.label, ka: tab.labelKa, ru: tab.labelRu }) : undefined}
+                    title={
+                      isCollapsed
+                        ? pick({
+                            en: tab.label,
+                            ka: tab.labelKa,
+                            ru: tab.labelRu,
+                          })
+                        : undefined
+                    }
                   >
-                    <Icon className="w-[18px] h-[18px] flex-shrink-0" strokeWidth={isActive ? 2.1 : 1.75} />
+                    <Icon
+                      className="w-[18px] h-[18px] flex-shrink-0"
+                      strokeWidth={isActive ? 2.1 : 1.75}
+                    />
                     {!isCollapsed && (
                       <span className="flex-1">
-                        {pick({ en: tab.label, ka: tab.labelKa, ru: tab.labelRu })}
+                        {pick({
+                          en: tab.label,
+                          ka: tab.labelKa,
+                          ru: tab.labelRu,
+                        })}
                       </span>
                     )}
-                    {tab.key === "bookings" && pendingBookingCount > 0 && (
-                      isCollapsed ? (
+                    {tab.key === "bookings" &&
+                      pendingBookingCount > 0 &&
+                      (isCollapsed ? (
                         <span className="absolute -top-0.5 -right-0.5 bg-[var(--hm-brand-500)] text-white text-[9px] font-bold min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-0.5 shadow-sm">
                           {pendingBookingCount}
                         </span>
@@ -832,8 +1002,7 @@ function ShellContent({ children }: { children: ReactNode }) {
                         <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--hm-brand-500)] px-1 text-[10px] font-bold tabular-nums text-white">
                           {pendingBookingCount}
                         </span>
-                      )
-                    )}
+                      ))}
                   </Link>
                 );
               })}
@@ -844,35 +1013,38 @@ function ShellContent({ children }: { children: ReactNode }) {
 
           {/* Footer area (My pages + Support + Social) */}
           <div className={`mt-auto pb-4 ${isCollapsed ? "px-2" : "px-3"}`}>
-            {isAuthenticated && (() => {
-              const settingsActive = pathname.startsWith("/settings");
-              return (
-                <div className="pt-3 border-t border-[var(--hm-border-subtle)] space-y-0.5">
-                  {!isCollapsed && (
-                    <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-1 pb-2">
-                      {t("nav.sectionAccount")}
-                    </div>
-                  )}
-                  <Link
-                    href="/settings"
-                    className={`flex items-center rounded-xl text-[12.5px] transition-colors ${
-                      isCollapsed ? "justify-center px-2 py-2" : "gap-2.5 px-2.5 py-2"
-                    } ${
-                      settingsActive
-                        ? "bg-[var(--hm-brand-500)]/[0.10] font-semibold text-[var(--hm-brand-500)]"
-                        : "font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
-                    }`}
-                    title={isCollapsed ? t("settings.title") : undefined}
-                  >
-                    <Settings
-                      className="w-[18px] h-[18px]"
-                      strokeWidth={settingsActive ? 2.1 : 1.75}
-                    />
-                    {!isCollapsed && <span>{t("settings.title")}</span>}
-                  </Link>
-                </div>
-              );
-            })()}
+            {isAuthenticated &&
+              (() => {
+                const settingsActive = pathname.startsWith("/settings");
+                return (
+                  <div className="pt-3 border-t border-[var(--hm-border-subtle)] space-y-0.5">
+                    {!isCollapsed && (
+                      <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-1 pb-2">
+                        {t("nav.sectionAccount")}
+                      </div>
+                    )}
+                    <Link
+                      href="/settings"
+                      className={`flex items-center rounded-xl text-[12.5px] transition-colors ${
+                        isCollapsed
+                          ? "justify-center px-2 py-2"
+                          : "gap-2.5 px-2.5 py-2"
+                      } ${
+                        settingsActive
+                          ? "bg-[var(--hm-brand-500)]/[0.10] font-semibold text-[var(--hm-brand-500)]"
+                          : "font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
+                      }`}
+                      title={isCollapsed ? t("settings.title") : undefined}
+                    >
+                      <Settings
+                        className="w-[18px] h-[18px]"
+                        strokeWidth={settingsActive ? 2.1 : 1.75}
+                      />
+                      {!isCollapsed && <span>{t("settings.title")}</span>}
+                    </Link>
+                  </div>
+                );
+              })()}
 
             <div
               className={`${
@@ -886,7 +1058,10 @@ function ShellContent({ children }: { children: ReactNode }) {
                     className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                     title={t("help.categories.support")}
                   >
-                    <HelpCircle className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                    <HelpCircle
+                      className="w-4 h-4"
+                      style={{ color: ACCENT_COLOR }}
+                    />
                   </Link>
                   <a
                     href="mailto:info@homico.ge"
@@ -904,7 +1079,10 @@ function ShellContent({ children }: { children: ReactNode }) {
                     aria-label="Facebook"
                     title="Facebook"
                   >
-                    <Facebook className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                    <Facebook
+                      className="w-4 h-4"
+                      style={{ color: ACCENT_COLOR }}
+                    />
                   </a>
                 </div>
               ) : (
@@ -913,7 +1091,10 @@ function ShellContent({ children }: { children: ReactNode }) {
                     href="/help"
                     className="inline-flex items-center gap-2 text-xs font-medium text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] transition-colors"
                   >
-                    <HelpCircle className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                    <HelpCircle
+                      className="w-4 h-4"
+                      style={{ color: ACCENT_COLOR }}
+                    />
                     <span>{t("help.categories.support")}</span>
                   </Link>
 
@@ -924,7 +1105,10 @@ function ShellContent({ children }: { children: ReactNode }) {
                       aria-label="Email support"
                       title="info@homico.ge"
                     >
-                      <Mail className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                      <Mail
+                        className="w-4 h-4"
+                        style={{ color: ACCENT_COLOR }}
+                      />
                     </a>
                     <a
                       href="https://www.facebook.com/profile.php?id=61585402505170"
@@ -934,7 +1118,10 @@ function ShellContent({ children }: { children: ReactNode }) {
                       aria-label="Facebook"
                       title="Facebook"
                     >
-                      <Facebook className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                      <Facebook
+                        className="w-4 h-4"
+                        style={{ color: ACCENT_COLOR }}
+                      />
                     </a>
                   </div>
                 </div>
@@ -948,7 +1135,10 @@ function ShellContent({ children }: { children: ReactNode }) {
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? (
-              <ChevronRight className="w-3.5 h-3.5" style={{ color: ACCENT_COLOR }} />
+              <ChevronRight
+                className="w-3.5 h-3.5"
+                style={{ color: ACCENT_COLOR }}
+              />
             ) : (
               <ChevronLeft className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
             )}
@@ -988,16 +1178,22 @@ function ShellContent({ children }: { children: ReactNode }) {
                 {isJobsPage ? (
                   <JobsSearchInput />
                 ) : isProfessionalsPage ? (
-                  <BrowseSearchInput placeholder={t("browse.searchProfessionals")} />
+                  <BrowseSearchInput
+                    placeholder={t("browse.searchProfessionals")}
+                  />
                 ) : (
-                  <BrowseSearchInput placeholder={t("browse.searchPortfolio")} />
+                  <BrowseSearchInput
+                    placeholder={t("browse.searchPortfolio")}
+                  />
                 )}
               </div>
             )}
           </div>
 
           <div className={isMySpacePage ? "" : "p-1.5 sm:p-2 lg:p-3"}>
-            <div className={`${isMySpacePage ? "" : "max-w-[1600px] mx-auto"} ${mounted ? "animate-fade-in" : "opacity-0"}`}>
+            <div
+              className={`${isMySpacePage ? "" : "max-w-[1600px] mx-auto"} ${mounted ? "animate-fade-in" : "opacity-0"}`}
+            >
               {showHeaderRow && (
                 <div className="hidden lg:block mb-4 sm:mb-5">
                   <div className="flex items-center gap-3">
@@ -1021,7 +1217,9 @@ function ShellContent({ children }: { children: ReactNode }) {
               {showSearchFilters && !isJobsPage && !isProfessionalsPage && (
                 <div className="hidden lg:block mb-4 sm:mb-5">
                   <div className="max-w-xl">
-                    <BrowseSearchInput placeholder={t("browse.searchPortfolio")} />
+                    <BrowseSearchInput
+                      placeholder={t("browse.searchPortfolio")}
+                    />
                   </div>
                 </div>
               )}
@@ -1046,8 +1244,12 @@ function ShellContent({ children }: { children: ReactNode }) {
           scrollbar-width: none;
         }
         @keyframes slide-up {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
         }
         .animate-slide-up {
           animation: slide-up 0.25s ease-out;

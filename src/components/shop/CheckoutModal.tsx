@@ -22,12 +22,14 @@ import {
   Package,
   Phone,
   StickyNote,
+  X,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supplierLabel } from './types';
 
 interface QuoteItem {
+  supplierProductId: string;
   supplierKey: string;
   name: string;
   imageUrl?: string;
@@ -72,6 +74,20 @@ export default function CheckoutModal({
   const { user } = useAuth();
   const toast = useToast();
   const router = useRouter();
+  const pathname = usePathname();
+  // Path we left when payment kicked off an internal navigation. The modal is
+  // mounted app-wide, so the processing overlay stays up THROUGH the route
+  // change and is dismissed only once we've actually landed - no flash of the
+  // page we came from.
+  const navFromRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (navFromRef.current !== null && pathname !== navFromRef.current) {
+      navFromRef.current = null;
+      setPaying(false);
+      onClose();
+    }
+  }, [pathname, onClose]);
 
   const [step, setStep] = useState<1 | 2>(1);
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -86,24 +102,50 @@ export default function CheckoutModal({
     entrance: '',
     notes: '',
   });
+  // A local, editable copy of the incoming items so the customer can drop a
+  // line before paying without mutating the source cart / project list.
+  const [workingItems, setWorkingItems] = useState<CartItem[]>(items);
 
   const orderItemsPayload = useCallback(
     () =>
-      items.map(({ product, qty }) => ({
+      workingItems.map(({ product, qty }) => ({
         supplierProductId: product.id,
         qty,
         expectedUnitPriceMinor: Math.round(product.priceGel * 100),
       })),
-    [items],
+    [workingItems],
   );
 
-  // Reset + prefill + fetch the authoritative quote whenever opened.
+  const removeItem = (supplierProductId: string) =>
+    setWorkingItems((prev) =>
+      prev.filter((ci) => ci.product.id !== supplierProductId),
+    );
+
+  // What the customer last saw per item (minor) - used to flag a price that
+  // moved between adding the item and this checkout, so the latest price is
+  // shown explicitly rather than silently.
+  const expectedByIdMinor = new Map<string, number>(
+    workingItems.map((ci) => [
+      ci.product.id,
+      Math.round(ci.product.priceGel * 100),
+    ]),
+  );
+
+  // Snapshot the incoming items into the working set when the modal opens.
   useEffect(() => {
     if (!isOpen) return;
     setStep(1);
     setDeliveryMode('all');
     setAddr((a) => ({ ...a, phone: a.phone || user?.phone || '' }));
+    setWorkingItems(items);
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // (Re)fetch the authoritative quote whenever the working set changes, so
+  // removing a line instantly reprices against live catalog prices.
+  useEffect(() => {
+    if (!isOpen) return;
     setQuote(null);
+    if (workingItems.length === 0) return;
     api
       .post<Quote>('/orders/quote', {
         items: orderItemsPayload(),
@@ -111,7 +153,7 @@ export default function CheckoutModal({
       })
       .then((r) => setQuote(r.data))
       .catch(() => setQuote(null));
-  }, [isOpen, user?.phone, orderItemsPayload]);
+  }, [isOpen, orderItemsPayload]);
 
   const addressValid =
     addr.formattedAddress.trim().length > 3 && addr.phone.trim().length > 5;
@@ -136,8 +178,7 @@ export default function CheckoutModal({
       });
       onOrderPlaced();
       // Internal target (mock / return page) -> fast client nav; external
-      // gateway (Bank of Georgia) -> full redirect. Keeps `paying` true so the
-      // processing view stays up until the route actually changes.
+      // gateway (Bank of Georgia) -> full redirect.
       let internalPath: string | null = null;
       try {
         const u = new URL(data.redirectUrl, window.location.origin);
@@ -146,8 +187,23 @@ export default function CheckoutModal({
       } catch {
         if (data.redirectUrl.startsWith('/')) internalPath = data.redirectUrl;
       }
-      if (internalPath) router.push(internalPath);
-      else window.location.href = data.redirectUrl;
+      if (internalPath) {
+        // Remember where we are; the route-change effect dismisses the overlay
+        // once we land on the destination (no flash). Safety net below in case
+        // the path somehow never changes, so the overlay can't get stuck.
+        navFromRef.current = pathname;
+        router.push(internalPath);
+        setTimeout(() => {
+          if (navFromRef.current !== null) {
+            navFromRef.current = null;
+            setPaying(false);
+            onClose();
+          }
+        }, 4000);
+      } else {
+        // Full-page redirect to the gateway tears everything down anyway.
+        window.location.href = data.redirectUrl;
+      }
     } catch (err) {
       toast.error(
         t('projects.tryAgain'),
@@ -308,7 +364,11 @@ export default function CheckoutModal({
             </div>
 
             {/* Items grouped by shop */}
-            {!quote ? (
+            {workingItems.length === 0 ? (
+              <div className="rounded-xl border border-[var(--hm-border-subtle)] py-8 text-center text-[13px] text-[var(--hm-fg-muted)]">
+                {t('projects.cartEmpty')}
+              </div>
+            ) : !quote ? (
               <div className="flex justify-center py-6">
                 <LoadingSpinner size="sm" />
               </div>
@@ -319,8 +379,15 @@ export default function CheckoutModal({
                     <div className="bg-[var(--hm-bg-tertiary)] px-3 py-1.5 text-[11px] font-semibold text-[var(--hm-fg-muted)]">
                       {supplierLabel(shop)}
                     </div>
-                    {list.map((it, i) => (
-                      <div key={i} className="flex items-center gap-3 px-3 py-2.5">
+                    {list.map((it) => {
+                      const wasMinor = expectedByIdMinor.get(it.supplierProductId);
+                      const repriced =
+                        wasMinor != null && wasMinor !== it.unitPriceMinor;
+                      return (
+                      <div
+                        key={it.supplierProductId}
+                        className="flex items-center gap-3 px-3 py-2.5"
+                      >
                         <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]">
                           {it.imageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -334,14 +401,45 @@ export default function CheckoutModal({
                             <Package className="h-4 w-4" />
                           )}
                         </span>
-                        <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--hm-fg-primary)]">
-                          {it.qty} × {it.name}
-                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[13px] text-[var(--hm-fg-primary)]">
+                            {it.qty} × {it.name}
+                          </p>
+                          {/* Latest unit price; if it moved since the item was
+                              added, show the old price struck through. */}
+                          <p className="text-[11px] tabular-nums text-[var(--hm-fg-muted)]">
+                            {repriced && (
+                              <span className="mr-1 line-through opacity-70">
+                                {fmt(wasMinor as number)}
+                              </span>
+                            )}
+                            <span
+                              className={
+                                repriced
+                                  ? 'font-semibold text-[var(--hm-brand-500)]'
+                                  : ''
+                              }
+                            >
+                              {fmt(it.unitPriceMinor)}
+                            </span>
+                            {' / '}
+                            {t('projects.perUnit')}
+                          </p>
+                        </div>
                         <span className="shrink-0 text-[13px] font-semibold tabular-nums text-[var(--hm-fg-primary)]">
                           {fmt(it.lineTotalMinor)}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(it.supplierProductId)}
+                          aria-label={t('common.remove')}
+                          className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-error-500)]/10 hover:text-[var(--hm-error-500)]"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ))}
               </div>

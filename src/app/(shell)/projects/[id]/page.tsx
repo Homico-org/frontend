@@ -58,6 +58,7 @@ import {
   Palette,
   Pencil,
   Plus,
+  RotateCcw,
   ShieldCheck,
   ShoppingBag,
   Trash2,
@@ -341,7 +342,7 @@ export default function ProjectDashboardPage() {
   const toast = useToast();
   const { t, pick, locale } = useLanguage();
   const { categories } = useCategories();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
 
   // Localized role display: engagement.roleKey is a catalog category key
   // (or a custom slug). Resolution order: catalog -> i18n bundle -> stored
@@ -362,6 +363,10 @@ export default function ProjectDashboardPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  // Bounds the silent auto-retries for transient dashboard failures (e.g. a
+  // backend restart or a brief network blip right after login) so a momentary
+  // outage self-heals instead of stranding the user on the error screen.
+  const retriesRef = useRef(0);
   const [busyEngagementId, setBusyEngagementId] = useState<string | null>(null);
   // Pro picker: 'invite' fires the invite API, 'book' opens the booking modal.
   const [picker, setPicker] = useState<{
@@ -467,25 +472,52 @@ export default function ProjectDashboardPage() {
     try {
       const res = await api.get(`/projects/${projectId}/dashboard`);
       setProject(res.data);
+      retriesRef.current = 0;
+      setError(false);
+      setIsLoading(false);
     } catch (err) {
-      // Workers (trade pros without manage rights) are blocked from the
-      // project page - send them to their order in my-work instead.
       const status = (err as { response?: { status?: number } })?.response
         ?.status;
+      // Workers (trade pros without manage rights) are blocked from the
+      // project page - send them to their order in my-work instead.
       if (status === 403) {
         router.replace('/my-work');
         return;
       }
+      // Transient failures (no response = network/CORS, or 5xx = backend
+      // restarting) self-heal: retry a few times with backoff while staying
+      // in the loading state, so a brief outage doesn't surface an error.
+      const transient = status == null || status >= 500;
+      if (transient && retriesRef.current < 3) {
+        retriesRef.current += 1;
+        window.setTimeout(() => void load(), retriesRef.current * 1500);
+        return;
+      }
       setError(true);
-    } finally {
       setIsLoading(false);
     }
-  }, [projectId, router, cl]);
+  }, [projectId, router]);
+
+  const retry = useCallback(() => {
+    retriesRef.current = 0;
+    setError(false);
+    setIsLoading(true);
+    void load();
+  }, [load]);
 
   useEffect(() => {
+    // Wait for the auth context to settle before the first fetch - firing
+    // mid-login can send the request before the token is in place, 401, and
+    // strand the page on the error state. Keying on `user?.id` (not just
+    // `authLoading`) means logging in *after* landing here - e.g. an expired
+    // session that 401'd into the error screen - refetches automatically once
+    // the token lands, instead of stranding the user on "Try again".
+    if (authLoading) return;
     setIsLoading(true);
-    load();
-  }, [load]);
+    setError(false);
+    retriesRef.current = 0;
+    void load();
+  }, [load, authLoading, user?.id]);
 
   const acceptInvite = async (eng: Engagement) => {
     setBusyEngagementId(eng.id);
@@ -895,10 +927,17 @@ export default function ProjectDashboardPage() {
   if (error || !project) {
     return (
       <div className="mx-auto w-full max-w-[1320px] px-4 pb-12 pt-5 sm:px-6">
-        <Card variant="elevated" className="p-10 text-center">
+        <Card variant="elevated" className="flex flex-col items-center gap-4 p-10 text-center">
           <p className="text-[var(--hm-fg-secondary)]">
             {t('projects.couldntLoad')}
           </p>
+          <Button
+            variant="outline"
+            onClick={retry}
+            leftIcon={<RotateCcw className="h-4 w-4" />}
+          >
+            {t('projects.tryAgain')}
+          </Button>
         </Card>
       </div>
     );
@@ -3249,6 +3288,8 @@ export default function ProjectDashboardPage() {
             floorCount: project.floorCount,
           }}
           onSaved={load}
+          canDelete={isClient}
+          onDeleted={() => router.push('/projects')}
         />
       )}
 

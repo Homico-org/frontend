@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { FormGroup, Input, Label, Textarea } from '@/components/ui/input';
 import {
@@ -566,25 +566,27 @@ export default function AddServiceModal({
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-1">
-              {!isEdit && (
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setPicked(false);
-                    setUnitOptions([]);
-                  }}
-                >
-                  {t('common.back')}
-                </Button>
-              )}
-              <Button onClick={save} loading={saving} disabled={!form.name.trim()}>
-                {t('common.save')}
-              </Button>
-            </div>
           </>
         )}
       </ModalBody>
+      {picked && (
+        <ModalFooter className="justify-end">
+          {!isEdit && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setPicked(false);
+                setUnitOptions([]);
+              }}
+            >
+              {t('common.back')}
+            </Button>
+          )}
+          <Button onClick={save} loading={saving} disabled={!form.name.trim()}>
+            {t('common.save')}
+          </Button>
+        </ModalFooter>
+      )}
     </Modal>
   );
 }

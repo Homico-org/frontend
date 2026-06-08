@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { FormGroup, Input, Label } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -91,6 +91,10 @@ export default function AddProductModal({
     roomId: item?.roomId ?? roomId ?? '',
     stepId: item?.stepId ?? stepId ?? '',
     category: item?.category ?? category ?? '',
+    // Catalog link - preserved on edit, set on catalog prefill - so the row
+    // stays orderable through checkout.
+    supplierProductId: item?.supplierProductId ?? '',
+    supplierKey: item?.supplierKey ?? '',
   }));
   const [saving, setSaving] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
@@ -143,6 +147,8 @@ export default function AddProductModal({
         stepId: form.stepId || '',
         category: form.category.trim(),
         status: form.status,
+        supplierProductId: form.supplierProductId || undefined,
+        supplierKey: form.supplierKey || undefined,
       };
       if (isEdit && item) {
         await api.patch(`/projects/${projectId}/products/${item.id}`, body);
@@ -462,24 +468,25 @@ export default function AddProductModal({
           </div>
         </FormGroup>
 
-        <div className="flex items-center justify-between border-t border-[var(--hm-border-subtle)] pt-4">
-          <span className="inline-flex items-center gap-1.5 text-[13px] text-[var(--hm-fg-secondary)]">
-            <Package className="h-4 w-4 text-[var(--hm-fg-muted)]" />
-            {t('projects.total')}
-            <span className="text-[16px] font-bold tabular-nums text-[var(--hm-fg-primary)]">
-              {fmtGel(total)}
-            </span>
-          </span>
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={onClose}>
-              {t('common.cancel')}
-            </Button>
-            <Button onClick={save} loading={saving} disabled={!form.name.trim()}>
-              {t('common.save')}
-            </Button>
-          </div>
-        </div>
       </ModalBody>
+
+      <ModalFooter className="items-center justify-between">
+        <span className="inline-flex min-w-0 items-center gap-1.5 text-[13px] text-[var(--hm-fg-secondary)]">
+          <Package className="h-4 w-4 shrink-0 text-[var(--hm-fg-muted)]" />
+          <span className="hidden sm:inline">{t('projects.total')}</span>
+          <span className="text-[16px] font-bold tabular-nums text-[var(--hm-fg-primary)]">
+            {fmtGel(total)}
+          </span>
+        </span>
+        <div className="flex shrink-0 gap-2">
+          <Button variant="ghost" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
+          <Button onClick={save} loading={saving} disabled={!form.name.trim()}>
+            {t('common.save')}
+          </Button>
+        </div>
+      </ModalFooter>
 
       {catalogOpen && (
         <CatalogPickerModal
@@ -494,6 +501,8 @@ export default function AddProductModal({
               vendor: p.vendor,
               url: p.url,
               imageUrl: p.imageUrl ?? f.imageUrl,
+              supplierProductId: p.supplierProductId ?? '',
+              supplierKey: p.supplierKey ?? '',
             }));
             setCatalogOpen(false);
           }}
