@@ -34,7 +34,7 @@ const COUNTRY_SCOPED_FIRST_SEGMENTS = new Set([
  * Second-segment guards for routes where the FIRST segment is shared
  * with country-agnostic siblings. E.g. `/pro/premium` is country-scoped
  * (premium pricing is in marketplace currency) but `/pro/profile-setup`
- * and `/pro/portfolio` are pro-self-management and stay global.
+ * and `/pro/analytics` are pro-self-management and stay global.
  */
 const COUNTRY_SCOPED_NESTED: Record<string, Set<string>> = {
   pro: new Set(['premium']),
@@ -199,7 +199,7 @@ export function middleware(req: NextRequest) {
 
   // Nested country-scoped routes (e.g. `/pro/premium/...`) where the
   // FIRST segment is shared with country-agnostic siblings
-  // (`/pro/profile-setup/`, `/pro/portfolio/`).
+  // (`/pro/profile-setup/`, `/pro/analytics/`).
   const second = segments[1]?.toLowerCase();
   if (first && second && COUNTRY_SCOPED_NESTED[first]?.has(second)) {
     const marketplace = resolveMarketplace(req);

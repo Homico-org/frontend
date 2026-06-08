@@ -53,7 +53,7 @@ export function countryLink(path: string, country: CountryCode | string = DEFAUL
  * Updated 2026-05: marketing pages (/become-pro, /how-it-works,
  * /for-business), tools, and /pro/premium moved under [country] because
  * their content is marketplace-specific (examples, currency, pricing).
- * Only `/pro/profile-setup`, `/pro/portfolio`, etc. remain agnostic
+ * Only `/pro/profile-setup`, `/pro/analytics`, etc. remain agnostic
  * among the /pro/* family.
  */
 const COUNTRY_AGNOSTIC_PATHS = [
@@ -76,7 +76,6 @@ const COUNTRY_AGNOSTIC_PATHS = [
   '/my-space',
   '/my-work',
   '/pro/profile-setup',
-  '/pro/portfolio',
   '/pro/analytics',
   '/pro/orders',
   '/pro/reviews',
