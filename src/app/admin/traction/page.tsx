@@ -2,6 +2,7 @@
 
 import AuthGuard from "@/components/common/AuthGuard";
 import { ADMIN_THEME as THEME } from "@/constants/theme";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { api } from "@/lib/api";
 import { ArrowLeft, RotateCcw, Target } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -34,6 +35,7 @@ const fmtGel = (minor: number) =>
 
 function TractionContent() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [data, setData] = useState<Traction | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -92,16 +94,16 @@ function TractionContent() {
             onClick={() => router.push("/admin")}
             className="w-9 h-9 rounded-xl flex items-center justify-center hover:opacity-80 transition-opacity"
             style={{ background: THEME.surfaceLight }}
-            aria-label="Back"
+            aria-label={t("common.back")}
           >
             <ArrowLeft className="w-4 h-4" style={{ color: THEME.text }} />
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-base sm:text-lg font-semibold truncate" style={{ color: THEME.text }}>
-              Traction
+              {t("adminTraction.title")}
             </h1>
             <p className="text-xs hidden sm:block" style={{ color: THEME.textDim }}>
-              The 0 to 10 view - get to 10 active projects
+              {t("adminTraction.subtitle")}
             </p>
           </div>
           <button
@@ -111,7 +113,7 @@ function TractionContent() {
             style={{ background: THEME.surfaceLight, color: THEME.text }}
           >
             <RotateCcw className="w-4 h-4" />
-            Refresh
+            {t("adminTraction.refresh")}
           </button>
         </div>
       </div>
@@ -119,11 +121,11 @@ function TractionContent() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 space-y-5">
         {loading && !data ? (
           <div className="text-sm" style={{ color: THEME.textDim }}>
-            Loading...
+            {t("common.loading")}
           </div>
         ) : !data ? (
           <div className="text-sm" style={{ color: THEME.textDim }}>
-            Could not load traction.
+            {t("adminTraction.loadError")}
           </div>
         ) : (
           <>
@@ -137,7 +139,7 @@ function TractionContent() {
             >
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.primary }}>
                 <Target className="w-4 h-4" />
-                North star
+                {t("adminTraction.northStar")}
               </div>
               <div className="mt-2 flex items-end gap-2">
                 <span className="text-5xl font-bold tabular-nums" style={{ color: THEME.text }}>
@@ -148,7 +150,7 @@ function TractionContent() {
                 </span>
               </div>
               <p className="mt-1 text-[13px]" style={{ color: THEME.textMuted }}>
-                {data.northStar.label}
+                {t("adminTraction.northStarLabel")}
               </p>
               <div className="mt-4 h-2.5 w-full rounded-full overflow-hidden" style={{ background: THEME.border }}>
                 <div
@@ -161,39 +163,39 @@ function TractionContent() {
             {/* Projects */}
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textDim }}>
-                Projects
+                {t("adminTraction.projects")}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                {metric("Active (7d)", data.projects.active7d, "real team, moved", THEME.success)}
-                {metric("With a team", data.projects.withTeam, "any engagement")}
-                {metric("Total", data.projects.total, "non-draft")}
-                {metric("Created 7d", data.projects.created7d)}
-                {metric("Created 30d", data.projects.created30d)}
+                {metric(t("adminTraction.active7d"), data.projects.active7d, t("adminTraction.active7dSub"), THEME.success)}
+                {metric(t("adminTraction.withTeam"), data.projects.withTeam, t("adminTraction.withTeamSub"))}
+                {metric(t("adminTraction.total"), data.projects.total, t("adminTraction.totalSub"))}
+                {metric(t("adminTraction.created7d"), data.projects.created7d)}
+                {metric(t("adminTraction.created30d"), data.projects.created30d)}
               </div>
             </div>
 
             {/* Funnel: jobs + orders + users */}
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: THEME.textDim }}>
-                Pipeline
+                {t("adminTraction.pipeline")}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {metric("Jobs hired", data.jobs.hired, `of ${data.jobs.total} posted`)}
-                {metric("Jobs posted 7d", data.jobs.posted7d)}
-                {metric("Orders paid", data.orders.paid, fmtGel(data.orders.gmvMinor) + " GMV", THEME.success)}
+                {metric(t("adminTraction.jobsHired"), data.jobs.hired, t("adminTraction.jobsHiredSub", { total: data.jobs.total }))}
+                {metric(t("adminTraction.jobsPosted7d"), data.jobs.posted7d)}
+                {metric(t("adminTraction.ordersPaid"), data.orders.paid, t("adminTraction.gmvSub", { amount: fmtGel(data.orders.gmvMinor) }), THEME.success)}
                 {metric(
-                  "Pro utilization",
+                  t("adminTraction.proUtilization"),
                   `${data.users.pros > 0 ? Math.round((data.users.prosHired / data.users.pros) * 100) : 0}%`,
-                  `${data.users.prosHired} of ${data.users.pros} pros hired`,
+                  t("adminTraction.proUtilizationSub", { hired: data.users.prosHired, total: data.users.pros }),
                   data.users.prosHired > 0 ? THEME.success : THEME.warning,
                 )}
-                {metric("Signups 7d", data.users.signups7d)}
-                {metric("Clients", data.users.clients)}
+                {metric(t("adminTraction.signups7d"), data.users.signups7d)}
+                {metric(t("adminTraction.clients"), data.users.clients)}
               </div>
             </div>
 
             <p className="text-[11px]" style={{ color: THEME.textMuted }}>
-              Live from the database. Active project = non-draft, has a team, updated in the last 7 days.
+              {t("adminTraction.footer")}
             </p>
           </>
         )}
