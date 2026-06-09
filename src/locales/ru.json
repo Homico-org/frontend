@@ -3634,6 +3634,7 @@
       "partnerToast": "Отмечен как партнёр Homico",
       "unpartnerToast": "Партнёрство снято",
       "failedToPartner": "Не удалось обновить",
+      "partnerBadge": "Партнёр",
       "noPendingProfessionals": "Нет специалистов на рассмотрении",
       "noProfessionalsFound": "Специалисты не найдены"
     },

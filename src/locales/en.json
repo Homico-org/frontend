@@ -3639,6 +3639,7 @@
       "partnerToast": "Marked as Homico Partner",
       "unpartnerToast": "Removed Homico Partner",
       "failedToPartner": "Failed to update partner",
+      "partnerBadge": "Partner",
       "noPendingProfessionals": "No pending professionals",
       "noProfessionalsFound": "No professionals found"
     },

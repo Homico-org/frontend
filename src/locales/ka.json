@@ -3639,6 +3639,7 @@
       "partnerToast": "Homico პარტნიორი დაინიშნა",
       "unpartnerToast": "პარტნიორობა მოიხსნა",
       "failedToPartner": "განახლება ვერ მოხერხდა",
+      "partnerBadge": "პარტნიორი",
       "noPendingProfessionals": "მოლოდინში არ არის პროფესიონალები",
       "noProfessionalsFound": "პროფესიონალები ვერ მოიძებნა"
     },

@@ -523,6 +523,13 @@ function AdminPendingProsPageContent() {
                             {t('admin.pendingPros.featured')}
                           </span>
                         )}
+                        {pro.isHomicoPartner && (
+                          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold flex-shrink-0 inline-flex items-center gap-1"
+                            style={{ background: THEME.primary, color: '#fff' }}>
+                            <Handshake className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                            {t('admin.pendingPros.partnerBadge')}
+                          </span>
+                        )}
                       </div>
 
                       {/* Contact info - simplified on mobile */}
@@ -625,6 +632,25 @@ function AdminPendingProsPageContent() {
                         >
                           <Crown className={`w-4 h-4 mr-1 ${pro.isFeatured ? 'fill-current' : ''}`} />
                           {pro.isFeatured ? t('admin.pendingPros.featured') : t('admin.pendingPros.feature')}
+                        </Button>
+                      )}
+                      {pro.verificationStatus === 'verified' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleTogglePartner(getProId(pro), !pro.isHomicoPartner);
+                          }}
+                          disabled={actionLoading === getProId(pro)}
+                          style={
+                            pro.isHomicoPartner
+                              ? { background: THEME.primary, color: '#fff', borderColor: THEME.primary }
+                              : { borderColor: THEME.border, color: THEME.textMuted }
+                          }
+                        >
+                          <Handshake className="w-4 h-4 mr-1" />
+                          {pro.isHomicoPartner ? t('admin.pendingPros.unpartner') : t('admin.pendingPros.partner')}
                         </Button>
                       )}
                       <Link
