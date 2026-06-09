@@ -49,6 +49,7 @@ const BUDGET_PRESET_RANGES = [
 
 const SORT_OPTIONS = [
   { value: "recommended", key: "browse.sort.recommended" },
+  { value: "badges", key: "browse.sort.badges" },
   { value: "rating", key: "browse.sort.rating" },
   { value: "reviews", key: "browse.sort.reviews" },
   { value: "newest", key: "browse.sort.newest" },
