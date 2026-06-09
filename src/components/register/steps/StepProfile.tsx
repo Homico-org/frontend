@@ -145,6 +145,7 @@ export default function StepProfile({
           <Label className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 text-xs sm:text-sm">
             <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-fg-muted)]" />
             {t('register.city')}
+            <span className="text-[var(--hm-brand-500)]">*</span>
           </Label>
           <Select
             options={cityOptions}

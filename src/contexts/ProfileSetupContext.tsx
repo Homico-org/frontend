@@ -911,8 +911,13 @@ export function ProfileSetupProvider({
           // stored a full name (social login, seed, older signup) still
           // pre-fill the first/last fields instead of showing blank.
           const draft = draftDataRef.current?.formData;
-          const nameParts = (user?.name || "")
-            .trim()
+          // Phone-only signups store the phone number as the display `name`
+          // placeholder. Don't pre-fill the name fields with it - it reads as a
+          // bug (a phone number sitting in "First name"). Leave it blank so the
+          // pro types their real name.
+          const rawName = (user?.name || "").trim();
+          const looksLikePhone = /^\+?[\d\s()-]{7,}$/.test(rawName);
+          const nameParts = (looksLikePhone ? "" : rawName)
             .split(/\s+/)
             .filter(Boolean);
           const nameFirst = nameParts[0] || "";
