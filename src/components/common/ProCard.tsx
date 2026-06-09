@@ -279,7 +279,11 @@ export default function ProCard({
     return () => { if (autoSlideRef.current) clearInterval(autoSlideRef.current); };
   }, [isHovered, isInView, mediaSlides.length]);
 
-  const isTopRated = profile.avgRating >= 4.8 && (profile.completedProjects || 0) >= 5;
+  // Match the canonical Top-Rated rule (deriveProBadges): rating + review
+  // volume. `completedProjects` was the wrong field - it's usually undefined,
+  // so the badge never showed even for clearly top-rated pros.
+  const isTopRated =
+    profile.avgRating >= 4.8 && (profile.totalReviews || 0) >= 5;
 
   // Online/active status based on lastLoginAt
   const isOnline = useMemo(() => {
@@ -623,7 +627,7 @@ export default function ProCard({
                 )}
                 {isTopRated && (
                   <span className="hidden sm:inline-flex">
-                    <StatusPill variant="topRated" size="xs" locale={locale} label="Top" />
+                    <StatusPill variant="topRated" size="xs" locale={locale} />
                   </span>
                 )}
                 {/* Away pill - pro toggled themselves Away in settings.
