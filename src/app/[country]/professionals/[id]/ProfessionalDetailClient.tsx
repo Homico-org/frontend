@@ -61,6 +61,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Edit3,
+  Eye,
   Facebook,
   Link2,
   MapPin,
@@ -418,15 +419,9 @@ export default function ProfessionalDetailClient({
       category: profile.categories?.[0],
     });
 
-    // Optimistically increment view count since backend increments it async
-    // This ensures the displayed count reflects that this visit was counted
-    setProfile((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        profileViewCount: (prev.profileViewCount ?? 0) + 1,
-      };
-    });
+    // No optimistic increment: the backend now dedupes views by IP (24h), so a
+    // local +1 would over-count on refresh / for an already-counted visitor.
+    // The displayed value reflects the real persisted count from the fetch.
   }, [profile?.id, profile?.name, profile?.categories, trackEvent]);
 
   useEffect(() => {
@@ -671,6 +666,20 @@ export default function ProfessionalDetailClient({
         proId: profile.id,
         proName: profile.name,
       });
+      // Persist a unique-visitor phone-view count (deduped by IP / 24h on the
+      // backend). Reflect the returned count in local state so the stat updates
+      // without a reload; never block the reveal on this write.
+      api
+        .post(`/users/pros/${profile.id}/phone-view`)
+        .then((res) => {
+          const count = res.data?.phoneViewCount;
+          if (typeof count === "number") {
+            setProfile((prev) =>
+              prev ? { ...prev, phoneViewCount: count } : prev,
+            );
+          }
+        })
+        .catch(() => {});
       return;
     }
 
@@ -2362,6 +2371,13 @@ export default function ProfessionalDetailClient({
                           </motion.button>
                         )}
                       </AnimatePresence>
+                      {(profile.phoneViewCount ?? 0) > 0 && (
+                        <p className="flex items-center justify-center gap-1 text-[11px] text-[var(--hm-fg-muted)]">
+                          <Eye className="w-3 h-3" />
+                          {profile.phoneViewCount}{" "}
+                          {t("professional.phoneViewsLabel")}
+                        </p>
+                      )}
                       {myOpenJobsLoaded && myMatchingOpenJobs.length > 0 && (
                         <motion.button
                           whileHover={{ scale: 1.02, y: -1 }}
