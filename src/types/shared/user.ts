@@ -202,8 +202,10 @@ export interface ProProfile extends BaseEntity {
   verificationStatus?: VerificationStatus;
   isPremium: boolean;
   isFeatured?: boolean;
+  /** Signed Homico contract - the only bookable pros (server-set). */
+  isHomicoPartner?: boolean;
   premiumTier?: string;
-  
+
   // Admin Approval (legacy - use verificationStatus instead)
   adminApprovedAt?: string;
   adminRejectionReason?: string;

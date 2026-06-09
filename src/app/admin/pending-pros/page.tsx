@@ -27,6 +27,7 @@ import {
   Phone,
   RefreshCw,
   Crown,
+  Handshake,
   UserCheck,
   Users,
   X,
@@ -69,6 +70,7 @@ interface PendingPro {
   isProfileCompleted?: boolean;
   verificationStatus?: 'pending' | 'verified' | 'rejected';
   isFeatured?: boolean;
+  isHomicoPartner?: boolean;
   adminRejectionReason?: string;
   createdAt: string;
   portfolioProjects?: Array<{
@@ -231,6 +233,30 @@ function AdminPendingProsPageContent() {
     } catch (error) {
       console.error('Error toggling featured:', error);
       toast.error(t('admin.pendingPros.failedToFeature'));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleTogglePartner = async (proId: string, next: boolean) => {
+    if (!proId) return;
+    try {
+      setActionLoading(proId);
+      await api.patch(`/admin/pros/${proId}/homico-partner`, { partner: next });
+      toast.success(
+        next
+          ? t('admin.pendingPros.partnerToast')
+          : t('admin.pendingPros.unpartnerToast'),
+      );
+      fetchPendingPros();
+      setSelectedPro((prev) =>
+        prev && getProId(prev) === proId
+          ? { ...prev, isHomicoPartner: next }
+          : prev,
+      );
+    } catch (error) {
+      console.error('Error toggling partner:', error);
+      toast.error(t('admin.pendingPros.failedToPartner'));
     } finally {
       setActionLoading(null);
     }
@@ -957,6 +983,22 @@ function AdminPendingProsPageContent() {
                       >
                         <Crown className={`w-4 h-4 mr-2 ${selectedPro.isFeatured ? 'fill-current' : ''}`} />
                         {selectedPro.isFeatured ? t('admin.pendingPros.unfeature') : t('admin.pendingPros.feature')}
+                      </Button>
+                    )}
+                    {selectedPro.verificationStatus === 'verified' && (
+                      <Button
+                        onClick={() => handleTogglePartner(getProId(selectedPro), !selectedPro.isHomicoPartner)}
+                        disabled={actionLoading === getProId(selectedPro)}
+                        variant={selectedPro.isHomicoPartner ? 'default' : 'outline'}
+                        className="sm:flex-1 h-12 sm:h-9 font-medium text-base sm:text-sm"
+                        style={
+                          selectedPro.isHomicoPartner
+                            ? { background: THEME.primary, color: '#fff', borderColor: THEME.primary }
+                            : undefined
+                        }
+                      >
+                        <Handshake className="w-4 h-4 mr-2" />
+                        {selectedPro.isHomicoPartner ? t('admin.pendingPros.unpartner') : t('admin.pendingPros.partner')}
                       </Button>
                     )}
                   </div>

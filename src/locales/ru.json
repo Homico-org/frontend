@@ -3628,6 +3628,11 @@
       "featuredToast": "Выделено",
       "unfeaturedToast": "Выделение снято",
       "failedToFeature": "Не удалось обновить",
+      "partner": "Сделать партнёром",
+      "unpartner": "Убрать партнёра",
+      "partnerToast": "Отмечен как партнёр Homico",
+      "unpartnerToast": "Партнёрство снято",
+      "failedToPartner": "Не удалось обновить",
       "noPendingProfessionals": "Нет специалистов на рассмотрении",
       "noProfessionalsFound": "Специалисты не найдены"
     },

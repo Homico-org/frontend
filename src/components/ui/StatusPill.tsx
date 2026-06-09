@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { BadgeCheck, Star, Plus, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft, Moon, Award, Crown } from 'lucide-react';
+import { BadgeCheck, Star, Plus, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft, Moon, Award, Crown, Handshake } from 'lucide-react';
 import { ACCENT_COLOR } from '@/constants/theme';
 
 export type StatusPillVariant =
@@ -19,7 +19,8 @@ export type StatusPillVariant =
   | 'rejected'
   | 'withdrawn'
   | 'away' // Pro toggled themselves Away; SLA-exempt + grey pill in browse
-  | 'homico'; // For Homico-verified work
+  | 'homico' // For Homico-verified work
+  | 'homicoPartner'; // Signed Homico contract; the only bookable pros
 
 export type StatusPillSize = 'xs' | 'sm' | 'md';
 
@@ -124,6 +125,14 @@ const variantConfig: Record<StatusPillVariant, {
     labelEn: 'Featured',
     labelKa: 'გამორჩეული',
   },
+  homicoPartner: {
+    // Solid brand fill - the premier badge; it's the only bookable status.
+    bgClass: 'bg-[var(--hm-brand-500)]',
+    textClass: 'text-white',
+    icon: Handshake,
+    labelEn: 'Homico Partner',
+    labelKa: 'Homico პარტნიორი',
+  },
   pending: {
     bgClass: 'bg-[var(--hm-warning-50)]',
     textClass: 'text-[var(--hm-warning-500)]',
@@ -182,6 +191,7 @@ const variantConfig: Record<StatusPillVariant, {
 // two no longer both read warm). Tokens where they exist; a literal violet for
 // premium since the palette has no violet token.
 const SOLID_FILL: Partial<Record<StatusPillVariant, string>> = {
+  homicoPartner: 'var(--hm-brand-500)',
   featured: 'var(--hm-brand-500)',
   verified: 'var(--hm-success-500)',
   topRated: 'var(--hm-warning-500)',

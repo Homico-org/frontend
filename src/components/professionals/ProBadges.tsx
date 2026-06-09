@@ -24,6 +24,8 @@ export interface ProBadgeInput {
   isPremium?: boolean;
   /** Admin-curated, hand-picked pro (server-set). */
   isFeatured?: boolean;
+  /** Signed Homico contract - the only bookable pros (server-set). */
+  isHomicoPartner?: boolean;
 }
 
 // Thresholds kept in one place so they're easy to tune as the marketplace grows.
@@ -45,6 +47,9 @@ export function deriveProBadges(
   const jobs = pro.completedJobs ?? 0;
 
   const out: StatusPillVariant[] = [];
+  // Homico Partner first - it's the strongest trust signal (signed contract +
+  // the only bookable pros).
+  if (pro.isHomicoPartner) out.push('homicoPartner');
   if (pro.isFeatured) out.push('featured');
   if (pro.verificationStatus === 'verified') out.push('verified');
   if (rating >= TOP_RATED_MIN_RATING && reviews >= TOP_RATED_MIN_REVIEWS)

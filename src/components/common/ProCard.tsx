@@ -779,7 +779,7 @@ export default function ProCard({
           {/* Book CTA - only when the parent wired a booking handler and the
               pro has bookable services. Stops the click from following the
               card's wrapping <Link> to the profile page. */}
-          {onBook && hasBookableServices && (
+          {onBook && hasBookableServices && profile.isHomicoPartner && (
             <Button
               variant="default"
               size="sm"
@@ -809,7 +809,7 @@ export default function ProCard({
             corner. Hidden until hover so it doesn't compete with the card
             content at rest. Suppressed when the Book CTA is shown, otherwise
             the two collide on the bottom-right on hover. */}
-        {!(onBook && hasBookableServices) && (
+        {!(onBook && hasBookableServices && profile.isHomicoPartner) && (
           <div
             aria-hidden
             className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none"

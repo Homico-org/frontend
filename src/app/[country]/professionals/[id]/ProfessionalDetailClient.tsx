@@ -2399,7 +2399,7 @@ export default function ProfessionalDetailClient({
                           <ChevronRight className="w-4 h-4 text-[var(--hm-success-500)] shrink-0" />
                         </Link>
                       )}
-                      {features.bookings && !canEdit &&
+                      {features.bookings && !canEdit && profile?.isHomicoPartner &&
                         (profile?.servicePricing?.filter(
                           (s) => s.isActive && s.price > 0,
                         ).length ?? 0) > 0 && (

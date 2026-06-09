@@ -3633,6 +3633,11 @@
       "featuredToast": "გამორჩეულია",
       "unfeaturedToast": "გამორჩევა მოიხსნა",
       "failedToFeature": "განახლება ვერ მოხერხდა",
+      "partner": "პარტნიორად დანიშვნა",
+      "unpartner": "პარტნიორობის მოხსნა",
+      "partnerToast": "Homico პარტნიორი დაინიშნა",
+      "unpartnerToast": "პარტნიორობა მოიხსნა",
+      "failedToPartner": "განახლება ვერ მოხერხდა",
       "noPendingProfessionals": "მოლოდინში არ არის პროფესიონალები",
       "noProfessionalsFound": "პროფესიონალები ვერ მოიძებნა"
     },
