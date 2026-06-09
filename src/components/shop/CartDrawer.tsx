@@ -1,5 +1,6 @@
 'use client';
 
+import { features } from '@/config/features';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { storage } from '@/services/storage';
 import { CartItem } from '@/hooks/useCart';
@@ -209,16 +210,18 @@ export default function CartDrawer({
                 {fmt(total)}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={onCheckout}
-              disabled={busy}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--hm-brand-500)] text-[14px] font-semibold text-white transition-colors hover:bg-[var(--hm-brand-600)] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <ShoppingCart className="h-4 w-4" />
-              {t('projects.checkoutCta')}
-              <span className="tabular-nums">· {fmt(total)}</span>
-            </button>
+            {features.payments && (
+              <button
+                type="button"
+                onClick={onCheckout}
+                disabled={busy}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--hm-brand-500)] text-[14px] font-semibold text-white transition-colors hover:bg-[var(--hm-brand-600)] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                {t('projects.checkoutCta')}
+                <span className="tabular-nums">· {fmt(total)}</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={onAddToProject}

@@ -1,6 +1,7 @@
 'use client';
 
 import Avatar from '@/components/common/Avatar';
+import { features } from '@/config/features';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -30,6 +31,10 @@ interface ClientProject {
   budgetMax?: number;
   budget?: { planned: number; committed: number };
   phases?: { key: string; progress: number; roleCount: number }[];
+  // The project's real, user-defined plan steps (ProjectStep). These - not the
+  // generic design/permits/construction/finishing enum - are what this project
+  // is actually broken into.
+  steps?: { id: string; name: string; order?: number; color?: string }[];
   milestones?: { id: string; title: string; status: string }[];
   engagements?: {
     id: string;
@@ -65,12 +70,6 @@ interface NeedItem {
   money?: boolean;
 }
 
-const PHASES: { key: string; labelKey: string }[] = [
-  { key: 'design', labelKey: 'projects.phaseDesign' },
-  { key: 'permits', labelKey: 'projects.phasePermits' },
-  { key: 'construction', labelKey: 'projects.phaseConstruction' },
-  { key: 'finishing', labelKey: 'projects.phaseFinishing' },
-];
 
 const money = (minor: number) =>
   `${Math.round(minor / 100).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
@@ -103,6 +102,12 @@ export default function ProjectClientView({
   const [busy, setBusy] = useState(false);
 
   const refetchMps = useCallback(() => {
+    // Payments gated off until BoG is live - skip escrow so no money actions
+    // (fund milestone, approve schedule) surface on prod.
+    if (!features.payments) {
+      setMps([]);
+      return;
+    }
     api
       .get<MilestonePayment[]>(`/milestone-payments/project/${projectId}`)
       .then((r) => setMps(Array.isArray(r.data) ? r.data : []))
@@ -164,11 +169,11 @@ export default function ProjectClientView({
   const activeMilestone = (project.milestones || []).find(
     (m) => m.status === 'active',
   );
-  const currentPhaseLabel = (() => {
-    const ph = PHASES.find((p) => p.key === project.currentPhase);
-    return ph ? t(ph.labelKey) : '';
-  })();
-  const focusText = activeMilestone?.title || currentPhaseLabel;
+  // What's happening now = the active milestone's title. We deliberately do NOT
+  // fall back to the generic design/permits/... enum - it isn't this project's
+  // real plan, so showing it read as a fake step. No milestone -> "getting
+  // started", which is honest for a project that hasn't kicked off.
+  const focusText = activeMilestone?.title;
 
   // ---- "Needs you" - every pending client decision in one place ----
   const needs: NeedItem[] = [];
@@ -339,45 +344,35 @@ export default function ProjectClientView({
           </div>
         </div>
 
-        {/* Plain-language phase stepper */}
-        <div className="mt-5 grid grid-cols-4 gap-1.5">
-          {PHASES.map((ph) => {
-            const data = (project.phases || []).find((p) => p.key === ph.key);
-            const pct = Math.max(0, Math.min(100, Math.round(data?.progress || 0)));
-            const isCurrent = project.currentPhase === ph.key;
-            return (
-              <div key={ph.key}>
-                <div
-                  className="h-1.5 overflow-hidden rounded-full"
-                  style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}
-                >
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${pct}%`,
-                      backgroundColor:
-                        pct >= 100
-                          ? 'var(--hm-success-500)'
-                          : 'var(--hm-brand-500)',
-                      transition: 'width 0.5s ease',
-                    }}
+        {/* The project's real plan steps (user-defined). Renders nothing when
+            no steps exist yet - we never fabricate generic phases. */}
+        {(() => {
+          const steps = [...(project.steps || [])].sort(
+            (a, b) => (a.order ?? 0) - (b.order ?? 0),
+          );
+          if (steps.length === 0) return null;
+          return (
+            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+              {steps.map((s, i) => (
+                <div key={s.id} className="flex items-center gap-1.5">
+                  <span className="font-mono text-[10px] text-[var(--hm-fg-muted)]">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span
+                    className="inline-block h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: s.color || 'var(--hm-brand-500)' }}
                   />
+                  <span
+                    className="text-[11px]"
+                    style={{ color: 'var(--hm-fg-secondary)' }}
+                  >
+                    {s.name}
+                  </span>
                 </div>
-                <p
-                  className="mt-1.5 truncate text-[11px]"
-                  style={{
-                    color: isCurrent
-                      ? 'var(--hm-brand-500)'
-                      : 'var(--hm-fg-muted)',
-                    fontWeight: isCurrent ? 600 : 400,
-                  }}
-                >
-                  {t(ph.labelKey)}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+              ))}
+            </div>
+          );
+        })()}
       </section>
 
       {/* ---- Needs you ---- */}

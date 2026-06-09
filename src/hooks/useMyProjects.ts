@@ -18,6 +18,9 @@ export interface MyProject {
 // `/projects` request instead of each firing their own on every shell page.
 let cache: MyProject[] | null = null;
 let inflight = false;
+let retries = 0;
+let retryTimer: ReturnType<typeof setTimeout> | null = null;
+const MAX_RETRIES = 4;
 const subscribers = new Set<() => void>();
 const notify = () => subscribers.forEach((fn) => fn());
 
@@ -28,9 +31,23 @@ function ensureLoaded() {
     .get('/projects')
     .then((r) => {
       cache = (r.data as MyProject[]) || [];
+      retries = 0;
     })
     .catch(() => {
-      cache = [];
+      // Do NOT cache the failure as an empty list - that was the
+      // "projects sometimes don't load" bug: a transient error (a token
+      // refresh, a backend restart, a network blip) would stick as "no
+      // projects" forever, because `cache !== null` blocks every retry.
+      // Leave it null and retry with backoff so the sidebar self-heals.
+      cache = null;
+      if (subscribers.size > 0 && retries < MAX_RETRIES) {
+        retries += 1;
+        if (retryTimer) clearTimeout(retryTimer);
+        retryTimer = setTimeout(() => {
+          retryTimer = null;
+          if (subscribers.size > 0) ensureLoaded();
+        }, 1200 * retries);
+      }
     })
     .finally(() => {
       inflight = false;
@@ -45,6 +62,11 @@ function ensureLoaded() {
 export function invalidateMyProjects() {
   cache = null;
   inflight = false;
+  retries = 0;
+  if (retryTimer) {
+    clearTimeout(retryTimer);
+    retryTimer = null;
+  }
   notify();
 }
 

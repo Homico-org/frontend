@@ -1,6 +1,7 @@
 'use client';
 
 import MilestonePaymentsPanel from '@/components/projects/MilestonePaymentsPanel';
+import { features } from '@/config/features';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
 import { Wallet } from 'lucide-react';
@@ -27,6 +28,9 @@ export default function ProMilestonePayments() {
   );
 
   useEffect(() => {
+    // Payments are gated off until the BoG provider is live (features.payments).
+    // Skip the fetch entirely when off so we don't surface escrow UI on prod.
+    if (!features.payments) return;
     let alive = true;
     api
       .get<PayableEngagement[]>('/milestone-payments/my-engagements')
@@ -37,6 +41,7 @@ export default function ProMilestonePayments() {
     };
   }, []);
 
+  if (!features.payments) return null;
   if (!engagements || engagements.length === 0) return null;
 
   return (

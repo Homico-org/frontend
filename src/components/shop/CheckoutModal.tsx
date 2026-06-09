@@ -1,5 +1,6 @@
 'use client';
 
+import { features } from '@/config/features';
 import { Modal, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { FormGroup, Input, Label } from '@/components/ui/input';
@@ -229,6 +230,9 @@ export default function CheckoutModal({
   const total = quote
     ? quote.subtotalMinor + quote.feeMinor + deliveryFee
     : 0;
+
+  // Payments gated off until BoG is live - never open the checkout flow.
+  if (!features.payments) return null;
 
   // While the order is being created + payment intent prepared, swap the whole
   // modal for a clear processing state (and block close) so the few-second wait

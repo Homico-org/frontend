@@ -1,5 +1,6 @@
 'use client';
 
+import { features } from '@/config/features';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -235,6 +236,9 @@ export default function MilestonePaymentsPanel({
       setBusyId(null);
     }
   };
+
+  // Payments gated off until BoG is live - never render the escrow panel.
+  if (!features.payments) return null;
 
   if (rows === null) {
     return (

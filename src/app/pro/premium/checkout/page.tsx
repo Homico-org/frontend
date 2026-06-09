@@ -2,6 +2,7 @@
 import { ACCENT_COLOR } from "@/constants/theme";
 
 import AuthGuard from '@/components/common/AuthGuard';
+import { features } from '@/config/features';
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -128,6 +129,11 @@ function CheckoutContent() {
   const { trackEvent } = useAnalytics();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Payments gated off until BoG is live - block direct access to checkout.
+  useEffect(() => {
+    if (!features.payments) router.replace("/pro/premium");
+  }, [router]);
 
   const tierId = searchParams.get("tier") || 'pro';
   const period = (searchParams.get("period") || 'monthly') as 'monthly' | 'yearly';

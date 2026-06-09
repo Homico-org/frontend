@@ -5,6 +5,7 @@ import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
 import AddProductModal from '@/components/projects/AddProductModal';
 import CatalogPickerModal from '@/components/projects/CatalogPickerModal';
 import CheckoutModal from '@/components/shop/CheckoutModal';
+import { features } from '@/config/features';
 import ProductCard from '@/components/shop/ProductCard';
 import type { CartItem } from '@/hooks/useCart';
 import { FilterPills } from '@/components/projects/TableCard';
@@ -419,7 +420,7 @@ export default function ProjectShopping({
               >
                 {t('projects.shopAddItem')}
               </Button>
-              {orderable.length > 0 && (
+              {features.payments && orderable.length > 0 && (
                 <Button
                   size="sm"
                   onClick={() => setCheckoutOpen(true)}

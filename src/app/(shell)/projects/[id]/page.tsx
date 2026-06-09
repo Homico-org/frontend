@@ -19,6 +19,7 @@ import { Room } from '@/components/projects/ProjectRooms';
 import { ScopeItem } from '@/components/projects/ProjectScope';
 import { TableCard, Pill } from '@/components/projects/TableCard';
 import AddServiceModal from '@/components/projects/AddServiceModal';
+import ImportEstimateModal from '@/components/projects/ImportEstimateModal';
 import AddProductModal from '@/components/projects/AddProductModal';
 import AddFilesModal from '@/components/projects/AddFilesModal';
 import DocumentReviewModal from '@/components/projects/DocumentReviewModal';
@@ -51,6 +52,7 @@ import {
   Combine,
   ChevronUp,
   ExternalLink,
+  FileSpreadsheet,
   FileText,
   ImagePlus,
   Images,
@@ -396,6 +398,7 @@ export default function ProjectDashboardPage() {
   const [removeServiceId, setRemoveServiceId] = useState<string | null>(null);
   // Spaces tab: add/edit a space, add/edit a product, per-space photo upload.
   const [spaceModal, setSpaceModal] = useState<{ space?: Room } | null>(null);
+  const [showImport, setShowImport] = useState(false);
   const [removeSpaceId, setRemoveSpaceId] = useState<string | null>(null);
   const [productModal, setProductModal] = useState<{
     roomId?: string;
@@ -1426,6 +1429,12 @@ export default function ProjectDashboardPage() {
                                 },
                               },
                               {
+                                icon: <FileSpreadsheet className="h-4 w-4" />,
+                                label: t('projects.importExcel'),
+                                hint: t('projects.gsImport'),
+                                onClick: () => setShowImport(true),
+                              },
+                              {
                                 icon: <Pencil className="h-4 w-4" />,
                                 label: t('projects.editProject'),
                                 hint: t('projects.gsDetails'),
@@ -2411,13 +2420,23 @@ export default function ProjectDashboardPage() {
                           ? t('projects.stepCount', { count: steps.length })
                           : t('projects.tabPlan')}
                       </span>
-                      <Button
-                        size="sm"
-                        onClick={() => setEditStep({ mode: 'create' })}
-                        leftIcon={<Plus />}
-                      >
-                        {t('projects.addStep')}
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowImport(true)}
+                          leftIcon={<FileSpreadsheet className="h-4 w-4" />}
+                        >
+                          {t('projects.importExcel')}
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => setEditStep({ mode: 'create' })}
+                          leftIcon={<Plus />}
+                        >
+                          {t('projects.addStep')}
+                        </Button>
+                      </div>
                     </div>
                   )}
 
@@ -3186,6 +3205,15 @@ export default function ProjectDashboardPage() {
           steps={project.steps ?? []}
           item={serviceModal.item}
           onSaved={load}
+        />
+      )}
+
+      {showImport && (
+        <ImportEstimateModal
+          isOpen={showImport}
+          onClose={() => setShowImport(false)}
+          projectId={projectId}
+          onImported={load}
         />
       )}
 
