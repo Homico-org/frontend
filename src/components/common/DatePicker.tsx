@@ -96,7 +96,33 @@ export default function DatePicker({
 
   useEffect(() => setMounted(true), []);
 
-  const selectedDate = value ? new Date(value) : null;
+  // Local-time YYYY-MM-DD serializer. Replaces the previous
+  // `d.toISOString().split('T')[0]` which silently shifted dates by
+  // one day for any user east of UTC: `new Date(2026, 5, 29)` is
+  // local midnight, but `.toISOString()` converts to UTC, so in
+  // Tbilisi (UTC+4) the resulting string was "2026-06-28T20:00Z" ->
+  // ".split('T')[0]" yielded "2026-06-28" and clicking 29 stored 28.
+  const fmtLocal = (d: Date) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  // Local-time parser for YYYY-MM-DD strings. `new Date("2026-06-29")`
+  // is interpreted as UTC midnight by the spec, which becomes Jun 28
+  // 04:00 local in Tbilisi - so the calendar's `isSelected` check
+  // and the input display both rounded down by a day. Building the
+  // Date through the (yyyy, monthIndex, day) constructor pins it to
+  // local midnight as intended.
+  const parseLocal = (s: string): Date | null => {
+    if (!s) return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if (!m) return new Date(s);
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  };
+
+  const selectedDate = value ? parseLocal(value) : null;
 
   useEffect(() => {
     if (selectedDate) {
@@ -106,7 +132,7 @@ export default function DatePicker({
     }
   }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Click outside — close only if click is outside BOTH trigger and calendar
+  // Click outside - close only if click is outside BOTH trigger and calendar
   useEffect(() => {
     if (!isOpen) return;
     const handleClick = (e: MouseEvent) => {
@@ -124,13 +150,27 @@ export default function DatePicker({
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const calHeight = 330;
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const openUp = spaceBelow < calHeight && rect.top > calHeight;
+    const calWidth = 272;
+    const margin = 8;
 
-    setDropdownPos({
-      top: openUp ? rect.top - calHeight - 4 : rect.bottom + 4,
-      left: Math.min(rect.left, window.innerWidth - 288),
-    });
+    const spaceBelow = window.innerHeight - rect.bottom - margin;
+    const spaceAbove = rect.top - margin;
+    // Prefer opening down; flip up only when below truly has less room.
+    const openUp = spaceBelow < calHeight && spaceAbove > spaceBelow;
+
+    const rawTop = openUp ? rect.top - calHeight - 4 : rect.bottom + 4;
+    // Clamp to viewport so the calendar never starts off-screen at the
+    // top edge when the trigger sits near the bottom of a tall modal.
+    const top = Math.max(
+      margin,
+      Math.min(rawTop, window.innerHeight - calHeight - margin),
+    );
+    const left = Math.max(
+      margin,
+      Math.min(rect.left, window.innerWidth - calWidth - margin),
+    );
+
+    setDropdownPos({ top, left });
   }, []);
 
   useEffect(() => {
@@ -146,7 +186,9 @@ export default function DatePicker({
   }, [isOpen, updatePosition]);
 
   const formatDisplay = (dateStr: string) => {
-    const d = new Date(dateStr);
+    // Use the local-time parser so a stored "2026-06-29" renders as
+    // 29.06.2026 regardless of the user's timezone.
+    const d = parseLocal(dateStr) ?? new Date(dateStr);
     return `${d.getDate().toString().padStart(2, "0")}.${(d.getMonth() + 1).toString().padStart(2, "0")}.${d.getFullYear()}`;
   };
 
@@ -165,7 +207,9 @@ export default function DatePicker({
   };
 
   const isDisabled = (d: Date) => {
-    const s = d.toISOString().split("T")[0];
+    // Compare on the same local-YYYY-MM-DD scale as the stored value
+    // so min/max boundaries don't drift by a day across timezones.
+    const s = fmtLocal(d);
     return (min && s < min) || (max && s > max) || false;
   };
 
@@ -175,7 +219,7 @@ export default function DatePicker({
 
   const handleSelect = (d: Date) => {
     if (isDisabled(d)) return;
-    onChange(d.toISOString().split("T")[0]);
+    onChange(fmtLocal(d));
     setIsOpen(false);
   };
 
@@ -217,15 +261,20 @@ export default function DatePicker({
         )}
       </button>
 
-      {/* Calendar dropdown — portal */}
+      {/* Calendar dropdown - portal. zIndex must exceed Modal's
+          zIndex: 9999 so the calendar isn't trapped behind the modal
+          backdrop when the picker is rendered inside one (e.g. the
+          property-details edit modal). Using a literal `zIndex` style
+          rather than a Tailwind class because the picker has to win
+          against an inline-styled modal regardless of class order. */}
       {isOpen &&
         dropdownPos &&
         mounted &&
         createPortal(
           <div
             ref={calendarRef}
-            className="fixed z-[200] w-[272px] rounded-xl shadow-2xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] overflow-hidden"
-            style={{ top: dropdownPos.top, left: dropdownPos.left }}
+            className="fixed w-[272px] rounded-xl shadow-2xl border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] overflow-hidden"
+            style={{ top: dropdownPos.top, left: dropdownPos.left, zIndex: 'var(--hm-z-toast)' }}
           >
             {/* Month nav */}
             <div className="flex items-center justify-between px-3 py-2.5 border-b border-[var(--hm-border-subtle)]">
@@ -332,7 +381,10 @@ export default function DatePicker({
                 onClick={() => {
                   const today = new Date();
                   if (!isDisabled(today)) {
-                    onChange(today.toISOString().split("T")[0]);
+                    // Same local-time serializer as handleSelect so
+                    // "Today" doesn't get rounded down by a day in
+                    // positive-UTC-offset locales.
+                    onChange(fmtLocal(today));
                     setIsOpen(false);
                   }
                 }}

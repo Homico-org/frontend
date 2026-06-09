@@ -1,11 +1,15 @@
 import { Metadata } from 'next';
 
+// /about is a country-agnostic brand page reachable from every
+// marketplace. Description copy stays geography-neutral - the Georgian
+// version no longer claims "Georgia's first platform" so it makes
+// sense for a Tel Aviv / Berlin / NYC visitor too.
 export const metadata: Metadata = {
   title: 'ჩვენს შესახებ',
-  description: 'Homico - საქართველოს პირველი პლატფორმა სახლის მომსახურების პროფესიონალების მოსაძებნად. შეიტყვეთ მეტი ჩვენი მისიისა და ღირებულებების შესახებ.',
+  description: 'Homico - პლატფორმა, რომელიც სანდო სარემონტო პროფესიონალებთან გაკავშირებთ. შეიტყვეთ მეტი ჩვენი მისიისა და ღირებულებების შესახებ.',
   openGraph: {
     title: 'ჩვენს შესახებ | Homico',
-    description: 'Homico აკავშირებს კლიენტებს ვერიფიცირებულ სახლის მომსახურების პროფესიონალებთან საქართველოში.',
+    description: 'Homico აკავშირებს კლიენტებს ვერიფიცირებულ სახლის მომსახურების პროფესიონალებთან.',
   },
 };
 

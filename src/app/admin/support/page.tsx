@@ -240,6 +240,9 @@ function AdminSupportPageContent() {
       // If the admin is currently viewing this ticket, mark it as read on the backend as well
       if (isCurrentlyOpen) {
         api.patch(`/support/tickets/${ticketId}/read`).catch(() => {});
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('support:read'));
+        }
       }
     });
 
@@ -366,6 +369,9 @@ function AdminSupportPageContent() {
           setSelectedTicket(prev => prev ? { ...prev, hasUnreadUserMessages: false } : null);
           // Update unread stats
           setStats(prev => prev ? { ...prev, unread: Math.max(0, (prev.unread || 0) - 1) } : prev);
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event('support:read'));
+          }
         }
       } catch (err) {
         console.error('Failed to mark as read:', err);

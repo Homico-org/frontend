@@ -71,9 +71,15 @@ export default function BudgetSelector({
         ))}
       </div>
 
-      {/* Budget Inputs */}
+      {/* Budget Inputs - on phones the range mode shows min/max stacked
+          (touch targets reach full width) and tightens to 2 columns at
+          sm+. Single-amount mode stays full-width on every size. */}
       {budgetType !== 'negotiable' && (
-        <div className={`grid gap-4 ${budgetType === 'range' ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        <div
+          className={`grid gap-3 sm:gap-4 ${
+            budgetType === 'range' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'
+          }`}
+        >
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--hm-fg-muted)] font-medium text-base">
               {currency}

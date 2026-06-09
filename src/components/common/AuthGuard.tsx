@@ -2,9 +2,12 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/contexts/ToastContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { defaultBackFallback } from '@/utils/navigationUtils';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -24,8 +27,13 @@ export default function AuthGuard({
 }: AuthGuardProps) {
   const { user, isLoading, isAuthenticated } = useAuth();
   const { openLoginModal } = useAuthModal();
+  const { t } = useLanguage();
+  const toast = useToast();
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
+  // Guard against the toast firing twice in React Strict Mode (effect
+  // runs, cleans up, runs again) when bouncing on a role mismatch.
+  const wrongRoleToastFiredRef = useRef(false);
 
   useEffect(() => {
     if (isLoading) return;
@@ -34,22 +42,30 @@ export default function AuthGuard({
       if (redirectTo) {
         router.replace(redirectTo);
       } else {
-        // Show login modal and redirect to home
+        // Show login modal. The modal context now captures the
+        // current URL by default, so the user returns to this
+        // protected page after signing in.
         openLoginModal();
         router.replace('/');
       }
       return;
     }
 
-    // Check role if specified
+    // Logged in but the wrong role for this route. Tell the user why
+    // they're being moved (silent bounces to `/` are confusing) and
+    // route them to a role-appropriate home so they don't land on a
+    // page they also can't use.
     if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-      // User is logged in but doesn't have the required role
-      router.replace('/');
+      if (!wrongRoleToastFiredRef.current) {
+        wrongRoleToastFiredRef.current = true;
+        toast.info(t('auth.wrongRoleRedirect'));
+      }
+      router.replace(defaultBackFallback(user));
       return;
     }
 
     setIsAuthorized(true);
-  }, [isLoading, isAuthenticated, user, allowedRoles, redirectTo, router, openLoginModal]);
+  }, [isLoading, isAuthenticated, user, allowedRoles, redirectTo, router, openLoginModal, toast, t]);
 
   // Show loading state
   if (isLoading) {

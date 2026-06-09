@@ -35,10 +35,12 @@ const inputVariants = cva(
         premium:
           "bg-[var(--hm-bg-elevated)] border border-[var(--hm-brand-200)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 transition-colors",
       },
+      // Font is >=16px on mobile so iOS Safari doesn't auto-zoom on focus;
+      // the smaller design size kicks back in at >=sm (desktop).
       inputSize: {
-        sm: "h-8 px-3 py-1.5 text-xs",
-        default: "h-10 px-4 py-2 text-[15px]",
-        lg: "h-12 px-4 py-3 text-[15px]",
+        sm: "h-8 px-3 py-1.5 text-base sm:text-xs",
+        default: "h-10 px-4 py-2 text-base sm:text-[15px]",
+        lg: "h-12 px-4 py-3 text-base sm:text-[15px]",
         xl: "h-14 px-5 py-4 text-base",
       },
     },
@@ -95,6 +97,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           type={type}
           min={numberMin}
+          // aria-invalid wires screen readers AND the global
+          // `useScrollToError` helper. When a form sets `error={true}`
+          // on its first failing input, submit handlers can call
+          // `scrollToFirstError()` and the page jumps directly to it
+          // - no per-form wiring needed.
+          aria-invalid={error ? true : undefined}
           className={cn(
             inputVariants({ variant, inputSize }),
             leftIcon && "pl-10",
@@ -150,8 +158,8 @@ const textareaVariants = cva(
           "bg-[var(--hm-bg-elevated)] border border-[var(--hm-brand-200)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15 transition-colors",
       },
       textareaSize: {
-        sm: "min-h-[80px] px-3 py-2 text-xs",
-        default: "min-h-[100px] px-4 py-3 text-[15px]",
+        sm: "min-h-[80px] px-3 py-2 text-base sm:text-xs",
+        default: "min-h-[100px] px-4 py-3 text-base sm:text-[15px]",
         lg: "min-h-[120px] px-5 py-4 text-base",
         xl: "min-h-[150px] px-6 py-5 text-base",
       },
@@ -168,19 +176,56 @@ export interface TextareaProps
     VariantProps<typeof textareaVariants> {
   error?: boolean;
   success?: boolean;
+  /**
+   * When true, the textarea grows to fit its content (clamped to
+   * `minRows`..`maxRows`). Replaces the awkward fixed-height +
+   * inner scrollbar pattern that mobile users particularly hate.
+   * Off by default to preserve existing layouts.
+   */
+  autoResize?: boolean;
+  minRows?: number;
+  maxRows?: number;
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, variant, textareaSize, error, success, ...props }, ref) => {
+  ({ className, variant, textareaSize, error, success, autoResize, minRows, maxRows, value, ...props }, ref) => {
+    const innerRef = React.useRef<HTMLTextAreaElement | null>(null);
+    // Combine forwarded ref + our local ref so the auto-resize hook
+    // can measure the element while still letting callers attach.
+    React.useImperativeHandle(ref, () => innerRef.current as HTMLTextAreaElement, []);
+
+    React.useEffect(() => {
+      if (!autoResize) return;
+      const el = innerRef.current;
+      if (!el) return;
+      const lineHeight = parseFloat(window.getComputedStyle(el).lineHeight) || 20;
+      const paddingY =
+        parseFloat(window.getComputedStyle(el).paddingTop) +
+        parseFloat(window.getComputedStyle(el).paddingBottom);
+      const borderY =
+        parseFloat(window.getComputedStyle(el).borderTopWidth) +
+        parseFloat(window.getComputedStyle(el).borderBottomWidth);
+      const minPx = lineHeight * (minRows ?? 2) + paddingY + borderY;
+      const maxPx = lineHeight * (maxRows ?? 12) + paddingY + borderY;
+      el.style.height = "auto";
+      const next = Math.min(Math.max(el.scrollHeight, minPx), maxPx);
+      el.style.height = `${next}px`;
+      el.style.overflowY = el.scrollHeight > maxPx ? "auto" : "hidden";
+    }, [autoResize, value, minRows, maxRows]);
+
     return (
       <textarea
+        // See Input above - aria-invalid powers the global
+        // `useScrollToError` helper plus screen-reader support.
+        aria-invalid={error ? true : undefined}
         className={cn(
           textareaVariants({ variant, textareaSize }),
           error && "border-[var(--hm-error-500)] focus:border-[var(--hm-error-500)] focus:ring-red-500/15",
           success && "border-[var(--hm-success-500)] focus:border-[var(--hm-success-500)] focus:ring-emerald-500/15",
           className
         )}
-        ref={ref}
+        value={value}
+        ref={innerRef}
         {...props}
       />
     )

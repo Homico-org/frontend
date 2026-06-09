@@ -152,11 +152,11 @@ export default function HowItWorksPage() {
             </p>
 
             {/* Tab Switcher */}
-            <div className="inline-flex p-1.5 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10">
+            <div className="scrollbar-hide inline-flex max-w-full overflow-x-auto p-1.5 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10">
               <Button
                 variant="ghost"
                 onClick={() => setActiveTab('client')}
-                className={`px-6 py-3 rounded-xl text-sm font-medium transition-all ${
+                className={`shrink-0 whitespace-nowrap px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                   activeTab === 'client'
                     ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] shadow-lg hover:bg-[var(--hm-bg-elevated)] hover:text-[var(--hm-brand-500)]'
                     : 'text-white/80 hover:text-white hover:bg-white/10'
@@ -167,7 +167,7 @@ export default function HowItWorksPage() {
               <Button
                 variant="ghost"
                 onClick={() => setActiveTab('pro')}
-                className={`px-6 py-3 rounded-xl text-sm font-medium transition-all ${
+                className={`shrink-0 whitespace-nowrap px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                   activeTab === 'pro'
                     ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-brand-500)] shadow-lg hover:bg-[var(--hm-bg-elevated)] hover:text-[var(--hm-brand-500)]'
                     : 'text-white/80 hover:text-white hover:bg-white/10'

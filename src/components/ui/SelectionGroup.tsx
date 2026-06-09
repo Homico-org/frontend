@@ -136,7 +136,7 @@ export function SelectionGroup<T extends string | number = string>({
                 option.icon && 'flex items-center justify-center',
                 option.icon && sizeStyles.gap,
                 option.disabled && 'opacity-50 cursor-not-allowed',
-                !isSelected && 'border-[var(--hm-border)] text-[var(--hm-fg-muted)] hover:border-neutral-300'
+                !isSelected && 'border-[var(--hm-border)] text-[var(--hm-fg-muted)] hover:border-[var(--hm-border-strong)]'
               )}
               style={isSelected ? {
                 borderColor: ACCENT_COLOR,

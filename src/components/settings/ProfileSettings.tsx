@@ -10,7 +10,9 @@ import { FormGroup, Input, Label } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { features } from '@/config/features';
 import { useAuth } from '@/contexts/AuthContext';
-import { countries, useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { citiesFor } from '@/data/cities';
+import { DEFAULT_COUNTRY, type CountryCode } from '@/data/countries';
 import { Camera, Check } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -40,12 +42,29 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
   const [rawAvatarImage, setRawAvatarImage] = useState<string | null>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
-  // Cities
-  const georgianCities = countries.GE.citiesLocal;
-  const englishCities = countries.GE.cities;
-  const allValidCities = [...georgianCities, ...englishCities];
-  const cityOptions = georgianCities.map((cityKa, index) => {
-    const label = pick({ en: englishCities[index], ka: cityKa });
+  // Cities. The active marketplace is resolved from the user's own
+  // `country` field (when set, typically for pros), falling back to
+  // the `homico-marketplace` cookie set by middleware on the last
+  // marketplace they browsed. Defaults to GE for clients with no
+  // history. This ensures /settings on an Israeli user surfaces
+  // Tel Aviv / Jerusalem rather than Tbilisi / Batumi.
+  const userCountry = (user as { country?: string } | null)?.country;
+  const cookieMarketplace =
+    typeof document !== 'undefined'
+      ? document.cookie
+          .split('; ')
+          .find((c) => c.startsWith('homico-marketplace='))
+          ?.split('=')[1]
+          ?.toUpperCase()
+      : undefined;
+  const cityCountry = (userCountry ?? cookieMarketplace ?? DEFAULT_COUNTRY) as CountryCode;
+
+  const englishCities = citiesFor(cityCountry, 'en');
+  const localeCities = citiesFor(cityCountry, locale === 'ka' ? 'ka' : locale === 'ru' ? 'ru' : 'en');
+  const allValidCities = [...localeCities, ...englishCities];
+  const cityOptions = englishCities.map((cityEn, index) => {
+    const localized = localeCities[index] ?? cityEn;
+    const label = pick({ en: cityEn, ka: localized, ru: localized });
     return { value: label, label };
   });
 
@@ -203,7 +222,7 @@ export default function ProfileSettings({ onOpenEmailModal, onOpenPhoneModal, is
                 src={formData.avatar}
                 name={formData.name}
                 size="2xl"
-                className="ring-4 ring-neutral-200"
+                className="ring-4 ring-[var(--hm-border-subtle)]"
               />
               {isUploadingAvatar && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">

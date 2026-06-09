@@ -10,6 +10,7 @@ import { api } from '@/lib/api';
 import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useToast } from "@/contexts/ToastContext";
 // Helper to get ID from object (handles both id and _id)
 const getId = (obj: { id?: string; _id?: string } | undefined): string => {
   if (!obj) return '';
@@ -23,6 +24,11 @@ interface PollsTabProps {
   userId?: string;
   locale: string;
   embedded?: boolean; // When true, shows content directly without accordion
+  // Bumped by the parent whenever a WebSocket `projectPollUpdate` event
+  // arrives (poll created/voted/closed/approved/deleted by the other
+  // participant). We refetch on change so both sides stay in sync
+  // without requiring a manual page refresh.
+  refreshTick?: number;
 }
 
 export default function PollsTab({
@@ -32,10 +38,12 @@ export default function PollsTab({
   userId,
   locale,
   embedded = false,
+  refreshTick = 0,
 }: PollsTabProps) {
   const [polls, setPolls] = useState<Poll[]>([]);
 
   const { t } = useLanguage();
+  const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState('');
@@ -67,35 +75,78 @@ export default function PollsTab({
     }
   }, [isExpanded, embedded, hasLoaded, fetchPolls, jobId]);
 
+  // Refetch when the parent says a poll WebSocket event arrived. Skip
+  // the first tick (initial value 0) so we don't fire a redundant fetch
+  // alongside the mount-time fetch above.
+  useEffect(() => {
+    if (refreshTick > 0 && (embedded || isExpanded)) {
+      fetchPolls();
+    }
+    // We deliberately do not include `embedded`/`isExpanded`/`fetchPolls`
+    // in the dep array - they'd retrigger fetches on unrelated changes.
+    // The tick is the single source of "something happened, refetch".
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshTick]);
+
+  // All mutations: use functional setState so concurrent operations
+  // (e.g. user voting while a WS poll update arrives) don't clobber each
+  // other with stale closure values. Errors surface to the user via toast
+  // - previously they were thrown into the void and the UI silently
+  // failed to update with no feedback.
   const handleCreatePoll = async (data: { title: string; description?: string; options: { text?: string; imageUrl?: string }[] }) => {
-    const response = await api.post(`/jobs/${jobId}/polls`, data);
-    setPolls([response.data, ...polls]);
+    try {
+      const response = await api.post(`/jobs/${jobId}/polls`, data);
+      setPolls((prev) => [response.data, ...prev]);
+    } catch (err) {
+      toast.error(t('common.error'));
+      throw err;
+    }
   };
 
   const handleVote = async (pollId: string, optionId: string) => {
-    await api.post(`/jobs/polls/${pollId}/vote`, { optionId });
-    setPolls(polls.map(p =>
-      getId(p) === pollId ? { ...p, clientVote: optionId } : p
-    ));
+    try {
+      await api.post(`/jobs/polls/${pollId}/vote`, { optionId });
+      setPolls((prev) =>
+        prev.map((p) => (getId(p) === pollId ? { ...p, clientVote: optionId } : p)),
+      );
+    } catch (err) {
+      toast.error(t('common.error'));
+    }
   };
 
   const handleApprove = async (pollId: string, optionId: string) => {
-    await api.post(`/jobs/polls/${pollId}/approve`, { optionId });
-    setPolls(polls.map(p =>
-      getId(p) === pollId ? { ...p, status: 'approved', selectedOption: optionId } : p
-    ));
+    try {
+      await api.post(`/jobs/polls/${pollId}/approve`, { optionId });
+      setPolls((prev) =>
+        prev.map((p) =>
+          getId(p) === pollId
+            ? { ...p, status: 'approved', selectedOption: optionId, clientVote: optionId }
+            : p,
+        ),
+      );
+    } catch (err) {
+      toast.error(t('common.error'));
+    }
   };
 
   const handleClose = async (pollId: string) => {
-    await api.post(`/jobs/polls/${pollId}/close`);
-    setPolls(polls.map(p =>
-      getId(p) === pollId ? { ...p, status: 'closed' } : p
-    ));
+    try {
+      await api.post(`/jobs/polls/${pollId}/close`);
+      setPolls((prev) =>
+        prev.map((p) => (getId(p) === pollId ? { ...p, status: 'closed' } : p)),
+      );
+    } catch (err) {
+      toast.error(t('common.error'));
+    }
   };
 
   const handleDelete = async (pollId: string) => {
-    await api.delete(`/jobs/polls/${pollId}`);
-    setPolls(polls.filter(p => getId(p) !== pollId));
+    try {
+      await api.delete(`/jobs/polls/${pollId}`);
+      setPolls((prev) => prev.filter((p) => getId(p) !== pollId));
+    } catch (err) {
+      toast.error(t('common.error'));
+    }
   };
 
   const activePollsCount = polls.filter(p => p.status === 'active').length;
@@ -112,6 +163,22 @@ export default function PollsTab({
           <Alert variant="error" size="sm" showIcon={false}>{error}</Alert>
         ) : polls.length > 0 ? (
           <div className="space-y-4">
+            {/* Persistent toolbar so pros can create more than one poll.
+                Previously the only "Create poll" trigger lived inside the
+                empty state, so a pro who created a single poll had no way
+                to add another without first deleting the existing one. */}
+            {isPro && (
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-xs font-medium transition-all active:scale-[0.97] hover:opacity-90"
+                  style={{ backgroundColor: ACCENT }}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  {t('polls.createPoll')}
+                </button>
+              </div>
+            )}
             {polls.map((poll) => (
               <PollCard
                 key={poll.id || poll._id}

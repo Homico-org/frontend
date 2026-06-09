@@ -7,6 +7,9 @@ import CategoryScroller from "@/components/browse/CategoryScroller";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage, type Locale } from "@/contexts/LanguageContext";
+import { useMarketplaceCountry } from "@/hooks/useCountry";
+import { currencySymbol } from "@/utils/currency";
+import { cityRecordsFor, popularCityValuesFor } from "@/data/cities";
 import {
   ChevronDown,
   MapPin,
@@ -19,24 +22,20 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 type OpenDropdown = "location" | "budget" | "sort" | null;
 
-const CITIES = [
-  { value: "tbilisi", labelKa: "თბილისი", labelEn: "Tbilisi", labelRu: "Тбилиси" },
-  { value: "batumi", labelKa: "ბათუმი", labelEn: "Batumi", labelRu: "Батуми" },
-  { value: "kutaisi", labelKa: "ქუთაისი", labelEn: "Kutaisi", labelRu: "Кутаиси" },
-  { value: "rustavi", labelKa: "რუსთავი", labelEn: "Rustavi", labelRu: "Рустави" },
-  { value: "gori", labelKa: "გორი", labelEn: "Gori", labelRu: "Гори" },
-  { value: "zugdidi", labelKa: "ზუგდიდი", labelEn: "Zugdidi", labelRu: "Зугдиди" },
-  { value: "poti", labelKa: "ფოთი", labelEn: "Poti", labelRu: "Поти" },
-  { value: "kobuleti", labelKa: "კობულეთი", labelEn: "Kobuleti", labelRu: "Кобулети" },
-];
+// City tables are resolved per render via `cityRecordsFor` /
+// `popularCityValuesFor` so the dropdown reflects the active
+// marketplace - Paris on /fr, NYC on /us, etc.
 
-const POPULAR_CITIES = ["tbilisi", "batumi", "kutaisi", "rustavi"];
-
-const BUDGET_PRESETS = [
-  { min: 50, max: 100, label: "50-100₾" },
-  { min: 100, max: 300, label: "100-300₾" },
-  { min: 300, max: 500, label: "300-500₾" },
-  { min: 500, max: null, label: "500₾+" },
+// Budget preset ranges are nominal numbers in the marketplace's local
+// currency. We rebuild the labels on each render with the active
+// currency symbol so a US visitor sees "50-100$" rather than "50-100₾".
+// When a market needs different bracket values, switch to a per-country
+// preset table; for now the brackets are identical across markets.
+const BUDGET_PRESET_RANGES = [
+  { min: 50, max: 100 },
+  { min: 100, max: 300 },
+  { min: 300, max: 500 },
+  { min: 500, max: null as number | null },
 ];
 
 const SORT_OPTIONS = [
@@ -48,8 +47,10 @@ const SORT_OPTIONS = [
 
 type PickFn = (values: Partial<Record<Locale, string | undefined>>, fallback?: string) => string;
 
-function getCityLabel(cityValue: string, pick: PickFn): string {
-  const city = CITIES.find((c) => c.value === cityValue);
+type CityRecord = ReturnType<typeof cityRecordsFor>[number];
+
+function getCityLabel(cityValue: string, cities: CityRecord[], pick: PickFn): string {
+  const city = cities.find((c) => c.value === cityValue);
   if (!city) return cityValue;
   return pick({ en: city.labelEn, ka: city.labelKa, ru: city.labelRu }, cityValue);
 }
@@ -100,7 +101,7 @@ function DropdownWrapper({ id, open, setOpen, label, icon, active, align = "left
       </button>
       {isOpen && (
         <div
-          className={`absolute top-full mt-1.5 z-50 rounded-xl border border-[var(--hm-border-subtle)] shadow-lg min-w-[220px] ${align === "right" ? "right-0" : "left-0"}`}
+          className={`absolute top-full mt-1.5 z-50 rounded-xl border border-[var(--hm-border-subtle)] shadow-lg min-w-[220px] max-w-[calc(100vw-1rem)] ${align === "right" ? "right-0" : "left-0"}`}
           style={{ background: "var(--hm-bg-elevated)" }}
         >
           {children}
@@ -118,7 +119,7 @@ function ActivePill({ label, onRemove }: { label: string; onRemove: () => void }
       style={{ background: "rgba(239,78,36,0.10)" }}
     >
       {label}
-      <button type="button" onClick={onRemove} className="ml-0.5 rounded-full hover:bg-[var(--hm-brand-500)]/20 transition-colors p-0.5">
+      <button type="button" onClick={onRemove} className="ml-0.5 -mr-1 w-6 h-6 rounded-full flex items-center justify-center hover:bg-[var(--hm-brand-500)]/20 transition-colors active:scale-95">
         <X className="w-3 h-3" />
       </button>
     </Badge>
@@ -129,6 +130,14 @@ export default function JobsFilterBar() {
   const { t, pick } = useLanguage();
   const { categories } = useCategories();
   const { filters, setFilters } = useJobsContext();
+  const country = useMarketplaceCountry();
+  const sym = currencySymbol({ country });
+  const budgetPresets = BUDGET_PRESET_RANGES.map((p) => ({
+    ...p,
+    label: p.max == null ? `${p.min}${sym}+` : `${p.min}-${p.max}${sym}`,
+  }));
+  const cities = cityRecordsFor(country);
+  const popularCityValues = popularCityValuesFor(country, 4);
 
   const [open, setOpen] = useState<OpenDropdown>(null);
   const [draftMin, setDraftMin] = useState<string>(filters.budgetMin?.toString() ?? "");
@@ -139,6 +148,17 @@ export default function JobsFilterBar() {
   useEffect(() => {
     setLocalSearch(filters.searchQuery);
   }, [filters.searchQuery]);
+
+  // Marketplace switch: clear stale location filter when the city is
+  // no longer valid for the active market. Same guard as
+  // BrowseFilterBar - see its comment.
+  useEffect(() => {
+    const loc = filters.location;
+    if (!loc || loc === "all") return;
+    const stillValid = cities.some((c) => c.value === loc);
+    if (!stillValid) setFilters({ ...filters, location: "all" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country]);
 
   const handleSearchChange = (value: string) => {
     setLocalSearch(value);
@@ -175,13 +195,13 @@ export default function JobsFilterBar() {
   ].filter(Boolean).length;
 
   const locationLabel = filters.location && filters.location !== "all"
-    ? getCityLabel(filters.location, pick)
+    ? getCityLabel(filters.location, cities, pick)
     : t("browse.allCities");
 
   const budgetLabel = filters.budgetMin !== null || filters.budgetMax !== null
     ? filters.budgetMax === null
-      ? `${filters.budgetMin}₾+`
-      : `${filters.budgetMin ?? 0}-${filters.budgetMax}₾`
+      ? `${filters.budgetMin}${sym}+`
+      : `${filters.budgetMin ?? 0}-${filters.budgetMax}${sym}`
     : t("browse.budget");
 
   function handleSelectCategory(key: string | null) {
@@ -283,7 +303,7 @@ export default function JobsFilterBar() {
         >
           <div className="p-3 space-y-3">
             <div className="flex flex-wrap gap-1.5">
-              {POPULAR_CITIES.map((v) => (
+              {popularCityValues.map((v) => (
                 <button
                   key={v}
                   type="button"
@@ -295,11 +315,11 @@ export default function JobsFilterBar() {
                       : "border-[var(--hm-border-subtle)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-brand-500)]/40",
                   ].join(" ")}
                 >
-                  {getCityLabel(v, pick)}
+                  {getCityLabel(v, cities, pick)}
                 </button>
               ))}
             </div>
-            <div className="border-t border-[var(--hm-border-subtle)] pt-2 space-y-0.5">
+            <div className="scrollbar-subtle border-t border-[var(--hm-border-subtle)] pt-2 space-y-0.5 max-h-[40vh] overflow-y-auto -mx-3 px-3">
               <button
                 type="button"
                 onClick={() => { setFilters({ ...filters, location: "all" }); setOpen(null); }}
@@ -312,7 +332,7 @@ export default function JobsFilterBar() {
               >
                 {t("browse.allCities")}
               </button>
-              {CITIES.filter((c) => !POPULAR_CITIES.includes(c.value)).map((city) => (
+              {cities.filter((c) => !popularCityValues.includes(c.value)).map((city) => (
                 <button
                   key={city.value}
                   type="button"
@@ -324,7 +344,7 @@ export default function JobsFilterBar() {
                       : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]",
                   ].join(" ")}
                 >
-                  {getCityLabel(city.value, pick)}
+                  {getCityLabel(city.value, cities, pick)}
                 </button>
               ))}
             </div>
@@ -342,7 +362,7 @@ export default function JobsFilterBar() {
         >
           <div className="p-3 space-y-3 w-64">
             <div className="flex flex-wrap gap-1.5">
-              {BUDGET_PRESETS.map((preset) => (
+              {budgetPresets.map((preset) => (
                 <button
                   key={preset.label}
                   type="button"
@@ -369,7 +389,7 @@ export default function JobsFilterBar() {
                   onChange={(e) => setDraftMin(e.target.value)}
                 />
               </div>
-              <span className="text-[var(--hm-fg-muted)] text-sm">—</span>
+              <span className="text-[var(--hm-fg-muted)] text-sm">-</span>
               <div className="flex-1">
                 <Input
                   type="number"
@@ -440,7 +460,7 @@ export default function JobsFilterBar() {
         <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
           {filters.location && filters.location !== "all" && (
             <ActivePill
-              label={getCityLabel(filters.location, pick)}
+              label={getCityLabel(filters.location, cities, pick)}
               onRemove={() => setFilters({ ...filters, location: "all" })}
             />
           )}

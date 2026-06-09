@@ -12,11 +12,18 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    domains: ['localhost'],
+    // `images.domains` was deprecated in Next.js 14 in favor of the more
+    // expressive `remotePatterns`. Migrated the lone `localhost` entry
+    // to an http remotePattern so local dev image loads keep working
+    // alongside the existing https wildcard for production CDNs.
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
       },
     ],
   },
@@ -40,6 +47,30 @@ const nextConfig = {
   async rewrites() {
     return [
       { source: '/i/:token', destination: '/invite/:token' },
+      // The /projects/* routes live at the top level (not under the
+      // [country] segment), but the app navigates with a country prefix
+      // (cl()) and users land on /ge/... URLs. These rewrites strip the
+      // marketplace prefix so /ge/projects/123 serves /projects/123. The
+      // visible URL is preserved, so useCountry() still reads the prefix.
+      {
+        source: '/:country(ge|us|il|fr|de|uk|gb)/projects/:path*',
+        destination: '/projects/:path*',
+      },
+      // Forgiving alias: singular /project/* (with or without country
+      // prefix) serves the canonical plural /projects/* route.
+      {
+        source: '/:country(ge|us|il|fr|de|uk|gb)/project/:path*',
+        destination: '/projects/:path*',
+      },
+      { source: '/project/:path*', destination: '/projects/:path*' },
+      // Bookings also live at the top level (under the (shell) group), but
+      // cl()-wrapped links and notification deep-links can produce
+      // /ge/bookings/... URLs. Strip the marketplace prefix so they resolve
+      // (same approach as /projects above) instead of 404ing.
+      {
+        source: '/:country(ge|us|il|fr|de|uk|gb)/bookings/:path*',
+        destination: '/bookings/:path*',
+      },
     ];
   },
 }
@@ -49,7 +80,12 @@ const nextConfigWithAnalyzer = withBundleAnalyzer(nextConfig);
 const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
+  // skipWaiting + clientsClaim = a freshly-deployed service worker activates
+  // AND takes control of already-open tabs immediately, so a deploy is picked
+  // up without users having to fully close the app. (Navigations are already
+  // NetworkFirst and JS/CSS are content-hashed, so no stale bundles ship.)
   skipWaiting: true,
+  clientsClaim: true,
   disable: process.env.NODE_ENV !== 'production',
   fallbacks: {
     document: '/offline',

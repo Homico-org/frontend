@@ -109,6 +109,20 @@ export default function TicketDetailPage() {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` },
       });
+      // Optimistically clear the unread flag so the bell-icon badge
+      // updates immediately. The backend just persisted the same
+      // change; without this, the local ticket state still claims
+      // `hasUnreadAdminMessages: true` until the next refetch and the
+      // unread badge sticks around even though the user is reading
+      // the ticket.
+      setTicket((prev) =>
+        prev ? { ...prev, hasUnreadAdminMessages: false } : prev,
+      );
+      // Tell useSupportUnread (header bell + help index) to refetch
+      // immediately rather than wait out the 60s poll.
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('support:read'));
+      }
     } catch (err) {
       console.error('Failed to mark as read:', err);
     }

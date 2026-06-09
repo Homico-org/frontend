@@ -1,8 +1,11 @@
 "use client";
 
+import ServiceBookingModal from "@/components/booking/ServiceBookingModal";
 import ProCard from "@/components/common/ProCard";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ACCENT_COLOR } from "@/constants/theme";
+import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { api } from "@/lib/api";
 import type { ProProfile } from "@/types/shared";
@@ -28,6 +31,19 @@ export default function SimilarProfessionals({
 }: SimilarProfessionalsProps) {
   const [professionals, setProfessionals] = useState<ProProfile[]>([]);
   const { t } = useLanguage();
+  const { isAuthenticated } = useAuth();
+  const { openLoginModal } = useAuthModal();
+  const [bookingPro, setBookingPro] = useState<ProProfile | null>(null);
+  const handleBook = useCallback(
+    (profile: ProProfile) => {
+      if (!isAuthenticated) {
+        openLoginModal();
+        return;
+      }
+      setBookingPro(profile);
+    },
+    [isAuthenticated, openLoginModal],
+  );
   const [isLoading, setIsLoading] = useState(true);
   const fetchInFlightRef = useRef<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -147,7 +163,13 @@ export default function SimilarProfessionals({
           }`}>
             {professionals.map((pro) => (
               <div key={pro.id} className="w-full">
-                <ProCard profile={pro} variant="compact" showLikeButton={false} />
+                <ProCard
+                  profile={pro}
+                  variant="compact"
+                  showLikeButton={false}
+                  activeSubcategories={subcategories}
+                  onBook={handleBook}
+                />
               </div>
             ))}
           </div>
@@ -179,6 +201,8 @@ export default function SimilarProfessionals({
                   profile={pro}
                   variant="compact"
                   showLikeButton={false}
+                  activeSubcategories={subcategories}
+                  onBook={handleBook}
                 />
               </div>
             ))}
@@ -190,6 +214,20 @@ export default function SimilarProfessionals({
             </div>
           )}
         </div>
+      )}
+
+      {bookingPro && (
+        <ServiceBookingModal
+          isOpen={!!bookingPro}
+          onClose={() => setBookingPro(null)}
+          professional={{
+            id: bookingPro.id,
+            name: bookingPro.name,
+            avatar: bookingPro.avatar,
+            servicePricing: bookingPro.servicePricing || [],
+          }}
+          initialServiceKeys={subcategories}
+        />
       )}
     </section>
   );

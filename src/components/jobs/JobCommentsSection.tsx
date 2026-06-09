@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCountryLink } from "@/hooks/useCountry";
 import Avatar from "@/components/common/Avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
@@ -33,6 +34,15 @@ interface CommentFormData {
   portfolioItems: string[];
 }
 
+// When `isEditing` is true, the form needs the comment's `id` so it can
+// hit the PATCH endpoint. Previously the parent passed it through
+// `initialData` and the form cast `(initialData as any).id` to read it,
+// which silently broke type-safety. Carry it as an explicit optional
+// field instead.
+interface CommentFormInitialData extends Partial<CommentFormData> {
+  id?: string;
+}
+
 // Comment Form Component
 const CommentForm = ({
   jobId,
@@ -47,7 +57,7 @@ const CommentForm = ({
   parentId?: string;
   onSubmit: () => void;
   onCancel?: () => void;
-  initialData?: Partial<CommentFormData>;
+  initialData?: CommentFormInitialData;
   isEditing?: boolean;
   isReply?: boolean;
 }) => {
@@ -69,9 +79,10 @@ const CommentForm = ({
     setError(null);
 
     try {
-      if (isEditing && initialData) {
-        // Update existing comment - we need commentId passed through initialData
-        await api.patch(`/jobs/comments/${(initialData as any).id}`, {
+      if (isEditing && initialData?.id) {
+        // Update existing comment using the comment id carried via
+        // `initialData.id` (typed - previously this cast `as any`).
+        await api.patch(`/jobs/comments/${initialData.id}`, {
           content: formData.content,
           phoneNumber: formData.phoneNumber || undefined,
           showProfile: formData.showProfile,
@@ -152,6 +163,7 @@ const CommentItem = ({
   depth?: number;
 }) => {
   const { t } = useLanguage();
+  const cl = useCountryLink();
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -209,7 +221,7 @@ const CommentItem = ({
             showProfile: comment.showProfile,
             portfolioItems: comment.portfolioItems,
             id: comment.id,
-          } as any}
+          }}
           isEditing
         />
       </div>
@@ -311,7 +323,7 @@ const CommentItem = ({
           {/* Profile Link */}
           {comment.showProfile && author && (
             <Link
-              href={`/professionals/${comment.authorId}`}
+              href={cl(`/professionals/${comment.authorId}`)}
               className="mt-2 inline-flex items-center gap-1 text-sm text-[var(--hm-brand-500)] hover:underline"
             >
               {t("jobComments.viewFullProfile")}
@@ -431,25 +443,49 @@ export default function JobCommentsSection({ jobId, clientId, isJobOwner }: JobC
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState<"all" | "interesting">("all");
 
+  // Shared abort refs so a Strict Mode double-mount cancels the first
+  // request instead of leaving two `GET /comments` and
+  // `/has-commented` racing for the same setState. Also covers the case
+  // where the parent re-mounts the section on a tab switch.
+  const fetchCommentsAbortRef = useRef<AbortController | null>(null);
+  const checkHasCommentedAbortRef = useRef<AbortController | null>(null);
+
   const fetchComments = useCallback(async () => {
+    fetchCommentsAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchCommentsAbortRef.current = controller;
     try {
-      const response = await api.get<JobCommentsResponse>(`/jobs/${jobId}/comments`);
+      const response = await api.get<JobCommentsResponse>(`/jobs/${jobId}/comments`, {
+        signal: controller.signal,
+      });
       setComments(response.data.comments);
       setTotalCount(response.data.totalCount);
       setInterestingCount(response.data.interestingCount);
     } catch (err) {
+      if ((err as { name?: string })?.name === "CanceledError") return;
+      if ((err as { code?: string })?.code === "ERR_CANCELED") return;
       console.error("Failed to fetch comments", err);
     } finally {
-      setIsLoading(false);
+      if (!controller.signal.aborted) {
+        setIsLoading(false);
+      }
     }
   }, [jobId]);
 
   const checkHasCommented = useCallback(async () => {
     if (!user) return;
+    checkHasCommentedAbortRef.current?.abort();
+    const controller = new AbortController();
+    checkHasCommentedAbortRef.current = controller;
     try {
-      const response = await api.get<{ hasCommented: boolean }>(`/jobs/${jobId}/comments/has-commented`);
+      const response = await api.get<{ hasCommented: boolean }>(
+        `/jobs/${jobId}/comments/has-commented`,
+        { signal: controller.signal },
+      );
       setHasCommented(response.data.hasCommented);
     } catch (err) {
+      if ((err as { name?: string })?.name === "CanceledError") return;
+      if ((err as { code?: string })?.code === "ERR_CANCELED") return;
       console.error("Failed to check comment status", err);
     }
   }, [jobId, user]);

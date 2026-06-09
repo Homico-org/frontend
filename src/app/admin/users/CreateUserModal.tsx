@@ -190,7 +190,7 @@ export default function CreateUserModal({
                 type="tel"
                 value={form.phone}
                 onChange={(e) => updateField("phone", e.target.value)}
-                placeholder="+995599000099"
+                placeholder="+15551234567"
                 disabled={submitting}
                 autoComplete="off"
               />
@@ -234,7 +234,7 @@ export default function CreateUserModal({
               <Input
                 value={form.city}
                 onChange={(e) => updateField("city", e.target.value)}
-                placeholder="tbilisi"
+                placeholder="city"
                 disabled={submitting}
               />
             </FieldRow>

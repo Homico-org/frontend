@@ -4,6 +4,19 @@ import { usePathname } from 'next/navigation';
 import Header, { HeaderSpacer } from './Header';
 import MobileBottomNav from './MobileBottomNav';
 
+/**
+ * Strip a leading 2-letter country segment from the pathname so the
+ * CUSTOM_LAYOUT_PATHS check below works the same whether the URL is
+ * `/professionals` (legacy) or `/ge/professionals` (post 2026-05
+ * marketplace routing). Unknown 2-letter codes (e.g. /li/...) also
+ * get stripped because the route still resolves through the same
+ * (shell) layout - this function is only used for layout decision,
+ * not for validation.
+ */
+function withoutCountryPrefix(pathname: string): string {
+  return pathname.replace(/^\/[a-z]{2}(?=\/|$)/i, '') || '/';
+}
+
 // Pages that have their own custom layout (include their own Header/MobileBottomNav)
 // These pages should NOT get the global nav wrapper
 const CUSTOM_LAYOUT_PATHS = [
@@ -35,7 +48,15 @@ const CUSTOM_LAYOUT_PATHS = [
   '/users/',
   '/pro/premium',
   '/pro/profile-setup',
-  '/projects/new',
+  // Editorial-style standalone explainer for the SLA accountability
+  // system. Renders its own minimal chrome - no header/mobile-nav
+  // wrapping or it would break the magazine-spread composition.
+  '/pro/accountability',
+  '/projects',
+  // /shop and /orders live in the (shell) route group and ship the shell's
+  // Header + sidebar; without this they get a second global Header on top.
+  '/shop',
+  '/orders',
   '/for-business',
   '/invite',
   // Post-job has its own action footer (Cancel / Continue) — global mobile
@@ -50,8 +71,16 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
 
+  // Strip the country prefix before checking - `/ge/professionals`
+  // and `/professionals` should both opt into the same custom layout
+  // (the one that ships its own Header from the shell route group).
+  const checkPath = withoutCountryPrefix(pathname);
+
   // Check if this page uses a custom layout
-  const hasCustomLayout = pathname === '/' || CUSTOM_LAYOUT_PATHS.some(path => pathname.startsWith(path));
+  const hasCustomLayout =
+    checkPath === '/' ||
+    pathname === '/' ||
+    CUSTOM_LAYOUT_PATHS.some(path => checkPath.startsWith(path));
 
   // If page has custom layout, just render children (they handle their own nav)
   if (hasCustomLayout) {
@@ -66,7 +95,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       <HeaderSpacer />
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {children}
       </main>
 

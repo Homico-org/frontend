@@ -249,7 +249,7 @@ function AdminInvitesPageContent() {
     const cat = locale === "ka" ? invite.categoryKa || invite.category : invite.category;
     const sub = locale === "ka" ? invite.subcategoryKa || invite.subcategory : invite.subcategory;
     if (cat && sub) return `${cat} · ${sub}`;
-    return cat || sub || "—";
+    return cat || sub || "-";
   };
 
   const statCards = [
@@ -747,7 +747,7 @@ function AdminInvitesPageContent() {
                               </span>
                             )}
                           </div>
-                          {getCategoryDisplay(invite) !== "—" && (
+                          {getCategoryDisplay(invite) !== "-" && (
                             <p
                               className="text-[10px] mt-1 truncate"
                               style={{ color: THEME.textDim }}
@@ -884,7 +884,7 @@ function AdminInvitesPageContent() {
                           className="text-xs truncate"
                           style={{ color: THEME.textMuted }}
                         >
-                          {invite.city || "—"}
+                          {invite.city || "-"}
                         </p>
                       </div>
 
@@ -1112,7 +1112,7 @@ function AdminInvitesPageContent() {
               <p className="text-xs mt-0.5" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
                 {confirmAction.invite.phone}
               </p>
-              {getCategoryDisplay(confirmAction.invite) !== "—" && (
+              {getCategoryDisplay(confirmAction.invite) !== "-" && (
                 <p className="text-xs mt-1" style={{ color: THEME.textMuted }}>
                   {getCategoryDisplay(confirmAction.invite)}
                 </p>

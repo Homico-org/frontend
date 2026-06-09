@@ -4,6 +4,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
+import { useCountUp } from "@/hooks/useCountUp"
 
 // ============================================================================
 // Base Card Component (shadcn-style with CVA)
@@ -192,6 +193,12 @@ interface StatCardProps extends React.HTMLAttributes<HTMLDivElement> {
   trend?: 'up' | 'down' | 'neutral';
   trendValue?: string;
   variant?: VariantProps<typeof cardVariants>['variant'];
+  /**
+   * When true, animate numeric values from 0 to `value` on mount.
+   * Off by default to preserve existing behavior; opt in on hero
+   * surfaces where the count-up reads as polish, not noise.
+   */
+  animate?: boolean;
 }
 
 const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(({
@@ -202,6 +209,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(({
   trendValue,
   variant = 'premium',
   className,
+  animate = false,
   ...props
 }, ref) => {
   const trendColors = {
@@ -209,6 +217,14 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(({
     down: 'text-[var(--hm-error-500)]',
     neutral: 'text-gray-500',
   };
+
+  // Animate numeric values on mount when opted in. String values
+  // (e.g. "4.8 ★", "2 weeks") pass through unchanged - count-up
+  // assumes a plain integer target.
+  const animatedValue = useCountUp(
+    animate && typeof value === 'number' ? value : 0,
+  );
+  const displayValue = animate && typeof value === 'number' ? animatedValue : value;
 
   return (
     <Card ref={ref} variant={variant} hover className={cn("group text-center", className)} {...props}>
@@ -219,7 +235,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(({
           </div>
         </div>
       )}
-      <div className="text-lg md:text-xl font-bold text-[var(--hm-fg-primary)]">{value}</div>
+      <div className="text-lg md:text-xl font-bold text-[var(--hm-fg-primary)]">{displayValue}</div>
       <div className="text-xs text-[var(--hm-fg-muted)] mt-0.5">{label}</div>
       {trend && trendValue && (
         <div className={cn("flex items-center justify-center gap-1 mt-2", trendColors[trend])}>

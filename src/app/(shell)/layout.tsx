@@ -3,8 +3,9 @@
 import { CategoryIcon } from "@/components/categories";
 import Header from "@/components/common/Header";
 import MobileBottomNav from "@/components/common/MobileBottomNav";
+import SidebarProjectsGroup from "@/components/layout/SidebarProjectsGroup";
+import SidebarShopGroup from "@/components/layout/SidebarShopGroup";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { features } from "@/config/features";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,8 +13,11 @@ import { BrowseProvider, useBrowseContext } from "@/contexts/BrowseContext";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { JobsProvider, useJobsContext } from "@/contexts/JobsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAiServiceSearch } from "@/hooks/useAiServiceSearch";
 import { getCategoryLabelStatic } from "@/hooks/useCategoryLabels";
+import { useCountryLink } from "@/hooks/useCountry";
 import api from "@/lib/api";
+import { stripCountryPrefix } from "@/utils/countryLink";
 import {
   Briefcase,
   Calendar,
@@ -26,19 +30,28 @@ import {
   Hammer,
   HelpCircle,
   LayoutDashboard,
+  ListChecks,
   Loader2,
   Mail,
   Plus,
   RotateCcw,
   Search,
   Settings,
+  ShoppingBag,
   Users,
   Wrench,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ReactNode,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 // Sidebar width constants
 const SIDEBAR_EXPANDED_WIDTH = 256; // 16rem
@@ -46,12 +59,24 @@ const SIDEBAR_COLLAPSED_WIDTH = 56;
 
 type TabShowFor = "all" | "pro" | "client" | "auth";
 
-type TabKey = "my-space" | "my-jobs" | "bookings" | "jobs" | "professionals";
+type TabKey =
+  | "my-space"
+  | "my-jobs"
+  | "projects"
+  | "shop"
+  | "bookings"
+  | "jobs"
+  | "professionals"
+  | "tools";
 
-
+// `countryScoped: true` flags tabs that live under `/{country}/...` and
+// should be wrapped in `cl(...)` before being passed to <Link href>. The
+// raw route stays bare so the active-tab matcher (which compares against
+// the country-stripped pathname) doesn't need a special case.
 const TABS: Array<{
   key: TabKey;
   route: string;
+  countryScoped?: boolean;
   label: string;
   labelKa: string;
   labelRu: string;
@@ -61,9 +86,9 @@ const TABS: Array<{
   {
     key: "my-space",
     route: "/my-space",
-    label: "My Space",
-    labelKa: "ჩემი სივრცე",
-    labelRu: "Моё пространство",
+    label: "Dashboard",
+    labelKa: "მთავარი",
+    labelRu: "Панель управления",
     icon: LayoutDashboard,
     showFor: "pro" as const,
   },
@@ -77,6 +102,24 @@ const TABS: Array<{
     showFor: "client" as const,
   },
   {
+    key: "projects",
+    route: "/projects",
+    label: "Projects",
+    labelKa: "პროექტები",
+    labelRu: "Проекты",
+    icon: ListChecks,
+    showFor: "auth" as const,
+  },
+  {
+    key: "shop",
+    route: "/shop",
+    label: "Shop",
+    labelKa: "მაღაზია",
+    labelRu: "Магазин",
+    icon: ShoppingBag,
+    showFor: "all" as const,
+  },
+  {
     key: "bookings",
     route: "/bookings",
     label: "Bookings",
@@ -88,61 +131,43 @@ const TABS: Array<{
   {
     key: "jobs",
     route: "/jobs",
-    label: "Jobs",
-    labelKa: "სამუშაოები",
-    labelRu: "Работы",
+    countryScoped: true,
+    label: "Find work",
+    labelKa: "სამუშაოს პოვნა",
+    labelRu: "Найти работу",
     icon: Briefcase,
-    showFor: "all" as const,
+    // The work feed is where PROS find jobs. Clients seeing both "Find work"
+    // and "My Jobs" was the single biggest nav confusion - hide it from
+    // clients (and anon, who'd otherwise land on a near-empty feed).
+    showFor: "pro" as const,
   },
   {
     key: "professionals",
     route: "/professionals",
-    label: "Professionals",
-    labelKa: "სპეციალისტები",
-    labelRu: "Специалисты",
+    countryScoped: true,
+    label: "Find a pro",
+    labelKa: "ხელოსნის პოვნა",
+    labelRu: "Найти мастера",
     icon: Users,
+    showFor: "all" as const,
+  },
+  {
+    key: "tools",
+    route: "/tools",
+    label: "AI Plan",
+    labelKa: "AI დაგეგმვა",
+    labelRu: "AI Планирование",
+    icon: Wrench,
     showFor: "all" as const,
   },
 ];
 
-// AI search hook: debounces query, calls backend, returns matching subcategory keys
-function useAiCategorySearch(query: string, locale: string) {
-  const [isSearching, setIsSearching] = useState(false);
-  const [results, setResults] = useState<{ key: string; category: string }[]>([]);
-  const debounceRef = useRef<NodeJS.Timeout>();
-  const lastQueryRef = useRef("");
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    const trimmed = query.trim();
-    if (trimmed.length < 2) {
-      setResults([]);
-      setIsSearching(false);
-      lastQueryRef.current = "";
-      return;
-    }
-
-    if (trimmed === lastQueryRef.current) return;
-
-    setIsSearching(true);
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const res = await api.get(`/categories/ai-search?q=${encodeURIComponent(trimmed)}&locale=${locale}`);
-        lastQueryRef.current = trimmed;
-        setResults(res.data?.subcategories || []);
-      } catch {
-        setResults([]);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 500);
-
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [query, locale]);
-
-  return { isSearching, results };
-}
+// AI search now uses the shared `useAiServiceSearch` hook
+// (hooks/useAiServiceSearch.ts). The previous inline implementation
+// in this file diverged from the shared hook on debounce (500 vs 600),
+// minQueryLength (2 vs 3) and caching strategy, which meant the same
+// query behaved differently in the global header vs the post-job
+// picker vs the pro register flow. Single source of truth now.
 
 function AiSearchIndicator({ isSearching }: { isSearching: boolean }) {
   if (!isSearching) return null;
@@ -154,20 +179,29 @@ function AiSearchIndicator({ isSearching }: { isSearching: boolean }) {
 }
 
 function JobsSearchInput() {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
   const { filters, setFilters } = useJobsContext();
   const [localSearch, setLocalSearch] = useState(filters.searchQuery);
   const [isFocused, setIsFocused] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout>();
 
-  const { isSearching, results: aiResults } = useAiCategorySearch(localSearch, locale);
+  // Action-driven shared hook. `aiResults` is null until the first
+  // request resolves; we coerce to [] for the empty/auto-apply check
+  // below. `aiSearch(value)` is called from handleSearchChange so the
+  // hook stays in sync with what the user is typing.
+  const { aiResults, aiLoading, search: aiSearch } = useAiServiceSearch();
+  const isSearching = aiLoading;
 
   // Auto-apply AI category match
   useEffect(() => {
-    if (aiResults.length > 0) {
+    if (aiResults && aiResults.length > 0) {
       const match = aiResults[0];
       if (match.key !== filters.subcategory) {
-        setFilters({ ...filters, category: match.category, subcategory: match.key });
+        setFilters({
+          ...filters,
+          category: match.category,
+          subcategory: match.key,
+        });
       }
     }
   }, [aiResults]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -178,6 +212,7 @@ function JobsSearchInput() {
 
   const handleSearchChange = (value: string) => {
     setLocalSearch(value);
+    aiSearch(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setFilters({ ...filters, searchQuery: value });
@@ -210,7 +245,7 @@ function JobsSearchInput() {
           <button
             onClick={() => handleSearchChange("")}
             className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
-            aria-label="Clear search"
+            aria-label={t("common.clearSearch")}
           >
             <X className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
           </button>
@@ -221,7 +256,7 @@ function JobsSearchInput() {
 }
 
 function BrowseSearchInput({ placeholder }: { placeholder: string }) {
-  const { locale } = useLanguage();
+  const { t } = useLanguage();
   const {
     searchQuery,
     setSearchQuery,
@@ -232,11 +267,13 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
   const [isFocused, setIsFocused] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout>();
 
-  const { isSearching, results: aiResults } = useAiCategorySearch(localSearch, locale);
+  // Shared hook (see JobsSearchInput above for the same pattern).
+  const { aiResults, aiLoading, search: aiSearch } = useAiServiceSearch();
+  const isSearching = aiLoading;
 
   // Auto-apply AI category match
   useEffect(() => {
-    if (aiResults.length > 0) {
+    if (aiResults && aiResults.length > 0) {
       const match = aiResults[0];
       setSelectedCategory(match.category);
       setSelectedSubcategories([match.key]);
@@ -249,6 +286,7 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
 
   const handleSearchChange = (value: string) => {
     setLocalSearch(value);
+    aiSearch(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setSearchQuery(value);
@@ -281,7 +319,7 @@ function BrowseSearchInput({ placeholder }: { placeholder: string }) {
           <button
             onClick={() => handleSearchChange("")}
             className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
-            aria-label="Clear search"
+            aria-label={t("common.clearSearch")}
           >
             <X className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
           </button>
@@ -333,30 +371,43 @@ function BrowseSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
     setSelectedSubcategories,
   } = useBrowseContext();
 
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [expandedCategories, setExpandedCategories] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     if (selectedSubcategories.length > 0) {
       const toExpand: string[] = [];
       for (const subKey of selectedSubcategories) {
         for (const cat of categories) {
-          if (getSubcategoriesForCategory(cat.key).some(s => s.key === subKey)) {
+          if (
+            getSubcategoriesForCategory(cat.key).some((s) => s.key === subKey)
+          ) {
             if (!toExpand.includes(cat.key)) toExpand.push(cat.key);
             break;
           }
         }
       }
       if (toExpand.length > 0) {
-        setExpandedCategories(prev => {
+        setExpandedCategories((prev) => {
           const next = { ...prev };
-          toExpand.forEach(k => { next[k] = true; });
+          toExpand.forEach((k) => {
+            next[k] = true;
+          });
           return next;
         });
       }
     } else if (selectedCategory) {
-      setExpandedCategories(prev => prev[selectedCategory] ? prev : { ...prev, [selectedCategory]: true });
+      setExpandedCategories((prev) =>
+        prev[selectedCategory] ? prev : { ...prev, [selectedCategory]: true },
+      );
     }
-  }, [selectedCategory, selectedSubcategories, categories, getSubcategoriesForCategory]);
+  }, [
+    selectedCategory,
+    selectedSubcategories,
+    categories,
+    getSubcategoriesForCategory,
+  ]);
 
   const hasActive = selectedSubcategories.length > 0;
 
@@ -381,12 +432,14 @@ function BrowseSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
       setExpandedCategories={setExpandedCategories}
       hasActive={hasActive}
       onClear={handleClear}
-      isCategoryActive={(catKey) => selectedSubcategories.some(s =>
-        getSubcategoriesForCategory(catKey).some(sub => sub.key === s)
-      )}
+      isCategoryActive={(catKey) =>
+        selectedSubcategories.some((s) =>
+          getSubcategoriesForCategory(catKey).some((sub) => sub.key === s),
+        )
+      }
       isSubSelected={(subKey) => selectedSubcategories.includes(subKey)}
       onCategoryClick={(catKey) => {
-        setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }));
+        setExpandedCategories((prev) => ({ ...prev, [catKey]: !prev[catKey] }));
       }}
       onSubClick={handleSubToggle}
     />
@@ -399,20 +452,33 @@ function JobsSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
   const { categories, getSubcategoriesForCategory } = useCategories();
   const { filters, setFilters } = useJobsContext();
 
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [expandedCategories, setExpandedCategories] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     if (filters.subcategory) {
       for (const cat of categories) {
-        if (getSubcategoriesForCategory(cat.key).some(s => s.key === filters.subcategory)) {
-          setExpandedCategories(prev => ({ ...prev, [cat.key]: true }));
+        if (
+          getSubcategoriesForCategory(cat.key).some(
+            (s) => s.key === filters.subcategory,
+          )
+        ) {
+          setExpandedCategories((prev) => ({ ...prev, [cat.key]: true }));
           break;
         }
       }
     } else if (filters.category) {
-      setExpandedCategories(prev => prev[filters.category!] ? prev : { ...prev, [filters.category!]: true });
+      setExpandedCategories((prev) =>
+        prev[filters.category!] ? prev : { ...prev, [filters.category!]: true },
+      );
     }
-  }, [filters.category, filters.subcategory, categories, getSubcategoriesForCategory]);
+  }, [
+    filters.category,
+    filters.subcategory,
+    categories,
+    getSubcategoriesForCategory,
+  ]);
 
   const subs = filters.subcategories || [];
   const hasActive = subs.length > 0;
@@ -426,19 +492,33 @@ function JobsSidebarCategories({ isCollapsed }: { isCollapsed: boolean }) {
       expandedCategories={expandedCategories}
       setExpandedCategories={setExpandedCategories}
       hasActive={hasActive}
-      onClear={() => setFilters({ ...filters, category: null, subcategory: null, subcategories: [] })}
-      isCategoryActive={(catKey) => subs.some(s =>
-        getSubcategoriesForCategory(catKey).some(sub => sub.key === s)
-      )}
+      onClear={() =>
+        setFilters({
+          ...filters,
+          category: null,
+          subcategory: null,
+          subcategories: [],
+        })
+      }
+      isCategoryActive={(catKey) =>
+        subs.some((s) =>
+          getSubcategoriesForCategory(catKey).some((sub) => sub.key === s),
+        )
+      }
       isSubSelected={(subKey) => subs.includes(subKey)}
       onCategoryClick={(catKey) => {
-        setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }));
+        setExpandedCategories((prev) => ({ ...prev, [catKey]: !prev[catKey] }));
       }}
       onSubClick={(_catKey, subKey) => {
         const newSubs = subs.includes(subKey)
-          ? subs.filter(s => s !== subKey)
+          ? subs.filter((s) => s !== subKey)
           : [...subs, subKey];
-        setFilters({ ...filters, category: null, subcategory: newSubs[0] || null, subcategories: newSubs });
+        setFilters({
+          ...filters,
+          category: null,
+          subcategory: newSubs[0] || null,
+          subcategories: newSubs,
+        });
       }}
     />
   );
@@ -461,10 +541,14 @@ function SidebarCategoriesUI({
 }: {
   isCollapsed: boolean;
   categories: { key: string; name: string; nameKa: string }[];
-  getSubcategoriesForCategory: (key: string) => { key: string; name: string; nameKa: string }[];
+  getSubcategoriesForCategory: (
+    key: string,
+  ) => { key: string; name: string; nameKa: string }[];
   locale: string;
   expandedCategories: Record<string, boolean>;
-  setExpandedCategories: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  setExpandedCategories: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
   hasActive: boolean;
   onClear: () => void;
   isCategoryActive: (catKey: string) => boolean;
@@ -486,7 +570,14 @@ function SidebarCategoriesUI({
               className={`w-9 h-9 flex items-center justify-center transition-all ${
                 active ? "" : "hover:bg-[var(--hm-bg-tertiary)]"
               }`}
-              style={active ? { backgroundColor: 'var(--hm-brand-50)', color: 'var(--hm-brand-700)' } : {}}
+              style={
+                active
+                  ? {
+                      backgroundColor: "var(--hm-brand-50)",
+                      color: "var(--hm-brand-700)",
+                    }
+                  : {}
+              }
               title={getCategoryLabelStatic(cat.key, locale)}
             >
               <CategoryIcon type={cat.key} className="w-4 h-4" />
@@ -515,8 +606,10 @@ function SidebarCategoriesUI({
         const active = isCategoryActive(catKey);
         const subcategories = getSubcategoriesForCategory(catKey);
         const isExpanded = expandedCategories[catKey] ?? false;
-        const label = pick({ en: cat.name, ka: cat.nameKa }) || getCategoryLabelStatic(catKey, locale);
-        const hasSelectedSub = subcategories.some(s => isSubSelected(s.key));
+        const label =
+          pick({ en: cat.name, ka: cat.nameKa }) ||
+          getCategoryLabelStatic(catKey, locale);
+        const hasSelectedSub = subcategories.some((s) => isSubSelected(s.key));
 
         return (
           <div key={catKey}>
@@ -530,7 +623,9 @@ function SidebarCategoriesUI({
             >
               <span
                 className="transition-transform duration-200 group-hover:scale-110 flex-shrink-0"
-                style={{ color: active || hasSelectedSub ? ACCENT_COLOR : undefined }}
+                style={{
+                  color: active || hasSelectedSub ? ACCENT_COLOR : undefined,
+                }}
               >
                 <CategoryIcon type={catKey} className="w-4 h-4" />
               </span>
@@ -547,7 +642,10 @@ function SidebarCategoriesUI({
                 <ChevronDown
                   onClick={(e) => {
                     e.stopPropagation();
-                    setExpandedCategories(prev => ({ ...prev, [catKey]: !prev[catKey] }));
+                    setExpandedCategories((prev) => ({
+                      ...prev,
+                      [catKey]: !prev[catKey],
+                    }));
                   }}
                   className={`w-3 h-3 text-[var(--hm-fg-muted)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer hover:text-[var(--hm-fg-secondary)] flex-shrink-0 ${
                     isExpanded ? "rotate-180" : "rotate-0"
@@ -560,7 +658,9 @@ function SidebarCategoriesUI({
               <div className="ml-5 mt-0.5 space-y-0.5 pb-0.5">
                 {subcategories.map((sub) => {
                   const selected = isSubSelected(sub.key);
-                  const subLabel = pick({ en: sub.name, ka: sub.nameKa }) || getCategoryLabelStatic(sub.key, locale);
+                  const subLabel =
+                    pick({ en: sub.name, ka: sub.nameKa }) ||
+                    getCategoryLabelStatic(sub.key, locale);
                   return (
                     <button
                       key={sub.key}
@@ -577,10 +677,17 @@ function SidebarCategoriesUI({
                             ? "border-transparent"
                             : "border-[var(--hm-border-strong)]"
                         }`}
-                        style={selected ? { backgroundColor: 'var(--hm-brand-500)' } : {}}
+                        style={
+                          selected
+                            ? { backgroundColor: "var(--hm-brand-500)" }
+                            : {}
+                        }
                       >
                         {selected && (
-                          <Check className="w-2 h-2 text-white" strokeWidth={3} />
+                          <Check
+                            className="w-2 h-2 text-white"
+                            strokeWidth={3}
+                          />
                         )}
                       </div>
                       <span
@@ -608,6 +715,7 @@ function ShellContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { t, pick } = useLanguage();
   const { user } = useAuth();
+  const cl = useCountryLink();
   const [mounted, setMounted] = useState(false);
   const [showMobileCategories, setShowMobileCategories] = useState(false);
   const { isCollapsed, toggleSidebar, isHydrated } = useSidebarState();
@@ -620,36 +728,54 @@ function ShellContent({ children }: { children: ReactNode }) {
   // Fetch pending booking count for badge
   useEffect(() => {
     if (!isAuthenticated || !features.bookings) return;
-    api.get('/bookings/my/pending-count')
-      .then(res => setPendingBookingCount(res.data?.count || 0))
+    api
+      .get("/bookings/my/pending-count")
+      .then((res) => setPendingBookingCount(res.data?.count || 0))
       .catch(() => {});
   }, [isAuthenticated, pathname]);
 
-  const isMySpacePage = pathname.startsWith("/my-space");
-  const isJobsPage = pathname.startsWith("/jobs");
-  const isProfessionalsPage = pathname.startsWith("/professionals");
-  const isPortfolioPage = pathname.startsWith("/portfolio"); // redirects to /professionals
-  const isToolsPage = pathname === "/tools";
-  const isToolsSubpage = pathname.startsWith("/tools/") && pathname !== "/tools";
+  // Country-scoped routes live under `/{country}/...` after middleware
+  // redirect, so the raw pathname for the Jobs tab is `/ge/jobs` not
+  // `/jobs`. Strip the prefix once so every startsWith check below works
+  // identically on bare and country-prefixed URLs.
+  const localPath = stripCountryPrefix(pathname);
 
-  const isSettingsPage = pathname.startsWith("/settings");
-  const isMyWorkPage = pathname.startsWith("/my-work");
-  const isMyJobsPage = pathname.startsWith("/my-jobs");
-  const isBookingsPage = pathname.startsWith("/bookings");
+  const isMySpacePage = localPath.startsWith("/my-space");
+  const isJobsPage = localPath.startsWith("/jobs");
+  const isProfessionalsPage = localPath.startsWith("/professionals");
+  const isPortfolioPage = localPath.startsWith("/portfolio"); // redirects to /professionals
+  const isToolsPage = localPath === "/tools";
+  const isToolsSubpage =
+    localPath.startsWith("/tools/") && localPath !== "/tools";
+
+  const isSettingsPage = localPath.startsWith("/settings");
+  const isMyWorkPage = localPath.startsWith("/my-work");
+  const isMyJobsPage = localPath.startsWith("/my-jobs");
+  const isBookingsPage = localPath.startsWith("/bookings");
+  const isProjectsPage = localPath.startsWith("/projects");
+  // /shop renders its own header + search (CatalogSearch), so suppress the
+  // shell's secondary header row and browse filter bar - same as projects.
+  const isShopPage = localPath.startsWith("/shop");
+  // /orders has its own page header; suppress the browse chrome too.
+  const isOrdersPage = localPath.startsWith("/orders");
 
   const activeTab: TabKey | null = isMySpacePage
     ? "my-space"
     : isMyJobsPage
       ? "my-jobs"
-      : isBookingsPage
-        ? "bookings"
-        : isJobsPage
-          ? "jobs"
-          : (isProfessionalsPage || isPortfolioPage)
-            ? "professionals"
-            : isMyWorkPage || pathname.startsWith("/settings") || pathname.startsWith("/tools")
-              ? null
-              : null;
+      : isProjectsPage
+        ? "projects"
+        : isShopPage || isOrdersPage
+          ? "shop"
+          : isBookingsPage
+            ? "bookings"
+            : isJobsPage
+              ? "jobs"
+              : isProfessionalsPage || isPortfolioPage
+                ? "professionals"
+                : isToolsPage || isToolsSubpage
+                  ? "tools"
+                  : null;
 
   const visibleTabs = TABS.filter((tab) => {
     if (tab.key === "bookings" && !features.bookings) return false;
@@ -662,47 +788,101 @@ function ShellContent({ children }: { children: ReactNode }) {
 
   const pageHeader = useMemo(() => {
     if (isMySpacePage) {
-      return { icon: LayoutDashboard, title: t("mySpace.title"), subtitle: t("mySpace.subtitle") };
+      return {
+        icon: LayoutDashboard,
+        title: t("mySpace.title"),
+        subtitle: t("mySpace.subtitle"),
+      };
     }
     if (isMyWorkPage) {
-      return { icon: FileText, title: t("job.myWork"), subtitle: t("job.myWorkSubtitle") };
+      return {
+        icon: FileText,
+        title: t("job.myWork"),
+        subtitle: t("job.myWorkSubtitle"),
+      };
     }
     if (isMyJobsPage) {
-      return { icon: Hammer, title: t("job.myJobs"), subtitle: t("job.myJobsSubtitle") };
+      return {
+        icon: Hammer,
+        title: t("job.myJobs"),
+        subtitle: t("job.myJobsSubtitle"),
+      };
     }
     if (isJobsPage) {
-      return { icon: Briefcase, title: t("browse.jobs"), subtitle: t("browse.jobsSubtitle") };
+      return {
+        icon: Briefcase,
+        title: t("browse.jobs"),
+        subtitle: t("browse.jobsSubtitle"),
+      };
     }
     if (isProfessionalsPage || isPortfolioPage) {
-      return { icon: Users, title: t("browse.professionals"), subtitle: t("browse.professionalsSubtitle") };
+      return {
+        icon: Users,
+        title: t("browse.professionals"),
+        subtitle: t("browse.professionalsSubtitle"),
+      };
     }
     if (isBookingsPage) {
-      return { icon: Calendar, title: t("booking.title"), subtitle: t("booking.subtitle") };
+      return {
+        icon: Calendar,
+        title: t("booking.title"),
+        subtitle: t("booking.subtitle"),
+      };
     }
-    if (pathname.startsWith("/tools")) {
-      return { icon: Wrench, title: t("tools.home.title"), subtitle: t("tools.home.subtitle") };
+    if (localPath.startsWith("/tools")) {
+      return {
+        icon: Wrench,
+        title: t("tools.home.title"),
+        subtitle: t("tools.home.subtitle"),
+      };
     }
     return { icon: Users, title: t("browse.title"), subtitle: undefined };
-  }, [isMySpacePage, isJobsPage, isPortfolioPage, isProfessionalsPage, isMyJobsPage, isMyWorkPage, isBookingsPage, pathname, t]);
+  }, [
+    isMySpacePage,
+    isJobsPage,
+    isPortfolioPage,
+    isProfessionalsPage,
+    isMyJobsPage,
+    isMyWorkPage,
+    isBookingsPage,
+    localPath,
+    t,
+  ]);
 
   const HeaderIcon = pageHeader.icon;
 
-  const showHeaderRow = !isToolsSubpage && !isMySpacePage && !isSettingsPage;
-  const showSearchFilters = !isToolsSubpage && !isToolsPage && !isMyJobsPage && !isMyWorkPage && !isMySpacePage && !isSettingsPage && !isBookingsPage;
+  const showHeaderRow =
+    !isToolsSubpage &&
+    !isMySpacePage &&
+    !isSettingsPage &&
+    !isProjectsPage &&
+    !isShopPage &&
+    !isOrdersPage;
+  const showSearchFilters =
+    !isToolsSubpage &&
+    !isToolsPage &&
+    !isMyJobsPage &&
+    !isMyWorkPage &&
+    !isMySpacePage &&
+    !isSettingsPage &&
+    !isBookingsPage &&
+    !isProjectsPage &&
+    !isShopPage &&
+    !isOrdersPage;
 
   useEffect(() => setMounted(true), []);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-[var(--hm-bg-page)] max-w-full">
-      <Header fixed={false} />
+      <Header fixed={false} showNav={false} />
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Left Sidebar */}
         <aside
           className="hidden lg:flex flex-col flex-shrink-0 border-r transition-all duration-300 ease-in-out relative"
           style={{
-            borderColor: 'var(--hm-border)',
-            backgroundColor: 'var(--hm-bg-page)',
+            borderColor: "var(--hm-border)",
+            backgroundColor: "var(--hm-bg-page)",
             width: isHydrated
               ? isCollapsed
                 ? SIDEBAR_COLLAPSED_WIDTH
@@ -711,85 +891,121 @@ function ShellContent({ children }: { children: ReactNode }) {
           }}
         >
           {/* Post Job - top of sidebar */}
-          <div className={`pt-3 pb-1.5 flex-shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}>
+          <div
+            className={`pt-3 pb-1.5 flex-shrink-0 ${isCollapsed ? "px-2" : "px-3"}`}
+          >
             <Link
               href="/post-job"
               className={`group flex items-center justify-center border transition-all mb-2 ${
-                isCollapsed
-                  ? "w-9 h-9 mx-auto"
-                  : "w-full gap-2 py-1.5"
+                isCollapsed ? "w-9 h-9 mx-auto" : "w-full gap-2 py-1.5"
               } hover:shadow-md`}
               style={{
-                borderColor: 'var(--hm-brand-500)',
-                backgroundColor: 'var(--hm-brand-500)',
-                color: '#fff',
+                borderColor: "var(--hm-brand-500)",
+                backgroundColor: "var(--hm-brand-500)",
+                color: "#fff",
               }}
               title={isCollapsed ? t("browse.postAJob") : undefined}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--hm-brand-600)';
+                e.currentTarget.style.backgroundColor = "var(--hm-brand-600)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--hm-brand-500)';
+                e.currentTarget.style.backgroundColor = "var(--hm-brand-500)";
               }}
             >
               <Plus className="w-4 h-4 flex-shrink-0 transition-transform group-hover:rotate-90" />
-              {!isCollapsed && <span className="text-[13px] font-semibold">{t("browse.postAJob")}</span>}
+              {!isCollapsed && (
+                <span className="text-[13px] font-semibold">
+                  {t("browse.postAJob")}
+                </span>
+              )}
             </Link>
 
             {!isCollapsed && (
-              <div
-                className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-3 pb-2"
-              >
+              <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-3 pb-2">
                 {t("nav.sectionWork")}
               </div>
             )}
-            <nav className="space-y-0.5">
+            <nav className={`space-y-0.5 ${isCollapsed ? "px-1.5" : "px-2"}`}>
               {visibleTabs.map((tab) => {
                 const isActive = activeTab === tab.key;
                 const Icon = tab.icon;
+                // Projects renders as a collapsible tree of the user's projects.
+                if (tab.key === "projects") {
+                  return (
+                    <SidebarProjectsGroup
+                      key="projects"
+                      label={pick({
+                        en: tab.label,
+                        ka: tab.labelKa,
+                        ru: tab.labelRu,
+                      })}
+                      isCollapsed={isCollapsed}
+                      active={isActive}
+                    />
+                  );
+                }
+                // Shop is a collapsible group: Catalog, Orders, ...
+                if (tab.key === "shop") {
+                  return (
+                    <SidebarShopGroup
+                      key="shop"
+                      label={pick({
+                        en: tab.label,
+                        ka: tab.labelKa,
+                        ru: tab.labelRu,
+                      })}
+                      isCollapsed={isCollapsed}
+                      active={isActive}
+                    />
+                  );
+                }
                 return (
                   <Link
                     key={tab.key}
                     href={tab.route}
-                    className={`relative flex items-center text-[12.5px] font-medium transition-colors ${
-                      isCollapsed ? "justify-center px-2 py-2" : "gap-3 pl-[14px] pr-2 py-2"
+                    className={`group relative flex items-center rounded-xl text-[12.5px] transition-colors ${
+                      isCollapsed
+                        ? "justify-center px-2 py-2"
+                        : "gap-2.5 px-2.5 py-2"
                     } ${
                       isActive
-                        ? "font-semibold text-[var(--hm-fg-primary)]"
-                        : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
+                        ? "bg-[var(--hm-brand-500)]/[0.10] font-semibold text-[var(--hm-brand-500)]"
+                        : "font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
                     }`}
-                    style={
-                      isActive
-                        ? isCollapsed
-                          ? { color: 'var(--hm-brand-500)' }
-                          : {
-                              borderLeft: '2px solid var(--hm-brand-500)',
-                              color: 'var(--hm-brand-500)',
-                              paddingLeft: '12px',
-                            }
-                        : isCollapsed
-                          ? {}
-                          : { borderLeft: '2px solid transparent' }
+                    title={
+                      isCollapsed
+                        ? pick({
+                            en: tab.label,
+                            ka: tab.labelKa,
+                            ru: tab.labelRu,
+                          })
+                        : undefined
                     }
-                    title={isCollapsed ? pick({ en: tab.label, ka: tab.labelKa, ru: tab.labelRu }) : undefined}
                   >
-                    <Icon className="w-4 h-4 flex-shrink-0" />
+                    <Icon
+                      className="w-[18px] h-[18px] flex-shrink-0"
+                      strokeWidth={isActive ? 2.1 : 1.75}
+                    />
                     {!isCollapsed && (
                       <span className="flex-1">
-                        {pick({ en: tab.label, ka: tab.labelKa, ru: tab.labelRu })}
+                        {pick({
+                          en: tab.label,
+                          ka: tab.labelKa,
+                          ru: tab.labelRu,
+                        })}
                       </span>
                     )}
-                    {tab.key === "bookings" && pendingBookingCount > 0 && (
-                      isCollapsed ? (
+                    {tab.key === "bookings" &&
+                      pendingBookingCount > 0 &&
+                      (isCollapsed ? (
                         <span className="absolute -top-0.5 -right-0.5 bg-[var(--hm-brand-500)] text-white text-[9px] font-bold min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-0.5 shadow-sm">
                           {pendingBookingCount}
                         </span>
                       ) : (
-                        <span className="font-mono text-[10.5px] tracking-[0.06em] text-[var(--hm-fg-muted)]">
+                        <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--hm-brand-500)] px-1 text-[10px] font-bold tabular-nums text-white">
                           {pendingBookingCount}
                         </span>
-                      )
-                    )}
+                      ))}
                   </Link>
                 );
               })}
@@ -800,45 +1016,38 @@ function ShellContent({ children }: { children: ReactNode }) {
 
           {/* Footer area (My pages + Support + Social) */}
           <div className={`mt-auto pb-4 ${isCollapsed ? "px-2" : "px-3"}`}>
-            {isAuthenticated && (() => {
-              const settingsActive = pathname.startsWith("/settings");
-              return (
-                <div className="pt-3 border-t border-[var(--hm-border-subtle)] space-y-0.5">
-                  {!isCollapsed && (
-                    <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-1 pb-2">
-                      {t("nav.sectionAccount")}
-                    </div>
-                  )}
-                  <Link
-                    href="/settings"
-                    className={`flex items-center text-[12.5px] font-medium transition-colors ${
-                      isCollapsed ? "justify-center px-2 py-2" : "gap-3 pl-[14px] pr-2 py-2"
-                    } ${
-                      settingsActive
-                        ? "font-semibold text-[var(--hm-fg-primary)]"
-                        : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
-                    }`}
-                    style={
-                      settingsActive
-                        ? isCollapsed
-                          ? { color: 'var(--hm-brand-500)' }
-                          : {
-                              borderLeft: '2px solid var(--hm-brand-500)',
-                              color: 'var(--hm-brand-500)',
-                              paddingLeft: '12px',
-                            }
-                        : isCollapsed
-                          ? {}
-                          : { borderLeft: '2px solid transparent' }
-                    }
-                    title={isCollapsed ? t("settings.title") : undefined}
-                  >
-                    <Settings className="w-4 h-4" />
-                    {!isCollapsed && <span>{t("settings.title")}</span>}
-                  </Link>
-                </div>
-              );
-            })()}
+            {isAuthenticated &&
+              (() => {
+                const settingsActive = pathname.startsWith("/settings");
+                return (
+                  <div className="pt-3 border-t border-[var(--hm-border-subtle)] space-y-0.5">
+                    {!isCollapsed && (
+                      <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-1 pb-2">
+                        {t("nav.sectionAccount")}
+                      </div>
+                    )}
+                    <Link
+                      href="/settings"
+                      className={`flex items-center rounded-xl text-[12.5px] transition-colors ${
+                        isCollapsed
+                          ? "justify-center px-2 py-2"
+                          : "gap-2.5 px-2.5 py-2"
+                      } ${
+                        settingsActive
+                          ? "bg-[var(--hm-brand-500)]/[0.10] font-semibold text-[var(--hm-brand-500)]"
+                          : "font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
+                      }`}
+                      title={isCollapsed ? t("settings.title") : undefined}
+                    >
+                      <Settings
+                        className="w-[18px] h-[18px]"
+                        strokeWidth={settingsActive ? 2.1 : 1.75}
+                      />
+                      {!isCollapsed && <span>{t("settings.title")}</span>}
+                    </Link>
+                  </div>
+                );
+              })()}
 
             <div
               className={`${
@@ -852,7 +1061,10 @@ function ShellContent({ children }: { children: ReactNode }) {
                     className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                     title={t("help.categories.support")}
                   >
-                    <HelpCircle className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                    <HelpCircle
+                      className="w-4 h-4"
+                      style={{ color: ACCENT_COLOR }}
+                    />
                   </Link>
                   <a
                     href="mailto:info@homico.ge"
@@ -870,7 +1082,10 @@ function ShellContent({ children }: { children: ReactNode }) {
                     aria-label="Facebook"
                     title="Facebook"
                   >
-                    <Facebook className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                    <Facebook
+                      className="w-4 h-4"
+                      style={{ color: ACCENT_COLOR }}
+                    />
                   </a>
                 </div>
               ) : (
@@ -879,7 +1094,10 @@ function ShellContent({ children }: { children: ReactNode }) {
                     href="/help"
                     className="inline-flex items-center gap-2 text-xs font-medium text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] transition-colors"
                   >
-                    <HelpCircle className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                    <HelpCircle
+                      className="w-4 h-4"
+                      style={{ color: ACCENT_COLOR }}
+                    />
                     <span>{t("help.categories.support")}</span>
                   </Link>
 
@@ -890,7 +1108,10 @@ function ShellContent({ children }: { children: ReactNode }) {
                       aria-label="Email support"
                       title="info@homico.ge"
                     >
-                      <Mail className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                      <Mail
+                        className="w-4 h-4"
+                        style={{ color: ACCENT_COLOR }}
+                      />
                     </a>
                     <a
                       href="https://www.facebook.com/profile.php?id=61585402505170"
@@ -900,7 +1121,10 @@ function ShellContent({ children }: { children: ReactNode }) {
                       aria-label="Facebook"
                       title="Facebook"
                     >
-                      <Facebook className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+                      <Facebook
+                        className="w-4 h-4"
+                        style={{ color: ACCENT_COLOR }}
+                      />
                     </a>
                   </div>
                 </div>
@@ -914,7 +1138,10 @@ function ShellContent({ children }: { children: ReactNode }) {
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? (
-              <ChevronRight className="w-3.5 h-3.5" style={{ color: ACCENT_COLOR }} />
+              <ChevronRight
+                className="w-3.5 h-3.5"
+                style={{ color: ACCENT_COLOR }}
+              />
             ) : (
               <ChevronLeft className="w-3.5 h-3.5 text-[var(--hm-fg-muted)]" />
             )}
@@ -923,18 +1150,24 @@ function ShellContent({ children }: { children: ReactNode }) {
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-[var(--hm-bg-elevated)]">
-          {/* Mobile Header Row & Search */}
+          {/* Mobile Header Row & Search. Title bumped from text-sm
+              (was effectively invisible as a "page title") to
+              text-base/text-lg with a colored icon block so each list
+              page actually feels framed. Audits read past the previous
+              version as if no header existed at all. */}
           <div className="lg:hidden">
             {showHeaderRow && (
-              <div className="px-3 pt-3 pb-1">
-                <div className="flex items-start gap-2">
-                  <HeaderIcon className="w-4 h-4 text-[var(--hm-fg-muted)] flex-shrink-0 mt-0.5" />
-                  <div className="min-w-0">
-                    <h1 className="text-sm font-semibold text-[var(--hm-fg-primary)] truncate">
+              <div className="px-3 pt-3.5 pb-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center flex-shrink-0">
+                    <HeaderIcon className="w-4 h-4 text-[var(--hm-brand-500)]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h1 className="text-[15px] font-semibold text-[var(--hm-fg-primary)] truncate leading-tight">
                       {pageHeader.title}
                     </h1>
                     {pageHeader.subtitle && (
-                      <p className="text-[11px] text-[var(--hm-fg-muted)] truncate">
+                      <p className="text-[11px] text-[var(--hm-fg-muted)] truncate leading-snug">
                         {pageHeader.subtitle}
                       </p>
                     )}
@@ -948,34 +1181,48 @@ function ShellContent({ children }: { children: ReactNode }) {
                 {isJobsPage ? (
                   <JobsSearchInput />
                 ) : isProfessionalsPage ? (
-                  <BrowseSearchInput placeholder={t("browse.searchProfessionals")} />
+                  <BrowseSearchInput
+                    placeholder={t("browse.searchProfessionals")}
+                  />
                 ) : (
-                  <BrowseSearchInput placeholder={t("browse.searchPortfolio")} />
+                  <BrowseSearchInput
+                    placeholder={t("browse.searchPortfolio")}
+                  />
                 )}
               </div>
             )}
           </div>
 
           <div className={isMySpacePage ? "" : "p-1.5 sm:p-2 lg:p-3"}>
-            <div className={`${isMySpacePage ? "" : "max-w-[1600px] mx-auto"} ${mounted ? "animate-fade-in" : "opacity-0"}`}>
+            <div
+              className={`${isMySpacePage ? "" : "max-w-[1600px] mx-auto"} ${mounted ? "animate-fade-in" : "opacity-0"}`}
+            >
               {showHeaderRow && (
-                <PageHeader
-                  icon={pageHeader.icon}
-                  iconSize="sm"
-                  title={pageHeader.title}
-                  subtitle={pageHeader.subtitle}
-                  bordered={false}
-                  variant="transparent"
-                  containerClassName="px-0 py-0"
-                  contentClassName="max-w-none"
-                  className="hidden lg:block mb-1.5 sm:mb-2"
-                />
+                <div className="hidden lg:block mb-4 sm:mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[var(--hm-brand-500)]/10 flex items-center justify-center flex-shrink-0">
+                      <HeaderIcon className="w-5 h-5 text-[var(--hm-brand-500)]" />
+                    </div>
+                    <div className="min-w-0">
+                      <h1 className="text-xl font-semibold text-[var(--hm-fg-primary)] leading-tight">
+                        {pageHeader.title}
+                      </h1>
+                      {pageHeader.subtitle && (
+                        <p className="text-sm text-[var(--hm-fg-muted)] mt-0.5">
+                          {pageHeader.subtitle}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
               )}
 
               {showSearchFilters && !isJobsPage && !isProfessionalsPage && (
                 <div className="hidden lg:block mb-4 sm:mb-5">
                   <div className="max-w-xl">
-                    <BrowseSearchInput placeholder={t("browse.searchPortfolio")} />
+                    <BrowseSearchInput
+                      placeholder={t("browse.searchPortfolio")}
+                    />
                   </div>
                 </div>
               )}
@@ -1000,8 +1247,12 @@ function ShellContent({ children }: { children: ReactNode }) {
           scrollbar-width: none;
         }
         @keyframes slide-up {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
         }
         .animate-slide-up {
           animation: slide-up 0.25s ease-out;
@@ -1042,4 +1293,3 @@ export default function ShellLayout({ children }: { children: ReactNode }) {
     </Suspense>
   );
 }
-

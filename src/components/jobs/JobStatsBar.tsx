@@ -4,8 +4,10 @@ import { ReactNode } from 'react';
 import { ACCENT_COLOR as ACCENT } from '@/constants/theme';
 
 export interface JobStatsBarProps {
-  /** Budget display string (e.g., "₾5,000" or "₾1,000 - ₾5,000") */
+  /** Budget display string (e.g., "5,000{symbol}" or "1,000-5,000{symbol}") */
   budget?: string | null;
+  /** Currency symbol shown in the budget icon tile. Defaults to GEL's `₾`. */
+  currencySymbol?: string;
   /** Number of views */
   viewCount: number;
   /** Number of proposals */
@@ -26,6 +28,7 @@ export interface JobStatsBarProps {
 
 export default function JobStatsBar({
   budget,
+  currencySymbol = '₾',
   viewCount,
   proposalCount,
   budgetLabel = 'Budget',
@@ -53,7 +56,7 @@ export default function JobStatsBar({
                 className="font-body text-xl font-bold"
                 style={{ color: ACCENT }}
               >
-                ₾
+                {currencySymbol}
               </span>
             </div>
             <div>

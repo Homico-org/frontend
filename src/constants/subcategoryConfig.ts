@@ -41,9 +41,9 @@ const SUBCATEGORY_CONFIGS: Record<string, SubcategoryConfig> = {
     key: "plumbing",
     bio: {
       placeholder: l(
-        "e.g.: I am a plumber with 10 years of experience in Tbilisi, I do heating, plumbing and drainage...",
-        "მაგ: სანტექნიკი ვარ 10 წლის გამოცდილებით, ვმუშაობ თბილისში, ვაკეთებ გათბობას, წყალგაყვანილობას და კანალიზაციას...",
-        "напр.: Сантехник с 10-летним опытом в Тбилиси, занимаюсь отоплением, водоснабжением и канализацией...",
+        "e.g.: I am a plumber with 10 years of experience, I do heating, plumbing and drainage...",
+        "მაგ: სანტექნიკი ვარ 10 წლის გამოცდილებით, ვაკეთებ გათბობას, წყალგაყვანილობას და კანალიზაციას...",
+        "напр.: Сантехник с 10-летним опытом, занимаюсь отоплением, водоснабжением и канализацией...",
       ),
     },
     skills: {

@@ -3,6 +3,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCountryLink } from "@/hooks/useCountry";
+import { currencySymbol } from "@/utils/currency";
 import { ArrowRight, CheckCircle2, Grid3X3, Star, Tag } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -131,6 +133,7 @@ function CategoryListRenderer({
   locale: string;
 }): React.ReactElement | null {
   const { pick } = useLanguage();
+  const cl = useCountryLink();
   if (categories.length === 0) return null;
 
   return (
@@ -138,7 +141,7 @@ function CategoryListRenderer({
       {categories.map((category) => (
         <Link
           key={category.key}
-          href={`/professionals?category=${category.key}`}
+          href={cl(`/professionals?category=${category.key}`)}
         >
           <Badge
             variant="secondary"
@@ -234,6 +237,17 @@ function PriceInfoRenderer({
 }): React.ReactElement {
   const { t, pick } = useLanguage();
   const categoryName = pick({ en: priceInfo.category, ka: priceInfo.categoryKa });
+  // Use the explicit currency on the first price range when present, then
+  // fall back to the average price's currency, then to the default symbol.
+  const avgCurrency = priceInfo.averagePrice?.currency;
+  const rangeCurrency = priceInfo.priceRanges[0]?.currency;
+  const sym = currencySymbol(
+    rangeCurrency
+      ? { currency: rangeCurrency }
+      : avgCurrency
+        ? { currency: avgCurrency }
+        : undefined,
+  );
 
   return (
     <div
@@ -262,7 +276,7 @@ function PriceInfoRenderer({
             {t("ai.averagePrice")}
           </p>
           <p className="text-lg font-semibold text-[var(--hm-brand-500)]">
-            ₾{priceInfo.averagePrice.min.toLocaleString()} - ₾
+            {sym}{priceInfo.averagePrice.min.toLocaleString()} - {sym}
             {priceInfo.averagePrice.max.toLocaleString()}
           </p>
         </div>
@@ -291,7 +305,7 @@ function PriceInfoRenderer({
                 className="text-sm font-medium"
                 style={{ color: "var(--hm-fg-primary)" }}
               >
-                ₾{range.min.toLocaleString()} - ₾{range.max.toLocaleString()}
+                {currencySymbol({ currency: range.currency })}{range.min.toLocaleString()} - {currencySymbol({ currency: range.currency })}{range.max.toLocaleString()}
               </span>
             </div>
           ))}
@@ -330,43 +344,48 @@ function FeatureExplanationRenderer({
   const getStepDescription = (step: FeatureStep): string =>
     pickLocale(step, "description", locale);
 
+  // Sizes are intentionally compact - this card renders INSIDE a chat
+  // message bubble that's already constrained to ~85% of a 360-380px
+  // widget. Previously the h4 used default browser sizing (1.25em) which
+  // felt overwhelming; the CTA used the default Button size which
+  // dominated the card. Both dialed down here.
   return (
     <div
-      className="mt-3 p-4 rounded-xl"
+      className="mt-2 p-3 rounded-xl"
       style={{
         backgroundColor: "var(--hm-bg-tertiary)",
         border: "1px solid var(--hm-border-subtle)",
       }}
     >
-      <h4
-        className="font-semibold mb-1"
+      <p
+        className="text-sm font-semibold mb-1 leading-snug"
         style={{ color: "var(--hm-fg-primary)" }}
       >
         {title}
-      </h4>
+      </p>
       <p
-        className="text-sm mb-3"
+        className="text-xs mb-2.5 leading-relaxed"
         style={{ color: "var(--hm-fg-secondary)" }}
       >
         {description}
       </p>
 
       {feature.steps && feature.steps.length > 0 && (
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {feature.steps.map((step) => (
-            <div key={step.step} className="flex items-start gap-2.5">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--hm-brand-500)] text-white flex items-center justify-center text-xs font-medium">
+            <div key={step.step} className="flex items-start gap-2">
+              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--hm-brand-500)] text-white flex items-center justify-center text-[10px] font-medium">
                 {step.step}
               </div>
-              <div className="flex-1 pt-0.5">
+              <div className="flex-1 min-w-0 pt-0.5">
                 <p
-                  className="text-sm font-medium"
+                  className="text-xs font-medium leading-snug"
                   style={{ color: "var(--hm-fg-primary)" }}
                 >
                   {getStepTitle(step)}
                 </p>
                 <p
-                  className="text-xs mt-0.5"
+                  className="text-[11px] mt-0.5 leading-snug"
                   style={{ color: "var(--hm-fg-muted)" }}
                 >
                   {getStepDescription(step)}
@@ -378,11 +397,21 @@ function FeatureExplanationRenderer({
       )}
 
       {feature.actionUrl && actionLabel && (
-        <Link href={feature.actionUrl} className="inline-block mt-4">
-          <Button size="sm">
-            <CheckCircle2 className="w-4 h-4 mr-1.5" />
-            {actionLabel}
-            <ArrowRight className="w-3.5 h-3.5 ml-1" />
+        // Pill-style inline CTA. Uses the Button component's outline variant
+        // for the right colors but overrides border-radius, gap, and width
+        // so the chip hugs its content (no stretched icon-text-arrow with
+        // huge gaps), uses rounded corners (Button base is square), and
+        // matches the SuggestedActions chip aesthetic below the bubble.
+        // Dropped the leading CheckCircle - the arrow alone reads as
+        // "go to this page" without competing for attention.
+        <Link href={feature.actionUrl} className="inline-flex mt-3 w-fit max-w-full">
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full h-8 px-3.5 text-[12px] gap-1.5 font-medium w-fit max-w-full"
+          >
+            <span className="truncate">{actionLabel}</span>
+            <ArrowRight className="w-3 h-3 shrink-0" />
           </Button>
         </Link>
       )}

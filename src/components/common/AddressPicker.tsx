@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useMarketplaceCountry } from "@/hooks/useCountry";
+import { mapCenterForCountry } from "@/data/countries";
 
 interface AddressPickerProps {
   value: string;
@@ -23,8 +25,10 @@ interface Coordinates {
   lng: number;
 }
 
-// Default center (Tbilisi)
-const DEFAULT_CENTER: Coordinates = { lat: 41.7151, lng: 44.8271 };
+// Per-marketplace default center is resolved at runtime via
+// `mapCenterForCountry()` so that a /us visitor opens the picker
+// over New York, /il over Tel Aviv, etc. See `data/countries.ts`
+// for the table.
 
 // Elegant map styles - light
 const MAP_STYLES = [
@@ -70,6 +74,8 @@ export default function AddressPicker({
   const { isLoaded: mapLoaded } = useGoogleMaps();
 
   const { t } = useLanguage();
+  const country = useMarketplaceCountry();
+  const defaultCenter = mapCenterForCountry(country);
   const [selectedAddress, setSelectedAddress] = useState(value);
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -119,7 +125,7 @@ export default function AddressPicker({
     if (!mapLoaded || !container) return;
 
     const google = (window as any).google;
-    const center = coordinates || DEFAULT_CENTER;
+    const center = coordinates || { lat: defaultCenter.lat, lng: defaultCenter.lng };
 
     // Clean up existing map
     if (mapRef.current) {
@@ -128,7 +134,7 @@ export default function AddressPicker({
 
     mapRef.current = new google.maps.Map(container, {
       center,
-      zoom: coordinates ? 16 : 12,
+      zoom: coordinates ? 16 : defaultCenter.zoom,
       styles: isDarkMode ? MAP_STYLES_DARK : MAP_STYLES,
       disableDefaultUI: true,
       zoomControl: true,
@@ -184,7 +190,7 @@ export default function AddressPicker({
     // via setState). The closure inside the listener reads the latest
     // ref-backed value, so re-creating the map is wasteful and flickery.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapLoaded, isDarkMode, coordinates]);
+  }, [mapLoaded, isDarkMode, coordinates, defaultCenter.lat, defaultCenter.lng, defaultCenter.zoom]);
 
   // Initialize map when loaded
   useEffect(() => {
@@ -374,13 +380,18 @@ export default function AddressPicker({
           className={`rounded-2xl overflow-hidden relative group transition-all ${
             required && !selectedAddress
               ? 'ring-2 ring-[var(--hm-brand-500)]/30 ring-offset-2'
-              : selectedAddress
-                ? 'ring-2 ring-emerald-500/30 ring-offset-2'
-                : ''
+              : ''
           }`}
           style={{
             height: '320px',
-            border: required && !selectedAddress ? '2px solid var(--hm-brand-500)' : selectedAddress ? '2px solid rgb(16 185 129 / 0.3)' : '1px solid var(--hm-border)',
+            // Selected = calm, on-brand confirmation (the green pin chip
+            // below already announces success); only the not-yet-picked
+            // required state gets the attention-grabbing brand ring.
+            border: required && !selectedAddress
+              ? '2px solid var(--hm-brand-500)'
+              : selectedAddress
+                ? '1px solid var(--hm-success-500)'
+                : '1px solid var(--hm-border)',
             backgroundColor: isDarkMode ? '#28282c' : '#f8f9fa',
           }}
         >
@@ -581,7 +592,7 @@ export default function AddressPicker({
           className="fixed inset-0 bg-[var(--hm-bg-elevated)]"
           style={{
             animation: 'fadeIn 0.2s ease-out',
-            zIndex: 99999,
+            zIndex: 'var(--hm-z-toast)',
           }}
         >
           {/* Fullscreen Map */}
@@ -688,13 +699,18 @@ export default function AddressPicker({
             </Button>
           </div>
 
-          {/* Selected Address Display */}
+          {/* Selected Address Display. `bottom: 24px` originally sat
+              the address card under the iOS home indicator on notched
+              iPhones - the indicator is ~34px tall. The max() picks
+              the larger of the desktop floor (24px) or the iOS-aware
+              value (8px + env), so non-notched devices stay at 24px
+              and iPhones get the full safe-area lift. */}
           {selectedAddress && (
             <div
               className="absolute left-4 right-4 z-10 max-w-xl mx-auto"
               style={{
                 animation: 'slideUp 0.3s ease-out',
-                bottom: '24px',
+                bottom: 'max(24px, calc(8px + env(safe-area-inset-bottom)))',
               }}
             >
               <div
@@ -719,14 +735,16 @@ export default function AddressPicker({
             </div>
           )}
 
-          {/* Hint when no address */}
+          {/* Hint when no address. Same safe-area treatment as the
+              selected-address card so the pill never gets eaten by the
+              iOS home indicator. */}
           {!selectedAddress && (
             <div
               className="absolute left-1/2 -translate-x-1/2 px-6 py-3 rounded-full backdrop-blur-md text-sm font-medium text-[var(--hm-fg-secondary)] z-10"
               style={{
                 backgroundColor: 'var(--hm-bg-elevated)',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-                bottom: '24px',
+                bottom: 'max(24px, calc(8px + env(safe-area-inset-bottom)))',
               }}
             >
               <span className="flex items-center gap-2">

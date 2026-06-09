@@ -175,7 +175,7 @@ export default function TermsPage() {
                 className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
                 onClick={() => setShowMobileToc(false)}
               />
-              <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--hm-bg-elevated)] rounded-t-3xl p-6 max-h-[70vh] overflow-y-auto">
+              <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--hm-bg-elevated)] rounded-t-3xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] max-h-[70vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-[var(--hm-fg-primary)]">
                     {t('terms.tableOfContents')}

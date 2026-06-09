@@ -16,8 +16,8 @@ import {
 import { motion } from "framer-motion";
 import { ArrowRight, Check, ChevronLeft, X } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import React, { Suspense } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React, { Suspense, useEffect } from "react";
 
 function Logo({ className = "" }: { className?: string }) {
   return (
@@ -55,9 +55,18 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
   } = useProfileSetup();
 
   const { t, pick } = useLanguage();
+  const router = useRouter();
 
   const stepIdx = currentStepIndex(slug);
   const isLastStep = slug === "review";
+
+  // Prefetch the next step so Save & continue navigates instantly instead of
+  // saving, then waiting for the next route to load/compile. Without this the
+  // save finishes but the page sits before the next step appears.
+  useEffect(() => {
+    const next = STEP_SLUGS[stepIdx + 1];
+    if (next) router.prefetch(`/pro/profile-setup/${next}`);
+  }, [stepIdx, router]);
 
   if (profileLoading) {
     return (

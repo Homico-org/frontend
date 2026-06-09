@@ -91,11 +91,13 @@
   --hm-n-800: #211F1B;
   --hm-n-900: #11100D;
 
-  /* Semantic */
-  --hm-success-500: #3E8F5A;  --hm-success-100: #DCEFE2;  --hm-success-50: #EFF8F2;
-  --hm-warning-500: #C88A1D;  --hm-warning-100: #F6E7C2;  --hm-warning-50: #FCF3DF;
-  --hm-error-500:   #C24545;  --hm-error-100:   #F5D6D6;  --hm-error-50:  #FBEAEA;
-  --hm-info-500:    #3C6BB0;  --hm-info-100:    #D8E3F5;  --hm-info-50:   #EBF1FA;
+  /* Semantic - -400 / -600 added for hover/active states. The -600 step
+     was referenced by Modal, Button, Badge etc. but had no value defined,
+     which made hover backgrounds collapse to transparent. */
+  --hm-success-400: #5BA572;  --hm-success-500: #3E8F5A;  --hm-success-600: #2F7548;  --hm-success-100: #DCEFE2;  --hm-success-50: #EFF8F2;
+  --hm-warning-400: #DBA13C;  --hm-warning-500: #C88A1D;  --hm-warning-600: #A87214;  --hm-warning-100: #F6E7C2;  --hm-warning-50: #FCF3DF;
+  --hm-error-400:   #D26060;  --hm-error-500:   #C24545;  --hm-error-600:   #A53939;  --hm-error-100:   #F5D6D6;  --hm-error-50:  #FBEAEA;
+  --hm-info-400:    #5784BF;  --hm-info-500:    #3C6BB0;  --hm-info-600:    #2D5894;  --hm-info-100:    #D8E3F5;  --hm-info-50:   #EBF1FA;
 
   /* Surfaces */
   --hm-bg-page:     var(--hm-n-50);
@@ -139,6 +141,20 @@
   --hm-shadow-md: 0 4px 8px -2px rgba(20,18,14,0.08), 0 2px 4px rgba(20,18,14,0.04);
   --hm-shadow-lg: 0 16px 32px -12px rgba(20,18,14,0.16), 0 4px 8px rgba(20,18,14,0.04);
   --hm-shadow-xl: 0 32px 64px -16px rgba(20,18,14,0.22);
+
+  /* ═══ Z-INDEX SCALE — semantic stacking contract ═══
+     Inventory before this scale was added showed 14 distinct numeric
+     values in use (z-10 ×99, z-50 ×49, z-40 ×19, zIndex: 9999 ×5,
+     zIndex: 10000 ×2, plus 6 distinct arbitrary z-[X]). Use these
+     named tokens instead of literals so the stacking order is
+     intentional and changes are reviewable. */
+  --hm-z-base:     0;       /* default flow */
+  --hm-z-raised:   10;      /* in-page elevation (card hover, etc.) */
+  --hm-z-sticky:   40;      /* sticky CTAs, sticky table headers */
+  --hm-z-dropdown: 50;      /* popovers, menus, tooltips */
+  --hm-z-overlay:  200;     /* side panels, full-screen banners */
+  --hm-z-modal:    9999;    /* modals, lightboxes */
+  --hm-z-toast:    10000;   /* toasts + critical notifications (above modals) */
 
   /* Motion */
   --hm-dur-fast: 120ms;   --hm-dur-base: 180ms;
@@ -211,6 +227,24 @@
   --hm-border-subtle: #25211A;
   --hm-border-strong: #4A4336;
 
+  /* Invert the neutral ramp so editorial surfaces, hairlines, and ink
+     typography read correctly on dark. Without this every
+     `bg-[var(--hm-n-100)]` panel and `text-[var(--hm-n-900)]` headline
+     would stay light-mode values and become unreadable on the dark
+     page. The mapping mirrors the light ramp end-for-end so
+     `--hm-n-0` swaps with `--hm-n-900`, `100 ↔ 800`, and so on. */
+  --hm-n-0:   #14120E;
+  --hm-n-50:  #1A1814;
+  --hm-n-100: #1D1B15;
+  --hm-n-200: #26231B;
+  --hm-n-300: #3A3528;
+  --hm-n-400: #5A5346;
+  --hm-n-500: #8A8472;
+  --hm-n-600: #A6A39B;
+  --hm-n-700: #C9C3B5;
+  --hm-n-800: #E2DDD0;
+  --hm-n-900: #F2F0EB;
+
   /* Dark semantic */
   --hm-success-100: #1A3625;  --hm-success-50: #122619;
   --hm-warning-100: #3A2A0E;  --hm-warning-50: #2A1F0A;
@@ -272,6 +306,12 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Stop iOS/Android from auto-inflating text in landscape (breaks layouts). */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Remove the grey/blue flash when tapping buttons & links - native feel.
+       Visible focus/active states are still provided by component styles. */
+    -webkit-tap-highlight-color: transparent;
   }
 
   html {
@@ -637,7 +677,58 @@
     @apply transition-all duration-300 hover:shadow-glow;
   }
 
-  /* Custom scrollbar for regions list */
+  /*
+   * Subtle scrollbar - the default browser scrollbar (especially in
+   * dark mode) reads heavy and breaks the visual rhythm of dropdowns,
+   * modals, and side panels. `.scrollbar-subtle` swaps in a 4px-wide
+   * track that's invisible at rest and fades in on hover, themed to
+   * the marketplace's foreground color so it works light + dark
+   * without an extra `.dark` override.
+   *
+   * Use this anywhere a list scrolls inside another container - city
+   * filters, region lists, long Select bodies, materials sidepanels.
+   * For a full-page scroll the default browser scrollbar is fine.
+   */
+  .scrollbar-subtle {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.2s ease;
+  }
+
+  .scrollbar-subtle:hover,
+  .scrollbar-subtle:focus-within {
+    scrollbar-color: color-mix(in srgb, var(--hm-fg-primary) 22%, transparent)
+      transparent;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    transition: background-color 0.2s ease;
+  }
+
+  .scrollbar-subtle:hover::-webkit-scrollbar-thumb,
+  .scrollbar-subtle:focus-within::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--hm-fg-primary) 22%, transparent);
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--hm-fg-primary) 38%, transparent);
+  }
+
+  /* Legacy alias - existing callers that referenced `.custom-scrollbar`
+   * (regions list, materials panel) keep working without an edit. */
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 75, 59, 0.3) transparent;
@@ -828,4 +919,38 @@ input[type='number'] {
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+/* View Transitions API - smooth cross-fade between routes.
+   `NavigationProvider` calls `document.startViewTransition` on each
+   pathname change; this CSS tunes the timing. Falls through cleanly
+   on browsers without the API (no rules apply, no errors). The 180ms
+   duration is fast enough that it doesn't feel sluggish, slow enough
+   that the eye registers the transition as motion. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 180ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Honour the user's accessibility preference - skip the transition
+   entirely when reduced motion is requested. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* Mobile: keep form fields >=16px so iOS Safari doesn't auto-zoom the
+   viewport when a field is focused. Components can use smaller type at >=sm
+   (desktop) where zoom isn't a concern. Excludes checkbox/radio. */
+@media (max-width: 639.98px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }

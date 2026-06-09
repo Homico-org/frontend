@@ -132,6 +132,39 @@ export function formatDate(dateString: string, locale: Locale = "en"): string {
 /**
  * Format a date as compact relative time for notifications (e.g., "5m", "2h", "3d")
  */
+// Hand-written compact-relative-time tables. We had a bug in production
+// where job pages on /ge/... rendered "5m ago" in English instead of
+// Georgian, because the deployed Node runtime ships with minimal ICU
+// data and `Intl.RelativeTimeFormat('ka-GE')` silently falls back to
+// English. The hand table guarantees a localized output regardless of
+// the runtime's ICU build.
+const TIME_AGO_NARROW: Record<Locale, {
+  now: string;
+  m: (n: number) => string;
+  h: (n: number) => string;
+  d: (n: number) => string;
+}> = {
+  en: {
+    now: 'now',
+    m: (n) => `${n}m ago`,
+    h: (n) => `${n}h ago`,
+    d: (n) => `${n}d ago`,
+  },
+  ka: {
+    // Georgian: noun stays singular regardless of count. "ახლა" = now.
+    now: 'ახლა',
+    m: (n) => `${n} წთ წინ`,
+    h: (n) => `${n} სთ წინ`,
+    d: (n) => (n === 1 ? 'გუშინ' : `${n} დღის წინ`),
+  },
+  ru: {
+    now: 'только что',
+    m: (n) => `${n} мин назад`,
+    h: (n) => `${n} ч назад`,
+    d: (n) => (n === 1 ? 'вчера' : `${n} дн назад`),
+  },
+};
+
 export function formatTimeAgoCompact(
   dateString: string,
   locale: Locale = "en",
@@ -140,30 +173,12 @@ export function formatTimeAgoCompact(
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  const localeMap: Record<Locale, string> = {
-    en: "en-US",
-    ka: "ka-GE",
-    ru: "ru-RU",
-  };
-  const rtf = new Intl.RelativeTimeFormat(localeMap[locale], {
-    numeric: "auto",
-    style: "narrow",
-  });
+  const t = TIME_AGO_NARROW[locale] ?? TIME_AGO_NARROW.en;
 
-  if (diffInSeconds < 60) {
-    // Prefer the runtime's localized "now" string.
-    return rtf.format(0, "second");
-  }
-  if (diffInSeconds < 3600) {
-    const mins = Math.floor(diffInSeconds / 60);
-    return rtf.format(-mins, "minute");
-  }
-  if (diffInSeconds < 86400) {
-    const hours = Math.floor(diffInSeconds / 3600);
-    return rtf.format(-hours, "hour");
-  }
-  const days = Math.floor(diffInSeconds / 86400);
-  return rtf.format(-days, "day");
+  if (diffInSeconds < 60) return t.now;
+  if (diffInSeconds < 3600) return t.m(Math.floor(diffInSeconds / 60));
+  if (diffInSeconds < 86400) return t.h(Math.floor(diffInSeconds / 3600));
+  return t.d(Math.floor(diffInSeconds / 86400));
 }
 
 /**

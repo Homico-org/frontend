@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MultiStarDisplay } from "@/components/ui/StarRating";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { storage } from "@/services/storage";
+import { currencySymbol } from "@/utils/currency";
 import {
   BadgeCheck,
   Briefcase,
@@ -258,13 +259,13 @@ export default function ProfileHero({
               (maxPrice && maxPrice > 0)) && (
               <div className="flex items-center justify-center gap-2 mb-6">
                 <span className="text-xl font-bold text-[var(--hm-fg-primary)]">
-                  {pricingModel === PricingModel.BY_AGREEMENT
-                    ? t("common.negotiable")
-                    : pricingModel === PricingModel.PER_SQUARE_METER
-                      ? `${basePrice || maxPrice || 0}₾${t("timeUnits.perSqm")}`
-                    : pricingModel === PricingModel.RANGE
-                      ? `${basePrice || 0}₾ - ${maxPrice || 0}₾`
-                      : `${basePrice || maxPrice || 0}₾`}
+                  {(() => {
+                    const sym = currencySymbol();
+                    if (pricingModel === PricingModel.BY_AGREEMENT) return t("common.negotiable");
+                    if (pricingModel === PricingModel.PER_SQUARE_METER) return `${basePrice || maxPrice || 0}${sym}${t("timeUnits.perSqm")}`;
+                    if (pricingModel === PricingModel.RANGE) return `${basePrice || 0}${sym} - ${maxPrice || 0}${sym}`;
+                    return `${basePrice || maxPrice || 0}${sym}`;
+                  })()}
                 </span>
                 {pricingModel && pricingModel !== PricingModel.FIXED && (
                   <Badge variant="secondary" size="sm">

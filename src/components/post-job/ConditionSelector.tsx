@@ -87,16 +87,32 @@ export default function ConditionSelector({
 
   return (
     <div className={`space-y-2 sm:space-y-3 ${className}`}>
-      {conditions.map((condition) => (
+      {conditions.map((condition) => {
+        const selected = value === condition.value;
+        return (
         <button
           key={condition.value}
           type="button"
           onClick={() => onChange(condition.value)}
-          className={`w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 transition-all text-left ${
-            value === condition.value
-              ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 shadow-sm'
-              : 'border-[var(--hm-border)] hover:border-[var(--hm-border-strong)] hover:bg-[var(--hm-bg-tertiary)]'
+          className={`w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl transition-all duration-150 text-left ${
+            selected ? '-translate-y-[1px]' : 'hover:-translate-y-[1px] hover:shadow-md'
           }`}
+          style={
+            selected
+              ? {
+                  background:
+                    'linear-gradient(180deg, rgba(239,78,36,0.12) 0%, rgba(239,78,36,0.04) 100%)',
+                  border: '1px solid rgba(239,78,36,0.45)',
+                  boxShadow:
+                    '0 4px 10px -2px rgba(239,78,36,0.15), inset 0 1px 0 rgba(255,255,255,0.5)',
+                }
+              : {
+                  backgroundColor: 'var(--hm-bg-elevated)',
+                  border: '1px solid var(--hm-border-subtle)',
+                  boxShadow: '0 1px 2px rgba(15,23,42,0.03)',
+                }
+          }
+          aria-pressed={selected}
         >
           <div
             className={`flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${
@@ -133,7 +149,8 @@ export default function ConditionSelector({
             )}
           </div>
         </button>
-      ))}
+        );
+      })}
     </div>
   );
 }

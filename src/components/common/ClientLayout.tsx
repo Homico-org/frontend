@@ -1,8 +1,10 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import AmplitudeProvider from './AmplitudeProvider';
 import AppBackground from './AppBackground';
 import AppLayout from './AppLayout';
+import DevServiceWorkerKiller from './DevServiceWorkerKiller';
 import ProProfileGuard from './ProProfileGuard';
 
 // Dynamically import modals to reduce initial bundle size
@@ -24,6 +26,14 @@ const PWAInstallPrompt = dynamic(() => import("./PWAInstallPrompt"), {
   ssr: false,
 });
 
+const EmailCapturePrompt = dynamic(() => import("./EmailCapturePrompt"), {
+  ssr: false,
+});
+
+const ReleaseNotesModal = dynamic(() => import("./ReleaseNotesModal"), {
+  ssr: false,
+});
+
 interface ClientLayoutProps {
   children: React.ReactNode;
 }
@@ -31,6 +41,8 @@ interface ClientLayoutProps {
 export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <>
+      <DevServiceWorkerKiller />
+      <AmplitudeProvider />
       <AppBackground />
       <ProProfileGuard>
         <AppLayout>
@@ -40,6 +52,8 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       <LoginModal />
       <CriticalNotificationBanner />
       <CriticalNotificationOverlay />
+      <EmailCapturePrompt />
+      <ReleaseNotesModal />
       {/* <PWAInstallPrompt /> */}
     </>
   );

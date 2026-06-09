@@ -5,7 +5,7 @@ import EmptyState from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, countries, type CountryCode } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import {
@@ -46,7 +46,8 @@ interface Review {
 }
 
 function ProReviewsPageContent() {
-  const { t } = useLanguage();
+  const { t, country } = useLanguage();
+  const phonePlaceholder = `${countries[country as CountryCode]?.phonePrefix ?? '+995'} ${countries[country as CountryCode]?.placeholder ?? '5XX XXX XXX'}`;
   const toast = useToast();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -112,8 +113,10 @@ function ProReviewsPageContent() {
 
       // Refresh stats
       fetchData();
-    } catch (err: any) {
-      const message = err.response?.data?.message || t('common.error');
+    } catch (err) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || t('common.error');
       toast.error(t('common.error'), message);
     } finally {
       setIsSendingInvite(false);
@@ -268,7 +271,7 @@ function ProReviewsPageContent() {
               />
               <Input
                 type="tel"
-                placeholder="+995 555 123 456"
+                placeholder={phonePlaceholder}
                 value={invitePhone}
                 onChange={(e) => setInvitePhone(e.target.value)}
               />
@@ -308,12 +311,9 @@ function ProReviewsPageContent() {
           <div className="bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl border border-[var(--hm-border-subtle)] shadow-card">
             <EmptyState
               icon={Star}
-              title="No reviews yet"
-              titleKa="შეფასებები ჯერ არ არის"
-              description="Share your review link with past clients or complete jobs on Homico to receive reviews"
-              descriptionKa="გააზიარეთ ლინკი ძველ კლიენტებთან ან შეასრულეთ შეკვეთები Homico-ზე"
-              actionLabel="Find Jobs"
-              actionLabelKa="სამუშაოების ძებნა"
+              title={t("professional.noReviewsYet")}
+              description={t("professional.noReviewsYetBody")}
+              actionLabel={t("professional.findJobs")}
               actionHref="/jobs"
               variant="illustrated"
               size="md"

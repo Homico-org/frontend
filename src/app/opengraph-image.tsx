@@ -1,14 +1,17 @@
 import { ImageResponse } from "next/og";
 
-// Dynamic OG image for the entire site — generated from brand tokens at request
-// time so it never drifts from the design system. Replaces the old static
-// /og-image.png. Next.js auto-wires this into every page's open-graph and
-// twitter-image meta tags (no need to reference it in layout metadata).
+// Dynamic OG image for the entire site - generated from brand tokens at
+// request time so it never drifts from the design system. Replaces the
+// old static /og-image.png. Next.js auto-wires this into every page's
+// open-graph and twitter-image meta tags (no need to reference it in
+// layout metadata).
 //
-// To override per-route, drop another opengraph-image.tsx into that route.
+// City-specific variants live under each `[country]/` route via the
+// `opengraph-image` convention. The root image stays city-neutral so
+// shares of bare paths (`homico.co`, `homico.co/help`) work cleanly.
 
 export const runtime = "edge";
-export const alt = "Homico — vetted home renovation pros in Tbilisi";
+export const alt = "Homico - vetted home renovation pros";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -36,7 +39,7 @@ export default async function Image() {
           position: "relative",
         }}
       >
-        {/* Decorative blob — top-right */}
+        {/* Decorative blob - top-right */}
         <div
           style={{
             position: "absolute",
@@ -50,7 +53,7 @@ export default async function Image() {
             filter: "blur(60px)",
           }}
         />
-        {/* Decorative blob — bottom-left */}
+        {/* Decorative blob - bottom-left */}
         <div
           style={{
             position: "absolute",
@@ -105,9 +108,10 @@ export default async function Image() {
           Homico
         </div>
 
-        {/* Tagline — English (Latin) so we don't need to fetch a Georgian
-            font for the edge runtime. The page's <html lang="ka"> + Georgian
-            meta description still serve KA traffic correctly. */}
+        {/* Tagline - English (Latin) so we don't need to fetch a Georgian
+            font for the edge runtime. City-specific copy ships in the
+            per-`[country]/` OG image overrides; this root variant stays
+            geography-neutral for shares of the bare homico.co URL. */}
         <div
           style={{
             fontSize: 38,
@@ -118,7 +122,7 @@ export default async function Image() {
             fontWeight: 500,
           }}
         >
-          Vetted home renovation pros in Tbilisi
+          Vetted home renovation pros
         </div>
 
         {/* Trust strip */}

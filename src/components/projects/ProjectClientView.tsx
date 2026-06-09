@@ -1,0 +1,595 @@
+'use client';
+
+import Avatar from '@/components/common/Avatar';
+import { features } from '@/config/features';
+import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/contexts/ToastContext';
+import { api } from '@/lib/api';
+import { storage } from '@/services/storage';
+import {
+  ArrowRight,
+  CheckCircle2,
+  ChevronRight,
+  ClipboardCheck,
+  Wallet,
+} from 'lucide-react';
+import Image from 'next/image';
+import { useCallback, useEffect, useState } from 'react';
+
+// Minimal subset of the dashboard payload the client view reads. The page
+// passes its full `project` object, which is a superset of this.
+interface ClientProject {
+  title: string;
+  location?: string;
+  status: string;
+  progress: number;
+  currentPhase?: string;
+  photos?: string[];
+  coverImage?: string;
+  budgetMin?: number;
+  budgetMax?: number;
+  budget?: { planned: number; committed: number };
+  phases?: { key: string; progress: number; roleCount: number }[];
+  // The project's real, user-defined plan steps (ProjectStep). These - not the
+  // generic design/permits/construction/finishing enum - are what this project
+  // is actually broken into.
+  steps?: { id: string; name: string; order?: number; color?: string }[];
+  milestones?: { id: string; title: string; status: string }[];
+  engagements?: {
+    id: string;
+    roleLabel: string;
+    assignedProId?: { name?: string; avatar?: string } | string;
+    designApproval?: { status?: string };
+  }[];
+  selections?: {
+    id: string;
+    title: string;
+    options?: { id: string }[];
+    chosenOptionId?: string;
+  }[];
+  documents?: { id: string; name?: string; approvalStatus?: string }[];
+}
+
+interface MilestonePayment {
+  id?: string;
+  _id?: string;
+  engagementId: string;
+  label: string;
+  amountMinor: number;
+  roleLabel?: string;
+  status: string;
+}
+
+// A pending thing the client must do. `onClick` either jumps into the full
+// view (for surfaces that live there) or fires a money action inline.
+interface NeedItem {
+  id: string;
+  label: string;
+  onClick: () => void;
+  money?: boolean;
+}
+
+
+const money = (minor: number) =>
+  `${Math.round(minor / 100).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
+const moneyMajor = (n: number) =>
+  `${Math.round(n).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
+
+interface Props {
+  project: ClientProject;
+  projectId: string;
+  onSeeFullDetails: (tab?: string) => void;
+}
+
+/**
+ * The client (homeowner) lens on a project: a calm "status & decisions" view
+ * instead of the full project-management tabs. Answers the only three things a
+ * client actually wants - is it on track, do I need to do anything, what's it
+ * costing - and hides the engagement/step machinery behind "See full details".
+ * The "needs you" list now includes live money actions (approve / fund /
+ * confirm milestone payments). Rendered only when viewerRole === 'client'.
+ */
+export default function ProjectClientView({
+  project,
+  projectId,
+  onSeeFullDetails,
+}: Props) {
+  const { t } = useLanguage();
+  const toast = useToast();
+
+  const [mps, setMps] = useState<MilestonePayment[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  const refetchMps = useCallback(() => {
+    // Payments gated off until BoG is live - skip escrow so no money actions
+    // (fund milestone, approve schedule) surface on prod.
+    if (!features.payments) {
+      setMps([]);
+      return;
+    }
+    api
+      .get<MilestonePayment[]>(`/milestone-payments/project/${projectId}`)
+      .then((r) => setMps(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setMps([]));
+  }, [projectId]);
+  useEffect(() => {
+    refetchMps();
+  }, [refetchMps]);
+
+  const approvePlan = async (engagementId: string) => {
+    setBusy(true);
+    try {
+      await api.post('/milestone-payments/approve', {
+        projectId,
+        engagementId,
+      });
+      toast.success(t('common.success'), t('projects.savedChanges'));
+      refetchMps();
+    } catch {
+      toast.error(t('common.error'), t('common.tryAgain'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const fund = async (id: string) => {
+    setBusy(true);
+    try {
+      const r = await api.post<{ redirectUrl?: string }>(
+        `/milestone-payments/${id}/fund`,
+      );
+      const url = r.data?.redirectUrl;
+      if (url) {
+        window.location.href = url;
+        return;
+      }
+      refetchMps();
+    } catch {
+      toast.error(t('common.error'), t('common.tryAgain'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const confirmWork = async (id: string) => {
+    setBusy(true);
+    try {
+      await api.post(`/milestone-payments/${id}/confirm`);
+      toast.success(t('common.success'), t('projects.savedChanges'));
+      refetchMps();
+    } catch {
+      toast.error(t('common.error'), t('common.tryAgain'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const progress = Math.max(0, Math.min(100, Math.round(project.progress || 0)));
+  const activeMilestone = (project.milestones || []).find(
+    (m) => m.status === 'active',
+  );
+  // What's happening now = the active milestone's title. We deliberately do NOT
+  // fall back to the generic design/permits/... enum - it isn't this project's
+  // real plan, so showing it read as a fake step. No milestone -> "getting
+  // started", which is honest for a project that hasn't kicked off.
+  const focusText = activeMilestone?.title;
+
+  // ---- "Needs you" - every pending client decision in one place ----
+  const needs: NeedItem[] = [];
+
+  // Money first - it's the highest-stakes action and the one most likely to
+  // stall a project if the client doesn't notice it.
+  const proposedEngagements = new Map<string, string>();
+  mps.forEach((m) => {
+    if (m.status === 'proposed') {
+      proposedEngagements.set(m.engagementId, m.roleLabel || '');
+    }
+  });
+  proposedEngagements.forEach((roleLabel, engagementId) => {
+    needs.push({
+      id: `mp-approve-${engagementId}`,
+      label: t('projects.client.needApprovePlan', {
+        role: roleLabel || t('projects.client.aPro'),
+      }),
+      onClick: () => !busy && approvePlan(engagementId),
+      money: true,
+    });
+  });
+  mps.forEach((m) => {
+    const id = m.id || m._id || '';
+    if (m.status === 'approved') {
+      needs.push({
+        id: `mp-fund-${id}`,
+        label: t('projects.client.needFund', {
+          label: m.label,
+          amount: money(m.amountMinor),
+        }),
+        onClick: () => !busy && fund(id),
+        money: true,
+      });
+    } else if (m.status === 'submitted') {
+      needs.push({
+        id: `mp-confirm-${id}`,
+        label: t('projects.client.needConfirm', { label: m.label }),
+        onClick: () => !busy && confirmWork(id),
+        money: true,
+      });
+    }
+  });
+
+  // Decisions that live in the full view - link there.
+  (project.selections || []).forEach((s) => {
+    if ((s.options?.length ?? 0) > 0 && !s.chosenOptionId) {
+      needs.push({
+        id: `sel-${s.id}`,
+        label: t('projects.client.needChoose', { item: s.title }),
+        onClick: () => onSeeFullDetails('materials'),
+      });
+    }
+  });
+  (project.documents || []).forEach((d) => {
+    if (d.approvalStatus === 'pending') {
+      needs.push({
+        id: `doc-${d.id}`,
+        label: t('projects.client.needApprove', {
+          item: d.name || t('projects.client.aDocument'),
+        }),
+        onClick: () => onSeeFullDetails('library'),
+      });
+    }
+  });
+  (project.engagements || []).forEach((e) => {
+    if (e.designApproval?.status === 'pending') {
+      needs.push({
+        id: `eng-${e.id}`,
+        label: t('projects.client.needApproveDesign', { role: e.roleLabel }),
+        onClick: () => onSeeFullDetails('team'),
+      });
+    }
+  });
+
+  const photos = (project.photos || []).filter(Boolean).slice(0, 5);
+  const team = (project.engagements || [])
+    .map((e) =>
+      typeof e.assignedProId === 'object' ? e.assignedProId : undefined,
+    )
+    .filter((p): p is { name?: string; avatar?: string } => !!p);
+
+  const agreed =
+    project.budget?.planned || project.budgetMax || project.budgetMin || 0;
+  const committed = project.budget?.committed || 0;
+
+  // Paid-so-far / remaining from the milestone schedule - the homeowner's real
+  // "what have I paid" question, in actual money-moved terms.
+  const PAID_STATUSES = ['funded', 'submitted', 'confirmed', 'released'];
+  const SCHEDULED_STATUSES = ['proposed', 'approved', ...PAID_STATUSES];
+  const scheduledMinor = mps
+    .filter((m) => SCHEDULED_STATUSES.includes(m.status))
+    .reduce((s, m) => s + (m.amountMinor || 0), 0);
+  const paidMinor = mps
+    .filter((m) => PAID_STATUSES.includes(m.status))
+    .reduce((s, m) => s + (m.amountMinor || 0), 0);
+  const paidPct =
+    scheduledMinor > 0 ? Math.round((paidMinor / scheduledMinor) * 100) : 0;
+
+  const ring = 2 * Math.PI * 34;
+
+  return (
+    <div className="mx-auto w-full max-w-[860px] px-4 pb-20 pt-5 sm:px-6">
+      {/* ---- Status hero: progress ring + current focus ---- */}
+      <section
+        className="rounded-2xl p-5 sm:p-6"
+        style={{
+          backgroundColor: 'var(--hm-bg-elevated)',
+          border: '1px solid var(--hm-border-subtle)',
+        }}
+      >
+        <div className="flex items-center gap-5">
+          <div className="relative h-[84px] w-[84px] shrink-0">
+            <svg viewBox="0 0 80 80" className="h-full w-full -rotate-90">
+              <circle
+                cx="40"
+                cy="40"
+                r="34"
+                fill="none"
+                stroke="var(--hm-bg-tertiary)"
+                strokeWidth="7"
+              />
+              <circle
+                cx="40"
+                cy="40"
+                r="34"
+                fill="none"
+                stroke="var(--hm-brand-500)"
+                strokeWidth="7"
+                strokeLinecap="round"
+                strokeDasharray={ring}
+                strokeDashoffset={ring * (1 - progress / 100)}
+                style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span
+                className="text-[20px] font-bold tabular-nums"
+                style={{ color: 'var(--hm-fg-primary)' }}
+              >
+                {progress}%
+              </span>
+            </div>
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1
+              className="truncate text-[19px] font-bold tracking-[-0.01em] sm:text-[22px]"
+              style={{ color: 'var(--hm-fg-primary)' }}
+            >
+              {project.title}
+            </h1>
+            <p
+              className="mt-0.5 text-[13px]"
+              style={{ color: 'var(--hm-fg-secondary)' }}
+            >
+              {focusText
+                ? t('projects.client.currently', { focus: focusText })
+                : t('projects.client.gettingStarted')}
+            </p>
+            {project.location && (
+              <p
+                className="mt-0.5 truncate text-[12px]"
+                style={{ color: 'var(--hm-fg-muted)' }}
+              >
+                {project.location}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* The project's real plan steps (user-defined). Renders nothing when
+            no steps exist yet - we never fabricate generic phases. */}
+        {(() => {
+          const steps = [...(project.steps || [])].sort(
+            (a, b) => (a.order ?? 0) - (b.order ?? 0),
+          );
+          if (steps.length === 0) return null;
+          return (
+            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+              {steps.map((s, i) => (
+                <div key={s.id} className="flex items-center gap-1.5">
+                  <span className="font-mono text-[10px] text-[var(--hm-fg-muted)]">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span
+                    className="inline-block h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: s.color || 'var(--hm-brand-500)' }}
+                  />
+                  <span
+                    className="text-[11px]"
+                    style={{ color: 'var(--hm-fg-secondary)' }}
+                  >
+                    {s.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+      </section>
+
+      {/* ---- Needs you ---- */}
+      <section className="mt-4">
+        <p
+          className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]"
+          style={{ color: 'var(--hm-fg-muted)' }}
+        >
+          {t('projects.client.needsYou')}
+        </p>
+        {needs.length === 0 ? (
+          <div
+            className="flex items-center gap-3 rounded-2xl px-4 py-4"
+            style={{
+              backgroundColor: 'var(--hm-success-50, rgba(34,197,94,0.06))',
+              border: '1px solid var(--hm-border-subtle)',
+            }}
+          >
+            <CheckCircle2
+              className="h-5 w-5 shrink-0"
+              style={{ color: 'var(--hm-success-500)' }}
+            />
+            <p
+              className="text-[13px] font-medium"
+              style={{ color: 'var(--hm-fg-primary)' }}
+            >
+              {t('projects.client.allSet')}
+            </p>
+          </div>
+        ) : (
+          <div
+            className="overflow-hidden rounded-2xl"
+            style={{
+              backgroundColor: 'var(--hm-bg-elevated)',
+              border: `1px solid color-mix(in srgb, var(--hm-brand-500) 30%, transparent)`,
+            }}
+          >
+            {needs.map((a, i) => (
+              <button
+                key={a.id}
+                type="button"
+                disabled={busy}
+                onClick={a.onClick}
+                className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--hm-bg-tertiary)] disabled:opacity-60"
+                style={{
+                  borderTop:
+                    i === 0 ? 'none' : '1px solid var(--hm-border-subtle)',
+                }}
+              >
+                <span
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                  style={{
+                    backgroundColor:
+                      'color-mix(in srgb, var(--hm-brand-500) 12%, transparent)',
+                  }}
+                >
+                  {a.money ? (
+                    <Wallet
+                      className="h-4 w-4"
+                      style={{ color: 'var(--hm-brand-500)' }}
+                    />
+                  ) : (
+                    <ClipboardCheck
+                      className="h-4 w-4"
+                      style={{ color: 'var(--hm-brand-500)' }}
+                    />
+                  )}
+                </span>
+                <span
+                  className="min-w-0 flex-1 truncate text-[13px] font-medium"
+                  style={{ color: 'var(--hm-fg-primary)' }}
+                >
+                  {a.label}
+                </span>
+                <ChevronRight
+                  className="h-4 w-4 shrink-0"
+                  style={{ color: 'var(--hm-fg-muted)' }}
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ---- Latest photos ---- */}
+      {photos.length > 0 && (
+        <section className="mt-5">
+          <p
+            className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]"
+            style={{ color: 'var(--hm-fg-muted)' }}
+          >
+            {t('projects.client.latestPhotos')}
+          </p>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+            {photos.map((url, i) => (
+              <button
+                key={`${url}-${i}`}
+                type="button"
+                onClick={() => onSeeFullDetails('overview')}
+                className="relative aspect-square overflow-hidden rounded-xl"
+                style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}
+              >
+                <Image
+                  src={storage.getOptimizedImageUrl(url, 'feedCard')}
+                  alt=""
+                  fill
+                  sizes="(min-width: 640px) 160px, 33vw"
+                  className="object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ---- Money + team ---- */}
+      <section className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div
+          className="rounded-2xl p-4"
+          style={{
+            backgroundColor: 'var(--hm-bg-elevated)',
+            border: '1px solid var(--hm-border-subtle)',
+          }}
+        >
+          <p className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
+            {t('projects.client.budget')}
+          </p>
+          <p
+            className="mt-1 text-[20px] font-bold tabular-nums"
+            style={{ color: 'var(--hm-fg-primary)' }}
+          >
+            {agreed > 0 ? moneyMajor(agreed) : t('projects.client.notSet')}
+          </p>
+          {scheduledMinor > 0 ? (
+            <div className="mt-2.5">
+              <div
+                className="h-1.5 overflow-hidden rounded-full"
+                style={{ backgroundColor: 'var(--hm-bg-tertiary)' }}
+              >
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${paidPct}%`,
+                    backgroundColor: 'var(--hm-success-500)',
+                    transition: 'width 0.5s ease',
+                  }}
+                />
+              </div>
+              <p
+                className="mt-1.5 text-[11px]"
+                style={{ color: 'var(--hm-fg-muted)' }}
+              >
+                {t('projects.client.paidOf', {
+                  paid: money(paidMinor),
+                  total: money(scheduledMinor),
+                })}
+              </p>
+            </div>
+          ) : committed > 0 ? (
+            <p className="mt-0.5 text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
+              {t('projects.client.committed', { amount: moneyMajor(committed) })}
+            </p>
+          ) : null}
+        </div>
+
+        <div
+          className="rounded-2xl p-4"
+          style={{
+            backgroundColor: 'var(--hm-bg-elevated)',
+            border: '1px solid var(--hm-border-subtle)',
+          }}
+        >
+          <p className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
+            {t('projects.client.yourTeam')}
+          </p>
+          {team.length === 0 ? (
+            <p
+              className="mt-2 text-[13px]"
+              style={{ color: 'var(--hm-fg-secondary)' }}
+            >
+              {t('projects.client.noTeamYet')}
+            </p>
+          ) : (
+            <div className="mt-2 flex items-center gap-2">
+              <div className="flex -space-x-2">
+                {team.slice(0, 5).map((p, i) => (
+                  <Avatar
+                    key={i}
+                    src={p.avatar}
+                    name={p.name || ''}
+                    size="sm"
+                    className="h-8 w-8 ring-2 ring-[var(--hm-bg-elevated)]"
+                  />
+                ))}
+              </div>
+              <span
+                className="text-[12px]"
+                style={{ color: 'var(--hm-fg-secondary)' }}
+              >
+                {t('projects.client.peopleCount', { count: team.length })}
+              </span>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ---- Escape hatch to the full project ---- */}
+      <div className="mt-6 flex justify-center">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onSeeFullDetails()}
+          rightIcon={<ArrowRight className="h-4 w-4" />}
+        >
+          {t('projects.client.seeFullDetails')}
+        </Button>
+      </div>
+    </div>
+  );
+}

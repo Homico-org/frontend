@@ -35,9 +35,7 @@ export const NoSearchResults: Story = {
   args: {
     icon: Search,
     title: 'No results found',
-    titleKa: 'შედეგები ვერ მოიძებნა',
     description: 'Try adjusting your search or filter to find what you\'re looking for.',
-    descriptionKa: 'სცადეთ ძებნის ან ფილტრის შეცვლა.',
   },
 };
 

@@ -67,6 +67,11 @@ export interface AboutTabProps {
   onSaveServices?: (services: string[]) => Promise<void>;
   /** Handler to save social links */
   onSaveSocialLinks?: (links: SocialLinks) => Promise<void>;
+  /** Fires when a viewer clicks a social/contact link (whatsapp/telegram/facebook/...).
+   *  Used by the parent to emit analytics events. Pure presentational hook -
+   *  AboutTab doesn't know who the pro is, so the parent supplies the handler
+   *  with the proId/proName context already bound in. */
+  onSocialLinkClick?: (channel: 'whatsapp' | 'telegram' | 'facebook' | 'instagram' | 'linkedin' | 'tiktok' | 'website') => void;
 }
 
 export default function AboutTab({
@@ -91,6 +96,7 @@ export default function AboutTab({
   onSaveBio,
   onSaveServices,
   onSaveSocialLinks,
+  onSocialLinkClick,
 }: AboutTabProps) {
   const hasContactLinks = whatsapp || telegram || facebookUrl || instagramUrl || linkedinUrl || tiktokUrl || websiteUrl;
 
@@ -536,6 +542,7 @@ export default function AboutTab({
                   href={`https://wa.me/${whatsapp.replace(/[^0-9+]/g, "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => onSocialLinkClick?.('whatsapp')}
                   className="h-10 px-3 rounded-full flex items-center justify-center gap-2 hover:opacity-80 transition-colors"
                   style={{
                     backgroundColor: `${socialColors.whatsapp}15`,
@@ -551,6 +558,7 @@ export default function AboutTab({
                   href={`https://t.me/${telegram.replace("@", "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => onSocialLinkClick?.('telegram')}
                   className="h-10 px-3 rounded-full flex items-center justify-center gap-2 hover:opacity-80 transition-colors"
                   style={{
                     backgroundColor: `${socialColors.telegram}15`,
@@ -566,6 +574,7 @@ export default function AboutTab({
                   href={facebookUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => onSocialLinkClick?.('facebook')}
                   className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-colors"
                   style={{
                     backgroundColor: `${socialColors.facebook}15`,
@@ -580,6 +589,7 @@ export default function AboutTab({
                   href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => onSocialLinkClick?.('instagram')}
                   className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-colors"
                   style={{
                     backgroundColor: `${socialColors.instagram}15`,
@@ -594,6 +604,7 @@ export default function AboutTab({
                   href={linkedinUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => onSocialLinkClick?.('linkedin')}
                   className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-colors"
                   style={{
                     backgroundColor: `${socialColors.linkedin}15`,
@@ -608,6 +619,7 @@ export default function AboutTab({
                   href={tiktokUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => onSocialLinkClick?.('tiktok')}
                   className="w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-colors"
                   aria-label="TikTok"
                   style={{ backgroundColor: '#01010115', color: '#010101' }}
@@ -622,6 +634,7 @@ export default function AboutTab({
                   href={websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => onSocialLinkClick?.('website')}
                   className="w-10 h-10 rounded-full bg-[var(--hm-bg-tertiary)] flex items-center justify-center text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-border)] transition-colors"
                 >
                   <Globe className="w-4 h-4" />

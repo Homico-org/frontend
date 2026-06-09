@@ -7,6 +7,7 @@ import { StarRating } from '@/components/ui/StarRating';
 import { Badge } from '@/components/ui/badge';
 import Avatar from '@/components/common/Avatar';
 import { Award, Heart, ImageIcon } from 'lucide-react';
+import { currencySymbol } from '@/utils/currency';
 
 interface ServiceCardProps {
   service: {
@@ -118,7 +119,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
                 {proUser?.name || 'Pro'}
               </span>
               {pro.isAvailable && (
-                <span className="w-2 h-2 bg-[var(--hm-brand-500)] rounded-full flex-shrink-0" title="Available" />
+                <span className="w-2 h-2 bg-[var(--hm-brand-500)] rounded-full flex-shrink-0" title={t('common.available')} />
               )}
             </div>
             {pro.avgRating >= 4.8 && (
@@ -149,7 +150,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
           {/* Price */}
           <div className="flex items-center justify-between pt-3 border-t border-[var(--hm-border-subtle)]">
             <span className="text-xs text-[var(--hm-fg-muted)]">{t('professional.from')}</span>
-            <span className="text-lg font-bold text-[var(--hm-fg-primary)]">₾{startingPrice}</span>
+            <span className="text-lg font-bold text-[var(--hm-fg-primary)]">{currencySymbol()}{startingPrice}</span>
           </div>
         </div>
       </div>

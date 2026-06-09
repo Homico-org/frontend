@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { formatTimeAgoCompact } from '@/utils/dateUtils';
 import { Check, Clock, MoreVertical, Trash2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLanguage } from "@/contexts/LanguageContext";
 import PollOptionCard, { PollOption } from './PollOptionCard';
 
@@ -61,6 +61,21 @@ export default function PollCard({
 }: PollCardProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(poll.clientVote || null);
 
+  // Re-sync `selectedOption` with the latest poll.clientVote whenever the
+  // poll prop changes (e.g. WebSocket update arrives, or the parent
+  // refetches). Also clears the selection if the previously-picked
+  // option no longer exists in the poll's options list - otherwise a
+  // vote click would hit the backend with a stale ID and get 400.
+  useEffect(() => {
+    const optionStillExists =
+      selectedOption &&
+      poll.options.some((opt) => opt._id === selectedOption || opt.id === selectedOption);
+    if (!optionStillExists) {
+      setSelectedOption(poll.clientVote || null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poll.options, poll.clientVote]);
+
   const { t } = useLanguage();
   const [isApproving, setIsApproving] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -83,8 +98,13 @@ export default function PollCard({
 
     setIsApproving(true);
     try {
-      // Vote and approve in one action
-      await onVote(getId(poll), selectedOption);
+      // The backend's `approve` endpoint already writes both `clientVote`
+      // and `selectedOption` (polls.service.ts:242-244), so the prior
+      // `vote()` → `approve()` chain was redundant. It also created a
+      // race: if the pro closed the poll between the two calls, the vote
+      // landed but approve threw and the UI swallowed the error in a
+      // `finally`-only block. One call, one outcome, error surfaces to
+      // the parent's handler which already toasts.
       await onApprove(getId(poll), selectedOption);
     } finally {
       setIsApproving(false);
@@ -92,6 +112,14 @@ export default function PollCard({
   };
 
   const handleClose = async () => {
+    // Confirm before closing - it's a one-way transition the client
+    // can't undo on their side. Previously a slip-tap on the kebab
+    // menu would silently close the poll and the pro had no way to
+    // reopen it without delete+recreate.
+    if (typeof window !== 'undefined' && !window.confirm(t('polls.confirmClosePoll'))) {
+      setShowMenu(false);
+      return;
+    }
     setIsClosing(true);
     try {
       await onClose(getId(poll));
@@ -102,6 +130,12 @@ export default function PollCard({
   };
 
   const handleDelete = async () => {
+    // Confirm before delete - removes the poll AND all collected votes
+    // permanently.
+    if (typeof window !== 'undefined' && !window.confirm(t('polls.confirmDeletePoll'))) {
+      setShowMenu(false);
+      return;
+    }
     setIsDeleting(true);
     try {
       await onDelete(getId(poll));
@@ -152,8 +186,13 @@ export default function PollCard({
             )}
           </div>
 
-          {/* Menu for Pro (owner) */}
-          {isPro && isOwner && isActive && (
+          {/* Menu for Pro (owner). Shown for ANY non-pending status the
+              pro owns - previously gated on `isActive` only, which hid
+              the menu the moment a poll was closed or approved, leaving
+              the pro with no way to delete old polls cluttering the
+              tab. Close action stays gated on isActive (can't re-close
+              a closed poll), but Delete is always available. */}
+          {isPro && isOwner && (
             <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
@@ -168,14 +207,16 @@ export default function PollCard({
                     onClick={() => setShowMenu(false)}
                   />
                   <div className="absolute right-0 top-full mt-1 z-20 bg-[var(--hm-bg-elevated)] rounded-lg shadow-lg border border-[var(--hm-border)] py-1 min-w-[140px]">
-                    <button
-                      onClick={handleClose}
-                      disabled={isClosing}
-                      className="w-full px-3 py-2 text-left text-sm text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] flex items-center gap-2"
-                    >
-                      {isClosing ? <LoadingSpinner size="sm" color="currentColor" /> : <X className="w-4 h-4" />}
-                      {t('polls.closePoll')}
-                    </button>
+                    {isActive && (
+                      <button
+                        onClick={handleClose}
+                        disabled={isClosing}
+                        className="w-full px-3 py-2 text-left text-sm text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] flex items-center gap-2"
+                      >
+                        {isClosing ? <LoadingSpinner size="sm" color="currentColor" /> : <X className="w-4 h-4" />}
+                        {t('polls.closePoll')}
+                      </button>
+                    )}
                     <button
                       onClick={handleDelete}
                       disabled={isDeleting}

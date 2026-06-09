@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, forwardRef, InputHTMLAttributes } from 'react';
+import { useState, useEffect, useCallback, useRef, forwardRef, InputHTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { countries } from '@/contexts/LanguageContext';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import { useClickOutsideMultiple } from '@/hooks/useClickOutside';
 
 export type CountryCode = keyof typeof countries;
 
@@ -15,7 +15,7 @@ const inputVariants = cva(
   {
     variants: {
       size: {
-        sm: 'px-3 py-2 text-sm',
+        sm: 'px-3 py-2 text-base sm:text-sm',
         md: 'px-4 py-3 text-base',
         lg: 'px-5 py-4 text-lg',
       },
@@ -76,8 +76,17 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     const [selectedCountry, setSelectedCountry] = useState<CountryCode>(country);
     const [showDropdown, setShowDropdown] = useState(false);
     const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
-    const triggerRef = useClickOutside<HTMLDivElement>(() => setShowDropdown(false), showDropdown);
-    const dropdownRef = useClickOutside<HTMLDivElement>(() => setShowDropdown(false), showDropdown);
+    // The dropdown is portaled out of the trigger's DOM subtree, so a single
+    // click-outside on the trigger would treat clicks ON the dropdown as
+    // "outside" and close it (on mousedown) before a country click registers.
+    // Check BOTH the trigger and the dropdown so selecting a prefix works.
+    const triggerRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    useClickOutsideMultiple(
+      [triggerRef, dropdownRef],
+      () => setShowDropdown(false),
+      showDropdown,
+    );
 
     const actualVariant = error ? 'error' : variant;
     const countryData = countries[selectedCountry];
@@ -178,11 +187,11 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
             {...props}
           />
 
-          {/* Country dropdown — rendered in portal */}
+          {/* Country dropdown - rendered in portal */}
           {showDropdown && dropdownPos && createPortal(
             <div
               ref={dropdownRef}
-              className="fixed w-64 max-h-64 overflow-y-auto rounded-xl shadow-2xl border z-[200] animate-scale-in"
+              className="scrollbar-subtle fixed w-64 max-h-64 overflow-y-auto rounded-xl shadow-2xl border z-[200] animate-scale-in"
               style={{
                 top: dropdownPos.top,
                 left: dropdownPos.left,

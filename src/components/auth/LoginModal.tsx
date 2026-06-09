@@ -9,6 +9,8 @@ import { PasswordInput } from "@/components/ui/PasswordInput";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
+import { useToast } from "@/contexts/ToastContext";
+import { useHaptic } from "@/hooks/useHaptic";
 import {
   countries,
   CountryCode,
@@ -17,6 +19,8 @@ import {
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { trackEvent as trackClick } from "@/hooks/useTracker";
 import type { DemoAccount } from "@/types/shared";
+import { isCountryAgnostic, swapCountryPrefix } from "@/utils/countryLink";
+import { isSupportedCountry } from "@/data/countries";
 import { Lock, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -91,8 +95,10 @@ export default function LoginModal(): React.ReactElement | null {
   const { login } = useAuth();
   const { isLoginModalOpen, closeLoginModal, redirectPath, clearRedirectPath } =
     useAuthModal();
-  const { t, locale } = useLanguage();
+  const { t, locale, country: ctxCountry } = useLanguage();
   const { trackEvent } = useAnalytics();
+  const toast = useToast();
+  const haptic = useHaptic();
 
   // Form state - initialize from localStorage for returning users
   const [phone, setPhone] = useState(() => {
@@ -109,7 +115,9 @@ export default function LoginModal(): React.ReactElement | null {
       ) as CountryCode | null;
       if (saved && countries[saved]) return saved;
     }
-    return "GE";
+    // No prior login: fall back to the marketplace-aware phone country
+    // from LanguageContext so /us visitors see +1 on the login modal.
+    return (ctxCountry as CountryCode) || "GE";
   });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -179,10 +187,27 @@ export default function LoginModal(): React.ReactElement | null {
         userRole: data.user.role,
         authMethod: "mobile",
       });
+      // Acknowledge the successful login. Without this, a user who
+      // just authenticated saw the modal disappear and (depending
+      // on redirect path) might wonder whether they actually got
+      // in. Toast + haptic give two channels of confirmation.
+      toast.success(t("auth.welcomeBack"));
+      haptic("success");
       closeLoginModal();
 
+      // The AuthContext.login above already syncs `homico-marketplace`
+      // to the user's stored country and swaps the URL prefix when
+      // the current path is country-scoped. Anything we push below
+      // overrides that swap, so we mirror the same country-aware
+      // logic on whichever target we navigate to.
+      const userCountry = (data.user as { country?: string }).country;
+
       if (redirectPath) {
-        router.push(redirectPath);
+        const target =
+          userCountry && isSupportedCountry(userCountry) && !isCountryAgnostic(redirectPath)
+            ? swapCountryPrefix(redirectPath, userCountry)
+            : redirectPath;
+        router.push(target);
         clearRedirectPath();
       } else if (data.user.role === "admin") {
         router.push("/admin");
@@ -286,6 +311,12 @@ export default function LoginModal(): React.ReactElement | null {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t("auth.enterYourPassword")}
                   required
+                  // Activates iOS / Android password manager autofill
+                  // for the saved credentials of the previous login.
+                  // Without it, mobile keyboards don't surface the
+                  // password row above the keyboard.
+                  autoComplete="current-password"
+                  name="password"
                 />
               </FormGroup>
 

@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 export default function ResetPasswordPage() {
   const router = useRouter();
   const { openLoginModal } = useAuthModal();
-  const { t, locale, pick } = useLanguage();
+  const { t, locale } = useLanguage();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -177,7 +177,7 @@ export default function ResetPasswordPage() {
           {/* New Password */}
           <div>
             <PasswordInput
-              label={pick({ en: 'New Password', ka: 'ახალი პაროლი' })}
+              label={t('forgotPassword.newPassword')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t('forgotPassword.enterNewPassword')}

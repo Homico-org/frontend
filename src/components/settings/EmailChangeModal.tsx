@@ -26,7 +26,7 @@ export default function EmailChangeModal({
 }: EmailChangeModalProps) {
   const [step, setStep] = useState<'email' | 'otp' | 'success'>('email');
 
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [newEmail, setNewEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [error, setError] = useState('');
@@ -68,7 +68,7 @@ export default function EmailChangeModal({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ identifier: newEmail, type: 'email' }),
+        body: JSON.stringify({ identifier: newEmail, type: 'email', locale }),
       });
 
       if (otpRes.ok) {
@@ -145,7 +145,7 @@ export default function EmailChangeModal({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ identifier: newEmail, type: 'email' }),
+        body: JSON.stringify({ identifier: newEmail, type: 'email', locale }),
       });
     } finally {
       setIsSendingOtp(false);
@@ -177,7 +177,7 @@ export default function EmailChangeModal({
       >
         {/* Drag handle - mobile only */}
         <div className="sm:hidden flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-neutral-300" />
+          <div className="w-10 h-1 rounded-full bg-[var(--hm-border-strong)]" />
         </div>
 
         {/* Header */}
@@ -315,6 +315,8 @@ export default function EmailChangeModal({
                 onChange={(e) => setNewEmail(e.target.value)}
                 placeholder={t('settings.enterYourEmail')}
                 autoFocus
+                autoComplete="email"
+                inputMode="email"
               />
 
               <Button

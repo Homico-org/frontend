@@ -147,9 +147,12 @@ const FeedCard = React.memo(function FeedCard({
 
   // Handle both id and _id for pro (backend may return either)
   const proId = item.pro.id || (item.pro as { _id?: string })._id;
+  // Pro's marketplace, falls back to GE if not stamped yet (legacy
+  // documents pre-backfill).
+  const proCountry = ((item.pro as { country?: string }).country ?? 'GE').toLowerCase();
 
   return (
-    <Link href={`/professionals/${proId}`} className="group block h-full">
+    <Link href={`/${proCountry}/professionals/${proId}`} className="group block h-full">
       {/* Card Container with Premium Effects */}
       <motion.div
         className={`relative transition-all duration-500 h-full ${isPremium ? "game-card-premium" : ""}`}

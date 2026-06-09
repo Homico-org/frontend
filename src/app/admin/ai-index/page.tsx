@@ -1,6 +1,7 @@
 "use client";
 
 import AuthGuard from "@/components/common/AuthGuard";
+import BackButton from "@/components/common/BackButton";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -8,8 +9,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/lib/api";
-import { ArrowLeft, RefreshCw, Zap } from "lucide-react";
-import Link from "next/link";
+import { RefreshCw, Zap } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 interface IndexStats {
@@ -46,11 +46,52 @@ export default function AiIndexAdminPage() {
   }, []);
 
   useEffect(() => {
+    // Light polling so the user sees state changes (e.g. background
+    // build finishing) without needing to refresh.
+    //
+    // Self-rescheduling chain (not setInterval) with visibility +
+    // 429 awareness:
+    //   - Skip when the admin tab is hidden (no point updating a UI
+    //     the user isn't looking at)
+    //   - Double the next-attempt delay on 429, capped at 60s, so a
+    //     forgotten admin tab never contributes to a rate-limit storm
+    //
+    // Previously a bare `setInterval(loadStats, 4000)` would burn
+    // 900 requests/hour while idle and provided no relief when the
+    // backend pushed back.
     loadStats();
-    // Light polling so the user sees state changes (e.g. background build
-    // finishing) without needing to refresh.
-    const id = setInterval(loadStats, 4000);
-    return () => clearInterval(id);
+    let cancelled = false;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+    let delay = 4000;
+    const tick = async () => {
+      if (cancelled) return;
+      if (typeof document !== 'undefined' && document.hidden) {
+        timerId = setTimeout(tick, delay);
+        return;
+      }
+      try {
+        const res = await api.get<IndexStats>("/categories/admin/ai-index-stats");
+        setStats(res.data);
+        delay = 4000;
+      } catch (err) {
+        const status =
+          err && typeof err === 'object' && 'response' in err
+            ? (err as { response?: { status?: number } }).response?.status
+            : undefined;
+        if (status === 429) {
+          delay = Math.min(delay * 2, 60000);
+        }
+        console.error("Failed to load AI index stats:", err);
+      } finally {
+        setLoading(false);
+      }
+      if (!cancelled) timerId = setTimeout(tick, delay);
+    };
+    timerId = setTimeout(tick, delay);
+    return () => {
+      cancelled = true;
+      if (timerId) clearTimeout(timerId);
+    };
   }, [loadStats]);
 
   const handleRebuild = async () => {
@@ -102,14 +143,7 @@ export default function AiIndexAdminPage() {
         style={{ backgroundColor: "var(--hm-bg-page)" }}
       >
         <div className="max-w-3xl mx-auto">
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-2 text-sm mb-4 hover:opacity-80 transition-opacity"
-            style={{ color: "var(--hm-text-secondary)" }}
-          >
-            <ArrowLeft size={16} />
-            {t("nav.back")}
-          </Link>
+          <BackButton href="/admin" variant="minimal" label={t("common.back")} className="mb-4" />
 
           <div className="flex items-start gap-3 mb-6">
             <div

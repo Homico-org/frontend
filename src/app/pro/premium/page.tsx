@@ -1,5 +1,6 @@
 "use client";
 import { ACCENT_COLOR } from "@/constants/theme";
+import { features } from "@/config/features";
 
 import Header, { HeaderSpacer } from "@/components/common/Header";
 import { Badge } from "@/components/ui/badge";
@@ -562,6 +563,8 @@ export default function PremiumPlansPage() {
   }, []);
 
   const handleSelectPlan = (tierId: string) => {
+    // Payments gated off until BoG is live - no paid upgrade on prod.
+    if (!features.payments) return;
     if (!isAuthenticated) {
       router.push("/register?redirect=/pro/premium");
       return;

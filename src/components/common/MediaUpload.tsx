@@ -4,6 +4,7 @@
 import { useState, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Video } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface MediaItem {
   id: string;
@@ -20,6 +21,7 @@ interface MediaUploadProps {
 }
 
 export default function MediaUpload({ value, onChange, maxFiles = 5, maxSizeMB = 50 }: MediaUploadProps) {
+  const { t } = useLanguage();
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -34,13 +36,15 @@ export default function MediaUpload({ value, onChange, maxFiles = 5, maxSizeMB =
     Array.from(files).forEach((file) => {
       // Check total count
       if (value.length + newMedia.length >= maxFiles) {
-        setError(`Maximum ${maxFiles} files allowed`);
+        setError(t('common.uploadErrMaxFiles', { count: maxFiles }));
         return;
       }
 
       // Check file size
       if (file.size > maxSize) {
-        setError(`File "${file.name}" exceeds ${maxSizeMB}MB limit`);
+        setError(
+          t('common.uploadErrTooLarge', { name: file.name, size: maxSizeMB }),
+        );
         return;
       }
 
@@ -49,7 +53,7 @@ export default function MediaUpload({ value, onChange, maxFiles = 5, maxSizeMB =
       const isVideo = file.type.startsWith('video/');
 
       if (!isImage && !isVideo) {
-        setError(`File "${file.name}" is not a supported format`);
+        setError(t('common.uploadErrBadFormat', { name: file.name }));
         return;
       }
 
@@ -128,10 +132,10 @@ export default function MediaUpload({ value, onChange, maxFiles = 5, maxSizeMB =
           </div>
           <div>
             <p className="text-sm text-[var(--hm-fg-secondary)]">
-              <span className="font-medium text-[var(--hm-fg-primary)]">Click to upload</span> or drag and drop
+              <span className="font-medium text-[var(--hm-fg-primary)]">{t('common.uploadClickCta')}</span> {t('common.uploadOrDragDrop')}
             </p>
             <p className="text-xs text-[var(--hm-fg-muted)] mt-1">
-              Photos or videos (max {maxSizeMB}MB each, up to {maxFiles} files)
+              {t('common.uploadFormatsHint', { size: maxSizeMB, count: maxFiles })}
             </p>
           </div>
         </div>

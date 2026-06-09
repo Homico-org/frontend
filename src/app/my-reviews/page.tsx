@@ -2,6 +2,7 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import BackButton from '@/components/common/BackButton';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { MultiStarDisplay } from '@/components/ui/StarRating';
@@ -9,11 +10,11 @@ import { Tabs } from '@/components/ui/Tabs';
 import { ACCENT_COLOR } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCountryLink } from '@/hooks/useCountry';
 import { api } from '@/lib/api';
 import type { BaseEntity } from '@/types/shared';
 import { formatDateUK } from '@/utils/dateUtils';
 import {
-  ArrowLeft,
   CheckCircle,
   Clock,
   Edit3,
@@ -63,8 +64,9 @@ interface PendingReview extends BaseEntity {
 
 function MyReviewsPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { locale: language, t } = useLanguage();
+  const { t } = useLanguage();
   const router = useRouter();
+  const cl = useCountryLink();
 
   const [reviews, setReviews] = useState<PageReview[]>([]);
   const [pendingReviews, setPendingReviews] = useState<PendingReview[]>([]);
@@ -121,7 +123,7 @@ function MyReviewsPageContent() {
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
         <div className="flex flex-col items-center gap-4">
           <LoadingSpinner size="xl" variant="border" color={ACCENT_COLOR} />
-          <p className="text-sm text-[var(--hm-fg-muted)]">{language === 'ka' ? 'შეფასებები იტვირთება...' : 'Loading reviews...'}</p>
+          <p className="text-sm text-[var(--hm-fg-muted)]">{t('reviews.loadingReviews')}</p>
         </div>
       </div>
     );
@@ -132,24 +134,17 @@ function MyReviewsPageContent() {
       {/* Header Section */}
       <div className="border-b" style={{ backgroundColor: 'var(--hm-bg-page)', borderColor: 'var(--hm-border)' }}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          {/* Back Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push('/portfolio')}
-            leftIcon={<ArrowLeft className="h-4 w-4" />}
-            className="mb-4"
-          >
-            {language === 'ka' ? 'უკან' : 'Back'}
-          </Button>
+          {/* Back Button - role-aware fallback so clients (who also see
+              their reviews here) don't get bounced to /portfolio. */}
+          <BackButton variant="minimal" className="mb-4" />
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-serif font-medium text-[var(--hm-fg-primary)]">
-                {language === 'ka' ? 'ჩემი შეფასებები' : 'My Reviews'}
+                {t('reviews.myReviews')}
               </h1>
               <p className="mt-1 text-[var(--hm-fg-muted)]">
-                {language === 'ka' ? 'შეფასებები, რომლებიც დაწერეთ პროფესიონალებისთვის' : "Reviews you've written for professionals"}
+                {t('reviews.myReviewsSubtitle')}
               </p>
             </div>
           </div>
@@ -163,7 +158,7 @@ function MyReviewsPageContent() {
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-[var(--hm-fg-primary)]">{stats.total}</p>
-                  <p className="text-xs text-[var(--hm-fg-muted)]">{language === 'ka' ? 'დაწერილი' : 'Reviews Given'}</p>
+                  <p className="text-xs text-[var(--hm-fg-muted)]">{t('reviews.reviewsGiven')}</p>
                 </div>
               </div>
             </div>
@@ -175,7 +170,7 @@ function MyReviewsPageContent() {
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-[var(--hm-fg-primary)]">{stats.avgRating}</p>
-                  <p className="text-xs text-[var(--hm-fg-muted)]">{language === 'ka' ? 'საშ. შეფასება' : 'Avg. Rating'}</p>
+                  <p className="text-xs text-[var(--hm-fg-muted)]">{t('reviews.avgRatingShort')}</p>
                 </div>
               </div>
             </div>
@@ -187,7 +182,7 @@ function MyReviewsPageContent() {
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-[var(--hm-fg-primary)]">{stats.pending}</p>
-                  <p className="text-xs text-[var(--hm-fg-muted)]">{language === 'ka' ? 'მოლოდინში' : 'Pending'}</p>
+                  <p className="text-xs text-[var(--hm-fg-muted)]">{t('reviews.reviewsPending')}</p>
                 </div>
               </div>
             </div>
@@ -199,7 +194,7 @@ function MyReviewsPageContent() {
                 </div>
                 <div>
                   <p className="text-2xl font-semibold text-[var(--hm-fg-primary)]">{stats.withPhotos}</p>
-                  <p className="text-xs text-[var(--hm-fg-muted)]">{language === 'ka' ? 'ფოტოებით' : 'With Photos'}</p>
+                  <p className="text-xs text-[var(--hm-fg-muted)]">{t('reviews.withPhotos')}</p>
                 </div>
               </div>
             </div>
@@ -230,17 +225,17 @@ function MyReviewsPageContent() {
                   <Star className="h-8 w-8 text-[var(--hm-warning-500)]" />
                 </div>
                 <h3 className="text-lg font-medium text-[var(--hm-fg-primary)] mb-2">
-                  {language === 'ka' ? 'შეფასებები ჯერ არ არის' : 'No reviews yet'}
+                  {t('reviews.noReviewsGiven')}
                 </h3>
                 <p className="text-[var(--hm-fg-muted)] mb-6 max-w-md mx-auto">
-                  {language === 'ka' ? 'პროფესიონალებთან პროექტების დასრულების შემდეგ შეგიძლიათ შეფასებების დაწერა' : 'Once you complete projects with professionals, you can leave reviews to help others'}
+                  {t('reviews.noReviewsGivenBody')}
                 </p>
                 <Link
                   href="/portfolio"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--hm-n-700)] text-white rounded-xl hover:bg-[var(--hm-n-700)] transition-colors font-medium"
                 >
                   <Search className="h-5 w-5" />
-                  {language === 'ka' ? 'სპეციალისტების ნახვა' : 'Find Professionals'}
+                  {t('header.findProfessionals')}
                 </Link>
               </div>
             ) : (
@@ -254,7 +249,7 @@ function MyReviewsPageContent() {
                     <div className="p-5 sm:p-6">
                       <div className="flex items-start gap-4">
                         {/* Pro Avatar */}
-                        <Link href={`/professionals/${review.proId.id}`} className="flex-shrink-0">
+                        <Link href={cl(`/professionals/${review.proId.id}`)} className="flex-shrink-0">
                           <Avatar
                             src={review.proId.avatar}
                             name={review.proId.name}
@@ -267,7 +262,7 @@ function MyReviewsPageContent() {
                           <div className="flex items-start justify-between gap-4">
                             <div>
                               <Link
-                                href={`/professionals/${review.proId.id}`}
+                                href={cl(`/professionals/${review.proId.id}`)}
                                 className="font-medium text-[var(--hm-fg-primary)] hover:text-[var(--hm-fg-secondary)] transition-colors"
                               >
                                 {review.proId.name}
@@ -305,13 +300,13 @@ function MyReviewsPageContent() {
                                       className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
                                     >
                                       <Edit3 className="h-4 w-4" />
-                                      {language === 'ka' ? 'რედაქტირება' : 'Edit Review'}
+                                      {t('reviews.editReview')}
                                     </button>
                                     <button
                                       className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)]"
                                     >
                                       <Trash2 className="h-4 w-4" />
-                                      {language === 'ka' ? 'წაშლა' : 'Delete'}
+                                      {t('common.delete')}
                                     </button>
                                   </div>
                                 </>
@@ -341,7 +336,7 @@ function MyReviewsPageContent() {
                           {review.projectId && (
                             <div className="mt-4 pt-3 border-t" style={{ borderColor: 'var(--hm-border)' }}>
                               <p className="text-xs text-[var(--hm-fg-muted)]">
-                                {language === 'ka' ? 'პროექტი' : 'Project'}: <span className="font-medium text-[var(--hm-fg-secondary)]">{review.projectId.title}</span>
+                                {t('reviews.project')}: <span className="font-medium text-[var(--hm-fg-secondary)]">{review.projectId.title}</span>
                               </p>
                             </div>
                           )}
@@ -364,10 +359,10 @@ function MyReviewsPageContent() {
                   <CheckCircle className="h-8 w-8 text-[var(--hm-brand-500)]" />
                 </div>
                 <h3 className="text-lg font-medium text-[var(--hm-fg-primary)] mb-2">
-                  {language === 'ka' ? 'ყველაფერი შესრულებულია!' : 'All caught up!'}
+                  {t('reviews.allCaughtUp')}
                 </h3>
                 <p className="text-[var(--hm-fg-muted)] max-w-md mx-auto">
-                  {language === 'ka' ? 'მოლოდინში მყოფი შეფასებები არ გაქვთ. პროფესიონალებთან პროექტების დასრულების შემდეგ შეგიძლიათ შეფასებების დაწერა.' : 'You have no pending reviews. Complete more projects to leave feedback for professionals.'}
+                  {t('reviews.allCaughtUpBody')}
                 </p>
               </div>
             ) : (
@@ -395,19 +390,19 @@ function MyReviewsPageContent() {
                                 {pending.proId.title}
                               </p>
                               <p className="text-xs text-[var(--hm-fg-muted)] mt-1">
-                                {language === 'ka' ? 'დასრულდა' : 'Completed on'} {formatDateUK(pending.completedAt)}
+                                {t('reviews.completedOnDate')} {formatDateUK(pending.completedAt)}
                               </p>
                             </div>
                             <Button
                               size="sm"
                               leftIcon={<Star className="h-4 w-4" />}
                             >
-                              {language === 'ka' ? 'შეფასების დაწერა' : 'Write Review'}
+                              {t('reviews.writeReviewCta')}
                             </Button>
                           </div>
                           <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--hm-bg-page)' }}>
                             <p className="text-sm text-[var(--hm-fg-secondary)]">
-                              {language === 'ka' ? 'პროექტი' : 'Project'}: <span className="font-medium">{pending.jobId.title}</span>
+                              {t('reviews.project')}: <span className="font-medium">{pending.jobId.title}</span>
                             </p>
                           </div>
                         </div>

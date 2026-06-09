@@ -3,6 +3,7 @@
 import AuthGuard from "@/components/common/AuthGuard";
 import Avatar from "@/components/common/Avatar";
 import JobCard from "@/components/common/JobCard";
+import { ProjectInvitations } from "@/components/projects/ProjectInvitations";
 import ReviewItem from "@/components/professionals/ReviewItem";
 import type { Review } from "@/components/professionals/ReviewItem";
 import { Badge } from "@/components/ui/badge";
@@ -10,14 +11,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import SchedulePanel from "@/components/settings/SchedulePanel";
+import ProPortfolioNudge from "@/components/dashboard/ProPortfolioNudge";
+import SlaStatusBanner from "@/components/sla/SlaStatusBanner";
 import SidePanel from "@/components/ui/SidePanel";
 import { features } from "@/config/features";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJobsContext } from "@/contexts/JobsContext";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, countries, type CountryCode } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
+import { useCountryLink } from "@/hooks/useCountry";
 import { api } from "@/lib/api";
 import { storage } from "@/services/storage";
 import type {
@@ -25,22 +29,24 @@ import type {
   Proposal,
   ProjectStage,
 } from "@/types/shared";
-import { formatBudget } from "@/utils/currencyUtils";
+import { formatBudget, type Currency } from "@/utils/currencyUtils";
+import { currencyForCountry } from "@/data/countries";
+import { formatCurrency } from "@/utils/currency";
+import { extractApiErrorMessage } from "@/utils/errorUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
-  ArrowUpRight,
   Briefcase,
   Calendar,
   CheckCircle,
   CheckCircle2,
+  ChevronRight,
   Copy,
   ExternalLink,
   MapPin,
   MessageSquare,
   Send,
   Star,
-  Upload,
   UserCog,
   Users,
   X,
@@ -49,6 +55,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, ReactNode } from "react";
+import ProMilestonePayments from "@/components/projects/ProMilestonePayments";
 
 type WorkProposal = Omit<Proposal, "jobId"> & { jobId: Job };
 
@@ -109,40 +116,163 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between mb-3">
-      <div className="flex items-center gap-2">
-        <h2 className="text-sm font-bold" style={{ color: "var(--hm-fg-primary)" }}>{title}</h2>
+      <div className="flex items-center gap-2.5">
+        {/* Brand-accent ornament + title pair. The thin 4px tab next to
+            the title gives every section the same anchor, helping the
+            eye scan vertically through a busy dashboard. */}
+        <span
+          className="w-1 h-4 rounded-full shrink-0"
+          style={{ backgroundColor: ACCENT_COLOR }}
+          aria-hidden="true"
+        />
+        <h2 className="text-[15px] font-bold" style={{ color: "var(--hm-fg-primary)" }}>{title}</h2>
         {count !== undefined && count > 0 && (
           <span
-            className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-bold text-white rounded-full"
-            style={{ backgroundColor: ACCENT_COLOR }}
+            className="flex items-center justify-center min-w-[20px] h-[18px] px-1.5 text-[10.5px] font-bold tabular-nums rounded-full"
+            style={{
+              backgroundColor: `${ACCENT_COLOR}15`,
+              color: ACCENT_COLOR,
+              border: `1px solid ${ACCENT_COLOR}30`,
+            }}
           >
             {count}
           </span>
         )}
       </div>
       {viewAllHref ? (
-        <Link href={viewAllHref} className="text-xs font-medium flex items-center gap-0.5 hover:underline" style={{ color: ACCENT_COLOR }}>
-          {viewAllLabel || "View all"} <ArrowRight className="w-3 h-3" />
+        <Link
+          href={viewAllHref}
+          className="group text-xs font-semibold flex items-center gap-0.5 transition-colors hover:opacity-80"
+          style={{ color: ACCENT_COLOR }}
+        >
+          {viewAllLabel || "View all"}
+          <ArrowRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" />
         </Link>
       ) : onViewAll ? (
-        <button onClick={onViewAll} className="text-xs font-medium flex items-center gap-0.5 hover:underline" style={{ color: ACCENT_COLOR }}>
-          {viewAllLabel || "View all"} <ArrowRight className="w-3 h-3" />
+        <button
+          onClick={onViewAll}
+          className="group text-xs font-semibold flex items-center gap-0.5 transition-colors hover:opacity-80"
+          style={{ color: ACCENT_COLOR }}
+        >
+          {viewAllLabel || "View all"}
+          <ArrowRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" />
         </button>
       ) : null}
     </div>
   );
 }
 
-/* ── Empty state ── */
-function EmptyBlock({ icon: Icon, text, subtext }: { icon: typeof Calendar; text: string; subtext?: string }) {
+/* ── Empty state ──
+ * Same warm IconBadge-led pattern as the bookings empty state, scaled
+ * down to fit inline within a section. Grey muted icons read as broken
+ * (per NN/g empty-state research); the brand-accent IconBadge reads as
+ * "nothing yet" framing instead of "something failed".
+ */
+function EmptyBlock({ icon: Icon, text, subtext, actionLabel, actionHref }: { icon: typeof Calendar; text: string; subtext?: string; actionLabel?: string; actionHref?: string }) {
   return (
     <motion.div
       variants={cardVariants}
-      className="rounded-xl py-8 text-center bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)]"
+      className="rounded-xl py-7 px-4 text-center"
+      style={{
+        backgroundColor: "var(--hm-bg-elevated)",
+        border: "1px solid var(--hm-border-subtle)",
+        boxShadow: "0 1px 2px rgba(15,23,42,0.03)",
+      }}
     >
-      <Icon className="w-6 h-6 mx-auto mb-2 text-[var(--hm-fg-muted)]" />
-      <p className="text-xs font-medium" style={{ color: "var(--hm-fg-muted)" }}>{text}</p>
-      {subtext && <p className="text-[11px] mt-0.5 text-neutral-400/70">{subtext}</p>}
+      <div
+        className="inline-flex items-center justify-center w-10 h-10 rounded-full mx-auto mb-2.5"
+        style={{
+          background: `linear-gradient(135deg, ${ACCENT_COLOR}18 0%, ${ACCENT_COLOR}08 100%)`,
+        }}
+      >
+        <Icon className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
+      </div>
+      <p className="text-sm font-semibold" style={{ color: "var(--hm-fg-primary)" }}>{text}</p>
+      {subtext && (
+        <p className="text-xs mt-1" style={{ color: "var(--hm-fg-muted)" }}>{subtext}</p>
+      )}
+      {actionLabel && actionHref && (
+        <Link href={actionHref} className="inline-block mt-3">
+          <Button variant="default" size="sm" rightIcon={<ArrowRight />}>
+            {actionLabel}
+          </Button>
+        </Link>
+      )}
+    </motion.div>
+  );
+}
+
+/* ── Action row ──
+ * One task in the "Needs your attention" queue. A full-width, ≥44px
+ * tappable row (Fitts's Law) framed as a thing to DO, not a number to
+ * read: icon tile + title + one-line subtitle + count badge + chevron.
+ * `accent` carries urgency (red = penalty risk, green = get paid, etc.).
+ */
+function ActionRow({
+  icon: Icon,
+  accent,
+  title,
+  subtitle,
+  count,
+  href,
+  index,
+}: {
+  icon: typeof Briefcase;
+  accent: string;
+  title: string;
+  subtitle?: string;
+  count?: number;
+  href: string;
+  index: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.28, delay: 0.04 + index * 0.05 }}
+    >
+      <Link
+        href={href}
+        className="group flex items-center gap-3 px-3.5 py-3 min-h-[56px] rounded-xl w-full transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md active:scale-[0.99]"
+        style={{
+          backgroundColor: "var(--hm-bg-elevated)",
+          border: "1px solid var(--hm-border-subtle)",
+          boxShadow:
+            "0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.04)",
+        }}
+      >
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{
+            background: `linear-gradient(135deg, ${accent}1f 0%, ${accent}0a 100%)`,
+            boxShadow: `inset 0 0 0 1px ${accent}1a`,
+          }}
+        >
+          <Icon className="w-[18px] h-[18px]" style={{ color: accent }} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[13px] font-semibold leading-tight" style={{ color: "var(--hm-fg-primary)" }}>
+            {title}
+          </p>
+          {subtitle && (
+            <p className="text-[11px] mt-0.5 truncate" style={{ color: "var(--hm-fg-muted)" }}>
+              {subtitle}
+            </p>
+          )}
+        </div>
+        {count !== undefined && count > 0 && (
+          <span
+            className="flex items-center justify-center min-w-[22px] h-[22px] px-1.5 text-[11px] font-bold tabular-nums rounded-full flex-shrink-0"
+            style={{ backgroundColor: accent, color: "#fff" }}
+          >
+            {count > 99 ? "99+" : count}
+          </span>
+        )}
+        <ChevronRight
+          className="w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
+          style={{ color: "var(--hm-fg-muted)" }}
+        />
+      </Link>
     </motion.div>
   );
 }
@@ -172,45 +302,45 @@ function ProfileCompletionCard({
   return (
     <motion.div variants={itemVariants} className="mb-6">
       <div
-        className="rounded-xl border p-4"
+        className="rounded-xl p-3.5"
         style={{
-          borderColor: `${ACCENT_COLOR}30`,
-          background: `linear-gradient(135deg, ${ACCENT_COLOR}08 0%, ${ACCENT_COLOR}04 100%)`,
+          backgroundColor: "var(--hm-bg-elevated)",
+          border: "1px solid var(--hm-border-subtle)",
         }}
       >
-        {/* Header row */}
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h2 className="text-sm font-bold" style={{ color: "var(--hm-fg-primary)" }}>
+        {/* Header row - slimmer 40px ring so this reads as a quiet nudge,
+            not a hero card competing with the work sections above. */}
+        <div className="flex items-center gap-3 mb-3">
+          <div className="relative w-10 h-10 flex-shrink-0">
+            <svg className="w-10 h-10 -rotate-90" viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="16" fill="none" strokeWidth="3.5" stroke="var(--hm-border-subtle)" />
+              <circle
+                cx="20"
+                cy="20"
+                r="16"
+                fill="none"
+                strokeWidth="3.5"
+                stroke={ACCENT_COLOR}
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 16}`}
+                strokeDashoffset={`${2 * Math.PI * 16 * (1 - percent / 100)}`}
+                style={{ transition: "stroke-dashoffset 0.6s ease" }}
+              />
+            </svg>
+            <span
+              className="absolute inset-0 flex items-center justify-center text-[10px] font-bold"
+              style={{ color: ACCENT_COLOR }}
+            >
+              {percent}%
+            </span>
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-[13px] font-bold" style={{ color: "var(--hm-fg-primary)" }}>
               {t("mySpace.profileCompletion")}
             </h2>
             <p className="text-[11px]" style={{ color: "var(--hm-fg-muted)" }}>
               {t("mySpace.profileCompletionSubtitle")}
             </p>
-          </div>
-          {/* Circular progress */}
-          <div className="relative w-12 h-12 flex-shrink-0">
-            <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
-              <circle cx="24" cy="24" r="20" fill="none" strokeWidth="4" stroke="var(--hm-border-subtle)" />
-              <circle
-                cx="24"
-                cy="24"
-                r="20"
-                fill="none"
-                strokeWidth="4"
-                stroke={ACCENT_COLOR}
-                strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 20}`}
-                strokeDashoffset={`${2 * Math.PI * 20 * (1 - percent / 100)}`}
-                style={{ transition: "stroke-dashoffset 0.6s ease" }}
-              />
-            </svg>
-            <span
-              className="absolute inset-0 flex items-center justify-center text-[11px] font-bold"
-              style={{ color: ACCENT_COLOR }}
-            >
-              {percent}%
-            </span>
           </div>
         </div>
 
@@ -253,8 +383,10 @@ function ProfileCompletionCard({
 
 function MySpaceContent() {
   const { user } = useAuth();
-  const { t, locale, pick } = useLanguage();
+  const { t, locale, pick, country: ctxCountry } = useLanguage();
+  const phonePlaceholder = `${countries[ctxCountry as CountryCode]?.phonePrefix ?? '+995'} ${countries[ctxCountry as CountryCode]?.placeholder ?? '5XX XXX XXX'}`;
   const { getCategoryLabel } = useCategoryLabels();
+  const cl = useCountryLink();
   const { savedJobIds, handleSaveJob, appliedJobIds } = useJobsContext();
   const toast = useToast();
   const router = useRouter();
@@ -264,8 +396,13 @@ function MySpaceContent() {
   const [workProposals, setWorkProposals] = useState<WorkProposal[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [newJobs, setNewJobs] = useState<Job[]>([]);
-  const [myPostedJobs, setMyPostedJobs] = useState<Job[]>([]);
+  const [newJobsTotal, setNewJobsTotal] = useState(0);
   const [proProfile, setProProfile] = useState<Record<string, unknown> | null>(null);
+
+  // Action-queue signals (all from existing endpoints).
+  const [proposalUpdatesCount, setProposalUpdatesCount] = useState(0);
+  const [bookingsToStart, setBookingsToStart] = useState(0);
+  const [bookingsToComplete, setBookingsToComplete] = useState(0);
 
   // Reviews - request section
   const [reviewLink, setReviewLink] = useState("");
@@ -301,15 +438,16 @@ function MySpaceContent() {
   const fetchData = useCallback(async () => {
     if (!user?.id) return;
     try {
-      const [rStats, proposalsRes, reviewsRes, jobsRes, reviewLinkRes, myJobsRes, profileRes] =
+      const [rStats, proposalsRes, reviewsRes, jobsRes, reviewLinkRes, profileRes, updatesRes, bookingsRes] =
         await Promise.allSettled([
           api.get("/reviews/stats/my"),
           api.get("/jobs/my-proposals/list"),
           api.get(`/reviews/pro/${user.id}`),
-          api.get("/jobs?page=1&limit=6&sort=newest"),
+          api.get("/jobs?page=1&limit=3&sort=newest"),
           api.get("/reviews/request-link"),
-          api.get("/jobs/my-jobs"),
           api.get("/users/me"),
+          api.get("/jobs/counters/proposal-updates"),
+          features.bookings ? api.get("/bookings/my") : Promise.resolve({ data: [] }),
         ]);
       if (rStats.status === "fulfilled") setReviewStats(rStats.value.data);
       if (profileRes.status === "fulfilled") setProProfile(profileRes.value.data as Record<string, unknown>);
@@ -325,15 +463,28 @@ function MySpaceContent() {
       }
       if (jobsRes.status === "fulfilled") {
         const d = jobsRes.value.data;
-        setNewJobs(d.data || d.jobs || []);
+        const list = d.data || d.jobs || [];
+        setNewJobs(list);
+        setNewJobsTotal(d.total ?? d.totalCount ?? d.pagination?.total ?? list.length);
       }
       if (reviewLinkRes.status === "fulfilled") {
         setReviewLink(reviewLinkRes.value.data.link || "");
       }
-      if (myJobsRes.status === "fulfilled") {
-        const raw = myJobsRes.value.data;
-        const allJobs: Job[] = Array.isArray(raw) ? raw : raw?.data || raw?.jobs || [];
-        setMyPostedJobs(allJobs);
+      if (updatesRes.status === "fulfilled") {
+        setProposalUpdatesCount(updatesRes.value.data?.count ?? 0);
+      }
+      if (bookingsRes.status === "fulfilled") {
+        // /bookings/my returns bookings where the user is pro OR client.
+        // Keep only the pro-side ones (professional may be populated or a
+        // raw id) and bucket by the status that needs the pro to act.
+        const raw = bookingsRes.value.data;
+        const arr: any[] = Array.isArray(raw) ? raw : raw?.data || raw?.bookings || [];
+        const mine = arr.filter((b) => {
+          const proId = b?.professional?._id ?? b?.professional?.id ?? b?.professional;
+          return String(proId) === String(user.id);
+        });
+        setBookingsToStart(mine.filter((b) => b.status === "confirmed").length);
+        setBookingsToComplete(mine.filter((b) => b.status === "in_progress").length);
       }
     } catch {
       // silently fail
@@ -351,7 +502,8 @@ function MySpaceContent() {
     return () => window.removeEventListener('focus', handleFocus);
   }, [fetchData]);
 
-  /* ── Active work ── */
+  /* ── My work: active + completed (the retired /my-work page now lives
+     here as tabs). ── */
   const activeWork = useMemo(() => {
     return workProposals
       .filter((p) => p.status === "accepted" && p.projectTracking?.currentStage !== "completed")
@@ -361,6 +513,23 @@ function MySpaceContent() {
         return bT - aT;
       });
   }, [workProposals]);
+
+  const completedWork = useMemo(() => {
+    return workProposals
+      .filter(
+        (p) =>
+          p.projectTracking?.currentStage === "completed" ||
+          p.status === "completed",
+      )
+      .sort((a, b) => {
+        const aT = a.projectTracking?.completedAt ? new Date(a.projectTracking.completedAt).getTime() : 0;
+        const bT = b.projectTracking?.completedAt ? new Date(b.projectTracking.completedAt).getTime() : 0;
+        return bT - aT;
+      });
+  }, [workProposals]);
+
+  const [workTab, setWorkTab] = useState<"active" | "completed">("active");
+  const workList = workTab === "active" ? activeWork : completedWork;
 
   /* ── Review actions ── */
   const copyLink = async () => {
@@ -395,9 +564,8 @@ function MySpaceContent() {
       setInvitePhone("");
       setInviteName("");
       fetchData();
-    } catch (err: any) {
-      const message = err.response?.data?.message || t("common.error");
-      toast.error(t("common.error"), message);
+    } catch (err) {
+      toast.error(t("common.error"), extractApiErrorMessage(err, t("common.error")));
     } finally {
       setIsSendingInvite(false);
     }
@@ -488,13 +656,56 @@ function MySpaceContent() {
     ];
   })();
 
-  const reviewValue = reviewStats?.totalReviews
-    ? `${reviewStats.totalReviews} · ★ ${reviewStats.averageRating?.toFixed(1) ?? "—"}`
-    : "0";
-
-  const statItems = [
-    { label: t("mySpace.manageReviews"), value: reviewValue, icon: Star, accent: "#16A34A", onClick: () => setShowReviewsModal(true) },
-  ];
+  // "Needs your attention" queue. Each entry is a thing the pro must DO,
+  // ordered by urgency: a client engaged your bid → finish work to get
+  // paid → start committed work. Only rows with count > 0 are shown; the
+  // SLA penalty (the most urgent signal) stays in the banner above so it
+  // isn't duplicated here.
+  const actionItems: {
+    key: string;
+    icon: typeof Briefcase;
+    accent: string;
+    title: string;
+    subtitle: string;
+    count: number;
+    href: string;
+  }[] = [
+    proposalUpdatesCount > 0 && {
+      key: "proposal-updates",
+      icon: MessageSquare,
+      accent: "#3B82F6",
+      title: t("mySpace.actionProposalUpdates"),
+      subtitle: t("mySpace.actionProposalUpdatesSub"),
+      count: proposalUpdatesCount,
+      href: "/my-proposals",
+    },
+    bookingsToComplete > 0 && {
+      key: "complete-booked",
+      icon: CheckCircle2,
+      accent: "#16A34A",
+      title: t("mySpace.actionCompleteBooked"),
+      subtitle: t("mySpace.actionCompleteBookedSub"),
+      count: bookingsToComplete,
+      href: "/bookings",
+    },
+    bookingsToStart > 0 && {
+      key: "start-booked",
+      icon: Calendar,
+      accent: ACCENT_COLOR,
+      title: t("mySpace.actionStartBooked"),
+      subtitle: t("mySpace.actionStartBookedSub"),
+      count: bookingsToStart,
+      href: "/bookings",
+    },
+  ].filter(Boolean) as {
+    key: string;
+    icon: typeof Briefcase;
+    accent: string;
+    title: string;
+    subtitle: string;
+    count: number;
+    href: string;
+  }[];
 
   /* ── Work card renderer ── */
   const renderWorkCard = (proposal: WorkProposal, index: number) => {
@@ -514,9 +725,25 @@ function MySpaceContent() {
       >
         <Link
           href={`/jobs/${job.id}`}
-          className="group flex rounded-xl overflow-hidden bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] transition-shadow hover:shadow-md"
+          className="group flex rounded-xl overflow-hidden transition-all duration-200 hover:-translate-y-[1px] hover:shadow-lg"
+          style={{
+            backgroundColor: "var(--hm-bg-elevated)",
+            border: "1px solid var(--hm-border-subtle)",
+            boxShadow:
+              "0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.04)",
+          }}
         >
-          <div className="w-1 flex-shrink-0" style={{ backgroundColor: stageConfig?.color || ACCENT_COLOR }} />
+          {/* Stage-color rail: 4px with a subtle inset glow, matching the
+              booking card's rail treatment so the surfaces share one
+              visual language. */}
+          <div
+            className="w-1 flex-shrink-0 self-stretch my-3 ml-2 rounded-full"
+            style={{
+              backgroundColor: stageConfig?.color || ACCENT_COLOR,
+              boxShadow: `0 0 8px ${stageConfig?.color || ACCENT_COLOR}40`,
+            }}
+            aria-hidden="true"
+          />
           {firstImage && (
             <div className="relative hidden sm:block w-20 lg:w-28 flex-shrink-0 bg-[var(--hm-bg-tertiary)]">
               <Image src={storage.getFileUrl(firstImage)} alt="" fill sizes="(min-width: 1024px) 112px, 80px" className="object-cover" />
@@ -530,7 +757,11 @@ function MySpaceContent() {
                 {stageConfig && <Badge variant="info" size="sm">{pick({ en: stageConfig.en, ka: stageConfig.ka })}</Badge>}
               </div>
               <span className="text-xs font-bold whitespace-nowrap" style={{ color: "var(--hm-fg-primary)" }}>
-                {agreedPrice ? `${agreedPrice.toLocaleString()}₾` : formatBudget(job, t)}
+                {agreedPrice
+                  ? formatCurrency(agreedPrice, {
+                      country: job.country ?? 'GE',
+                    })
+                  : formatBudget(job, t, currencyForCountry(job.country) as Currency)}
               </span>
             </div>
             <h3 className="text-[13px] font-semibold line-clamp-1 mb-1" style={{ color: "var(--hm-fg-primary)" }}>{job.title}</h3>
@@ -569,47 +800,61 @@ function MySpaceContent() {
       animate="visible"
       className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4 sm:py-5"
     >
-      {/* ── Header ── */}
-      <motion.div variants={itemVariants} className="mb-5 space-y-3">
-        <div className="flex items-center gap-3">
-          {user && (
-            <Avatar src={user.avatar} name={user.name} size="lg" rounded="xl" className="w-10 h-10 flex-shrink-0" />
-          )}
-          <div className="min-w-0 flex-1">
-            <h1 className="text-base sm:text-lg font-bold" style={{ color: "var(--hm-fg-primary)" }}>
-              {t("mySpace.welcomeBack")}{firstName ? `, ${firstName}` : ""} 👋
-            </h1>
-            <p className="text-xs" style={{ color: "var(--hm-fg-muted)" }}>{t("mySpace.subtitle")}</p>
-          </div>
+      {/* ── Header ── One compact row: identity on the left, actions on
+           the right. The standalone DASHBOARD eyebrow and the subtitle
+           were removed so the work-winning KPIs below land in the
+           first viewport instead of greeting chrome (F-pattern: lead
+           with value, not a salutation). Actions go icon-only on <sm so
+           the row never wraps with longer Georgian labels. */}
+      <motion.div variants={itemVariants} className="mb-5 flex items-center gap-3">
+        {user && (
+          <Avatar src={user.avatar} name={user.name} size="lg" rounded="xl" className="w-10 h-10 flex-shrink-0" />
+        )}
+        <div className="min-w-0 flex-1">
+          <h1 className="text-base sm:text-lg font-bold truncate" style={{ color: "var(--hm-fg-primary)" }}>
+            {t("mySpace.welcomeBack")}{firstName ? `, ${firstName}` : ""}
+          </h1>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {features.bookings && (
-            <button
-              onClick={() => setShowSchedule(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: `${ACCENT_COLOR}15`, color: ACCENT_COLOR }}
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              {t("settings.availability")}
-            </button>
-          )}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Mobile: 36px icon-only square */}
           <Link
             href="/pro/profile-setup"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white hover:opacity-90 transition-opacity"
+            aria-label={t("mySpace.editProfile")}
+            title={t("mySpace.editProfile")}
+            className="sm:hidden shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-white transition-all active:scale-95"
             style={{ backgroundColor: ACCENT_COLOR }}
           >
-            <UserCog className="w-3.5 h-3.5" />
-            {t("mySpace.editProfile")}
+            <UserCog className="w-4 h-4" />
           </Link>
-          {user && (
-            <Link
-              href={`/professionals/${user.id}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity"
-              style={{ border: "1px solid var(--hm-border)", color: "var(--hm-fg-secondary)" }}
-            >
-              <ArrowUpRight className="w-3.5 h-3.5" />
-              {t("mySpace.viewProfile")}
-            </Link>
+          {/* sm+: full labeled primary button */}
+          <Link href="/pro/profile-setup" className="hidden sm:inline-flex shrink-0">
+            <Button variant="default" size="sm" leftIcon={<UserCog />}>
+              {t("mySpace.editProfile")}
+            </Button>
+          </Link>
+          {features.bookings && (
+            <>
+              {/* Mobile: 36px icon-only square */}
+              <button
+                type="button"
+                onClick={() => setShowSchedule(true)}
+                aria-label={t("settings.availability")}
+                title={t("settings.availability")}
+                className="sm:hidden shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 transition-all active:scale-95"
+              >
+                <Calendar className="w-4 h-4" />
+              </button>
+              {/* sm+: full labeled ghost-button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSchedule(true)}
+                leftIcon={<Calendar />}
+                className="hidden sm:inline-flex shrink-0 text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 hover:text-[var(--hm-brand-500)]"
+              >
+                {t("settings.availability")}
+              </Button>
+            </>
           )}
         </div>
       </motion.div>
@@ -622,6 +867,12 @@ function MySpaceContent() {
         className="hidden"
         onChange={handleAvatarFileChange}
       />
+
+      {/* ── SLA penalty banner ── Hidden when level is 'none'.
+           Reads slaPenaltyLevel / slaDemotedUntil / deactivatedUntil
+           from the pro's own user record. Mounted FIRST so the most
+           urgent signal is at the top of the dashboard. */}
+      <SlaStatusBanner />
 
       {/* ── Email prompt banner ── */}
       {!user?.email && !emailPromptDismissed && (
@@ -657,128 +908,150 @@ function MySpaceContent() {
         </motion.div>
       )}
 
-      {/* ── Stats ── */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
-        {statItems.map((s, i) => {
-          const Icon = s.icon;
-          return (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.1 + i * 0.05 }}
+      {/* ── Portfolio activation hero ── The #1 supply lever: only ~5% of pros
+           have any work samples, and a portfolio is what converts a browsing
+           client into a hire. Surfaced at the top (not buried in the
+           completion checklist) for pros with an empty portfolio; self-hides
+           once they add one. */}
+      {isPro && !!proProfile &&
+        ((proProfile.portfolioProjects as unknown[] | undefined)?.length ?? 0) === 0 && (
+          <motion.div variants={itemVariants}>
+            <ProPortfolioNudge
+              onAdd={() => router.push("/pro/profile-setup/portfolio")}
+            />
+          </motion.div>
+        )}
+
+      {/* ── "Needs your attention" queue ── THE HERO. Replaces the passive
+           KPI count strip with a worklist: each row is a task to DO, not a
+           number to read, sorted by urgency (client engaged → get paid →
+           start work). When nothing's pending, a calm "all caught up" row
+           turns the idle state into the growth prompt. */}
+      <motion.section variants={itemVariants} className="mb-6">
+        <SectionHeader title={t("mySpace.attention")} count={actionItems.length} />
+        {actionItems.length > 0 ? (
+          <div className="space-y-2">
+            {actionItems.map((a, i) => (
+              <ActionRow
+                key={a.key}
+                index={i}
+                icon={a.icon}
+                accent={a.accent}
+                title={a.title}
+                subtitle={a.subtitle}
+                count={a.count}
+                href={a.href}
+              />
+            ))}
+          </div>
+        ) : (
+          <Link
+            href={cl("/jobs")}
+            className="group flex items-center gap-3 px-3.5 py-3.5 rounded-xl w-full transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md active:scale-[0.99]"
+            style={{
+              backgroundColor: "var(--hm-bg-elevated)",
+              border: "1px solid var(--hm-border-subtle)",
+              boxShadow:
+                "0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.04)",
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{
+                background: "linear-gradient(135deg, #16A34A1f 0%, #16A34A0a 100%)",
+                boxShadow: "inset 0 0 0 1px #16A34A1a",
+              }}
             >
-              <button
-                onClick={s.onClick}
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] w-full text-left transition-all duration-200 cursor-pointer hover:border-[var(--hm-border-strong)] hover:shadow-md hover:scale-[1.02] active:scale-[0.98] group"
-              >
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
-                  style={{ backgroundColor: `${s.accent}12` }}
-                >
-                  <Icon className="w-4 h-4" style={{ color: s.accent }} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] text-[var(--hm-fg-muted)] truncate">{s.label}</p>
-                  <p className="text-sm font-bold leading-tight" style={{ color: "var(--hm-fg-primary)" }}>{s.value}</p>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-[var(--hm-fg-muted)] group-hover:text-[var(--hm-fg-muted)] transition-colors flex-shrink-0" />
-              </button>
-            </motion.div>
-          );
-        })}
-      </motion.div>
+              <CheckCircle2 className="w-[18px] h-[18px]" style={{ color: "#16A34A" }} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-semibold leading-tight" style={{ color: "var(--hm-fg-primary)" }}>
+                {t("mySpace.allCaughtUp")}
+              </p>
+              <p className="text-[11px] mt-0.5 truncate" style={{ color: "var(--hm-fg-muted)" }}>
+                {t("mySpace.allCaughtUpSub", { count: newJobsTotal })}
+              </p>
+            </div>
+            <ArrowRight
+              className="w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
+              style={{ color: ACCENT_COLOR }}
+            />
+          </Link>
+        )}
+      </motion.section>
 
-      {/* ── Profile Completion (pro only) ── */}
-      {isPro && completionItems.length > 0 && (
-        <ProfileCompletionCard
-          items={completionItems}
-          onAvatarUpload={() => avatarInputRef.current?.click()}
-          onShareReviewLink={() => setShowReviewsModal(true)}
-        />
-      )}
-
-      {/* ── Active Work (pro + admin) ── */}
+      {/* ── Active Work (pro + admin) ── The "is my money safe?" anchor.
+           Promoted directly under the KPIs so won work is in the first
+           screen. Empty state CTAs straight into Find Jobs (next step,
+           not a dead-end). */}
       {(isPro || isAdmin) && (
         <motion.section variants={itemVariants} className="mb-6">
+          {/* Pending project-engagement invites (renders nothing when empty). */}
+          <ProjectInvitations />
           <SectionHeader
-            title={t("mySpace.activeWork")}
-            count={activeWork.length}
-            viewAllHref={activeWork.length > 0 ? "/my-work" : undefined}
-            viewAllLabel={t("common.viewAll")}
+            title={t("mySpace.myWork")}
+            count={workList.length}
           />
-          {activeWork.length > 0 ? (
+          {/* Active / Completed tabs - the full work list (was a separate
+              /my-work page) now lives here. */}
+          <div className="mb-3 flex gap-2">
+            {(["active", "completed"] as const).map((tab) => {
+              const n = tab === "active" ? activeWork.length : completedWork.length;
+              const on = workTab === tab;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setWorkTab(tab)}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                    on
+                      ? "bg-[var(--hm-brand-500)] text-white"
+                      : "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)]"
+                  }`}
+                >
+                  {tab === "active"
+                    ? t("mySpace.activeWork")
+                    : t("common.completed")}
+                  {n > 0 && (
+                    <span className="tabular-nums opacity-80">{n}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          {workList.length > 0 ? (
             <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-2">
-              {activeWork.slice(0, 3).map((p, i) => renderWorkCard(p, i))}
+              {workList.map((p, i) => renderWorkCard(p, i))}
             </motion.div>
+          ) : workTab === "active" ? (
+            <EmptyBlock
+              icon={Briefcase}
+              text={t("mySpace.noActiveWork")}
+              subtext={t("mySpace.workWillAppear")}
+              actionLabel={t("mySpace.findNewJobs")}
+              actionHref={cl("/jobs")}
+            />
           ) : (
-            <EmptyBlock icon={Briefcase} text={t("mySpace.noActiveWork")} subtext={t("mySpace.workWillAppear")} />
+            <EmptyBlock
+              icon={Briefcase}
+              text={t("mySpace.noCompletedWork")}
+            />
           )}
         </motion.section>
       )}
 
-      {/* ── My Jobs ── */}
-      <motion.section variants={itemVariants} className="mb-6">
-          <SectionHeader
-            title={t("mySpace.myPostedJobs")}
-            count={myPostedJobs.length}
-            viewAllHref={myPostedJobs.length > 0 ? "/my-jobs" : undefined}
-            viewAllLabel={t("common.viewAll")}
-          />
-          {myPostedJobs.length > 0 ? (
-            <div className="space-y-2">
-              {myPostedJobs.slice(0, 3).map((job, i) => {
-                const firstImage = job.media?.[0]?.url || job.images?.[0];
-                return (
-                  <motion.div
-                    key={job.id}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25, delay: i * 0.04 }}
-                  >
-                    <Link
-                      href={`/jobs/${job.id}`}
-                      className="group flex rounded-xl overflow-hidden bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] transition-shadow hover:shadow-md"
-                    >
-                      {firstImage && (
-                        <div className="relative w-20 sm:w-28 flex-shrink-0 bg-[var(--hm-bg-tertiary)]">
-                          <Image src={storage.getFileUrl(firstImage)} alt="" fill sizes="(min-width: 640px) 112px, 80px" className="object-cover" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0 p-2.5 sm:p-3 flex flex-col justify-center">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          {job.category && (
-                            <span className="px-1.5 py-px rounded-full font-semibold uppercase tracking-wider" style={{ backgroundColor: `${ACCENT_COLOR}10`, color: ACCENT_COLOR, fontSize: "9px" }}>
-                              {getCategoryLabel(job.category)}
-                            </span>
-                          )}
-                          <span className="text-[10px]" style={{ color: "var(--hm-fg-muted)" }}>
-                            {job.proposalCount ?? 0} {t("job.proposals")}
-                          </span>
-                        </div>
-                        <h3 className="text-[13px] font-semibold line-clamp-1 mb-0.5" style={{ color: "var(--hm-fg-primary)" }}>{job.title}</h3>
-                        <div className="flex items-center gap-3 text-[10px]" style={{ color: "var(--hm-fg-muted)" }}>
-                          {job.location && (
-                            <span className="flex items-center gap-0.5 truncate"><MapPin className="w-2.5 h-2.5" />{job.location}</span>
-                          )}
-                          <span className="text-xs font-bold" style={{ color: "var(--hm-fg-primary)" }}>
-                            {formatBudget(job, t)}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyBlock icon={Briefcase} text={t("mySpace.noPostedJobs") || "No posted jobs yet"} />
-          )}
-      </motion.section>
+      {/* ── Milestone payments ── propose schedules + mark work done, per
+           engagement. Renders nothing when the pro has no payable work. */}
+      <ProMilestonePayments />
 
-      {/* ── New Jobs ── */}
-      <motion.section variants={itemVariants}>
-        <SectionHeader title={t("mySpace.findNewJobs")} />
+      {/* ── Find New Jobs ── the growth engine, kept prominent right
+           below active work. */}
+      <motion.section variants={itemVariants} className="mb-6">
+        <SectionHeader
+          title={t("mySpace.findNewJobs")}
+          viewAllHref={cl("/jobs")}
+          viewAllLabel={t("common.viewAll")}
+        />
         {newJobs.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {newJobs.map((job, i) => (
@@ -801,6 +1074,18 @@ function MySpaceContent() {
           <EmptyBlock icon={Briefcase} text={t("mySpace.browseAvailableJobs")} />
         )}
       </motion.section>
+
+      {/* ── Profile Completion (pro only) ── Demoted below the work
+           sections: it's a nudge, not the hero. The goal-gradient % ring
+           stays (it's psychologically effective), but the card is slimmer
+           and lower-contrast so it doesn't compete with work. */}
+      {isPro && completionItems.length > 0 && (
+        <ProfileCompletionCard
+          items={completionItems}
+          onAvatarUpload={() => avatarInputRef.current?.click()}
+          onShareReviewLink={() => setShowReviewsModal(true)}
+        />
+      )}
 
       {/* ── Modals ── */}
       <SidePanel isOpen={showReviewsModal} onClose={() => setShowReviewsModal(false)} title={t("mySpace.manageReviews")}>
@@ -855,7 +1140,7 @@ function MySpaceContent() {
                 />
                 <Input
                   type="tel"
-                  placeholder="+995 555 123 456"
+                  placeholder={phonePlaceholder}
                   value={invitePhone}
                   onChange={(e) => setInvitePhone(e.target.value)}
                   className="h-9 text-xs"

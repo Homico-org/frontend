@@ -10,7 +10,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/lib/api";
 import type { TimeSlot } from "@/types/shared";
+import { extractApiErrorMessage } from "@/utils/errorUtils";
 import { Calendar, Check, Clock } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 interface BookingModalProps {
@@ -18,6 +20,10 @@ interface BookingModalProps {
   onClose: () => void;
   professionalId: string;
   professionalName: string;
+  // When booking a pro into a Project role, these link the resulting
+  // booking back to the engagement (server-side, at creation).
+  projectId?: string;
+  engagementId?: string;
 }
 
 function formatHour(h: number): string {
@@ -29,9 +35,12 @@ export default function BookingModal({
   onClose,
   professionalId,
   professionalName,
+  projectId,
+  engagementId,
 }: BookingModalProps) {
   const { t, locale } = useLanguage();
   const toast = useToast();
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState("");
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
@@ -79,23 +88,64 @@ export default function BookingModal({
     if (!selectedDate || selectedSlot === null) return;
     setSubmitting(true);
     try {
-      await api.post("/bookings", {
+      // Post-payments rework: response now includes paymentRedirectUrl
+      // alongside the nested booking. Older backends still return the
+      // bare booking document - both shapes are accepted so this client
+      // works while prod is mid-deploy. If neither shape produces an
+      // ID, that's a real bug and we surface it instead of navigating
+      // to `/bookings/undefined/pay`.
+      const { data } = await api.post<unknown>("/bookings", {
         professionalId,
         date: selectedDate,
         startHour: selectedSlot,
         endHour: selectedSlot + 1,
         note: note.trim() || undefined,
+        projectId,
+        engagementId,
       });
-      setSuccess(true);
-      toast.success(t("booking.bookingSuccess"));
+      const r = data as {
+        booking?: { _id?: string; id?: string };
+        paymentRedirectUrl?: string;
+        _id?: string;
+        id?: string;
+      };
+      const bookingId = r.booking?._id ?? r.booking?.id ?? r._id ?? r.id;
+      if (!bookingId) {
+        toast.error(t("common.error"));
+        return;
+      }
+      onClose();
+      // Hard-navigate directly to the payment provider's URL so the
+      // user lands on the actual payment step, not on an intermediate
+      // summary that requires another click. window.location.href is
+      // more reliable than router.push from a closing modal (no race
+      // with the unmount). See ServiceBookingModal for the longer note.
+      if (r.paymentRedirectUrl) {
+        window.location.href = r.paymentRedirectUrl;
+      } else {
+        // No redirect URL - route to this booking's pay page (it's
+        // AWAITING_PAYMENT) rather than the bookings list.
+        router.push(`/bookings/${bookingId}/pay`);
+      }
+      return;
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || t("common.error"));
+      // NestJS returns validation errors as `message: string[]` -
+      // passing the array straight into toast.error rendered nothing
+      // and looked like a no-op. Helper joins arrays + falls through.
+      console.error('[BookingModal] Booking submit failed', err);
+      toast.error(extractApiErrorMessage(err, t("common.error")));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const availableSlots = slots.filter((s) => s.available);
+  // Drop hours that have already passed when today is selected - the backend
+  // marks slots available by schedule alone and doesn't account for "now".
+  const availableSlots = slots.filter((s) => {
+    if (!s.available) return false;
+    if (selectedDate === today) return s.hour > new Date().getHours();
+    return true;
+  });
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
@@ -154,8 +204,7 @@ export default function BookingModal({
                   </Alert>
                 ) : (
                   <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
-                    {slots
-                      .filter((s) => s.available)
+                    {availableSlots
                       .map((slot) => (
                         <button
                           key={slot.hour}

@@ -3,6 +3,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import {
+  PROJECT_STAGES as STAGES,
+  getProjectStageIndex as getStageIndex,
+  type ProjectStageInfo,
+} from "@/constants/projectStages";
 import { ACCENT_COLOR as ACCENT } from "@/constants/theme";
 import type { ProjectStage } from "@/types/shared";
 import {
@@ -19,22 +24,24 @@ import {
 import React from "react";
 
 import { useLanguage } from "@/contexts/LanguageContext";
-const STAGES: {
-  key: ProjectStage;
-  label: string;
-  labelKa: string;
-  icon: React.ReactNode;
-  progress: number;
-}[] = [
-  { key: "hired", label: "Hired", labelKa: "დაქირავებული", icon: <Check className="w-3 h-3" />, progress: 10 },
-  { key: "started", label: "Started", labelKa: "დაწყებული", icon: <Play className="w-3 h-3" />, progress: 25 },
-  { key: "in_progress", label: "In Progress", labelKa: "მიმდინარე", icon: <Clock className="w-3 h-3" />, progress: 50 },
-  { key: "review", label: "Review", labelKa: "შემოწმება", icon: <Eye className="w-3 h-3" />, progress: 75 },
-  { key: "completed", label: "Done", labelKa: "დასრულებული", icon: <CheckCircle2 className="w-3 h-3" />, progress: 100 },
-];
 
-function getStageIndex(stage: ProjectStage): number {
-  return STAGES.findIndex((s) => s.key === stage);
+// Maps the iconName tag from the shared stage table to the lucide
+// component this surface wants to render. Local to ProjectStatusBar
+// because the inline-pills render at w-3 h-3 whereas other consumers
+// (job detail timeline) use numerals instead of icons.
+function renderStageIcon(name: ProjectStageInfo["iconName"]) {
+  switch (name) {
+    case "check":
+      return <Check className="w-3 h-3" />;
+    case "play":
+      return <Play className="w-3 h-3" />;
+    case "clock":
+      return <Clock className="w-3 h-3" />;
+    case "eye":
+      return <Eye className="w-3 h-3" />;
+    case "check-circle-2":
+      return <CheckCircle2 className="w-3 h-3" />;
+  }
 }
 
 interface ProjectStatusBarProps {
@@ -171,17 +178,21 @@ export default function ProjectStatusBar({
             >
               {t('common.confirm')}
             </Button>
-            {!compact && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onClientRequestChanges}
-                disabled={isUpdating}
-                leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
-              >
-                {t('job.changes')}
-              </Button>
-            )}
+            {/* Request-changes was previously hidden in compact mode -
+                but compact is the only render path on mobile and in
+                the sidebar, so clients had no way to ask for changes
+                from a phone after the pro marked complete. They could
+                only Confirm. Show it everywhere, just trimmed down on
+                compact (icon-only on the smallest widths). */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClientRequestChanges}
+              disabled={isUpdating}
+              leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
+            >
+              {t('job.changes')}
+            </Button>
           </div>
         </div>
       )}
@@ -222,7 +233,7 @@ export default function ProjectStatusBar({
                 ) : isStageCompleted ? (
                   <Check className="w-3 h-3" />
                 ) : (
-                  stage.icon
+                  renderStageIcon(stage.iconName)
                 )}
                 <span>{pick({ en: stage.label, ka: stage.labelKa })}</span>
                 {canAdvance && (

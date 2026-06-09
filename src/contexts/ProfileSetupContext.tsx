@@ -13,6 +13,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCategories, type Subcategory } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { trackPixel } from "@/utils/metaPixel";
+import { useMarketplaceCountry } from "@/hooks/useCountry";
+import { backOrNavigate, defaultBackFallback } from "@/utils/navigationUtils";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -222,13 +224,9 @@ export function ProfileSetupProvider({
 }) {
   const router = useRouter();
   const { user, isLoading: authLoading, updateUser } = useAuth();
-  const { locale, pick } = useLanguage();
+  const { t, locale, pick } = useLanguage();
+  const marketplaceCountry = useMarketplaceCountry();
 
-  // Debug: detect remounts
-  useEffect(() => {
-    console.log("[ProfileSetupProvider] MOUNTED");
-    return () => console.log("[ProfileSetupProvider] UNMOUNTED");
-  }, []);
   const { categories: allCategories, getCategoryByKey } = useCategories();
 
   const isAdminEditing = user?.role === "admin" && !!adminTargetProId;
@@ -908,17 +906,36 @@ export function ProfileSetupProvider({
             setCustomServices(profile.customServices);
           }
 
-          // Merge server data with draft - draft values win when non-empty
+          // Merge server data with draft - draft values win when non-empty.
+          // Fall back to splitting the combined `name` so accounts that only
+          // stored a full name (social login, seed, older signup) still
+          // pre-fill the first/last fields instead of showing blank.
           const draft = draftDataRef.current?.formData;
+          // Phone-only signups store the phone number as the display `name`
+          // placeholder. Don't pre-fill the name fields with it - it reads as a
+          // bug (a phone number sitting in "First name"). Leave it blank so the
+          // pro types their real name.
+          const rawName = (user?.name || "").trim();
+          const looksLikePhone = /^\+?[\d\s()-]{7,}$/.test(rawName);
+          const nameParts = (looksLikePhone ? "" : rawName)
+            .split(/\s+/)
+            .filter(Boolean);
+          const nameFirst = nameParts[0] || "";
+          const nameLast = nameParts.slice(1).join(" ");
           setFormData((prev) => ({
             ...prev,
             firstName:
               draft?.firstName ||
               profile.firstName ||
               prev.firstName ||
+              nameFirst ||
               "",
             lastName:
-              draft?.lastName || profile.lastName || prev.lastName || "",
+              draft?.lastName ||
+              profile.lastName ||
+              prev.lastName ||
+              nameLast ||
+              "",
             title: draft?.title || profile.title || prev.title || "",
             bio: draft?.bio || profile.bio || prev.bio || "",
             avatar:
@@ -1176,9 +1193,12 @@ export function ProfileSetupProvider({
   useEffect(() => {
     const fetchLocationData = async () => {
       try {
-        const detectedCountry = "Georgia";
+        // Marketplace country drives which set of cities the autocomplete
+        // surfaces (Tbilisi vs New York vs Berlin etc). Resolved from
+        // the URL/cookie/user via `useMarketplaceCountry` rather than
+        // hardcoded to "Georgia" as the legacy GE-only build did.
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/users/pros/locations?country=${encodeURIComponent(detectedCountry)}&locale=${locale}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/users/pros/locations?country=${encodeURIComponent(marketplaceCountry)}&locale=${locale}`,
         );
         const data = (await response.json()) as LocationData;
         setLocationData(data);
@@ -1187,7 +1207,7 @@ export function ProfileSetupProvider({
       }
     };
     fetchLocationData();
-  }, [locale]);
+  }, [locale, marketplaceCountry]);
 
   // ── Translate service areas ──────────────────────────────────────────────────
 
@@ -1542,7 +1562,7 @@ export function ProfileSetupProvider({
           }
         } catch {
           // Network error - surface and block navigation
-          setError("Network error - please check your connection");
+          setError(t("common.networkError"));
           setIsSaving(false);
           return;
         }
@@ -1564,10 +1584,13 @@ export function ProfileSetupProvider({
         router.push(buildStepHref(STEP_SLUGS[idx - 1]));
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
-        router.back();
+        // First step - if the user opened profile-setup in a fresh
+        // tab a bare `router.back()` is a no-op. Fall through to a
+        // role-aware home instead so they're never stranded.
+        backOrNavigate(router, defaultBackFallback(user));
       }
     },
-    [router, buildStepHref],
+    [router, buildStepHref, user],
   );
 
   // ── Submit ────────────────────────────────────────────────────────────────────
@@ -1712,22 +1735,6 @@ export function ProfileSetupProvider({
         servicePricing: servicePricing.length > 0 ? servicePricing : undefined,
       };
 
-      // Debug: log what we're about to send
-      console.log("[ProfileSetup] Submit state:", {
-        "formData.bio": formData.bio?.substring(0, 50),
-        "formData.serviceAreas": formData.serviceAreas,
-        "selectedSubcategoriesWithPricing.length":
-          selectedSubcategoriesWithPricing.length,
-        "selectedServices.length": selectedServices.length,
-        "servicePricing.length": servicePricing.length,
-        "requestBody.bio": (requestBody.bio as string)?.substring(0, 50),
-        "requestBody.serviceAreas": requestBody.serviceAreas,
-        "requestBody.categories": requestBody.categories,
-        "requestBody.servicePricing count": (
-          requestBody.servicePricing as unknown[]
-        )?.length,
-      });
-
       const url = isAdminEditing
         ? `${process.env.NEXT_PUBLIC_API_URL}/users/pros/${adminTargetProId}/profile`
         : `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`;
@@ -1807,9 +1814,29 @@ export function ProfileSetupProvider({
         ? adminTargetProId
         : data.id || data._id || user?.id;
       if (userId) {
-        router.push(`/professionals/${userId}`);
+        // Country comes from the marketplace cookie (set by middleware
+        // on the visit that started this setup). Read it client-side
+        // so the redirect lands inside the same marketplace and avoids
+        // a middleware bounce. Default GE if unset.
+        const marketplaceCookie =
+          typeof document !== 'undefined'
+            ? document.cookie
+                .split('; ')
+                .find((c) => c.startsWith('homico-marketplace='))
+                ?.split('=')[1]
+                ?.toLowerCase() ?? 'ge'
+            : 'ge';
+        router.push(`/${marketplaceCookie}/professionals/${userId}`);
       } else {
-        router.push("/professionals");
+        const marketplaceCookie =
+          typeof document !== 'undefined'
+            ? document.cookie
+                .split('; ')
+                .find((c) => c.startsWith('homico-marketplace='))
+                ?.split('=')[1]
+                ?.toLowerCase() ?? 'ge'
+            : 'ge';
+        router.push(`/${marketplaceCookie}/professionals`);
       }
     } catch (err) {
       const e = err as { message?: string };

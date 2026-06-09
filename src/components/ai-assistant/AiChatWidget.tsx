@@ -1,13 +1,13 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useMarketplaceCountry } from "@/hooks/useCountry";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, ChevronLeft, Minimize2, Send, Trash2, X } from "lucide-react";
+import { Bot, Send, Square, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -15,20 +15,75 @@ import RichContentRenderer from "./RichContentRenderer";
 import { ChatMessage, SuggestedAction } from "./types";
 import { useAiChat } from "./useAiChat";
 
+// Render assistant text with two affordances:
+//   - Markdown links `[label](url)` become real <a> tags. The system prompt
+//     tells the model not to use them, but older messages in history may
+//     still contain them and we'd rather render them than show raw brackets.
+//   - Bare URLs (http://... / https://...) also become links.
+// Returns a flat array of strings + JSX nodes that callers drop inside a
+// whitespace-pre-wrap container so newlines/lists keep their layout.
+function renderMessageText(text: string): React.ReactNode[] {
+  if (!text) return [text];
+  // Combined regex: markdown link OR bare URL. Capture groups let us
+  // distinguish which kind matched without re-parsing.
+  const pattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s)]+)/g;
+  const nodes: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(text.slice(lastIndex, match.index));
+    }
+    const [, mdLabel, mdUrl, bareUrl] = match;
+    const href = mdUrl || bareUrl;
+    const label = mdLabel || bareUrl;
+    nodes.push(
+      <a
+        key={`lnk-${key++}`}
+        href={href}
+        target={href.startsWith("http") ? "_blank" : undefined}
+        rel="noopener noreferrer"
+        className="underline text-[var(--hm-brand-500)] hover:opacity-80 break-words"
+      >
+        {label}
+      </a>,
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) nodes.push(text.slice(lastIndex));
+  return nodes;
+}
+
 // Message bubble component
 function MessageBubble({
   message,
   locale,
   onAction,
+  t,
 }: {
   message: ChatMessage;
   locale: string;
   onAction: (action: SuggestedAction) => void;
+  t: (key: string) => string;
 }): React.ReactElement {
   const isUser = message.role === "user";
+  const showStreamingDot = !isUser && message.isStreaming && !message.activeTool;
+  const showToolChip = !isUser && message.activeTool;
+
+  const hasSuggestedActions =
+    !isUser &&
+    !!message.suggestedActions &&
+    message.suggestedActions.length > 0;
 
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-3`}>
+    // Column wrapper so the bubble and the suggested-action chips can sit
+    // on separate rows but share the same left-aligned 85%-width column.
+    // Previously the chips lived inside the bubble with `w-full`, which
+    // pushed the bubble past its own max-width and bled past its border.
+    <div
+      className={`flex flex-col mb-3 ${isUser ? "items-end" : "items-start"}`}
+    >
       <div
         className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
           isUser
@@ -45,8 +100,26 @@ function MessageBubble({
             : undefined
         }
       >
+        {/* Tool-call status chip - shown while the model is executing a
+            tool. Replaces the empty text with a localized "Searching X..."
+            label so the user sees that work is happening. */}
+        {showToolChip && (
+          <div className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-full mb-1.5 bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]">
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-[var(--hm-brand-500)]" />
+            {t(`ai.toolStatus.${message.activeTool}`) ||
+              t("ai.toolStatus.default")}
+          </div>
+        )}
+
         <p className="text-sm whitespace-pre-wrap leading-relaxed">
-          {message.content}
+          {isUser ? message.content : renderMessageText(message.content)}
+          {/* Blinking cursor while streaming text but no active tool. */}
+          {showStreamingDot && (
+            <span
+              className="inline-block w-1.5 h-3.5 ml-0.5 -mb-0.5 align-baseline animate-pulse"
+              style={{ backgroundColor: "var(--hm-brand-500)" }}
+            />
+          )}
         </p>
 
         {/* Rich Content */}
@@ -61,25 +134,23 @@ function MessageBubble({
             ))}
           </div>
         )}
-
-        {/* Suggested Actions */}
-        {!isUser &&
-          message.suggestedActions &&
-          message.suggestedActions.length > 0 && (
-            <div
-              className="flex flex-wrap gap-2 mt-3 pt-2"
-              style={{ borderTop: "1px solid var(--hm-border-subtle)" }}
-            >
-              {message.suggestedActions.map((action, idx) => (
-                <SuggestedActionButton
-                  key={idx}
-                  action={action}
-                  onAction={onAction}
-                />
-              ))}
-            </div>
-          )}
       </div>
+
+      {/* Suggested actions as a SIBLING of the bubble (not a child). Each
+          chip is full-width inside an 85%-capped column that mirrors the
+          bubble alignment. Long Georgian labels wrap inside the chip and
+          the chip can never push the bubble's own max-width. */}
+      {hasSuggestedActions && (
+        <div className="flex flex-col gap-2 mt-2 max-w-[85%] w-[85%]">
+          {message.suggestedActions!.map((action, idx) => (
+            <SuggestedActionButton
+              key={idx}
+              action={action}
+              onAction={onAction}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -95,26 +166,38 @@ function SuggestedActionButton({
   const { pick } = useLanguage();
   const label = pick({ en: action.label, ka: action.labelKa, ru: action.labelRu });
 
+  // Block-level chip that wraps. Crucial bits:
+  //   - `flex` (not inline-flex) so the chip claims the full row in the
+  //     parent column container.
+  //   - `w-full min-w-0` so it can shrink narrower than its label and let
+  //     `whitespace-normal` + `break-words` actually wrap inside.
+  //   - `justify-between` so the optional arrow stays glued to the right
+  //     while the label takes the remaining space.
+  // Old behavior overflowed the bubble because `inline-flex` items size
+  // to content first and `max-w-full` was effectively ignored.
+  const baseChip =
+    "flex w-full min-w-0 items-center gap-2 justify-between whitespace-normal text-left text-[12px] leading-tight font-medium px-3 py-2 rounded-xl transition-all active:scale-[0.98]";
+
   if (action.type === "link" && action.url) {
     return (
-      <Link href={action.url}>
-        <Badge variant="accent-solid" size="sm">
-          {label} →
-        </Badge>
+      <Link
+        href={action.url}
+        className={`${baseChip} bg-[var(--hm-brand-500)] text-white hover:bg-[var(--hm-brand-600)]`}
+      >
+        <span className="min-w-0 break-words">{label}</span>
+        <span aria-hidden className="shrink-0">→</span>
       </Link>
     );
   }
 
   return (
-    <Button
+    <button
       type="button"
-      variant="secondary"
-      size="sm"
       onClick={() => onAction(action)}
-      className="rounded-full text-xs"
+      className={`${baseChip} border bg-[var(--hm-bg-elevated)] border-[var(--hm-border-strong)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]`}
     >
-      {label}
-    </Button>
+      <span className="min-w-0 break-words">{label}</span>
+    </button>
   );
 }
 
@@ -159,166 +242,60 @@ function TypingIndicator(): React.ReactElement {
 
 export default function AiChatWidget(): React.ReactElement | null {
   const [isOpen, setIsOpen] = useState(false);
-  const [isHidden, setIsHidden] = useState(false);
   const [inputValue, setInputValue] = useState("");
   // No attention-grabbing pulse on load - FAB stays quiet until the user taps it.
   const [showPulse, setShowPulse] = useState(false);
+  // On mobile the FAB hides while scrolling DOWN (so it never sits over the
+  // content/prices you're reading) and slides back on scroll UP. Desktop, where
+  // the FAB lives in the corner, always shows it.
+  const [scrollHidden, setScrollHidden] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isMobileRef = useRef<boolean>(false);
 
-  // Draggable FAB state
-  const [fabPosition, setFabPosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [fabSide, setFabSide] = useState<"right" | "left">("right");
-  const dragRef = useRef<{
-    startX: number;
-    startY: number;
-    startPosX: number;
-    startPosY: number;
-    moved: boolean;
-  } | null>(null);
-  const fabRef = useRef<HTMLButtonElement>(null);
-
-  // Initialize FAB position. On mobile we account for the 58px bottom nav
-  // PLUS the iOS safe-area inset (home-bar) so the FAB never sits under the nav.
   useEffect(() => {
-    if (fabPosition === null && typeof window !== "undefined") {
-      const isMobile = window.innerWidth < 1024;
-      const cssSafeInset = parseInt(
-        getComputedStyle(document.documentElement).getPropertyValue('--sat-bottom') || '0',
-        10,
-      ) || 0;
-      // Fallback - most iOS devices have ~34px home-indicator safe area
-      const iosInset = /iPhone|iPad|iPod/.test(navigator.userAgent) ? 34 : 0;
-      const safeBottom = Math.max(cssSafeInset, iosInset);
-      const bottomOffset = isMobile ? 58 + safeBottom + 100 : 160; // 58 nav + safe + 100 cushion
-      setFabPosition({
-        x: window.innerWidth - 80,
-        y: window.innerHeight - bottomOffset,
+    if (typeof window === "undefined") return;
+    let last = 0;
+    let raf = 0;
+    // Capture phase catches scroll from ANY container - the app shell scrolls
+    // an inner <main>, not the window, so a window listener would never fire on
+    // those pages. We read scrollTop off whichever element actually scrolled.
+    const onScroll = (e: Event) => {
+      const target = e.target as HTMLElement | Document;
+      const y =
+        target === document || target === document.documentElement || !target
+          ? window.scrollY
+          : (target as HTMLElement).scrollTop ?? 0;
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        if (window.innerWidth >= 1024) {
+          setScrollHidden(false);
+          last = y;
+          return;
+        }
+        const delta = y - last;
+        if (Math.abs(delta) < 6) return;
+        if (delta > 0 && y > 50) setScrollHidden(true);
+        else setScrollHidden(false);
+        last = y;
       });
-    }
-  }, [fabPosition]);
-
-  // Snap to nearest side
-  const snapToSide = useCallback((x: number, y: number) => {
-    const midX = window.innerWidth / 2;
-    const fabSize = 64;
-    const margin = 16;
-    const isMobile = window.innerWidth < 1024;
-    const bottomNavHeight = isMobile ? 80 : 0; // account for mobile bottom nav
-    const maxY = window.innerHeight - fabSize - margin - bottomNavHeight;
-    const minY = margin + 56; // below header
-
-    const clampedY = Math.max(minY, Math.min(maxY, y));
-
-    if (x + fabSize / 2 < midX) {
-      setFabSide("left");
-      return { x: margin, y: clampedY };
-    } else {
-      setFabSide("right");
-      return { x: window.innerWidth - fabSize - margin, y: clampedY };
-    }
-  }, []);
-
-  // Touch/mouse drag handlers
-  const handleDragStart = useCallback(
-    (clientX: number, clientY: number) => {
-      if (!fabPosition) return;
-      dragRef.current = {
-        startX: clientX,
-        startY: clientY,
-        startPosX: fabPosition.x,
-        startPosY: fabPosition.y,
-        moved: false,
-      };
-      setIsDragging(true);
-    },
-    [fabPosition],
-  );
-
-  const handleDragMove = useCallback((clientX: number, clientY: number) => {
-    if (!dragRef.current) return;
-    const dx = clientX - dragRef.current.startX;
-    const dy = clientY - dragRef.current.startY;
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-      dragRef.current.moved = true;
-    }
-    setFabPosition({
-      x: dragRef.current.startPosX + dx,
-      y: dragRef.current.startPosY + dy,
+    };
+    document.addEventListener("scroll", onScroll, {
+      capture: true,
+      passive: true,
     });
+    return () => {
+      document.removeEventListener("scroll", onScroll, { capture: true });
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
-
-  const handleDragEnd = useCallback(() => {
-    const didDrag = !!dragRef.current?.moved;
-    if (fabPosition) {
-      const snapped = snapToSide(fabPosition.x, fabPosition.y);
-      setFabPosition(snapped);
-    }
-    setIsDragging(false);
-    dragRef.current = null;
-    // Open chat only if it was a tap, not a drag
-    if (!didDrag) {
-      setIsOpen(true);
-    }
-  }, [fabPosition, snapToSide]);
-
-  // Mouse events
-  useEffect(() => {
-    if (!isDragging) return;
-    const onMouseMove = (e: MouseEvent) => {
-      e.preventDefault();
-      handleDragMove(e.clientX, e.clientY);
-    };
-    const onMouseUp = () => {
-      handleDragEnd();
-    };
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-  }, [isDragging, handleDragMove, handleDragEnd]);
-
-  // Touch events
-  useEffect(() => {
-    if (!isDragging) return;
-    const onTouchMove = (e: TouchEvent) => {
-      if (e.touches[0])
-        handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
-    };
-    const onTouchEnd = () => {
-      handleDragEnd();
-    };
-    window.addEventListener("touchmove", onTouchMove, { passive: false });
-    window.addEventListener("touchend", onTouchEnd);
-    return () => {
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [isDragging, handleDragMove, handleDragEnd]);
-
-  // Re-snap on window resize
-  useEffect(() => {
-    const onResize = () => {
-      if (fabPosition) {
-        const snapped = snapToSide(fabPosition.x, fabPosition.y);
-        setFabPosition(snapped);
-      }
-    };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [fabPosition, snapToSide]);
 
   const { locale, t, pick } = useLanguage();
   const { user, isAuthenticated } = useAuth();
   const { openLoginModal } = useAuthModal();
   const pathname = usePathname();
+  const country = useMarketplaceCountry();
 
   const {
     messages,
@@ -327,8 +304,16 @@ export default function AiChatWidget(): React.ReactElement | null {
     isInitialized,
     initSession,
     sendMessage,
+    stopStreaming,
     clearChat,
   } = useAiChat();
+
+  // Derived: is the in-flight assistant message still streaming? Used to
+  // toggle send button -> stop button.
+  const lastMessage = messages[messages.length - 1];
+  const isStreaming = Boolean(
+    lastMessage?.role === "assistant" && lastMessage?.isStreaming,
+  );
 
   // Initialize session when widget is opened
   useEffect(() => {
@@ -409,8 +394,8 @@ export default function AiChatWidget(): React.ReactElement | null {
 
     const message = inputValue;
     setInputValue("");
-    await sendMessage(message, locale, pathname);
-  }, [inputValue, isLoading, sendMessage, locale, pathname]);
+    await sendMessage(message, locale, pathname, country);
+  }, [inputValue, isLoading, sendMessage, locale, pathname, country]);
 
   const handleSuggestedAction = useCallback(
     async (action: SuggestedAction) => {
@@ -419,14 +404,14 @@ export default function AiChatWidget(): React.ReactElement | null {
 
         const text = localizedAction || action.action || action.label;
         if (!text?.trim()) return;
-        await sendMessage(text, locale, pathname);
+        await sendMessage(text, locale, pathname, country);
       }
     },
     // `pick` is intentionally not in the deps - it's a stable function
     // from useLanguage that returns the same reference unless `locale`
     // changes, and `locale` is already listed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sendMessage, locale, pathname],
+    [sendMessage, locale, pathname, country],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -459,124 +444,45 @@ export default function AiChatWidget(): React.ReactElement | null {
 
   return (
     <>
-      {/* Right-edge reveal tab - visible only when widget is hidden */}
+      {/* Pinned bottom-right FAB. Mobile uses safe-area + bottom-nav offset so
+          it never collides with MobileBottomNav (58px) or the iOS home bar. */}
       <AnimatePresence>
-        {isHidden && (
+        {!isOpen && (
           <motion.button
-            key="ai-reveal-tab"
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 20, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            onClick={() => setIsHidden(false)}
-            className="fixed right-0 top-[60%] -translate-y-1/2 z-40 flex items-center gap-1.5 pl-2 pr-1.5 py-2.5 text-white rounded-l-xl shadow-lg hover:pr-2.5 hover:shadow-xl transition-all group"
-            style={{
-              background: 'linear-gradient(135deg, var(--hm-brand-500) 0%, var(--hm-brand-700) 100%)',
-            }}
-            aria-label="Show AI Assistant"
-          >
-            <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ring-1 ring-white/40 bg-white/15">
-              <Bot className="w-3.5 h-3.5 text-white" strokeWidth={2} />
-            </div>
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* Floating Draggable Button */}
-      <AnimatePresence>
-        {fabPosition && !isOpen && !isHidden && (
-          <motion.button
-            ref={fabRef}
             key="ai-fab"
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            animate={{
+              scale: 1,
+              opacity: scrollHidden ? 0 : 1,
+              y: scrollHidden ? 100 : 0,
+            }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              handleDragStart(e.clientX, e.clientY);
-            }}
-            onTouchStart={(e) => {
-              if (e.touches[0])
-                handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
-            }}
-            className="fixed z-40 group touch-none"
-            style={{
-              left: fabPosition.x,
-              top: fabPosition.y,
-              transition: isDragging
-                ? "none"
-                : "left 0.35s cubic-bezier(0.32, 0.72, 0, 1), top 0.35s cubic-bezier(0.32, 0.72, 0, 1)",
-              cursor: isDragging ? "grabbing" : "grab",
-            }}
+            onClick={() => setIsOpen(true)}
+            style={{ pointerEvents: scrollHidden ? "none" : "auto" }}
+            className="fixed z-[51] group right-4 lg:right-6 bottom-[calc(80px+env(safe-area-inset-bottom)+20px)] lg:bottom-6"
             aria-label="Open AI Assistant"
           >
-            {/* Outer ring - subtle glow, not flashing */}
-            <div
-              className={`absolute -inset-1 rounded-full transition-all duration-300 ${
-                isDragging
-                  ? "bg-[var(--hm-brand-500)]/20 scale-110"
-                  : "bg-transparent group-hover:bg-[var(--hm-brand-500)]/10 group-hover:scale-105"
-              }`}
-            />
+            {/* Outer ring - subtle hover glow */}
+            <div className="absolute -inset-1 rounded-full transition-all duration-300 bg-transparent group-hover:bg-[var(--hm-brand-500)]/10 group-hover:scale-105" />
 
-            {/* Brand-aligned avatar - vermillion circle with white sparkles
-                icon. Replaces the off-brand multi-color mascot image. */}
+            {/* Brand vermillion circle with bot icon */}
             <div
-              className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-200 ${
-                isDragging
-                  ? "ring-2 ring-[var(--hm-brand-500)] shadow-xl shadow-[var(--hm-brand-500)]/30 scale-110"
-                  : "ring-2 ring-[var(--hm-bg-elevated)] shadow-lg group-hover:ring-[var(--hm-brand-500)]/60 group-hover:shadow-xl"
-              }`}
-              style={{ backgroundColor: 'var(--hm-brand-500)' }}
+              className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-200 ring-2 ring-[var(--hm-bg-elevated)] shadow-lg group-hover:ring-[var(--hm-brand-500)]/60 group-hover:shadow-xl"
+              style={{ backgroundColor: "var(--hm-brand-500)" }}
             >
-              <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2} />
+              <Bot
+                className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+                strokeWidth={2}
+              />
             </div>
-
-            {/* Drag handle dots - visible on hover to hint draggability */}
-            <div
-              className={`absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 transition-opacity duration-200 ${
-                isDragging ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-              }`}
-            >
-              <span className="w-1 h-1 rounded-full bg-[var(--hm-fg-muted)]" />
-              <span className="w-1 h-1 rounded-full bg-[var(--hm-fg-muted)]" />
-              <span className="w-1 h-1 rounded-full bg-[var(--hm-fg-muted)]" />
-            </div>
-
-            {/* X dismiss badge */}
-            {!isDragging && (
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsHidden(true);
-                }}
-                onMouseDown={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.stopPropagation();
-                    setIsHidden(true);
-                  }
-                }}
-                className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--hm-n-700)]/80 hover:bg-[var(--hm-error-500)] rounded-full flex items-center justify-center shadow-md transition-colors z-10 cursor-pointer opacity-0 group-hover:opacity-100"
-                aria-label="Hide AI Assistant"
-              >
-                <X className="w-3 h-3 text-white" />
-              </div>
-            )}
 
             {/* Tooltip */}
-            <div
-              className={`hidden sm:block absolute bottom-full mb-2 px-3 py-1.5 bg-[var(--hm-n-900)] text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none ${fabSide === "right" ? "right-0" : "left-0"}`}
-            >
-              <span style={{ fontFamily: 'var(--hm-font-display)' }}>Homico AI</span> · {isDragging ? "↕" : t("ai.dragToMove")}
-              <div
-                className={`absolute top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[var(--hm-n-900)] ${fabSide === "right" ? "right-4" : "left-4"}`}
-              />
+            <div className="hidden sm:block absolute bottom-full mb-2 right-0 px-3 py-1.5 bg-[var(--hm-n-900)] text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+              <span style={{ fontFamily: "var(--hm-font-display)" }}>
+                Homico AI
+              </span>
+              <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[var(--hm-n-900)]" />
             </div>
           </motion.button>
         )}
@@ -651,18 +557,6 @@ export default function AiChatWidget(): React.ReactElement | null {
                     className="p-2 text-white/70 hover:text-white hover:bg-white/10"
                     title={t("ai.minimize")}
                   >
-                    <Minimize2 className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setIsOpen(false);
-                      setIsHidden(true);
-                    }}
-                    className="p-2 text-white/70 hover:text-white hover:bg-white/10"
-                    title={t("ai.hide")}
-                  >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
@@ -734,11 +628,16 @@ export default function AiChatWidget(): React.ReactElement | null {
                       message={message}
                       locale={locale}
                       onAction={handleSuggestedAction}
+                      t={t}
                     />
                   ))
                 )}
 
-                {isLoading && <TypingIndicator />}
+                {/* Show the typing indicator only when we're loading AND
+                    the streaming assistant message hasn't appeared yet.
+                    Once tokens start arriving, the message bubble's own
+                    streaming dot is sufficient. */}
+                {isLoading && !isStreaming && <TypingIndicator />}
 
                 {error && (
                   <div className="text-center py-2">
@@ -770,17 +669,29 @@ export default function AiChatWidget(): React.ReactElement | null {
                       className="w-full"
                     />
                   </div>
-                  <Button
-                    onClick={handleSend}
-                    disabled={
-                      !inputValue.trim() || isLoading || !isAuthenticated
-                    }
-                    size="icon"
-                    className="flex-shrink-0 h-10 w-10"
-                    aria-label={t("ai.send") || "Send"}
-                  >
-                    <Send className="w-4 h-4" />
-                  </Button>
+                  {isStreaming ? (
+                    <Button
+                      onClick={stopStreaming}
+                      size="icon"
+                      variant="destructive"
+                      className="flex-shrink-0 h-10 w-10"
+                      aria-label={t("ai.stop") || "Stop"}
+                    >
+                      <Square className="w-3.5 h-3.5" fill="currentColor" />
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleSend}
+                      disabled={
+                        !inputValue.trim() || isLoading || !isAuthenticated
+                      }
+                      size="icon"
+                      className="flex-shrink-0 h-10 w-10"
+                      aria-label={t("ai.send") || "Send"}
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
                 <p
                   className="text-[10px] text-center mt-2"

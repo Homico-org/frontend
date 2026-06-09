@@ -14,9 +14,11 @@ import { useState } from 'react';
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const { openLoginModal } = useAuthModal();
-  const { t, locale } = useLanguage();
+  const { t, locale, country } = useLanguage();
   const [phone, setPhone] = useState('');
-  const [phoneCountry, setPhoneCountry] = useState<CountryCode>('GE');
+  // Seed from the LanguageContext country (which already prefers the
+  // marketplace cookie on first land), so a US visitor lands on +1.
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>(country as CountryCode);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 

@@ -17,9 +17,10 @@ const searchInputVariants = cva(
         forest:
           'bg-[var(--hm-bg-tertiary)] border border-[var(--hm-border-subtle)] focus:outline-none focus:border-[var(--hm-brand-500)] focus:ring-2 focus:ring-[var(--hm-brand-500)]/15',
       },
+      // >=16px on mobile so iOS doesn't zoom on focus; design size at >=sm.
       inputSize: {
-        sm: 'h-9 px-3 py-2 text-xs',
-        default: 'h-11 px-4 py-2.5 text-sm',
+        sm: 'h-9 px-3 py-2 text-base sm:text-xs',
+        default: 'h-11 px-4 py-2.5 text-base sm:text-sm',
         lg: 'h-12 px-5 py-3 text-base',
       },
     },

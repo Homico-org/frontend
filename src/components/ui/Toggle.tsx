@@ -148,7 +148,7 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
           <span
             className={cn(
               'text-sm font-medium',
-              disabled ? 'text-neutral-400' : 'text-[var(--hm-fg-primary)]'
+              disabled ? 'text-[var(--hm-fg-muted)]' : 'text-[var(--hm-fg-primary)]'
             )}
           >
             {label}

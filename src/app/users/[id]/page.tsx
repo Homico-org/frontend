@@ -11,6 +11,7 @@ import { ACCENT_COLOR } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { translateCity } from '@/data/cities';
 import { useToast } from '@/contexts/ToastContext';
 import type { Job, PublicUserProfile } from '@/types/shared';
 import { Briefcase, Frown, MapPin, MessageCircle, Send, Share2, X } from 'lucide-react';
@@ -22,7 +23,7 @@ export default function UserProfilePage() {
   const router = useRouter();
   const { user } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { t, pick } = useLanguage();
+  const { t, pick, locale } = useLanguage();
   const toast = useToast();
 
   const [profile, setProfile] = useState<PublicUserProfile | null>(null);
@@ -273,7 +274,7 @@ export default function UserProfilePage() {
       {/* Main Content */}
       <main className="user-page">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4">
-          <BackButton />
+          <BackButton variant="minimal" />
         </div>
         <div className={`transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
 
@@ -316,7 +317,7 @@ export default function UserProfilePage() {
                 {profile.city && (
                   <p className="text-sm text-[var(--hm-fg-muted)] flex items-center justify-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 opacity-60" strokeWidth={1.5} />
-                    {profile.city}
+                    {translateCity(profile.city, locale)}
                   </p>
                 )}
               </div>

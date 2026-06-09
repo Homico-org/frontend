@@ -75,6 +75,11 @@ export interface User extends BaseEntity {
   avatar?: string;
   phone?: string;
   city?: string;
+  // ISO 3166-1 alpha-2 country code. Only meaningful for `role: 'pro'`
+  // (where the pro physically works). Clients are global - this field
+  // is left undefined for them. Added 2026-05 with the multi-country
+  // foundation.
+  country?: string;
   accountType?: AccountType;
 
   selectedCategories?: string[];
@@ -116,6 +121,9 @@ export interface ProProfile extends BaseEntity {
   role: UserRole;
   avatar?: string;
   city?: string;
+  // ISO 3166-1 alpha-2 marketplace code (added 2026-05). Determines
+  // which `/[country]/...` URL the pro is listed under.
+  country?: string;
   accountType: AccountType;
 
   
@@ -144,6 +152,7 @@ export interface ProProfile extends BaseEntity {
   avgRating: number;
   totalReviews: number;
   profileViewCount?: number;
+  phoneViewCount?: number;
   completedJobs: number;
   completedProjects?: number;
   externalCompletedJobs?: number;
@@ -162,10 +171,14 @@ export interface ProProfile extends BaseEntity {
     isActive: boolean;
     discountTiers?: { minQuantity: number; percent: number }[];
     // Optional range support (added 2026-05). When both are set and differ,
-    // treat `price` as the typical/midpoint and render `min – max` in UI.
+    // treat `price` as the typical/midpoint and render `min - max` in UI.
     priceMin?: number;
     priceMax?: number;
     notes?: string;
+    // ISO 4217 currency the price is denominated in (added 2026-05).
+    // Defaults to "GEL" via backfill; new markets inherit from the
+    // pro's country at registration. Never auto-converted on write.
+    currency?: string;
   }[];
   
   // Location & Availability
@@ -189,8 +202,11 @@ export interface ProProfile extends BaseEntity {
   isPhoneVerified: boolean;
   verificationStatus?: VerificationStatus;
   isPremium: boolean;
+  isFeatured?: boolean;
+  /** Signed Homico contract - the only bookable pros (server-set). */
+  isHomicoPartner?: boolean;
   premiumTier?: string;
-  
+
   // Admin Approval (legacy - use verificationStatus instead)
   adminApprovedAt?: string;
   adminRejectionReason?: string;
@@ -243,11 +259,16 @@ export interface ProCard {
   categories: string[];
   subcategories?: string[];
   city?: string;
+  // Marketplace country (added 2026-05). Used to render the right
+  // currency on price chips and link to the correct `/[country]/...`
+  // URL when the card appears in a cross-marketplace context.
+  country?: string;
   avgRating: number;
   totalReviews: number;
   completedJobs: number;
   yearsExperience: number;
   isPremium: boolean;
+  isFeatured?: boolean;
   isAvailable: boolean;
   status: ProStatus;
   basePrice?: number;

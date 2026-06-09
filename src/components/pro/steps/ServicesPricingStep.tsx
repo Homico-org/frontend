@@ -1,6 +1,7 @@
 "use client";
 
-import CategoryIcon from "@/components/categories/CategoryIcon";
+import CategoryCard from "@/components/categories/CategoryCard";
+import RequestCustomServiceModal from "@/components/pro/RequestCustomServiceModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -11,7 +12,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAiServiceSearch } from "@/hooks/useAiServiceSearch";
 import AiSearchBar from "@/components/common/AiSearchBar";
 import { useClickOutside } from "@/hooks/useClickOutside";
-import { ArrowLeft, Check, CheckCircle2, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
+import { useMarketplaceCountry } from "@/hooks/useCountry";
+import { currencySymbol } from "@/utils/currency";
+import { AlertTriangle, ArrowLeft, CheckCircle2, ChevronDown, Plus, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 // ─── Exported types ──────────────────────────────────────────────────────────
@@ -22,7 +25,7 @@ export interface DiscountTier {
 }
 
 export interface UnitPriceEntry {
-  unitId?: string; // Stable catalog id — source of truth
+  unitId?: string; // Stable catalog id - source of truth
   unitKey: string;
   unit: string;
   unitLabel: string;
@@ -40,7 +43,7 @@ export interface UnitPriceEntry {
 }
 
 export interface ServicePriceEntry {
-  serviceId?: string;      // Stable catalog id — source of truth
+  serviceId?: string;      // Stable catalog id - source of truth
   subcategoryId?: string;
   categoryId?: string;
   serviceKey: string;
@@ -61,7 +64,7 @@ export interface ServicePriceEntry {
 }
 
 export interface SelectedSubcategoryWithPricing {
-  id?: string;         // Stable catalog id — source of truth
+  id?: string;         // Stable catalog id - source of truth
   categoryId?: string;
   key: string;
   categoryKey: string;
@@ -152,6 +155,8 @@ function ServiceUnitPricing({
   updateSub: (subKey: string, updater: (s: SelectedSubcategoryWithPricing) => SelectedSubcategoryWithPricing) => void;
 }) {
   const { t } = useLanguage();
+  const country = useMarketplaceCountry();
+  const sym = currencySymbol({ country });
   const [showUnitPicker, setShowUnitPicker] = useState(false);
   const pickerRef = useClickOutside<HTMLDivElement>(() => setShowUnitPicker(false), showUnitPicker);
 
@@ -210,7 +215,7 @@ function ServiceUnitPricing({
 
   return (
     <div className="px-3 pb-3 space-y-2">
-      {/* Active unit rows — each with its own price + discount */}
+      {/* Active unit rows - each with its own price + discount */}
       {activeUnits.map((up) => (
         <div key={up.unitKey} className="space-y-1.5">
           {/* Price row - on mobile the label takes its own row so it never
@@ -228,7 +233,7 @@ function ServiceUnitPricing({
             >
               {up.unitLabel}
             </span>
-            {/* Mode segmented control — explicit "Fixed | Range" pills so pros
+            {/* Mode segmented control - explicit "Fixed | Range" pills so pros
                 immediately see they can switch pricing models. Replaces the
                 tiny ↔ icon that nobody understood. */}
             <div
@@ -282,7 +287,7 @@ function ServiceUnitPricing({
                 /* Range inputs: min - max */
                 <>
                   <div className="relative">
-                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-medium z-10" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-medium z-10" style={{ color: 'var(--hm-fg-muted)' }}>{sym}</span>
                     <Input
                       type="text"
                       inputMode="numeric"
@@ -297,13 +302,13 @@ function ServiceUnitPricing({
                       }}
                       placeholder={up.defaultPrice > 0 ? `${up.defaultPrice}` : t("register.priceMin")}
                       error={!up.priceMin || up.priceMin === 0 || ((up.priceMax ?? 0) > 0 && (up.priceMin ?? 0) > (up.priceMax ?? 0))}
-                      className="w-[68px] pl-4 pr-1.5 text-[12px] font-semibold rounded-md"
+                      className="w-[78px] pl-4 pr-1.5 text-[12px] font-semibold rounded-md"
                       aria-label={t("register.priceMin")}
                     />
                   </div>
                   <span className="text-[11px] font-medium" style={{ color: 'var(--hm-fg-muted)' }}>-</span>
                   <div className="relative">
-                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-medium z-10" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] font-medium z-10" style={{ color: 'var(--hm-fg-muted)' }}>{sym}</span>
                     <Input
                       type="text"
                       inputMode="numeric"
@@ -318,7 +323,7 @@ function ServiceUnitPricing({
                       }}
                       placeholder={up.maxPrice && up.maxPrice > 0 ? `${up.maxPrice}` : t("register.priceMax")}
                       error={!up.priceMax || up.priceMax === 0 || (up.priceMin ?? 0) > (up.priceMax ?? 0)}
-                      className="w-[68px] pl-4 pr-1.5 text-[12px] font-semibold rounded-md"
+                      className="w-[78px] pl-4 pr-1.5 text-[12px] font-semibold rounded-md"
                       aria-label={t("register.priceMax")}
                     />
                   </div>
@@ -326,7 +331,7 @@ function ServiceUnitPricing({
               ) : (
                 /* Single price input (default) */
                 <div className="relative">
-                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-medium z-10" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-medium z-10" style={{ color: 'var(--hm-fg-muted)' }}>{sym}</span>
                   <Input
                     type="text"
                     inputMode="numeric"
@@ -339,7 +344,7 @@ function ServiceUnitPricing({
                     }}
                     placeholder={up.defaultPrice > 0 ? `${up.defaultPrice}` : "0"}
                     error={up.price === 0}
-                    className="w-18 pl-5 pr-2 text-[13px] font-semibold rounded-md"
+                    className="w-[88px] pl-5 pr-2 text-[13px] font-semibold rounded-md"
                   />
                 </div>
               )}
@@ -351,7 +356,7 @@ function ServiceUnitPricing({
                   onClick={() => updateUnit(up.unitKey, { price: up.defaultPrice })}
                   className="text-[10px] font-medium whitespace-nowrap h-auto"
                 >
-                  ~{up.defaultPrice}₾
+                  ~{up.defaultPrice}{sym}
                 </Button>
               )}
               {activeUnits.length > 1 && (
@@ -360,7 +365,7 @@ function ServiceUnitPricing({
                   variant="ghost"
                   size="icon-sm"
                   onClick={() => deactivateUnit(up.unitKey)}
-                  className="w-5 h-5 rounded-full hover:bg-[var(--hm-error-50)] [&_svg]:size-3"
+                  className="w-8 h-8 rounded-full hover:bg-[var(--hm-error-50)] active:scale-95 [&_svg]:size-3.5"
                   aria-label={t("common.close")}
                 >
                   <X className="text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)]" />
@@ -369,7 +374,7 @@ function ServiceUnitPricing({
             </div>
           </div>
 
-          {/* Per-unit discount tiers — readable "buy N+ → save X% → final price"
+          {/* Per-unit discount tiers - readable "buy N+ → save X% → final price"
               flow with labelled inputs and a soft success pill on the right */}
           {up.price > 0 && (
             <div className="pl-3 space-y-1.5">
@@ -438,7 +443,7 @@ function ServiceUnitPricing({
                           border: '1px solid rgba(62,143,90,0.25)',
                         }}
                       >
-                        {discountedPrice}₾
+                        {discountedPrice}{sym}
                         <span className="text-[9px] opacity-70 font-medium">−{savings}</span>
                       </span>
 
@@ -447,7 +452,7 @@ function ServiceUnitPricing({
                         variant="ghost"
                         size="icon-sm"
                         onClick={() => removeDiscount(up.unitKey, up.discountTiers, tidx)}
-                        className="w-5 h-5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] [&_svg]:size-3"
+                        className="w-7 h-7 rounded-full text-[var(--hm-fg-muted)] hover:text-[var(--hm-error-500)] hover:bg-[var(--hm-error-50)] active:scale-95 [&_svg]:size-3.5"
                         aria-label={t("common.close")}
                       >
                         <X />
@@ -512,7 +517,7 @@ function ServiceUnitPricing({
                   <span>{up.unitLabel}</span>
                   {up.defaultPrice > 0 && (
                     <span className="text-[10px] tabular-nums" style={{ color: 'var(--hm-fg-muted)' }}>
-                      ~{up.defaultPrice}₾
+                      ~{up.defaultPrice}{sym}
                     </span>
                   )}
                 </Button>
@@ -533,12 +538,20 @@ export default function ServicesPricingStep({
 }: ServicesPricingStepProps) {
   const { t, pick } = useLanguage();
   const { categories, loading } = useCategories();
+  const country = useMarketplaceCountry();
+  const sym = currencySymbol({ country });
 
-  // Always start on category grid — user navigates into subcategories themselves
+  // Always start on category grid - user navigates into subcategories themselves
   const [panel, setPanel] = useState<"categories" | "subcategories">("categories");
   const [activeCategoryKey, setActiveCategoryKey] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
-  const { aiResults, aiLoading, search: aiSearch, clear: aiClear } = useAiServiceSearch();
+  // Catalog-suggestion modal: open when null becomes a string (the
+  // pre-filled service name) - we set it from the no-results CTA AND the
+  // always-visible footer link.
+  const [suggestionModalOpenWith, setSuggestionModalOpenWith] = useState<
+    string | null
+  >(null);
+  const { aiResults, aiLoading, aiAttempted, search: aiSearch, clear: aiClear } = useAiServiceSearch();
 
   const selectedKeys = useMemo(
     () => new Set(selectedSubcategories.map((s) => s.key)),
@@ -683,6 +696,8 @@ export default function ServicesPricingStep({
           }}
           aiLoading={aiLoading}
           aiResultsCount={aiResults?.length ?? 0}
+          aiAttempted={aiAttempted}
+          hasLocalResults={(searchResults?.length ?? 0) > 0}
           placeholder={t("register.filterSubcategories")}
         />
 
@@ -690,9 +705,24 @@ export default function ServicesPricingStep({
         {searchResults !== null ? (
           <div className="space-y-1.5">
             {searchResults.length === 0 ? (
-              <p className="text-sm text-center py-6" style={{ color: 'var(--hm-fg-muted)' }}>
-                {t("common.noResults")}
-              </p>
+              <div className="text-center py-6">
+                <p
+                  className="text-sm mb-2"
+                  style={{ color: 'var(--hm-fg-muted)' }}
+                >
+                  {t("common.noResults")}
+                </p>
+                {/* High-intent moment: the pro searched for a service we
+                    don't have. Surface the "request to add" CTA here. */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSuggestionModalOpenWith(searchQuery)}
+                >
+                  {t("catalogRequest.requestForSearch")}
+                </Button>
+              </div>
             ) : (
               searchResults.map(({ sub, categoryKey, categoryId, catName }) => {
                 const isSelected = selectedKeys.has(sub.key);
@@ -731,7 +761,7 @@ export default function ServicesPricingStep({
             )}
           </div>
         ) : (
-          /* Category grid — modern color-tinted cards using catalog `color`.
+          /* Category grid - modern color-tinted cards using catalog `color`.
              Each category gets its own brand color (cleaning=emerald,
              plumbing=blue, painters=pink, etc.) instead of uniform vermillion.
              Selected state is signalled by a green check + vermillion count
@@ -749,71 +779,50 @@ export default function ServicesPricingStep({
               const hasSelections = selectedCount > 0;
 
               return (
-                <button
+                <CategoryCard
                   key={cat.key}
-                  type="button"
+                  name={catName}
+                  iconType={cat.icon || cat.key}
+                  color={accent}
+                  selected={hasSelections}
+                  meta={
+                    hasSelections
+                      ? `${selectedCount} ${t("browse.selectedCount")}`
+                      : `${cat.subcategories.length} ${t("common.options")}`
+                  }
                   onClick={() => goToCategory(cat.key)}
-                  className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-2.5 sm:gap-3 p-3 sm:p-3.5 rounded-2xl text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
-                  style={{
-                    backgroundColor: 'var(--hm-bg-elevated)',
-                    border: `1px solid ${hasSelections ? accent : 'var(--hm-border-subtle)'}`,
-                    boxShadow: hasSelections
-                      ? `0 4px 14px -6px ${accent}40, 0 1px 2px rgba(0,0,0,0.03)`
-                      : '0 1px 2px rgba(0,0,0,0.02)',
-                  }}
-                >
-                  {/* Selected check pill — top-right, vermillion */}
-                  {hasSelections && (
-                    <div
-                      className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
-                      style={{
-                        background: 'var(--hm-brand-500)',
-                        boxShadow: '0 2px 6px -2px rgba(239,78,36,0.45)',
-                      }}
-                    >
-                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                    </div>
-                  )}
-
-                  {/* Icon — color-tinted backplate using the category's real color */}
-                  <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all group-hover:scale-105"
-                    style={{
-                      backgroundColor: `${accent}14`,
-                      color: accent,
-                    }}
-                  >
-                    <CategoryIcon type={cat.icon || cat.key} className="w-5 h-5" />
-                  </div>
-
-                  {/* Name + count */}
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[13px] sm:text-[14px] font-semibold block leading-tight" style={{ color: 'var(--hm-fg-primary)' }}>
-                      {catName}
-                    </span>
-                    {hasSelections ? (
-                      <span className="text-[11px] font-semibold mt-0.5 inline-block" style={{ color: 'var(--hm-brand-500)' }}>
-                        {selectedCount} {t("browse.selectedCount")}
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-[var(--hm-fg-muted)] mt-0.5 inline-block">
-                        {cat.subcategories.length} {t("common.options")}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Arrow — visible only when no selection (replaced by check pill when selected) */}
-                  {!hasSelections && (
-                    <ChevronRight
-                      className="w-4 h-4 shrink-0 transition-all hidden sm:block opacity-0 group-hover:opacity-60 group-hover:translate-x-0.5"
-                      style={{ color: 'var(--hm-fg-muted)' }}
-                    />
-                  )}
-                </button>
+                />
               );
             })}
           </div>
         )}
+
+        {/* Always-visible "request a missing service" CTA. Catches the
+            case where a pro knows what they offer but never searches for
+            it - they just see the category grid and realize it's not
+            represented. Subtle tone, not a primary action. */}
+        <div
+          className="text-center pt-2 pb-1 text-xs"
+          style={{ color: 'var(--hm-fg-muted)' }}
+        >
+          {t("catalogRequest.footerPrefix")}{' '}
+          <button
+            type="button"
+            onClick={() => setSuggestionModalOpenWith("")}
+            className="underline transition-colors"
+            style={{ color: 'var(--hm-brand-500)' }}
+          >
+            {t("catalogRequest.footerLink")}
+          </button>
+        </div>
+
+        {/* Modal renders here so it's available regardless of which inner
+            block (search empty-state, footer link) triggered it. */}
+        <RequestCustomServiceModal
+          isOpen={suggestionModalOpenWith !== null}
+          initialName={suggestionModalOpenWith ?? ""}
+          onClose={() => setSuggestionModalOpenWith(null)}
+        />
       </div>
     );
   }
@@ -842,19 +851,26 @@ export default function ServicesPricingStep({
             const isSelected = selectedKeys.has(sub.key);
             const subData = selectedSubcategories.find((s) => s.key === sub.key);
             const subName = pick({ en: sub.name, ka: sub.nameKa });
+            const subAccent = activeCategory.color || 'var(--hm-brand-500)';
 
             return (
               <div
                 key={sub.key}
-                className="rounded-2xl transition-all"
+                className="relative overflow-hidden rounded-2xl transition-all"
                 style={{
                   backgroundColor: 'var(--hm-bg-elevated)',
-                  border: `1px solid ${isSelected ? 'var(--hm-brand-500)' : 'var(--hm-border-subtle)'}`,
-                  boxShadow: isSelected
-                    ? '0 4px 14px -8px rgba(239,78,36,0.30)'
-                    : '0 1px 2px rgba(0,0,0,0.02)',
+                  border: `1px solid ${isSelected ? subAccent : 'var(--hm-border-subtle)'}`,
                 }}
               >
+                {/* Selected rows get a thin accent spine in the category color
+                    instead of a drop shadow - depth via hairline, not blur. */}
+                {isSelected && (
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-y-0 left-0 w-[3px]"
+                    style={{ backgroundColor: subAccent }}
+                  />
+                )}
                 {/* Toggle row */}
                 <div className="flex items-center gap-3 px-4 py-3">
                   <Toggle
@@ -901,7 +917,7 @@ export default function ServicesPricingStep({
                     {/* Warning: no services selected */}
                     {subData.services.length > 0 && !subData.services.some(s => s.isActive) && (
                       <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]" style={{ backgroundColor: 'rgba(245,158,11,0.08)', color: 'rgb(180,110,10)' }}>
-                        <span>⚠</span>
+                        <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                         <span>{t("register.selectAtLeastOneService")}</span>
                       </div>
                     )}
@@ -1034,7 +1050,7 @@ export default function ServicesPricingStep({
                                   return u.price > 0;
                                 }) || [];
                                 if (activeUnits.length === 0 && svc.price > 0) return (
-                                  <span className="text-[13px] font-bold text-[var(--hm-brand-500)] shrink-0">{svc.price}₾</span>
+                                  <span className="text-[13px] font-bold text-[var(--hm-brand-500)] shrink-0">{svc.price}{sym}</span>
                                 );
                                 if (activeUnits.length === 0) return (
                                   <span className="text-[10px] font-medium text-[var(--hm-warning-500)] shrink-0">{t("register.priceQuestion")}</span>
@@ -1050,13 +1066,13 @@ export default function ServicesPricingStep({
                                 }
                                 return (
                                   <span className="text-[12px] font-bold text-[var(--hm-brand-500)] shrink-0">
-                                    {lo === hi ? `${lo}₾` : `${lo}-${hi}₾`}
+                                    {lo === hi ? `${lo}${sym}` : `${lo}-${hi}${sym}`}
                                   </span>
                                 );
                               })()}
                             </div>
 
-                            {/* Unit pricing — active rows + "add pricing" button */}
+                            {/* Unit pricing - active rows + "add pricing" button */}
                             {svc.isActive && svc.unitPrices && svc.unitPrices.length > 0 && (
                               <ServiceUnitPricing
                                 svc={svc}
@@ -1070,7 +1086,7 @@ export default function ServicesPricingStep({
                               <div className="flex items-center gap-2 px-3 pb-2.5">
                                 <span className="text-[10px] shrink-0" style={{ color: 'var(--hm-fg-muted)' }}>{svc.unitLabel}</span>
                                 <div className="relative ml-auto">
-                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] font-medium z-10" style={{ color: 'var(--hm-fg-muted)' }}>₾</span>
+                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] font-medium z-10" style={{ color: 'var(--hm-fg-muted)' }}>{sym}</span>
                                   <Input
                                     type="text"
                                     inputMode="numeric"

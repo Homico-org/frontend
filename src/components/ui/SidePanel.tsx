@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useModalHistory } from "@/hooks/useModalHistory";
 
 const STORAGE_KEY = "sidePanelWidth";
 const MIN_WIDTH = 400;
@@ -37,6 +38,10 @@ export default function SidePanel({ isOpen, onClose, title, children }: SidePane
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setMounted(true), []);
+
+  // Browser/Android back button closes the panel instead of navigating
+  // away. Same pattern as Modal so the back gesture feels consistent.
+  useModalHistory({ isOpen, onClose });
 
   // Lock body scroll
   useEffect(() => {

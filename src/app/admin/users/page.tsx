@@ -116,6 +116,12 @@ function AdminUsersPageContent() {
   const lastFetchAtRef = useRef<number>(0);
   const hasLoadedOnceRef = useRef<boolean>(false);
 
+  // Shared abort ref - parallels the same admin/jobs pattern. Admin
+  // tabs through role/verification filters and pagination rapidly; each
+  // change fans out to /admin/stats + /admin/users (+ optional fallback).
+  // Cancelling prior invocations keeps the table aligned with the
+  // latest filter state instead of letting the slowest response win.
+  const fetchDataAbortRef = useRef<AbortController | null>(null);
   const fetchData = useCallback(
     async (showRefresh = false) => {
       const fetchKey = `${page}-${roleFilter}-${verificationFilter}`;
@@ -130,6 +136,10 @@ function AdminUsersPageContent() {
       lastFetchKeyRef.current = fetchKey;
       lastFetchAtRef.current = now;
 
+      fetchDataAbortRef.current?.abort();
+      const controller = new AbortController();
+      fetchDataAbortRef.current = controller;
+
       try {
         if (showRefresh || hasLoadedOnceRef.current) setIsRefreshing(true);
         else setIsLoading(true);
@@ -141,28 +151,35 @@ function AdminUsersPageContent() {
         if (verificationFilter !== "all")
           params.set("verificationStatus", verificationFilter);
 
-        const statsRes = await api.get(`/admin/stats`).catch((err) => {
+        const statsRes = await api.get(`/admin/stats`, { signal: controller.signal }).catch((err) => {
+          if ((err as { name?: string })?.name === "CanceledError") throw err;
           console.error("Failed to fetch /admin/stats:", err.response?.status, err.response?.data || err.message);
           return { data: { users: {} } };
         });
+        if (controller.signal.aborted) return;
 
         let usersData: User[] = [];
         let totalPagesData = 1;
 
         try {
-          const usersRes = await api.get(`/admin/users?${params.toString()}`);
+          const usersRes = await api.get(`/admin/users?${params.toString()}`, { signal: controller.signal });
           usersData = usersRes.data.users || [];
           totalPagesData = usersRes.data.totalPages || 1;
         } catch (err) {
+          const name = (err as { name?: string })?.name;
+          const code = (err as { code?: string })?.code;
+          if (name === "CanceledError" || code === "ERR_CANCELED") return;
           const apiErr = err as { response?: { status?: number; data?: unknown }; message?: string };
           console.error("Failed to fetch /admin/users:", apiErr.response?.status, apiErr.response?.data || apiErr.message);
           try {
-            const recentRes = await api.get(`/admin/recent-users?limit=50`);
+            const recentRes = await api.get(`/admin/recent-users?limit=50`, { signal: controller.signal });
             usersData = recentRes.data || [];
           } catch (fallbackErr) {
+            if ((fallbackErr as { name?: string })?.name === "CanceledError") return;
             console.error("Fallback also failed:", fallbackErr);
           }
         }
+        if (controller.signal.aborted) return;
 
         setUsers(usersData);
         setTotalPages(totalPagesData);
@@ -178,12 +195,17 @@ function AdminUsersPageContent() {
           thisMonth: statsRes.data.users?.thisMonth || 0,
         });
       } catch (err) {
+        const name = (err as { name?: string })?.name;
+        const code = (err as { code?: string })?.code;
+        if (name === "CanceledError" || code === "ERR_CANCELED") return;
         console.error("Failed to fetch users:", err);
         toast.error(locale === "ka" ? "ვერ მოხერხდა მომხმარებლების ჩატვირთვა" : "Failed to load users");
       } finally {
-        hasLoadedOnceRef.current = true;
-        setIsLoading(false);
-        setIsRefreshing(false);
+        if (!controller.signal.aborted) {
+          hasLoadedOnceRef.current = true;
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
       }
     },
     [page, roleFilter, verificationFilter, toast, locale]
@@ -576,14 +598,17 @@ function AdminUsersPageContent() {
                         >
                           {formatDateTimeShort(user.createdAt, locale as "en" | "ka" | "ru")}
                         </p>
+                        {/* Mobile view-user button bumped from 32px
+                            to 40px to hit iOS HIG tap comfort. */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             const href = getUserProfileHref(user);
                             if (href) router.push(href);
                           }}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform active:scale-90"
+                          className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform active:scale-90"
                           style={{ background: `${THEME.info}20` }}
+                          aria-label={t("admin.viewUser")}
                         >
                           <Eye className="w-4 h-4" style={{ color: THEME.info }} />
                         </button>
@@ -683,7 +708,7 @@ function AdminUsersPageContent() {
                 size="icon"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="w-9 h-9 sm:w-10 sm:h-10"
+                className="w-10 h-10 sm:w-10 sm:h-10"
                 style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
               >
                 <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: THEME.textMuted }} />
@@ -723,7 +748,7 @@ function AdminUsersPageContent() {
                 size="icon"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="w-9 h-9 sm:w-10 sm:h-10"
+                className="w-10 h-10 sm:w-10 sm:h-10"
                 style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}
               >
                 <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: THEME.textMuted }} />
@@ -988,10 +1013,18 @@ function AdminUsersPageContent() {
               )}
             </div>
 
-            {/* Footer Actions */}
+            {/* Footer Actions. Sticky-bottom inside the modal needs
+                explicit safe-area-bottom padding so the Approve/Reject
+                buttons don't sit under the iOS home indicator on
+                notched iPhones (the modal itself doesn't propagate
+                the env(safe-area-inset-bottom) from the body chrome). */}
             <div
-              className="sticky bottom-0 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-end gap-2 sm:gap-3"
-              style={{ background: THEME.surfaceLight, borderTop: `1px solid ${THEME.border}` }}
+              className="sticky bottom-0 px-4 sm:px-6 pt-4 flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-end gap-2 sm:gap-3"
+              style={{
+                background: THEME.surfaceLight,
+                borderTop: `1px solid ${THEME.border}`,
+                paddingBottom: 'max(1rem, calc(0.5rem + env(safe-area-inset-bottom)))',
+              }}
             >
               {verificationAction === "reject" ? (
                 <>

@@ -7,10 +7,12 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ADMIN_THEME as THEME } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/lib/api";
 import type { BaseEntity } from "@/types/shared";
 import { formatDateTimeShort } from "@/utils/dateUtils";
 import { getAdminJobStatusColor, getJobStatusLabel } from "@/utils/statusUtils";
+import { currencySymbol, formatCurrency } from "@/utils/currency";
 import {
   ArrowLeft,
   Briefcase,
@@ -47,6 +49,9 @@ interface AdminJob extends BaseEntity {
     max?: number;
     type?: string;
   };
+  // Marketplace country (added 2026-05). Determines the budget
+  // currency the admin grid renders. Optional for legacy jobs.
+  country?: string;
   location?: string;
   clientId: {
     id: string;
@@ -91,6 +96,7 @@ type JobStatusFilter = "all" | "open" | "in_progress" | "completed" | "cancelled
 function AdminJobsPageContent() {
   const { isAuthenticated } = useAuth();
   const { t, locale } = useLanguage();
+  const toast = useToast();
   const router = useRouter();
 
   const [jobs, setJobs] = useState<AdminJob[]>([]);
@@ -120,8 +126,17 @@ function AdminJobsPageContent() {
     location: "",
   });
 
+  // Shared abort ref - admin tabs through status filters and pagination
+  // rapidly. Each fans out to /admin/stats + /admin/jobs (+ optional
+  // /admin/recent-jobs fallback), so two overlapping invocations fire 4-6
+  // parallel requests. Cancelling the prior keeps the table aligned with
+  // the latest filter the admin picked.
+  const fetchDataAbortRef = useRef<AbortController | null>(null);
   const fetchData = useCallback(
     async (showRefresh = false) => {
+      fetchDataAbortRef.current?.abort();
+      const controller = new AbortController();
+      fetchDataAbortRef.current = controller;
       try {
         if (showRefresh || hasLoadedRef.current) setIsRefreshing(true);
         else setIsLoading(true);
@@ -131,28 +146,36 @@ function AdminJobsPageContent() {
         params.set("limit", "20");
         if (statusFilter !== "all") params.set("status", statusFilter);
 
-        const statsRes = await api.get(`/admin/stats`).catch((err) => {
+        const statsRes = await api.get(`/admin/stats`, { signal: controller.signal }).catch((err) => {
+          const name = (err as { name?: string })?.name;
+          if (name === "CanceledError") throw err;
           console.error("Failed to fetch /admin/stats:", err.response?.status, err.response?.data || err.message);
           return { data: { jobs: {} } };
         });
+        if (controller.signal.aborted) return;
 
         let jobsData: AdminJob[] = [];
         let totalPagesData = 1;
 
         try {
-          const jobsRes = await api.get(`/admin/jobs?${params.toString()}`);
+          const jobsRes = await api.get(`/admin/jobs?${params.toString()}`, { signal: controller.signal });
           jobsData = jobsRes.data.jobs || [];
           totalPagesData = jobsRes.data.totalPages || 1;
         } catch (err) {
+          const name = (err as { name?: string })?.name;
+          const code = (err as { code?: string })?.code;
+          if (name === "CanceledError" || code === "ERR_CANCELED") return;
           const apiErr = err as { response?: { status?: number; data?: unknown }; message?: string };
           console.error("Failed to fetch /admin/jobs:", apiErr.response?.status, apiErr.response?.data || apiErr.message);
           try {
-            const recentRes = await api.get(`/admin/recent-jobs?limit=50`);
+            const recentRes = await api.get(`/admin/recent-jobs?limit=50`, { signal: controller.signal });
             jobsData = recentRes.data || [];
           } catch (fallbackErr) {
+            if ((fallbackErr as { name?: string })?.name === "CanceledError") return;
             console.error("Fallback also failed:", fallbackErr);
           }
         }
+        if (controller.signal.aborted) return;
 
         setJobs(jobsData);
         setTotalPages(totalPagesData);
@@ -166,11 +189,16 @@ function AdminJobsPageContent() {
           thisMonth: statsRes.data.jobs?.thisMonth || 0,
         });
       } catch (err) {
+        const name = (err as { name?: string })?.name;
+        const code = (err as { code?: string })?.code;
+        if (name === "CanceledError" || code === "ERR_CANCELED") return;
         console.error("Failed to fetch jobs:", err);
       } finally {
-        hasLoadedRef.current = true;
-        setIsLoading(false);
-        setIsRefreshing(false);
+        if (!controller.signal.aborted) {
+          hasLoadedRef.current = true;
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
       }
     },
     [page, statusFilter]
@@ -186,13 +214,17 @@ function AdminJobsPageContent() {
     setPage(1);
   }, [statusFilter]);
 
-  const formatBudget = (budget?: AdminJob["budget"]) => {
+  const formatBudget = (budget?: AdminJob["budget"], country?: string) => {
     if (!budget) return "-";
+    // Use formatCurrency so the symbol lands on the convention-correct
+    // side per currency (₾/₽ trail, $/€/£ lead). Previously the symbol
+    // was prefixed unconditionally for every currency.
+    const ctx = { country: country ?? "GE" };
     if (budget.min && budget.max) {
-      return `₾${budget.min} - ₾${budget.max}`;
+      return `${formatCurrency(budget.min, ctx)} - ${formatCurrency(budget.max, ctx)}`;
     }
-    if (budget.min) return `₾${budget.min}+`;
-    if (budget.max) return `${t("admin.upTo")} ₾${budget.max}`;
+    if (budget.min) return `${formatCurrency(budget.min, ctx)}+`;
+    if (budget.max) return `${t("admin.upTo")} ${formatCurrency(budget.max, ctx)}`;
     return "-";
   };
 
@@ -264,6 +296,10 @@ function AdminJobsPageContent() {
       fetchData(true);
     } catch (err) {
       console.error("Failed to update job:", err);
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || t("common.somethingWentWrong");
+      toast.error(t("common.error"), message);
     } finally {
       setIsSaving(false);
     }
@@ -287,6 +323,10 @@ function AdminJobsPageContent() {
       fetchData(true);
     } catch (err) {
       console.error("Failed to delete job:", err);
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || t("common.somethingWentWrong");
+      toast.error(t("common.error"), message);
     } finally {
       setIsDeleting(false);
     }
@@ -305,6 +345,10 @@ function AdminJobsPageContent() {
     } catch (err) {
       console.error("Failed to fetch proposals:", err);
       setProposals([]);
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || t("common.somethingWentWrong");
+      toast.error(t("common.error"), message);
     } finally {
       setIsLoadingProposals(false);
     }
@@ -569,7 +613,7 @@ function AdminJobsPageContent() {
                               }}
                             >
                               <DollarSign className="w-3 h-3" />
-                              {formatBudget(job.budget)}
+                              {formatBudget(job.budget, job.country)}
                             </span>
                           </div>
                         </div>
@@ -666,7 +710,7 @@ function AdminJobsPageContent() {
                             }}
                           >
                             <DollarSign className="w-3 h-3" />
-                            {formatBudget(job.budget)}
+                            {formatBudget(job.budget, job.country)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 mt-1">
@@ -695,7 +739,7 @@ function AdminJobsPageContent() {
                             }}
                           >
                             <DollarSign className="w-3 h-3" />
-                            {formatBudget(job.budget)}
+                            {formatBudget(job.budget, job.country)}
                           </span>
                         </div>
                       </div>
@@ -921,7 +965,7 @@ function AdminJobsPageContent() {
 
               <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: THEME.textMuted }}>
-                  {t("common.budget")} (₾)
+                  {t("common.budget")} ({currencySymbol({ country: selectedJob?.country ?? 'GE' })})
                 </label>
                 <input
                   type="number"
@@ -946,11 +990,15 @@ function AdminJobsPageContent() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 mt-6">
+            {/* Mobile-stack so each button stays full-width and
+                comfortably tappable below ~480px; sm+ reverts to the
+                desktop pattern (secondary left, primary right). */}
+            <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 mt-6">
               <Button
                 variant="secondary"
                 onClick={() => setShowEditModal(false)}
                 style={{ background: THEME.surface, border: `1px solid ${THEME.border}`, color: THEME.text }}
+                className="w-full sm:w-auto"
               >
                 {t("common.cancel")}
               </Button>
@@ -958,6 +1006,7 @@ function AdminJobsPageContent() {
                 onClick={handleSaveJob}
                 loading={isSaving}
                 style={{ background: `linear-gradient(135deg, ${THEME.primary}, ${THEME.primaryDark})`, color: "#fff" }}
+                className="w-full sm:w-auto"
               >
                 {t("common.save")}
               </Button>
@@ -1100,7 +1149,9 @@ function AdminJobsPageContent() {
                       </div>
                       <div className="text-right shrink-0">
                         <p className="font-semibold" style={{ color: THEME.accent, fontFamily: "'JetBrains Mono', monospace" }}>
-                          ₾{proposal.proposedPrice}
+                          {formatCurrency(proposal.proposedPrice, {
+                            country: selectedJob?.country ?? 'GE',
+                          })}
                         </p>
                         <span
                           className="inline-block px-2 py-0.5 rounded-md text-xs font-medium mt-1"

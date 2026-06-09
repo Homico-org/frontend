@@ -2,6 +2,7 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import { currencySymbol } from '@/utils/currency';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
 import { ADMIN_THEME as THEME } from '@/constants/theme';
@@ -25,6 +26,8 @@ import {
   MapPin,
   Phone,
   RefreshCw,
+  Crown,
+  Handshake,
   UserCheck,
   Users,
   X,
@@ -43,6 +46,10 @@ interface PendingPro {
   email?: string;
   phone?: string;
   avatar?: string;
+  // Marketplace country (added 2026-05). Determines which currency
+  // symbol the admin sees next to the pro's pricing.
+  country?: string;
+  currency?: string;
   city?: string;
   bio?: string;
   categories?: string[];
@@ -62,6 +69,8 @@ interface PendingPro {
   yearsExperience?: number;
   isProfileCompleted?: boolean;
   verificationStatus?: 'pending' | 'verified' | 'rejected';
+  isFeatured?: boolean;
+  isHomicoPartner?: boolean;
   adminRejectionReason?: string;
   createdAt: string;
   portfolioProjects?: Array<{
@@ -102,7 +111,17 @@ function AdminPendingProsPageContent() {
   // Avoid "full page reload" feel on filter changes after first load
   const hasLoadedOnceRef = useRef(false);
 
+  // Shared abort refs for both fetches. Admin tabs through the
+  // verification status pills rapidly; without cancellation each filter
+  // change queues parallel /admin/pending-pros calls and the slowest
+  // wins setPros, leaving the table out of sync.
+  const fetchPendingProsAbortRef = useRef<AbortController | null>(null);
+  const fetchStatsAbortRef = useRef<AbortController | null>(null);
+
   const fetchPendingPros = useCallback(async () => {
+    fetchPendingProsAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchPendingProsAbortRef.current = controller;
     try {
       if (hasLoadedOnceRef.current) setIsRefreshing(true);
       else setIsLoading(true);
@@ -113,24 +132,38 @@ function AdminPendingProsPageContent() {
           limit: 20,
           status: statusFilter,
         },
+        signal: controller.signal,
       });
       setPros(response.data.users);
       setTotalPages(response.data.totalPages);
     } catch (error) {
+      const name = (error as { name?: string })?.name;
+      const code = (error as { code?: string })?.code;
+      if (name === 'CanceledError' || code === 'ERR_CANCELED') return;
       console.error('Error fetching pending pros:', error);
       setErrorMessage(t('admin.pendingPros.failedToLoadData'));
     } finally {
-      hasLoadedOnceRef.current = true;
-      setIsLoading(false);
-      setIsRefreshing(false);
+      if (!controller.signal.aborted) {
+        hasLoadedOnceRef.current = true;
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, [page, statusFilter, t]);
 
   const fetchStats = useCallback(async () => {
+    fetchStatsAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchStatsAbortRef.current = controller;
     try {
-      const response = await api.get('/admin/pending-pros/stats');
+      const response = await api.get('/admin/pending-pros/stats', {
+        signal: controller.signal,
+      });
       setStats(response.data);
     } catch (error) {
+      const name = (error as { name?: string })?.name;
+      const code = (error as { code?: string })?.code;
+      if (name === 'CanceledError' || code === 'ERR_CANCELED') return;
       console.error('Error fetching stats:', error);
     }
   }, []);
@@ -184,6 +217,46 @@ function AdminPendingProsPageContent() {
     } catch (error) {
       console.error('Error rejecting pro:', error);
       toast.error(t('admin.pendingPros.failedToReject'));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleToggleFeatured = async (proId: string, next: boolean) => {
+    if (!proId) return;
+    try {
+      setActionLoading(proId);
+      await api.patch(`/admin/pros/${proId}/featured`, { featured: next });
+      toast.success(next ? t('admin.pendingPros.featuredToast') : t('admin.pendingPros.unfeaturedToast'));
+      fetchPendingPros();
+      setSelectedPro((prev) => (prev && getProId(prev) === proId ? { ...prev, isFeatured: next } : prev));
+    } catch (error) {
+      console.error('Error toggling featured:', error);
+      toast.error(t('admin.pendingPros.failedToFeature'));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleTogglePartner = async (proId: string, next: boolean) => {
+    if (!proId) return;
+    try {
+      setActionLoading(proId);
+      await api.patch(`/admin/pros/${proId}/homico-partner`, { partner: next });
+      toast.success(
+        next
+          ? t('admin.pendingPros.partnerToast')
+          : t('admin.pendingPros.unpartnerToast'),
+      );
+      fetchPendingPros();
+      setSelectedPro((prev) =>
+        prev && getProId(prev) === proId
+          ? { ...prev, isHomicoPartner: next }
+          : prev,
+      );
+    } catch (error) {
+      console.error('Error toggling partner:', error);
+      toast.error(t('admin.pendingPros.failedToPartner'));
     } finally {
       setActionLoading(null);
     }
@@ -443,6 +516,20 @@ function AdminPendingProsPageContent() {
                             {t('common.pending')}
                           </span>
                         )}
+                        {pro.isFeatured && (
+                          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium flex-shrink-0 inline-flex items-center gap-1"
+                            style={{ background: `${THEME.primary}20`, color: THEME.primary }}>
+                            <Crown className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />
+                            {t('admin.pendingPros.featured')}
+                          </span>
+                        )}
+                        {pro.isHomicoPartner && (
+                          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold flex-shrink-0 inline-flex items-center gap-1"
+                            style={{ background: THEME.primary, color: '#fff' }}>
+                            <Handshake className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                            {t('admin.pendingPros.partnerBadge')}
+                          </span>
+                        )}
                       </div>
 
                       {/* Contact info - simplified on mobile */}
@@ -528,6 +615,44 @@ function AdminPendingProsPageContent() {
                           </Button>
                         </>
                       )}
+                      {pro.verificationStatus === 'verified' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleFeatured(getProId(pro), !pro.isFeatured);
+                          }}
+                          disabled={actionLoading === getProId(pro)}
+                          style={
+                            pro.isFeatured
+                              ? { background: THEME.primary, color: '#fff', borderColor: THEME.primary }
+                              : { borderColor: THEME.border, color: THEME.textMuted }
+                          }
+                        >
+                          <Crown className={`w-4 h-4 mr-1 ${pro.isFeatured ? 'fill-current' : ''}`} />
+                          {pro.isFeatured ? t('admin.pendingPros.featured') : t('admin.pendingPros.feature')}
+                        </Button>
+                      )}
+                      {pro.verificationStatus === 'verified' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleTogglePartner(getProId(pro), !pro.isHomicoPartner);
+                          }}
+                          disabled={actionLoading === getProId(pro)}
+                          style={
+                            pro.isHomicoPartner
+                              ? { background: THEME.primary, color: '#fff', borderColor: THEME.primary }
+                              : { borderColor: THEME.border, color: THEME.textMuted }
+                          }
+                        >
+                          <Handshake className="w-4 h-4 mr-1" />
+                          {pro.isHomicoPartner ? t('admin.pendingPros.unpartner') : t('admin.pendingPros.partner')}
+                        </Button>
+                      )}
                       <Link
                         href={`/professionals/${pro.uid || getProId(pro)}`}
                         target="_blank"
@@ -556,7 +681,7 @@ function AdminPendingProsPageContent() {
                           setRejectModalPro(pro);
                         }}
                         disabled={actionLoading === getProId(pro)}
-                        className="flex-1 h-9"
+                        className="flex-1 h-10 active:scale-[0.98]"
                         style={{ borderColor: THEME.error, color: THEME.error }}
                       >
                         <XCircle className="w-4 h-4 mr-1.5" />
@@ -569,7 +694,7 @@ function AdminPendingProsPageContent() {
                           handleApprove(getProId(pro));
                         }}
                         disabled={actionLoading === getProId(pro)}
-                        className="flex-1 h-9"
+                        className="flex-1 h-10 active:scale-[0.98]"
                         style={{ background: THEME.success, color: '#fff' }}
                       >
                         <CheckCircle className="w-4 h-4 mr-1.5" />
@@ -715,7 +840,10 @@ function AdminPendingProsPageContent() {
                     <span className="text-base sm:text-lg font-semibold" style={{ color: THEME.text }}>
                       {selectedPro.basePrice}
                       {selectedPro.maxPrice && ` - ${selectedPro.maxPrice}`}
-                      {' '}₾
+                      {' '}
+                      {selectedPro.currency
+                        ? currencySymbol({ currency: selectedPro.currency })
+                        : currencySymbol({ country: selectedPro.country ?? 'GE' })}
                     </span>
                     {selectedPro.pricingModel && (
                       <span className="text-xs sm:text-sm" style={{ color: THEME.textMuted }}>
@@ -856,16 +984,50 @@ function AdminPendingProsPageContent() {
                     </Button>
                   </div>
                 ) : (
-                  <Link
-                    href={`/professionals/${selectedPro.uid || getProId(selectedPro)}`}
-                    target="_blank"
-                    className="block"
-                  >
-                    <Button variant="outline" className="w-full h-12 sm:h-9 text-base sm:text-sm">
-                      <Eye className="w-4 h-4 mr-2" />
-                      {t('common.viewProfile')}
-                    </Button>
-                  </Link>
+                  <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
+                    <Link
+                      href={`/professionals/${selectedPro.uid || getProId(selectedPro)}`}
+                      target="_blank"
+                      className="sm:flex-1"
+                    >
+                      <Button variant="outline" className="w-full h-12 sm:h-9 text-base sm:text-sm">
+                        <Eye className="w-4 h-4 mr-2" />
+                        {t('common.viewProfile')}
+                      </Button>
+                    </Link>
+                    {selectedPro.verificationStatus === 'verified' && (
+                      <Button
+                        onClick={() => handleToggleFeatured(getProId(selectedPro), !selectedPro.isFeatured)}
+                        disabled={actionLoading === getProId(selectedPro)}
+                        variant={selectedPro.isFeatured ? 'default' : 'outline'}
+                        className="sm:flex-1 h-12 sm:h-9 font-medium text-base sm:text-sm"
+                        style={
+                          selectedPro.isFeatured
+                            ? { background: THEME.primary, color: '#fff', borderColor: THEME.primary }
+                            : undefined
+                        }
+                      >
+                        <Crown className={`w-4 h-4 mr-2 ${selectedPro.isFeatured ? 'fill-current' : ''}`} />
+                        {selectedPro.isFeatured ? t('admin.pendingPros.unfeature') : t('admin.pendingPros.feature')}
+                      </Button>
+                    )}
+                    {selectedPro.verificationStatus === 'verified' && (
+                      <Button
+                        onClick={() => handleTogglePartner(getProId(selectedPro), !selectedPro.isHomicoPartner)}
+                        disabled={actionLoading === getProId(selectedPro)}
+                        variant={selectedPro.isHomicoPartner ? 'default' : 'outline'}
+                        className="sm:flex-1 h-12 sm:h-9 font-medium text-base sm:text-sm"
+                        style={
+                          selectedPro.isHomicoPartner
+                            ? { background: THEME.primary, color: '#fff', borderColor: THEME.primary }
+                            : undefined
+                        }
+                      >
+                        <Handshake className="w-4 h-4 mr-2" />
+                        {selectedPro.isHomicoPartner ? t('admin.pendingPros.unpartner') : t('admin.pendingPros.partner')}
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

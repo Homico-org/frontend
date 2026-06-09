@@ -2,6 +2,7 @@
 
 import HomicoLogo from "@/components/common/HomicoLogo";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCountryLink } from "@/hooks/useCountry";
 import { Mail } from "lucide-react";
 import Link from "next/link";
 
@@ -12,6 +13,7 @@ interface LandingFooterProps {
 
 export default function LandingFooter({ onIntakeOpen }: LandingFooterProps) {
   const { t } = useLanguage();
+  const cl = useCountryLink();
 
   return (
     <footer className="bg-[var(--hm-n-900)] border-t border-[var(--hm-n-800)]">
@@ -19,7 +21,7 @@ export default function LandingFooter({ onIntakeOpen }: LandingFooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-10">
           {/* Brand + tagline */}
           <div className="md:col-span-5">
-            <Link href="/" className="inline-flex items-center gap-2">
+            <Link href={cl("/")} className="inline-flex items-center gap-2">
               <HomicoLogo variant="reverse" size={28} className="h-7 w-7" />
               <span className="font-serif text-lg font-medium text-white">
                 Homico
@@ -56,7 +58,7 @@ export default function LandingFooter({ onIntakeOpen }: LandingFooterProps) {
               </li>
               <li>
                 <Link
-                  href="/professionals"
+                  href={cl("/professionals")}
                   className="text-[13px] text-white/70 hover:text-white transition-colors"
                 >
                   {t("landing.browsePros")}
@@ -64,7 +66,7 @@ export default function LandingFooter({ onIntakeOpen }: LandingFooterProps) {
               </li>
               <li>
                 <Link
-                  href="/how-it-works"
+                  href={cl("/how-it-works")}
                   className="text-[13px] text-white/70 hover:text-white transition-colors"
                 >
                   {t("about.howItWorks")}

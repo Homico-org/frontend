@@ -1,5 +1,6 @@
 "use client";
 
+import api from "@/lib/api";
 import AddressPicker from "@/components/common/AddressPicker";
 import BeforeAfterUpload from "@/components/common/BeforeAfterUpload";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,8 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProfileSetup } from "@/contexts/ProfileSetupContext";
+import { useMarketplaceCountry } from "@/hooks/useCountry";
+import { currencySymbol } from "@/utils/currency";
 import {
   Calendar,
   ChevronLeft,
@@ -202,6 +205,8 @@ export default function ProjectsStep({
   maxVisibleInBrowse = 6,
 }: ProjectsStepProps) {
   const { t, locale, pick } = useLanguage();
+  const country = useMarketplaceCountry();
+  const sym = currencySymbol({ country });
   const { selectedSubcategoriesWithPricing } = useProfileSetup();
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -438,29 +443,18 @@ export default function ProjectsStep({
     touchedProjectId.current = projectId;
   };
 
-  const uploadImage = async (file: File): Promise<string | null> => {
+  const uploadFile = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append("file", file);
-
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/upload/public`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!response.ok) throw new Error("Upload failed");
-
-      const data = await response.json();
+      const { data } = await api.post("/upload", formData);
       if (data?.url) {
         return data.url.startsWith("http") || data.url.startsWith("data:")
           ? data.url
           : `${process.env.NEXT_PUBLIC_API_URL}${data.url}`;
       }
     } catch (error) {
-      console.error("Failed to upload image:", error);
+      console.error("Failed to upload file:", error);
     }
     return null;
   };
@@ -478,7 +472,7 @@ export default function ProjectsStep({
     const totalFiles = files.length;
 
     for (let i = 0; i < totalFiles; i++) {
-      const url = await uploadImage(files[i]);
+      const url = await uploadFile(files[i]);
       if (url) uploadedUrls.push(url);
       setUploadProgress(Math.round(((i + 1) / totalFiles) * 100));
     }
@@ -537,30 +531,8 @@ export default function ProjectsStep({
         continue;
       }
 
-      const formData = new FormData();
-      formData.append("file", file);
-
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/upload/public`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data?.url) {
-            const url = data.url.startsWith("http") || data.url.startsWith("data:")
-              ? data.url
-              : `${process.env.NEXT_PUBLIC_API_URL}${data.url}`;
-            uploadedUrls.push(url);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to upload video:", error);
-      }
+      const url = await uploadFile(file);
+      if (url) uploadedUrls.push(url);
 
       setUploadProgress(Math.round(((i + 1) / totalFiles) * 100));
     }
@@ -776,8 +748,8 @@ export default function ProjectsStep({
                                   svc.priceMin > 0 &&
                                   svc.priceMax > 0 &&
                                   svc.priceMin !== svc.priceMax
-                                    ? `${svc.priceMin}-${svc.priceMax}₾`
-                                    : `${svc.price}₾`;
+                                    ? `${svc.priceMin}-${svc.priceMax}${sym}`
+                                    : `${svc.price}${sym}`;
                                 return (
                                   <span
                                     key={svc.serviceKey}
@@ -1070,8 +1042,8 @@ export default function ProjectsStep({
                       svc.priceMin > 0 &&
                       svc.priceMax > 0 &&
                       svc.priceMin !== svc.priceMax
-                        ? `${svc.priceMin}-${svc.priceMax}₾`
-                        : `${svc.price}₾`;
+                        ? `${svc.priceMin}-${svc.priceMax}${sym}`
+                        : `${svc.price}${sym}`;
                     return (
                       <button
                         key={svc.serviceKey}
@@ -1332,7 +1304,7 @@ export default function ProjectsStep({
                       })),
                     }));
                   }}
-                  uploadImage={uploadImage}
+                  uploadImage={uploadFile}
                 />
               </div>
             </div>

@@ -38,23 +38,42 @@ export default function PropertyTypeSelector({
   const { pick } = useLanguage();
   return (
     <div className={`grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 ${className}`}>
-      {propertyTypes.map((type) => (
-        <button
-          key={type.value}
-          type="button"
-          onClick={() => onChange(type.value)}
-          className={`flex flex-col items-center gap-1.5 sm:gap-2 py-3 px-2 sm:p-4 rounded-xl border-2 transition-all ${
-            value === type.value
-              ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5 text-[var(--hm-brand-500)] shadow-sm'
-              : 'border-[var(--hm-border)] text-[var(--hm-fg-muted)] hover:border-[var(--hm-border-strong)] hover:bg-neutral-50'
-          }`}
-        >
-          {type.icon}
-          <span className="text-xs sm:text-sm font-medium leading-tight text-center">
-            {pick({ en: type.labelEn, ka: type.labelKa })}
-          </span>
-        </button>
-      ))}
+      {propertyTypes.map((type) => {
+        const selected = value === type.value;
+        return (
+          <button
+            key={type.value}
+            type="button"
+            onClick={() => onChange(type.value)}
+            className={`flex flex-col items-center gap-1.5 sm:gap-2 py-3 px-2 sm:p-4 rounded-xl transition-all duration-150 ${
+              selected ? '-translate-y-[1px]' : 'hover:-translate-y-[1px] hover:shadow-md'
+            }`}
+            style={
+              selected
+                ? {
+                    background:
+                      'linear-gradient(180deg, rgba(239,78,36,0.12) 0%, rgba(239,78,36,0.04) 100%)',
+                    border: '1px solid rgba(239,78,36,0.45)',
+                    color: 'var(--hm-brand-500)',
+                    boxShadow:
+                      '0 4px 10px -2px rgba(239,78,36,0.15), inset 0 1px 0 rgba(255,255,255,0.5)',
+                  }
+                : {
+                    backgroundColor: 'var(--hm-bg-elevated)',
+                    border: '1px solid var(--hm-border-subtle)',
+                    color: 'var(--hm-fg-secondary)',
+                    boxShadow: '0 1px 2px rgba(15,23,42,0.03)',
+                  }
+            }
+            aria-pressed={selected}
+          >
+            {type.icon}
+            <span className="text-xs sm:text-sm font-medium leading-tight text-center">
+              {pick({ en: type.labelEn, ka: type.labelKa })}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

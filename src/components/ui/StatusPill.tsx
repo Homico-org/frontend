@@ -1,12 +1,13 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { BadgeCheck, Star, Plus, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft } from 'lucide-react';
+import { BadgeCheck, Star, Plus, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft, Moon, Award, Crown, Handshake } from 'lucide-react';
 import { ACCENT_COLOR } from '@/constants/theme';
 
 export type StatusPillVariant =
   | 'verified'
   | 'topRated'
+  | 'experienced'
   | 'new'
   | 'urgent'
   | 'applied'
@@ -17,7 +18,9 @@ export type StatusPillVariant =
   | 'accepted'
   | 'rejected'
   | 'withdrawn'
-  | 'homico'; // For Homico-verified work
+  | 'away' // Pro toggled themselves Away; SLA-exempt + grey pill in browse
+  | 'homico' // For Homico-verified work
+  | 'homicoPartner'; // Signed Homico contract; the only bookable pros
 
 export type StatusPillSize = 'xs' | 'sm' | 'md';
 
@@ -32,6 +35,17 @@ interface StatusPillProps {
   locale?: 'en' | 'ka' | 'ru';
   /** Whether to show the icon */
   showIcon?: boolean;
+  /**
+   * Render as an icon-only circular chip (label moves to a hover tooltip).
+   * A quiet, monochrome trust-row treatment - no colored pill, no text.
+   */
+  iconOnly?: boolean;
+  /**
+   * Icon-only chips: enable the hover pop + label tooltip. Off on dense /
+   * clipped surfaces (e.g. cards with overflow-hidden) where a popped tooltip
+   * gets cut and overlaps content. Default on.
+   */
+  tooltip?: boolean;
   /** Additional class names */
   className?: string;
 }
@@ -69,6 +83,13 @@ const variantConfig: Record<StatusPillVariant, {
     labelEn: 'Top Rated',
     labelKa: 'საუკეთესო',
   },
+  experienced: {
+    bgClass: 'bg-[var(--hm-info-50)]',
+    textClass: 'text-[var(--hm-info-600)]',
+    icon: Award,
+    labelEn: 'Experienced',
+    labelKa: 'გამოცდილი',
+  },
   new: {
     bgClass: 'bg-[var(--hm-info-50)]',
     textClass: 'text-[var(--hm-info-500)]',
@@ -100,9 +121,17 @@ const variantConfig: Record<StatusPillVariant, {
   featured: {
     bgClass: 'bg-[var(--hm-brand-50)]',
     textClass: 'text-[var(--hm-brand-600)]',
-    icon: Star,
+    icon: Crown,
     labelEn: 'Featured',
     labelKa: 'გამორჩეული',
+  },
+  homicoPartner: {
+    // Solid brand fill - the premier badge; it's the only bookable status.
+    bgClass: 'bg-[var(--hm-brand-500)]',
+    textClass: 'text-white',
+    icon: Handshake,
+    labelEn: 'Homico Partner',
+    labelKa: 'Homico პარტნიორი',
   },
   pending: {
     bgClass: 'bg-[var(--hm-warning-50)]',
@@ -139,6 +168,15 @@ const variantConfig: Record<StatusPillVariant, {
     labelEn: 'Withdrawn',
     labelKa: 'გაუქმებული',
   },
+  away: {
+    // Calm neutral - greys the card slightly without screaming "broken".
+    // Distinct from `withdrawn` (which is a final-state thing).
+    bgClass: 'bg-[var(--hm-bg-tertiary)]',
+    textClass: 'text-[var(--hm-fg-secondary)]',
+    icon: Moon,
+    labelEn: 'Away',
+    labelKa: 'მიუწვდომელი',
+  },
   homico: {
     bgClass: '', // Uses inline style for theme color
     textClass: '',
@@ -146,6 +184,20 @@ const variantConfig: Record<StatusPillVariant, {
     labelEn: 'Homico',
     labelKa: 'Homico',
   },
+};
+
+// Saturated fill colour per variant for the icon-only chip treatment. Each
+// trust badge gets a distinct hue (Featured vermillion, Premium violet, so the
+// two no longer both read warm). Tokens where they exist; a literal violet for
+// premium since the palette has no violet token.
+const SOLID_FILL: Partial<Record<StatusPillVariant, string>> = {
+  homicoPartner: 'var(--hm-brand-500)',
+  featured: 'var(--hm-brand-500)',
+  verified: 'var(--hm-success-500)',
+  topRated: 'var(--hm-warning-500)',
+  experienced: 'var(--hm-info-500)',
+  premium: '#7C3AED',
+  new: 'var(--hm-info-500)',
 };
 
 /**
@@ -170,6 +222,8 @@ export function StatusPill({
   label,
   locale = 'en',
   showIcon = true,
+  iconOnly = false,
+  tooltip = true,
   className,
 }: StatusPillProps) {
   const sizeStyles = sizeConfig[size];
@@ -186,6 +240,46 @@ export function StatusPill({
         color: ACCENT_COLOR,
       }
     : undefined;
+
+  // Icon-only chip: a solid-fill circular badge with a white glyph, one
+  // distinct hue per badge. Small (24px) so a row of them reads as a colourful
+  // trust signal without shouting (design-system 4.7 - badges complement).
+  if (iconOnly) {
+    const chip =
+      size === 'xs' ? 'w-6 h-6' : size === 'md' ? 'w-8 h-8' : 'w-7 h-7';
+    const glyph =
+      size === 'xs' ? 'w-3 h-3' : size === 'md' ? 'w-4 h-4' : 'w-3.5 h-3.5';
+    const fill = SOLID_FILL[variant];
+    return (
+      <span
+        aria-label={displayLabel}
+        role="img"
+        className={cn(
+          'relative inline-flex items-center justify-center rounded-full text-white ring-1 ring-inset ring-white/15',
+          chip,
+          !fill && 'bg-[var(--hm-fg-muted)]',
+          // Hover: pop + lift, brighten fill + ring. Named group (`group/badge`)
+          // so the tooltip reacts ONLY to hovering this chip, not an ancestor
+          // card that also uses `group`. Off when tooltip is disabled (dense /
+          // clipped surfaces), where the chip stays static.
+          tooltip &&
+            'group/badge transition-all duration-200 ease-out hover:-translate-y-0.5 hover:scale-125 hover:brightness-110 hover:ring-white/40',
+          className
+        )}
+        style={fill ? { backgroundColor: fill } : undefined}
+      >
+        <Icon
+          className={cn(glyph, variant === 'topRated' && 'fill-current')}
+        />
+        {tooltip && (
+          /* Hover tooltip - the label, animated in above the chip. */
+          <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1.5 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-[var(--hm-fg-primary)] px-2 py-1 text-[10px] font-medium text-[var(--hm-bg-elevated)] opacity-0 shadow-sm transition-all duration-150 ease-out group-hover/badge:translate-y-0 group-hover/badge:opacity-100">
+            {displayLabel}
+          </span>
+        )}
+      </span>
+    );
+  }
 
   return (
     <span

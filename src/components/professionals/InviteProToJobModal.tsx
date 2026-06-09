@@ -5,6 +5,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Modal } from "@/components/ui/Modal";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
+import { useCountryLink } from "@/hooks/useCountry";
 import { api } from "@/lib/api";
 import type { Job } from "@/types/shared";
 import { Briefcase, Check, MapPin, Send, X } from "lucide-react";
@@ -28,6 +29,7 @@ export default function InviteProToJobModal({
 }: InviteProToJobModalProps) {
   const { t } = useLanguage();
   const toast = useToast();
+  const cl = useCountryLink();
 
   const [jobs, setJobs] = useState<Job[]>(initialJobs ?? []);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,22 +48,32 @@ export default function InviteProToJobModal({
       return;
     }
 
+    const controller = new AbortController();
     const fetchJobs = async () => {
       setIsLoading(true);
       try {
-        const response = await api.get("/jobs/my-jobs?status=open");
+        const response = await api.get("/jobs/my-jobs?status=open", {
+          signal: controller.signal,
+        });
         const list = Array.isArray(response.data) ? (response.data as Job[]) : [];
         setJobs(list);
         setSelectedJobId(list[0]?.id || "");
       } catch (err) {
+        const name = (err as { name?: string })?.name;
+        const code = (err as { code?: string })?.code;
+        if (name === "CanceledError" || code === "ERR_CANCELED") return;
         console.error("Failed to fetch my jobs:", err);
         toast.error(t("common.error"), t("job.failedToLoadProjects"));
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchJobs();
+
+    return () => controller.abort();
   }, [isOpen, initialJobs, t, toast]);
 
   const selectedJob = useMemo(
@@ -146,7 +158,7 @@ export default function InviteProToJobModal({
               <Button variant="outline" onClick={onClose} className="text-sm h-9 sm:h-10">
                 {t("common.cancel")}
               </Button>
-              <Link href="/post-job">
+              <Link href={cl("/post-job")}>
                 <Button className="text-sm h-9 sm:h-10">{t("job.postJob") || t("common.create")}</Button>
               </Link>
             </div>

@@ -3,6 +3,8 @@ import { ACCENT_COLOR } from "@/constants/theme";
 
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useMarketplaceCountry } from "@/hooks/useCountry";
+import { currencySymbol } from "@/utils/currency";
 import { Check } from "lucide-react";
 
 interface PricingStepProps {
@@ -111,33 +113,35 @@ export default function PricingStep({
   validation,
 }: PricingStepProps) {
   const { t, pick } = useLanguage();
+  const country = useMarketplaceCountry();
+  const sym = currencySymbol({ country });
 
   const pricingOptions = [
     {
       key: "fixed",
       label: "Fixed",
       labelKa: "ფიქსირებული",
-      suffix: "₾",
+      suffix: sym,
       Icon: PricingIcons.fixed,
     },
     {
       key: "range",
       label: "Range",
       labelKa: "დიაპაზონი",
-      suffix: "₾",
+      suffix: sym,
       Icon: PricingIcons.range,
     },
     {
       key: "per_sqm",
       label: "Per m²",
       labelKa: "კვ.მ",
-      suffix: `₾${t("timeUnits.perSqm")}`,
+      suffix: `${sym}${t("timeUnits.perSqm")}`,
       Icon: PricingIcons.per_sqm,
     },
   ] as const;
 
   const selectedOption = pricingOptions.find((o) => o.key === formData.pricingModel);
-  const suffix = selectedOption?.suffix || "₾";
+  const suffix = selectedOption?.suffix || sym;
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -230,7 +234,7 @@ export default function PricingStep({
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--hm-brand-500)] font-semibold">
-                  ₾
+                  {sym}
                 </span>
                 <input
                   type="number"
@@ -263,7 +267,7 @@ export default function PricingStep({
             {formData.pricingModel === "range" && (
               <div className="pt-6">
                 <span className="text-[var(--hm-fg-muted)] text-xl">
-                  —
+                  -
                 </span>
               </div>
             )}
@@ -276,7 +280,7 @@ export default function PricingStep({
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--hm-fg-muted)] font-semibold">
-                    ₾
+                    {sym}
                   </span>
                   <input
                     type="number"

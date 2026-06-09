@@ -10,6 +10,21 @@ interface AiSearchBarProps {
   onChange: (next: string) => void;
   aiLoading: boolean;
   aiResultsCount: number;
+  /**
+   * True when AI was actually dispatched for the current query but
+   * returned no matches (vs. query too short / AI not called). When
+   * true AND aiResultsCount === 0, render the "AI didn't match" state
+   * so the user knows AI ran and missed (and can adjust the query)
+   * instead of wondering whether AI is silently broken.
+   */
+  aiAttempted?: boolean;
+  /**
+   * When AI returned nothing but the consumer's local keyword search
+   * has results, pass `true` so we skip the "AI didn't match" message
+   * (local results carry the user forward and the message would just
+   * read as noise next to a populated result list).
+   */
+  hasLocalResults?: boolean;
   placeholder?: string;
   className?: string;
 }
@@ -24,6 +39,8 @@ export default function AiSearchBar({
   onChange,
   aiLoading,
   aiResultsCount,
+  aiAttempted = false,
+  hasLocalResults = false,
   placeholder,
   className = '',
 }: AiSearchBarProps) {
@@ -92,6 +109,27 @@ export default function AiSearchBar({
           <span className="text-[11px]" style={{ color: 'var(--hm-fg-secondary)' }}>
             · {t('browse.aiSuggestedHint')}
           </span>
+        </div>
+      )}
+
+      {/* AI ran and found no match. Suppressed when local keyword
+          search has results (the populated list already tells the
+          user there's something to pick) - this message only fires
+          when both AI and local are empty, so the user gets explicit
+          feedback that AI considered the query but couldn't help,
+          rather than wondering whether anything was tried. */}
+      {hasQuery && !aiLoading && aiAttempted && aiResultsCount === 0 && !hasLocalResults && (
+        <div
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed text-[11px]"
+          style={{
+            borderColor: 'var(--hm-border-subtle)',
+            color: 'var(--hm-fg-muted)',
+          }}
+        >
+          <span className="font-semibold text-[var(--hm-fg-secondary)]">
+            {t('browse.aiNoMatch')}
+          </span>
+          <span>· {t('browse.aiNoMatchHint')}</span>
         </div>
       )}
     </div>

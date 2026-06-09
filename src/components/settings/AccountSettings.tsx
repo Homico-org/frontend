@@ -5,10 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/Card';
 import { IconBadge } from '@/components/ui/IconBadge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Toggle } from '@/components/ui/Toggle';
 import { features } from '@/config/features';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { AlertCircle, AlertTriangle, BriefcaseBusiness, Check, EyeOff, Trash2, User } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
+import { api } from '@/lib/api';
+import { extractApiErrorMessage } from '@/utils/errorUtils';
+import { AlertCircle, AlertTriangle, BriefcaseBusiness, Check, EyeOff, Moon, Trash2, User } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 interface AccountSettingsProps {
@@ -17,8 +21,17 @@ interface AccountSettingsProps {
 }
 
 export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateModal }: AccountSettingsProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const { t, locale } = useLanguage();
+  const toast = useToast();
+
+  // Pro availability status. Drives the Away toggle. Profile stays
+  // visible in browse but is marked Away + exempt from SLA timers.
+  // Different from full deactivation (below) which hides the profile.
+  const [proStatus, setProStatus] = useState<'active' | 'busy' | 'away'>(
+    (user?.status as 'active' | 'busy' | 'away') ?? 'active',
+  );
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   // Profile deactivation state
   const [isProfileDeactivated, setIsProfileDeactivated] = useState(false);
@@ -53,6 +66,27 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
     fetchDeactivationStatus();
   }, [fetchDeactivationStatus]);
 
+  // Toggle Away mode. ON => status='away' (SLA exempt, Away pill in
+  // browse). OFF => status='active'. Optimistic local state with
+  // rollback on failure - the API call is fast and a 4xx is rare,
+  // but matters if we ever ship offline support.
+  const handleToggleAway = async (nextAway: boolean) => {
+    const target: 'active' | 'away' = nextAway ? 'away' : 'active';
+    const previous = proStatus;
+    setProStatus(target);
+    setIsUpdatingStatus(true);
+    try {
+      await api.post('/users/me/status', { status: target });
+      updateUser({ status: target });
+    } catch (err) {
+      console.error('[AccountSettings] Failed to update status', err);
+      setProStatus(previous);
+      toast.error(t('common.error'), extractApiErrorMessage(err, t('common.error')));
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   const handleReactivateProfile = async () => {
     setIsReactivating(true);
     try {
@@ -83,6 +117,34 @@ export default function AccountSettings({ onOpenDeleteModal, onOpenDeactivateMod
       <p className="text-sm text-[var(--hm-fg-muted)]">
         {t('settings.manageYourAccountSettings')}
       </p>
+
+      {/* Away mode (SLA-exempt). Lighter-touch than full deactivation:
+          profile stays visible but is clearly marked Away in browse,
+          and the accountability cron skips this pro entirely. Pros use
+          this for vacation, illness, or busy days when they can't
+          guarantee fast response. */}
+      {isPro && !isProfileDeactivated && (
+        <div
+          className="rounded-xl p-4"
+          style={{
+            backgroundColor: proStatus === 'away' ? 'rgba(148, 163, 184, 0.08)' : 'var(--hm-bg-tertiary)',
+            border: `1px solid ${proStatus === 'away' ? 'rgba(148, 163, 184, 0.25)' : 'var(--hm-border-subtle)'}`,
+          }}
+        >
+          <Toggle
+            checked={proStatus === 'away'}
+            disabled={isUpdatingStatus}
+            onChange={(e) => handleToggleAway(e.target.checked)}
+            label={
+              <span className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--hm-fg-primary)' }}>
+                <Moon className="w-4 h-4 text-[var(--hm-fg-muted)]" />
+                {t('settings.awayMode')}
+              </span>
+            }
+            description={t('settings.awayModeDescription')}
+          />
+        </div>
+      )}
 
       {/* Pro Profile Visibility */}
       {isPro && (

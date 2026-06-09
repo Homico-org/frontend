@@ -16,12 +16,16 @@ import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
+import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { api } from "@/lib/api";
 import type { Proposal } from "@/types/shared";
 import { isHighLevelCategory } from "@/utils/categoryHelpers";
 import { formatTimeAgoCompact } from "@/utils/dateUtils";
+import { formatCurrency } from "@/utils/currency";
+import { extractApiErrorMessage } from "@/utils/errorUtils";
 import {
   Check,
+  CheckCircle2,
   Clock,
   ExternalLink,
   FileText,
@@ -30,6 +34,7 @@ import {
   Undo2,
   Users,
   X,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -44,6 +49,7 @@ interface JobSummary {
   subcategory?: string;
   status: string;
   clientId: string;
+  country?: string;
 }
 
 function ProposalsPageContent() {
@@ -54,6 +60,7 @@ function ProposalsPageContent() {
   const { t } = useLanguage();
   const { getCategoryLabel, locale } = useCategoryLabels();
   const toast = useToast();
+  const { trackEvent } = useAnalytics();
 
   const [job, setJob] = useState<JobSummary | null>(null);
   const [proposals, setProposals] = useState<Proposal[]>([]);
@@ -71,30 +78,39 @@ function ProposalsPageContent() {
   const isHighLevel = job ? isHighLevelCategory(job.category) : false;
 
   useEffect(() => {
-    let isMounted = true;
+    // AbortController replaces the isMounted flag - it ALSO cancels the
+    // actual network requests so Strict Mode double-mount no longer
+    // fires four requests (two duplicates per endpoint). The
+    // mark-as-viewed POST runs unguarded so the server-side counter
+    // update completes even if the user navigates away mid-load.
+    const controller = new AbortController();
 
     const fetchData = async () => {
       try {
         setIsLoading(true);
         const [jobRes, proposalsRes] = await Promise.all([
-          api.get(`/jobs/${jobId}`),
-          api.get(`/jobs/${jobId}/proposals`),
+          api.get(`/jobs/${jobId}`, { signal: controller.signal }),
+          api.get(`/jobs/${jobId}/proposals`, { signal: controller.signal }),
         ]);
 
-        if (!isMounted) return;
+        if (controller.signal.aborted) return;
 
         setJob(jobRes.data);
         setProposals(proposalsRes.data);
 
-        // Mark proposals as viewed
-        await api.post(`/jobs/counters/mark-proposals-viewed/${jobId}`);
+        // Mark proposals as viewed (fire-and-forget; intentionally not
+        // tied to the abort signal so the server-side counter still
+        // updates even if the user navigates away mid-load).
+        api.post(`/jobs/counters/mark-proposals-viewed/${jobId}`).catch(() => {});
       } catch (error) {
-        if (!isMounted) return;
+        const name = (error as { name?: string })?.name;
+        const code = (error as { code?: string })?.code;
+        if (name === "CanceledError" || code === "ERR_CANCELED") return;
         console.error("Failed to fetch data:", error);
         toast.error(t("common.error"), t("job.failedToLoadData"));
         router.push("/my-jobs");
       } finally {
-        if (isMounted) {
+        if (!controller.signal.aborted) {
           setIsLoading(false);
         }
       }
@@ -104,9 +120,7 @@ function ProposalsPageContent() {
       fetchData();
     }
 
-    return () => {
-      isMounted = false;
-    };
+    return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
@@ -155,10 +169,9 @@ function ProposalsPageContent() {
           toast.success(t("common.success"), t("job.markedAsInterested"));
         }
       } catch (error) {
-        const apiErr = error as { response?: { data?: { message?: string } } };
         toast.error(
           t("common.error"),
-          apiErr.response?.data?.message || t("job.failedToProcess")
+          extractApiErrorMessage(error, t("job.failedToProcess"))
         );
       } finally {
         setIsProcessing(false);
@@ -187,10 +200,9 @@ function ProposalsPageContent() {
           t("job.proposalRejected")
         );
       } catch (error) {
-        const apiErr = error as { response?: { data?: { message?: string } } };
         toast.error(
           t("common.error"),
-          apiErr.response?.data?.message || t("job.failedToReject")
+          extractApiErrorMessage(error, t("job.failedToReject"))
         );
       } finally {
         setIsProcessing(false);
@@ -205,22 +217,43 @@ function ProposalsPageContent() {
     async (proposalId: string) => {
       setIsProcessing(true);
       try {
-        await api.post(`/jobs/proposals/${proposalId}/accept`);
+        const { data } = await api.post<{ paymentRedirectUrl?: string | null }>(
+          `/jobs/proposals/${proposalId}/accept`,
+        );
+
+        // Look up the accepted proposal so we can include the amount in the
+        // analytics event. The list state holds plain Proposal objects whose
+        // id field is `id`; backend may also surface `_id`, so cast loosely.
+        const accepted = proposals.find(
+          (p) => (p as { _id?: string; id?: string })._id === proposalId || p.id === proposalId,
+        );
+        trackEvent(AnalyticsEvent.PROPOSAL_ACCEPT, {
+          jobId,
+          proposalId,
+          proposalAmount: typeof accepted?.proposedPrice === "number" ? accepted.proposedPrice : undefined,
+        });
+
+        // Escrow-at-hire: when the backend returns a payment URL, the hire is
+        // not final until the client pays - send them straight to the provider.
+        // Hard navigation is more reliable than router.push from here.
+        if (data?.paymentRedirectUrl) {
+          window.location.href = data.paymentRedirectUrl;
+          return;
+        }
 
         toast.success(
           t("common.success"),
           t("job.projectStartedRedirectingToProject")
         );
 
-        // Redirect to the job page where they'll see the project tracker
+        // No payment needed (unpriced proposal): go to the project tracker.
         setTimeout(() => {
           router.push(`/jobs/${jobId}`);
         }, 1500);
       } catch (error) {
-        const apiErr = error as { response?: { data?: { message?: string } } };
         toast.error(
           t("common.error"),
-          apiErr.response?.data?.message || t("job.failedToAccept")
+          extractApiErrorMessage(error, t("job.failedToAccept"))
         );
         setIsProcessing(false);
       }
@@ -254,10 +287,9 @@ function ProposalsPageContent() {
           t("job.revertedToNewProposals")
         );
       } catch (error) {
-        const apiErr = error as { response?: { data?: { message?: string } } };
         toast.error(
           t("common.error"),
-          apiErr.response?.data?.message || t("job.failedToRevert")
+          extractApiErrorMessage(error, t("job.failedToRevert"))
         );
       } finally {
         setIsProcessing(false);
@@ -301,7 +333,7 @@ function ProposalsPageContent() {
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 pt-4 pb-20 lg:pb-8">
         {/* Back Button */}
-        <BackButton href="/my-jobs" className="mb-4" />
+        <BackButton href="/my-jobs" variant="minimal" className="mb-4" />
 
         {/* Page Header with Stats */}
         <div className="mb-6">
@@ -312,7 +344,7 @@ function ProposalsPageContent() {
               </h1>
               {job && (
                 <Link
-                  href={`/jobs/${job.id}`}
+                  href={`/${(job.country ?? 'GE').toLowerCase()}/jobs/${job.id}`}
                   className="inline-flex items-center gap-1.5 text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors"
                 >
                   {job.title}
@@ -420,6 +452,7 @@ function ProposalsPageContent() {
                       key={proposal.id}
                       proposal={proposal}
                       locale={locale}
+                      jobCountry={job?.country}
                       onShortlist={() => handleShortlist(proposal)}
                       onReject={() => setShowRejectConfirm(proposal.id)}
                       isHighLevel={isHighLevel}
@@ -454,6 +487,7 @@ function ProposalsPageContent() {
                       key={proposal.id}
                       proposal={proposal}
                       locale={locale}
+                      jobCountry={job?.country}
                       isShortlisted
                       isHighLevel={isHighLevel}
                       onAccept={() => handleAccept(proposal.id)}
@@ -487,6 +521,7 @@ function ProposalsPageContent() {
                       key={proposal.id}
                       proposal={proposal}
                       locale={locale}
+                      jobCountry={job?.country}
                       isRejected
                       isHighLevel={isHighLevel}
                     />
@@ -533,6 +568,7 @@ function ProposalsPageContent() {
 function ProposalCard({
   proposal,
   locale,
+  jobCountry,
   onShortlist,
   onReject,
   onAccept,
@@ -544,6 +580,9 @@ function ProposalCard({
 }: {
   proposal: Proposal;
   locale: string;
+  // Country the parent job lives in - drives the currency symbol on
+  // proposed prices so a US job's proposals don't render in ₾.
+  jobCountry?: string;
   onShortlist?: () => void;
   onReject?: () => void;
   onAccept?: () => void;
@@ -568,7 +607,7 @@ function ProposalCard({
     >
       <div className="flex items-start gap-3 sm:gap-4">
         {/* Avatar with Link */}
-        <Link href={`/professionals/${pro?.id}`} className="flex-shrink-0">
+        <Link href={`/${(pro?.country ?? 'GE').toLowerCase()}/professionals/${pro?.id}`} className="flex-shrink-0">
           <Avatar
             src={pro?.avatar}
             name={pro?.name || "Pro"}
@@ -582,20 +621,70 @@ function ProposalCard({
           {/* Header */}
           <div className="flex items-start justify-between gap-2 mb-2">
             <div className="min-w-0">
-              <Link
-                href={`/professionals/${pro?.id}`}
-                className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] hover:text-[var(--hm-brand-500)] transition-colors block truncate"
-              >
-                {pro?.name || "Professional"}
-              </Link>
-              <div className="flex items-center gap-2 mt-0.5">
-                <Clock className="w-3 h-3 text-[var(--hm-fg-muted)] flex-shrink-0" />
-                <span className="text-xs text-[var(--hm-fg-muted)]">
+              <div className="flex items-center gap-1.5">
+                <Link
+                  href={`/${(pro?.country ?? 'GE').toLowerCase()}/professionals/${pro?.id}`}
+                  className="text-sm sm:text-base font-semibold text-[var(--hm-fg-primary)] hover:text-[var(--hm-brand-500)] transition-colors truncate"
+                >
+                  {pro?.name || "Professional"}
+                </Link>
+                {/* Verified badge - makes the trusted pro obvious when
+                    comparing multiple proposals side by side. */}
+                {(pro as { verificationStatus?: string })?.verificationStatus === 'verified' && (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[var(--hm-success-500)] flex-shrink-0" />
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <span className="inline-flex items-center gap-1 text-xs text-[var(--hm-fg-muted)]">
+                  <Clock className="w-3 h-3 flex-shrink-0" />
                   {formatTimeAgoCompact(
                     proposal.createdAt,
                     locale as "en" | "ka" | "ru"
                   )}
                 </span>
+                {/* "Last active X ago" - tells the owner whether this
+                    pro is still around or submitted and disappeared. */}
+                {(() => {
+                  const lastLogin = (pro as { lastLoginAt?: string })?.lastLoginAt;
+                  if (!lastLogin) return null;
+                  const diffMin = Math.floor(
+                    (Date.now() - new Date(lastLogin).getTime()) / 60000,
+                  );
+                  if (diffMin < 5) {
+                    return (
+                      <span className="inline-flex items-center gap-1 text-xs text-[var(--hm-success-500)] font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--hm-success-500)]" />
+                        {t('professional.activeNow')}
+                      </span>
+                    );
+                  }
+                  if (diffMin >= 60 * 24 * 30) return null; // >30 days, skip
+                  let label: string;
+                  if (diffMin < 60) label = t('professional.lastSeenMinutes', { count: diffMin });
+                  else if (diffMin < 60 * 24) label = t('professional.lastSeenHours', { count: Math.floor(diffMin / 60) });
+                  else label = t('professional.lastSeenDays', { count: Math.floor(diffMin / 60 / 24) });
+                  return (
+                    <span className="text-xs text-[var(--hm-fg-muted)]">{label}</span>
+                  );
+                })()}
+                {/* Response-time pill - if pro replies fast, surface
+                    that as a positive trust signal in the comparison
+                    view. */}
+                {(() => {
+                  const t1 = (pro as { avgResponseTime?: number })?.avgResponseTime;
+                  if (t1 == null || !Number.isFinite(t1) || t1 <= 0 || t1 > 24) return null;
+                  const text = t1 < 1
+                    ? t('professional.repliesWithinHour')
+                    : t1 <= 4
+                      ? t('professional.repliesWithinHours', { count: 4 })
+                      : t('professional.repliesWithinHours', { count: 24 });
+                  return (
+                    <span className="inline-flex items-center gap-1 text-xs text-[var(--hm-success-500)] font-medium">
+                      <Zap className="w-3 h-3" />
+                      {text}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
 
@@ -627,7 +716,14 @@ function ProposalCard({
             {proposal.proposedPrice && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--hm-brand-500)]/10">
                 <span className="text-base sm:text-lg font-bold text-[var(--hm-brand-500)]">
-                  ₾{proposal.proposedPrice.toLocaleString()}
+                  {/* `formatCurrency` puts the symbol on the right for
+                      ₾/₽ (native convention) and on the left for $/€/£;
+                      the previous concat unconditionally prefixed the
+                      symbol so Georgian users saw "₾800" instead of
+                      "800₾". */}
+                  {formatCurrency(proposal.proposedPrice, {
+                    country: jobCountry ?? 'GE',
+                  })}
                 </span>
               </div>
             )}
@@ -694,7 +790,7 @@ function ProposalCard({
                 {t("job.reject")}
               </Button>
               <Button variant="ghost" size="sm" asChild>
-                <Link href={`/professionals/${pro?.id}`}>
+                <Link href={`/${(pro?.country ?? 'GE').toLowerCase()}/professionals/${pro?.id}`}>
                   {t("common.profile")}
                 </Link>
               </Button>
@@ -732,7 +828,7 @@ function ProposalCard({
                 </Button>
               )}
               <Button variant="ghost" size="sm" asChild>
-                <Link href={`/professionals/${pro?.id}`}>
+                <Link href={`/${(pro?.country ?? 'GE').toLowerCase()}/professionals/${pro?.id}`}>
                   {t("common.profile")}
                 </Link>
               </Button>

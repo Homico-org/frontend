@@ -527,6 +527,8 @@ export default function HelpPage() {
                     value={contactForm.contactEmail}
                     onChange={(e) => setContactForm({ ...contactForm, contactEmail: e.target.value })}
                     placeholder={t('help.contact.emailPlaceholder')}
+                    autoComplete="email"
+                    inputMode="email"
                   />
                 </FormGroup>
 
@@ -553,7 +555,12 @@ export default function HelpPage() {
                 ) : (
                   <Button
                     type="submit"
-                    disabled={!contactForm.message.trim()}
+                    // Also disable while submitting so a rapid
+                    // double-tap doesn't fire `POST /support/contact`
+                    // twice. The `loading` spinner conveys the
+                    // pending state but doesn't itself prevent
+                    // clicks; the disabled flag does.
+                    disabled={!contactForm.message.trim() || isSubmitting}
                     loading={isSubmitting}
                     size="lg"
                     className="w-full"

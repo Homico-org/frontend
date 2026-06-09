@@ -1,15 +1,19 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import BeforeAfterSlider from "@/components/ui/BeforeAfterSlider";
 import { StarRating } from "@/components/ui/StarRating";
 import { StatusPill } from "@/components/ui/StatusPill";
+import ProBadges from "@/components/professionals/ProBadges";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCategoryLabels } from "@/hooks/useCategoryLabels";
 import { storage } from "@/services/storage";
 import { ProProfile, ProStatus } from "@/types";
-import { ArrowUpRight, Briefcase, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, MapPin, Play, Plus, Star, Wallet, Zap } from "lucide-react";
+import { currencySymbol, formatCurrency, formatCurrencyRange } from "@/utils/currency";
+import { translateCity } from "@/data/cities";
+import { ArrowUpRight, Briefcase, CalendarPlus, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, MapPin, Play, Plus, Star, Wallet, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -23,6 +27,12 @@ interface ProCardProps {
   activeSubcategories?: string[];
   onLike?: () => void;
   showLikeButton?: boolean;
+  /**
+   * When provided, renders a "Book" CTA on the card (default/compact variants)
+   * so a user can book this pro straight from the service-filtered listing
+   * instead of opening the full profile first. The parent owns the booking modal.
+   */
+  onBook?: (profile: ProProfile) => void;
 }
 
 export default function ProCard({
@@ -30,6 +40,7 @@ export default function ProCard({
   variant = "default",
   activeCategory,
   activeSubcategories = [],
+  onBook,
 }: ProCardProps) {
   const { t, locale, pick } = useLanguage();
   const { getCategoryLabel } = useCategoryLabels();
@@ -104,6 +115,13 @@ export default function ProCard({
 
   const isPremium = profile.isPremium || false;
 
+  // Only offer the Book CTA when the pro has at least one active, priced
+  // service - otherwise the booking modal's first step would be empty.
+  const hasBookableServices = useMemo(
+    () => (profile.servicePricing || []).some((s) => s.isActive && s.price > 0),
+    [profile.servicePricing],
+  );
+
   const avatarUrl = profile.avatar ? storage.getFileUrl(profile.avatar) : null;
 
   // Completed jobs count
@@ -142,7 +160,11 @@ export default function ProCard({
         if (h > 0 && h > hi) hi = h;
       }
       if (!Number.isFinite(lo) || !Number.isFinite(hi)) return '';
-      return lo === hi ? `${lo}₾` : `${lo}-${hi}₾`;
+      // Currency comes from the pro's marketplace - falls back to GE
+      // when missing so legacy data stays formatted correctly.
+      return lo === hi
+        ? formatCurrency(lo, { country: profile.country ?? 'GE' })
+        : formatCurrencyRange(lo, hi, { country: profile.country ?? 'GE' });
     };
 
     // If user filtered by specific subcategories, find matching service prices
@@ -161,7 +183,7 @@ export default function ProCard({
 
     // No filter - don't show a misleading aggregate price
     return null;
-  }, [profile.servicePricing, activeCategory, activeSubcategories]);
+  }, [profile.servicePricing, activeCategory, activeSubcategories, profile.country]);
 
   // Filter-aware experience: show experience for the filtered service
   const matchedExperience = useMemo(() => {
@@ -257,7 +279,11 @@ export default function ProCard({
     return () => { if (autoSlideRef.current) clearInterval(autoSlideRef.current); };
   }, [isHovered, isInView, mediaSlides.length]);
 
-  const isTopRated = profile.avgRating >= 4.8 && (profile.completedProjects || 0) >= 5;
+  // Match the canonical Top-Rated rule (deriveProBadges): rating + review
+  // volume. `completedProjects` was the wrong field - it's usually undefined,
+  // so the badge never showed even for clearly top-rated pros.
+  const isTopRated =
+    profile.avgRating >= 4.8 && (profile.totalReviews || 0) >= 5;
 
   // Online/active status based on lastLoginAt
   const isOnline = useMemo(() => {
@@ -265,6 +291,56 @@ export default function ProCard({
     const diff = Date.now() - new Date(profile.lastLoginAt).getTime();
     return diff < 1000 * 60 * 30; // within 30 minutes
   }, [profile.lastLoginAt]);
+
+  // Tooltip text for the online status dot. Was silent decoration
+  // before - now reads as concrete proof of recent activity.
+  const lastSeenLabel = useMemo(() => {
+    if (!profile.lastLoginAt) return null;
+    const diffMin = Math.floor((Date.now() - new Date(profile.lastLoginAt).getTime()) / 60000);
+    if (diffMin < 5) return t('professional.activeNow');
+    if (diffMin < 60) return t('professional.lastSeenMinutes', { count: diffMin });
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return t('professional.lastSeenHours', { count: diffH });
+    const diffD = Math.floor(diffH / 24);
+    if (diffD < 30) return t('professional.lastSeenDays', { count: diffD });
+    return null;
+  }, [profile.lastLoginAt, t]);
+
+  // "Member since" subtitle - tells clients whether the pro is brand
+  // new or established on the platform. Uses createdAt which the API
+  // populates on every user record.
+  const memberSinceLabel = useMemo(() => {
+    if (!profile.createdAt) return null;
+    const monthsAgo = Math.floor(
+      (Date.now() - new Date(profile.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30),
+    );
+    if (monthsAgo < 1) return t('professional.memberSinceWeeks');
+    if (monthsAgo < 12) return t('professional.memberSinceMonths', { count: monthsAgo });
+    const years = Math.floor(monthsAgo / 12);
+    return t('professional.memberSinceYears', { count: years });
+  }, [profile.createdAt, t]);
+
+  // Response-time pill text. Previously the Zap icon was silent when
+  // avgResponseTime was missing or > 24h - clients couldn't tell if
+  // that meant "slow" or "no data". Now we ALWAYS show the data we
+  // have (or skip when truly missing), but pick a green-positive
+  // bucket for fast responders.
+  const responseTimeLabel = useMemo(() => {
+    const t1 = profile.avgResponseTime;
+    if (t1 == null || !Number.isFinite(t1) || t1 <= 0) return null;
+    if (t1 < 1) return { text: t('professional.repliesWithinHour'), isFast: true };
+    if (t1 <= 4) return { text: t('professional.repliesWithinHours', { count: 4 }), isFast: true };
+    if (t1 <= 24) return { text: t('professional.repliesWithinHours', { count: 24 }), isFast: false };
+    return null;
+  }, [profile.avgResponseTime, t]);
+
+  // Tooltip on the star rating - turns the number into a verification claim.
+  const ratingTooltip = useMemo(() => {
+    if (!profile.totalReviews || profile.totalReviews <= 0) return undefined;
+    return t('professional.verifiedReviewsTooltip', {
+      count: profile.totalReviews,
+    });
+  }, [profile.totalReviews, t]);
 
   const handleClick = useCallback(() => {
     trackEvent('pro_click', profile.id, profile.name);
@@ -335,8 +411,14 @@ export default function ProCard({
   if (variant === "horizontal") {
     // Keep horizontal variant simple - used in recommendations etc.
     return (
-      <Link href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick}>
-        <div className="relative h-full bg-[var(--hm-bg-elevated)] rounded-xl overflow-hidden border border-[var(--hm-border-subtle)] shadow-sm group-hover:border-[var(--hm-brand-500)]/25 transition-all duration-300 group-hover:shadow-md p-3.5">
+      <Link href={`/${(profile.country ?? 'GE').toLowerCase()}/professionals/${profile.id}`} className="group block h-full" onClick={handleClick}>
+        <div
+          className="relative h-full bg-[var(--hm-bg-elevated)] rounded-xl overflow-hidden border border-[var(--hm-border-subtle)] group-hover:border-[var(--hm-brand-500)]/25 transition-all duration-200 group-hover:-translate-y-[1px] group-hover:shadow-lg p-3.5"
+          style={{
+            boxShadow:
+              "0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.04)",
+          }}
+        >
           <div className="flex items-center gap-3.5">
             <div className="relative flex-shrink-0">
               <div className="w-14 h-14 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] ring-2 ring-white shadow-md">
@@ -354,7 +436,9 @@ export default function ProCard({
               </div>
               <div className="flex items-center gap-2 text-[11px] text-[var(--hm-fg-muted)]">
                 {(profile.totalReviews || 0) > 0 ? (
-                  <StarRating rating={profile.avgRating > 0 ? profile.avgRating : 5.0} reviewCount={profile.totalReviews} showCount size="xs" />
+                  <span title={ratingTooltip}>
+                    <StarRating rating={profile.avgRating > 0 ? profile.avgRating : 5.0} reviewCount={profile.totalReviews} showCount size="xs" />
+                  </span>
                 ) : (
                   <StatusPill variant="new" size="xs" locale={locale} />
                 )}
@@ -371,6 +455,11 @@ export default function ProCard({
                   </>
                 )}
               </div>
+              {memberSinceLabel && (
+                <p className="mt-0.5 text-[10px] text-[var(--hm-fg-muted)] truncate">
+                  {memberSinceLabel}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -381,8 +470,14 @@ export default function ProCard({
   // Default / Compact variant - unified card with portfolio photos
   const hasMedia = mediaSlides.length > 0;
   return (
-    <Link ref={cardRef} href={`/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} - ${t('browse.professionals')}`}>
-      <div className={`relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] shadow-sm group-hover:border-[var(--hm-brand-500)]/30 transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-0.5 ${isPremium ? 'ring-1 ring-amber-300/30' : ''}`}>
+    <Link ref={cardRef} href={`/${(profile.country ?? 'GE').toLowerCase()}/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} - ${t('browse.professionals')}`}>
+      <div
+        className={`relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] group-hover:border-[var(--hm-brand-500)]/30 transition-all duration-200 group-hover:shadow-lg group-hover:-translate-y-[2px] ${isPremium ? 'ring-1 ring-amber-300/30' : ''}`}
+        style={{
+          boxShadow:
+            "0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.04)",
+        }}
+      >
 
         {/* Portfolio media carousel - wide-and-short aspect so the photo
             doesn't dominate the card. */}
@@ -513,7 +608,7 @@ export default function ProCard({
             {isOnline && (
               <span
                 className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[var(--hm-success-500)] ring-2 ring-[var(--hm-bg-elevated)]"
-                title="Online"
+                title={lastSeenLabel || t('professional.activeNow')}
               />
             )}
           </div>
@@ -532,19 +627,32 @@ export default function ProCard({
                 )}
                 {isTopRated && (
                   <span className="hidden sm:inline-flex">
-                    <StatusPill variant="topRated" size="xs" locale={locale} label="Top" />
+                    <StatusPill variant="topRated" size="xs" locale={locale} />
+                  </span>
+                )}
+                {/* Away pill - pro toggled themselves Away in settings.
+                    Profile still visible but signal to clients that
+                    response time will be slower. Hidden on mobile to
+                    keep the card header tight. */}
+                {profile.status === 'away' && (
+                  <span className="hidden sm:inline-flex">
+                    <StatusPill variant="away" size="xs" locale={locale} />
                   </span>
                 )}
             </div>
-            {/* Rating + city - co-located with subtle separator */}
+            {/* Rating + city - co-located with subtle separator. Rating
+                wrapper carries a tooltip so the number reads as
+                verified-on-Homico rather than scraped from somewhere. */}
             <div className="flex items-center gap-1.5 mt-1 text-[11px] text-[var(--hm-fg-muted)]">
               {(profile.totalReviews || 0) > 0 ? (
-                <StarRating
-                  rating={profile.avgRating > 0 ? profile.avgRating : 5.0}
-                  reviewCount={profile.totalReviews}
-                  showCount
-                  size="xs"
-                />
+                <span title={ratingTooltip}>
+                  <StarRating
+                    rating={profile.avgRating > 0 ? profile.avgRating : 5.0}
+                    reviewCount={profile.totalReviews}
+                    showCount
+                    size="xs"
+                  />
+                </span>
               ) : (
                 <Badge variant="success" size="xs" icon={<Plus className="w-2.5 h-2.5" />}>
                   {t('card.new')}
@@ -555,11 +663,30 @@ export default function ProCard({
                   <span className="opacity-50">·</span>
                   <span className="inline-flex items-center gap-0.5 truncate max-w-[100px]">
                     <MapPin className="w-3 h-3 shrink-0" strokeWidth={1.75} />
-                    <span className="truncate">{profile.city}</span>
+                    <span className="truncate">{translateCity(profile.city, locale)}</span>
                   </span>
                 </>
               )}
             </div>
+            {/* Member-since line. Tells clients whether this pro is
+                established on Homico or brand new. Renders only when
+                we have a createdAt date. */}
+            {memberSinceLabel && (
+              <p className="mt-0.5 text-[10px] text-[var(--hm-fg-muted)] truncate">
+                {memberSinceLabel}
+              </p>
+            )}
+            {/* Trust badges - verified/topRated already render in the header
+                row above, so exclude them here to avoid doubling up. */}
+            <ProBadges
+              pro={profile}
+              locale={locale}
+              size="xs"
+              max={2}
+              exclude={["verified", "topRated"]}
+              tooltip={false}
+              className="mt-1.5"
+            />
           </div>
 
           {/* Stats row */}
@@ -585,16 +712,18 @@ export default function ProCard({
                 </span>
               </>
             )}
-            {profile.avgResponseTime != null && profile.avgResponseTime > 0 && profile.avgResponseTime <= 24 && (
+            {responseTimeLabel && (
               <>
                 <span className="text-[var(--hm-fg-muted)]">·</span>
-                <span className="flex items-center gap-1 text-[var(--hm-success-500)] font-medium">
+                <span
+                  className={`flex items-center gap-1 font-medium ${
+                    responseTimeLabel.isFast
+                      ? 'text-[var(--hm-success-500)]'
+                      : 'text-[var(--hm-fg-secondary)]'
+                  }`}
+                >
                   <Zap className="w-3 h-3" />
-                  {profile.avgResponseTime < 1
-                    ? t('professional.lessThanHour')
-                    : profile.avgResponseTime <= 4
-                    ? t('professional.lessThanHours', { count: 4 })
-                    : t('professional.lessThanHours', { count: 24 })}
+                  {responseTimeLabel.text}
                 </span>
               </>
             )}
@@ -624,11 +753,14 @@ export default function ProCard({
                       className="font-semibold"
                       style={{ color: 'var(--hm-brand-500)' }}
                     >
-                      {pick({
-                        en: `from ${price}₾`,
-                        ka: `${price}₾-დან`,
-                        ru: `от ${price}₾`,
-                      })}
+                      {(() => {
+                        const sym = currencySymbol({ country: profile.country ?? 'GE' });
+                        return pick({
+                          en: `from ${price}${sym}`,
+                          ka: `${price}${sym}-დან`,
+                          ru: `от ${price}${sym}`,
+                        });
+                      })()}
                     </span>
                   )}
                 </span>
@@ -647,6 +779,25 @@ export default function ProCard({
               </span>
             )}
           </div>
+
+          {/* Book CTA - only when the parent wired a booking handler and the
+              pro has bookable services. Stops the click from following the
+              card's wrapping <Link> to the profile page. */}
+          {onBook && hasBookableServices && profile.isHomicoPartner && (
+            <Button
+              variant="default"
+              size="sm"
+              className="w-full mt-2.5"
+              leftIcon={<CalendarPlus className="w-3.5 h-3.5" />}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onBook(profile);
+              }}
+            >
+              {t("booking.book")}
+            </Button>
+          )}
         </div>
 
         {/* Premium badge */}
@@ -660,13 +811,16 @@ export default function ProCard({
 
         {/* Hover-reveal "open" affordance - sits over the bottom-right
             corner. Hidden until hover so it doesn't compete with the card
-            content at rest. */}
-        <div
-          aria-hidden
-          className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none"
-        >
-          <ArrowUpRight className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
-        </div>
+            content at rest. Suppressed when the Book CTA is shown, otherwise
+            the two collide on the bottom-right on hover. */}
+        {!(onBook && hasBookableServices && profile.isHomicoPartner) && (
+          <div
+            aria-hidden
+            className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-[var(--hm-brand-500)] flex items-center justify-center shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none"
+          >
+            <ArrowUpRight className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+          </div>
+        )}
       </div>
     </Link>
   );

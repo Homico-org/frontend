@@ -1,10 +1,31 @@
 'use client';
 
-import { Home, Search } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useCountryLink } from '@/hooks/useCountry';
+import { UserRole } from '@/types';
+import { backOrNavigate, defaultBackFallback } from '@/utils/navigationUtils';
+import { ArrowLeft, Briefcase, Home, Search, ShieldCheck, Sparkles, UserCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+
+/**
+ * Per-role CTA pair for the 404 page. Anyone who lands here is
+ * already lost; the two big buttons should match what *this* user
+ * was probably trying to do, not the brand defaults.
+ */
+interface NotFoundCta {
+  href: string;
+  label: string;
+  icon: typeof Home;
+}
 
 export default function NotFound() {
+  const cl = useCountryLink();
+  const router = useRouter();
+  const { t } = useLanguage();
+  const { user } = useAuth();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
 
@@ -22,11 +43,56 @@ export default function NotFound() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  const ctas: [NotFoundCta, NotFoundCta] = useMemo(() => {
+    switch (user?.role) {
+      case UserRole.ADMIN:
+        return [
+          { href: '/admin', label: t('notFound.adminPanel'), icon: ShieldCheck },
+          { href: cl('/'), label: t('notFound.goHome'), icon: Home },
+        ];
+      case UserRole.PRO:
+        return [
+          { href: '/my-space', label: t('notFound.mySpace'), icon: UserCircle },
+          { href: cl('/jobs'), label: t('notFound.browseJobs'), icon: Briefcase },
+        ];
+      case UserRole.CLIENT:
+        return [
+          { href: '/my-jobs', label: t('notFound.myJobs'), icon: Briefcase },
+          { href: cl('/professionals'), label: t('notFound.browsePros'), icon: Search },
+        ];
+      default:
+        return [
+          { href: cl('/'), label: t('notFound.goHome'), icon: Home },
+          { href: cl('/professionals'), label: t('notFound.browsePros'), icon: Search },
+        ];
+    }
+  }, [user?.role, cl, t]);
+
+  const [primaryCta, secondaryCta] = ctas;
+
+  const popularLinks = useMemo(() => {
+    // For logged-out and clients, surface the conversion path. For
+    // pros, surface their workflow. Admins keep the public links since
+    // they navigate the admin panel from elsewhere.
+    if (user?.role === UserRole.PRO) {
+      return [
+        { href: cl('/jobs'), label: t('notFound.browseJobs') },
+        { href: '/my-space', label: t('notFound.mySpace') },
+        { href: '/help', label: t('notFound.help') },
+      ];
+    }
+    return [
+      { href: cl('/professionals'), label: t('notFound.browsePros') },
+      { href: cl('/post-job'), label: t('notFound.postJob') },
+      { href: cl('/become-pro'), label: t('notFound.becomePro') },
+      { href: '/help', label: t('notFound.help') },
+    ];
+  }, [user?.role, cl, t]);
+
   return (
     <div className="min-h-screen relative overflow-hidden bg-[var(--hm-bg-page)] flex items-center justify-center">
       {/* Animated background gradient orbs */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Large terracotta orb */}
         <div
           className="absolute w-[800px] h-[800px] rounded-full opacity-20 blur-[120px] transition-transform duration-1000 ease-out"
           style={{
@@ -36,7 +102,6 @@ export default function NotFound() {
             transform: `translate(${mousePosition.x * -0.5}px, ${mousePosition.y * -0.5}px)`,
           }}
         />
-        {/* Secondary warm orb */}
         <div
           className="absolute w-[600px] h-[600px] rounded-full opacity-15 blur-[100px] transition-transform duration-1000 ease-out"
           style={{
@@ -46,7 +111,6 @@ export default function NotFound() {
             transform: `translate(${mousePosition.x * 0.3}px, ${mousePosition.y * 0.3}px)`,
           }}
         />
-        {/* Accent orb */}
         <div
           className="absolute w-[400px] h-[400px] rounded-full opacity-10 blur-[80px] transition-transform duration-1000 ease-out"
           style={{
@@ -86,7 +150,6 @@ export default function NotFound() {
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          {/* Shadow layers for depth */}
           <span
             className="absolute inset-0 text-[180px] sm:text-[220px] md:text-[280px] font-black tracking-tighter select-none"
             style={{
@@ -108,7 +171,6 @@ export default function NotFound() {
             404
           </span>
 
-          {/* Main number with gradient */}
           <h1
             className="text-[180px] sm:text-[220px] md:text-[280px] font-black tracking-tighter leading-none"
             style={{
@@ -144,24 +206,25 @@ export default function NotFound() {
           }`}
         >
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--hm-fg-primary)] mb-4 tracking-tight">
-            გვერდი ვერ მოიძებნა
+            {t('notFound.title')}
           </h2>
           <p className="text-base sm:text-lg text-[var(--hm-fg-muted)] mb-10 max-w-md mx-auto leading-relaxed">
-            სამწუხაროდ, თქვენ მიერ მოთხოვნილი გვერდი არ არსებობს ან გადატანილია სხვა მისამართზე.
+            {t('notFound.subtitle')}
           </p>
         </div>
 
-        {/* Action buttons */}
+        {/* Action buttons - role-aware. Anyone who lands here is lost;
+            the two big buttons match what *this* user was probably
+            trying to do. */}
         <div
           className={`flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-1000 delay-400 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
           <Link
-            href="/"
+            href={primaryCta.href}
             className="group relative px-8 py-4 bg-[var(--hm-brand-500)] text-white font-semibold rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-[0_20px_40px_-12px_rgba(201,109,77,0.4)] hover:-translate-y-1"
           >
-            {/* Shine effect */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               <div
                 className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"
@@ -171,42 +234,53 @@ export default function NotFound() {
               />
             </div>
             <span className="relative flex items-center gap-2">
-              <Home className="w-5 h-5" />
-              მთავარ გვერდზე
+              <primaryCta.icon className="w-5 h-5" />
+              {primaryCta.label}
             </span>
           </Link>
 
           <Link
-            href="/professionals"
+            href={secondaryCta.href}
             className="group px-8 py-4 bg-transparent text-[var(--hm-brand-600)] font-semibold rounded-2xl border-2 border-[var(--hm-brand-200)] hover:border-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-50)] transition-all duration-300"
           >
             <span className="flex items-center gap-2">
-              <Search className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-              სპეციალისტების ძებნა
+              <secondaryCta.icon className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              {secondaryCta.label}
             </span>
           </Link>
         </div>
 
-        {/* Helpful links */}
+        {/* Go back affordance - separate from the two big CTAs so
+            users who clicked a stale link have an obvious way to
+            return to where they came from. Uses the role-aware
+            fallback if there's no in-app history. */}
+        <button
+          type="button"
+          onClick={() => backOrNavigate(router, defaultBackFallback(user))}
+          className={`mt-4 inline-flex items-center gap-1.5 text-sm text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-all duration-1000 delay-500 ${
+            isVisible ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t('common.goBack')}
+        </button>
+
+        {/* Helpful links - role-aware */}
         <div
           className={`mt-16 pt-8 border-t border-[var(--hm-brand-200)]/50 transition-all duration-1000 delay-600 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          <p className="text-sm text-[var(--hm-fg-muted)] mb-4">
-            პოპულარული გვერდები
+          <p className="text-sm text-[var(--hm-fg-muted)] mb-4 inline-flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5" />
+            {t('notFound.popularPages')}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            {[
-              { href: '/professionals', label: 'სპეციალისტები' },
-              { href: '/post-job', label: 'პროექტის დამატება' },
-              { href: '/become-pro', label: 'გახდი პრო' },
-              { href: '/help', label: 'დახმარება' },
-            ].map((link) => (
+            {popularLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-4 py-2 text-sm text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-600)] bg-[var(--hm-bg-tertiary)]/50 hover:bg-[var(--hm-brand-50)] transition-all duration-200"
+                className="px-4 py-2 text-sm text-[var(--hm-fg-secondary)] hover:text-[var(--hm-brand-600)] bg-[var(--hm-bg-tertiary)]/50 hover:bg-[var(--hm-brand-50)] rounded-xl transition-all duration-200"
               >
                 {link.label}
               </Link>

@@ -5,6 +5,8 @@ import { SelectedSubcategoryWithPricing } from "./ServicesPricingStep";
 import { Badge } from "@/components/ui/badge";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useMarketplaceCountry } from "@/hooks/useCountry";
+import { currencySymbol } from "@/utils/currency";
 import {
   AlertCircle,
   Briefcase,
@@ -73,6 +75,8 @@ export default function ReviewStep({
 }: ReviewStepProps) {
   const { t, pick } = useLanguage();
   const { getCategoryByKey } = useCategories();
+  const country = useMarketplaceCountry();
+  const sym = currencySymbol({ country });
 
   const hasName =
     formData.firstName.trim().length >= 2 &&
@@ -242,8 +246,8 @@ export default function ReviewStep({
                   {pricedServices.length > 0 ? (
                     <div className="space-y-1">
                       {pricedServices.map((svc) => {
-                        // Compute the displayed price — when any active unit
-                        // is in range mode, render "min-max₾" instead of the
+                        // Compute the displayed price - when any active unit
+                        // is in range mode, render "min-max{sym}" instead of the
                         // legacy midpoint single value.
                         const activeUnits = (svc.unitPrices ?? []).filter((u) => u.isActive);
                         let lo = Number.POSITIVE_INFINITY;
@@ -259,8 +263,8 @@ export default function ReviewStep({
                           lo = hi = svc.price;
                         }
                         const display = lo === hi || !Number.isFinite(lo) || !Number.isFinite(hi)
-                          ? `${Number.isFinite(lo) ? lo : svc.price}₾`
-                          : `${lo}-${hi}₾`;
+                          ? `${Number.isFinite(lo) ? lo : svc.price}${sym}`
+                          : `${lo}-${hi}${sym}`;
                         return (
                           <div key={svc.serviceKey} className="flex items-center justify-between text-xs">
                             <span className="text-[var(--hm-fg-secondary)]">{svc.label}</span>

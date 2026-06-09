@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useBrowseContext } from '@/contexts/BrowseContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, Handshake } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 // Budget range constants
@@ -104,6 +104,8 @@ export default function BrowseFiltersSidebar({
     setBudgetMin,
     budgetMax,
     setBudgetMax,
+    partnersOnly,
+    setPartnersOnly,
     clearAllFilters,
   } = useBrowseContext();
 
@@ -172,6 +174,21 @@ export default function BrowseFiltersSidebar({
           </div>
         )}
 
+        {/* Homico Partner filter - the bookable, contracted pros. */}
+        <button
+          type="button"
+          onClick={() => setPartnersOnly(!partnersOnly)}
+          className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-colors ${
+            partnersOnly
+              ? 'bg-[var(--hm-brand-500)] text-white'
+              : 'border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]'
+          }`}
+        >
+          <Handshake className="h-4 w-4 shrink-0" />
+          <span className="flex-1 text-left">{t('browse.partnersOnly')}</span>
+          {partnersOnly && <Check className="h-4 w-4 shrink-0" />}
+        </button>
+
         {/* Price Range Zone */}
         {showBudgetFilter && (
           <CollapsibleCard
@@ -193,7 +210,7 @@ export default function BrowseFiltersSidebar({
               </div>
 
               {/* Separator */}
-              <span className="text-[var(--hm-fg-muted)] mt-4 text-xs">—</span>
+              <span className="text-[var(--hm-fg-muted)] mt-4 text-xs">-</span>
 
               {/* Max Input */}
               <div className="flex-1">

@@ -93,11 +93,12 @@ interface ToastItemProps {
   message: string;
   description?: string;
   duration?: number;
+  action?: { label: string; onClick: () => void };
   onRemove: (id: string) => void;
   index: number;
 }
 
-function ToastItem({ id, type, message, description, duration = 4000, onRemove, index }: ToastItemProps) {
+function ToastItem({ id, type, message, description, duration = 4000, action, onRemove, index }: ToastItemProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [progress, setProgress] = useState(100);
@@ -182,6 +183,22 @@ function ToastItem({ id, type, message, description, duration = 4000, onRemove, 
               {description}
             </p>
           )}
+          {/* Inline action (e.g. "Undo"). Dismisses the toast on
+              click so users get instant feedback that the action
+              registered. */}
+          {action && (
+            <button
+              type="button"
+              onClick={() => {
+                action.onClick();
+                handleClose();
+              }}
+              className="mt-1.5 inline-flex items-center text-xs font-bold uppercase tracking-wide hover:opacity-90 transition-opacity"
+              style={{ color: barColors[type] }}
+            >
+              {action.label}
+            </button>
+          )}
         </div>
 
         {/* Close button */}
@@ -207,8 +224,16 @@ export default function ToastContainer() {
 
   return (
     <>
+      {/* Bottom-right container.
+          - lg+: 16px bottom (no bottom nav, no safe-area concern).
+          - mobile: lifted above the 58px bottom-nav + iOS safe-area
+            inset, plus 12px breathing room. Previously toasts at
+            `bottom-4` were squarely under the bottom-nav on phones,
+            covering both the action buttons and the toast itself.
+          - left/right: lg+ pinned to right edge; mobile centered
+            horizontally so they don't get cropped on narrow screens. */}
       <div
-        className="fixed bottom-4 right-4 z-[9999] flex flex-col-reverse gap-3 pointer-events-none max-w-[400px]"
+        className="fixed bottom-[calc(58px+env(safe-area-inset-bottom)+12px)] lg:bottom-4 lg:right-4 left-3 right-3 lg:left-auto z-[9999] flex flex-col-reverse gap-3 pointer-events-none lg:max-w-[400px]"
         aria-live="polite"
       >
         {toasts.map((toast, index) => (
@@ -219,6 +244,7 @@ export default function ToastContainer() {
               message={toast.message}
               description={toast.description}
               duration={toast.duration}
+              action={(toast as { action?: { label: string; onClick: () => void } }).action}
               onRemove={removeToast}
               index={index}
             />

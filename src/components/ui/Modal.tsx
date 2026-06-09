@@ -7,6 +7,7 @@ import { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ACCENT_COLOR, ACCENT_HOVER } from '@/constants/theme';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useModalHistory } from '@/hooks/useModalHistory';
 
 // Modal size variants - responsive for mobile bottom sheet
 const modalVariants = cva(
@@ -93,6 +94,12 @@ interface ModalProps extends VariantProps<typeof modalVariants> {
   showCloseButton?: boolean;
   className?: string;
   preventClose?: boolean;
+  /**
+   * Skip the browser-history integration (the back-button-closes-modal entry).
+   * Use on routes where pushing a history entry corrupts navigation - e.g. the
+   * project-creation page, where it was sending Back to the role home.
+   */
+  disableHistory?: boolean;
   /** Accessible name for the dialog. Falls back to "Dialog". Pass an i18n string. */
   ariaLabel?: string;
   /** Accessible label for the close button. Falls back to "Close". */
@@ -112,6 +119,7 @@ export function Modal({
   showCloseButton = false,
   className,
   preventClose = false,
+  disableHistory = false,
   ariaLabel = 'Dialog',
   closeLabel = 'Close',
 }: ModalProps) {
@@ -120,6 +128,14 @@ export function Modal({
       onClose();
     }
   }, [onClose, preventClose]);
+
+  // Browser/Android back button closes the modal instead of navigating
+  // away. Disabled when `preventClose` is set (e.g. mid-save).
+  useModalHistory({
+    isOpen,
+    onClose: handleClose,
+    enabled: !preventClose && !disableHistory,
+  });
 
   // Handle escape key
   useEffect(() => {
@@ -154,7 +170,7 @@ export function Modal({
   if (!isOpen) return null;
 
   const modalContent = (
-    <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4" style={{ zIndex: 9999 }}>
+    <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4" style={{ zIndex: 'var(--hm-z-modal)' }}>
       {/* Backdrop with blur */}
       <div
         className="absolute inset-0 animate-fade-backdrop"
@@ -170,7 +186,7 @@ export function Modal({
         aria-label={ariaLabel}
         className={cn(
           modalVariants({ size }),
-          'max-h-[92vh] sm:max-h-[90vh] overflow-y-auto',
+          'max-h-[92vh] sm:max-h-[90vh] overflow-y-auto overscroll-contain',
           '',
           'animate-slide-up-sheet sm:animate-fade-in',
           className
@@ -273,11 +289,29 @@ interface ModalFooterProps {
 }
 
 /**
- * Modal footer for actions
+ * Modal footer for actions.
+ *
+ * Pinned to the bottom of the scrolling modal container (`sticky bottom-0`) so
+ * the body content scrolls *behind* the actions instead of pushing them off
+ * screen. A solid surface, hairline top border and soft upward shadow separate
+ * it from the content underneath. The safe-area inset keeps the buttons clear
+ * of the iOS home indicator without over-padding non-notched devices.
  */
 export function ModalFooter({ children, className }: ModalFooterProps) {
   return (
-    <div className={cn('flex gap-3 px-4 sm:px-6 pt-3 pb-8 sm:pb-6', className)}>{children}</div>
+    <div
+      className={cn(
+        'sticky bottom-0 z-20 flex gap-3 border-t border-[var(--hm-border-subtle)] px-4 pt-3 sm:px-6',
+        className,
+      )}
+      style={{
+        backgroundColor: 'var(--hm-bg-page)',
+        paddingBottom: 'max(1.5rem, calc(0.75rem + env(safe-area-inset-bottom)))',
+        boxShadow: '0 -10px 20px -16px rgba(21,17,12,0.25)',
+      }}
+    >
+      {children}
+    </div>
   );
 }
 

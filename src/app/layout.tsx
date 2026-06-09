@@ -1,28 +1,83 @@
 /* eslint-disable @next/next/no-page-custom-font, @next/next/next-script-for-ga -- Google Fonts via <link> avoids next/font runtime overhead; GA / GTM / Contentsquare scripts use inline init for early data-layer setup. */
-import ClientLayout from "@/components/common/ClientLayout";
-import EnvBadge from "@/components/common/EnvBadge";
-import MetaPixelPageView from "@/components/common/MetaPixelPageView";
-import Providers from "@/components/common/Providers";
-import ToastContainer from "@/components/common/Toast";
-import { AiChatWidgetMount } from "@/components/ai-assistant/AiChatWidgetMount";
-import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import "@/styles/globals.css";
+import { AiChatWidgetMount } from "@/components/ai-assistant/AiChatWidgetMount";
+import ClientLayout from "@/components/common/ClientLayout";
+import CommandPalette from "@/components/common/CommandPalette";
+import CommandPaletteHint from "@/components/common/CommandPaletteHint";
+import DevServiceWorkerKiller from "@/components/common/DevServiceWorkerKiller";
+import MetaPixelPageView from "@/components/common/MetaPixelPageView";
+import OfflineBanner from "@/components/common/OfflineBanner";
+import Providers from "@/components/common/Providers";
+import PushNotificationPrompt from "@/components/common/PushNotificationPrompt";
+import RouteProgressBar from "@/components/common/RouteProgressBar";
+import SessionExpiredToast from "@/components/common/SessionExpiredToast";
+import ShortcutsHelp from "@/components/common/ShortcutsHelp";
+import SkipToMainLink from "@/components/common/SkipToMainLink";
+import SwipeBackHandler from "@/components/common/SwipeBackHandler";
+import ToastContainer from "@/components/common/Toast";
+import UnreadTabTitle from "@/components/common/UnreadTabTitle";
+import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
+import type { CountryCode, Locale } from "@/contexts/LanguageContext";
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
+
+// Reading cookies opts the layout into dynamic rendering. That's fine
+// for the root layout - everything beneath it is already dynamic
+// (auth state, search params, etc).
+const SUPPORTED_LOCALES: Locale[] = ["en", "ka", "ru"];
+const SUPPORTED_PHONE_COUNTRIES: CountryCode[] = [
+  "GE",
+  "IL",
+  "FR",
+  "US",
+  "DE",
+  "UK",
+];
+
+function readInitialLocale(): Locale {
+  const value = cookies().get("homico-locale")?.value;
+  return SUPPORTED_LOCALES.includes(value as Locale) ? (value as Locale) : "ka";
+}
+
+function readInitialCountry(): CountryCode {
+  // Two cookies feed this:
+  //   1. `homico-country` - the user's *phone* country, set by the phone
+  //      picker. Wins when present.
+  //   2. `homico-marketplace` - the active marketplace, set by the edge
+  //      middleware from geo-IP / URL on the visitor's first hit. We use
+  //      it as a sensible default so a US visitor with no prior phone
+  //      country sees +1 by default instead of +995.
+  // Falls back to "GE" only when neither cookie is present (a totally
+  // new visitor whose geo lookup also failed).
+  const c = cookies();
+  const phone = c.get("homico-country")?.value;
+  if (SUPPORTED_PHONE_COUNTRIES.includes(phone as CountryCode)) {
+    return phone as CountryCode;
+  }
+  const marketplace = c.get("homico-marketplace")?.value?.toUpperCase();
+  if (SUPPORTED_PHONE_COUNTRIES.includes(marketplace as CountryCode)) {
+    return marketplace as CountryCode;
+  }
+  return "GE";
+}
 
 export const viewport: Viewport = {
-  themeColor: '#EF4E24',
+  themeColor: "#EF4E24",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // Required so `env(safe-area-inset-*)` returns non-zero values on
+  // iOS notched devices - without it the existing safe-area paddings
+  // around bottom nav, modals, and sheets all collapse to 0.
+  viewportFit: "cover",
 };
 
 export function generateMetadata(): Metadata {
   // Title is intentionally short + Georgian-first since most traffic is from
-  // Tbilisi. Description mirrors the on-site `landing.positionStatement` —
+  // Tbilisi. Description mirrors the on-site `landing.positionStatement` -
   // keep these two in sync if you edit either.
-  const TITLE = "Homico — სანდო სარემონტო ოსტატები თბილისში";
+  const TITLE = "Homico - სანდო სარემონტო ოსტატები თბილისში";
   const DESCRIPTION =
-    "Homico — სანდო სარემონტო ოსტატები თბილისში. მკაფიო ფასი, რეალური შეფასებები, უპრობლემოდ.";
+    "Homico - სანდო სარემონტო ოსტატები თბილისში. მკაფიო ფასი, რეალური შეფასებები, უპრობლემოდ.";
 
   return {
     title: {
@@ -44,19 +99,26 @@ export function generateMetadata(): Metadata {
       "სახლის მომსახურება",
       "თბილისი",
       "საქართველო",
-      // English / Latin (international + diaspora search)
-      "Tbilisi renovation",
-      "Tbilisi handyman",
-      "Tbilisi plumber",
-      "Tbilisi electrician",
-      "Tbilisi interior designer",
-      "Georgia home services",
+      // English / Latin - international markets. Per-marketplace
+      // metadata in `[country]/layout.tsx` adds city-specific keywords
+      // (e.g. "Berlin renovation") for /de visitors; the keywords
+      // listed here are the brand-level set used on /[country]-free
+      // canonical pages.
+      "home renovation",
+      "renovation marketplace",
+      "vetted contractors",
+      "handyman",
+      "plumber",
+      "electrician",
+      "interior designer",
       "homico",
     ],
-    authors: [{ name: "Homico", url: "https://homico.ge" }],
+    authors: [{ name: "Homico", url: "https://homico.co" }],
     creator: "Homico",
     publisher: "Homico",
-    metadataBase: new URL("https://homico.ge"),
+    metadataBase: new URL(
+      process.env.NEXT_PUBLIC_APP_URL || "https://homico.co",
+    ),
     alternates: {
       canonical: "/",
       // Note: Homico uses cookie-based locale (no /ka /en URL paths). The
@@ -67,12 +129,12 @@ export function generateMetadata(): Metadata {
     openGraph: {
       type: "website",
       locale: "ka_GE",
-      alternateLocale: ["en_US", "ru_RU"],
-      url: "https://homico.ge",
+      alternateLocale: ["en_US", "ru_RU", "he_IL", "fr_FR", "de_DE", "en_GB"],
+      url: process.env.NEXT_PUBLIC_APP_URL || "https://homico.co",
       siteName: "Homico",
       title: TITLE,
       description: DESCRIPTION,
-      // images intentionally omitted — Next.js auto-wires the dynamic
+      // images intentionally omitted - Next.js auto-wires the dynamic
       // /opengraph-image.png generated by app/opengraph-image.tsx so the
       // OG image always renders from current brand tokens.
     },
@@ -114,31 +176,31 @@ export function generateMetadata(): Metadata {
   };
 }
 
-// Schema.org Organization — site-wide brand context for Google. Tells search
-// engines who Homico is, where to find the logo, and which official URLs to
-// prefer (helps the knowledge panel + sitelinks). Logo points at the dynamic
-// /opengraph-image generator so it stays in sync with the design system.
+// Schema.org Organization - site-wide brand context for Google. Tells
+// search engines who Homico is, where to find the logo, and which
+// official URLs to prefer (helps the knowledge panel + sitelinks).
+// Logo points at the dynamic /opengraph-image generator so it stays
+// in sync with the design system.
+//
+// The geographic specifics (city, area served) live on the per-country
+// LocalBusiness schema emitted by `[country]/page.tsx`. Keeping the
+// Organization entry city-neutral here means a /us SERP snippet
+// doesn't carry a Tbilisi address.
+const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://homico.co";
 const ORGANIZATION_JSONLD = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "Homico",
   legalName: "Homico",
-  alternateName: "Homico.ge",
-  url: "https://homico.ge",
-  logo: "https://homico.ge/opengraph-image",
-  image: "https://homico.ge/opengraph-image",
+  url: APP_BASE_URL,
+  logo: `${APP_BASE_URL}/opengraph-image`,
+  image: `${APP_BASE_URL}/opengraph-image`,
   description:
-    "Homico helps Tbilisi homeowners find vetted renovation pros — clear quotes, real reviews, no chasing.",
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Tbilisi",
-    addressCountry: "GE",
-  },
-  areaServed: { "@type": "City", name: "Tbilisi" },
+    "Homico connects homeowners with vetted renovation professionals across multiple marketplaces - clear quotes, real reviews, no chasing.",
   sameAs: [
     // Add real social URLs here when public profiles exist:
-    // "https://www.facebook.com/homico.ge",
-    // "https://www.instagram.com/homico.ge",
+    // "https://www.facebook.com/homico",
+    // "https://www.instagram.com/homico",
   ],
 } as const;
 
@@ -147,8 +209,15 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Resolve user preferences from cookies on the server so the very
+  // first paint already renders in the user's language. Without this,
+  // /en visitors saw a Georgian flash before client-side localStorage
+  // could swap them over.
+  const initialLocale = readInitialLocale();
+  const initialCountry = readInitialCountry();
+
   return (
-    <html lang="ka" suppressHydrationWarning>
+    <html lang={initialLocale} suppressHydrationWarning>
       <head>
         {/* Site-wide Organization schema — improves brand SERP */}
         <script
@@ -160,8 +229,15 @@ export default function RootLayout({
 
         {/* Homico Design System fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Georgian:wght@400;500;600;700&family=Noto+Serif+Georgian:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Georgian:wght@400;500;600;700&family=Noto+Serif+Georgian:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
 
         {/* Chrome/Android PWA meta (pairs with appleWebApp capable) */}
         <meta name="mobile-web-app-capable" content="yes" />
@@ -274,6 +350,33 @@ fbq('track', 'PageView');`,
             `,
           }}
         />
+        {/* Locale-cookie migration: returning visitors from before the
+            cookie fix only have localStorage. Mirror it into a cookie
+            BEFORE React reads anything so the very next request renders
+            in the right language. Runs once - subsequent visits the
+            cookie is already there and this is a no-op. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  if (document.cookie.indexOf('homico-locale=') === -1) {
+                    var l = localStorage.getItem('locale');
+                    if (l === 'en' || l === 'ka' || l === 'ru') {
+                      document.cookie = 'homico-locale=' + l + '; path=/; max-age=' + (60*60*24*365) + '; samesite=lax';
+                    }
+                  }
+                  if (document.cookie.indexOf('homico-country=') === -1) {
+                    var c = localStorage.getItem('country');
+                    if (c) {
+                      document.cookie = 'homico-country=' + c + '; path=/; max-age=' + (60*60*24*365) + '; samesite=lax';
+                    }
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
       </head>
       <body style={{ backgroundColor: "var(--hm-bg-page)" }}>
         {/* Google Tag Manager (noscript) */}
@@ -298,13 +401,26 @@ fbq('track', 'PageView');`,
           />
         </noscript>
         {/* End Meta Pixel (noscript) */}
-        <Providers>
+        <Providers
+          initialLocale={initialLocale}
+          initialCountry={initialCountry}
+        >
+          <DevServiceWorkerKiller />
+          <SkipToMainLink />
           <ClientLayout>{children}</ClientLayout>
+          <RouteProgressBar />
+          <OfflineBanner />
+          <UnreadTabTitle />
           <ToastContainer />
+          <SessionExpiredToast />
           <AiChatWidgetMount />
           <FeedbackWidget />
-          <EnvBadge />
           <MetaPixelPageView />
+          <CommandPalette />
+          <CommandPaletteHint />
+          <PushNotificationPrompt />
+          <ShortcutsHelp />
+          <SwipeBackHandler />
         </Providers>
       </body>
     </html>

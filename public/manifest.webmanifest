@@ -1,7 +1,7 @@
 {
   "name": "Homico",
   "short_name": "Homico",
-  "description": "Homico — connect with verified home service professionals.",
+  "description": "Homico - connect with verified home service professionals.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
