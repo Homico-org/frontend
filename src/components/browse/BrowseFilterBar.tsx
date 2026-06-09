@@ -14,6 +14,7 @@ import { cityRecordsFor, popularCityValuesFor } from "@/data/cities";
 import { useAiServiceSearch } from "@/hooks/useAiServiceSearch";
 import {
   ChevronDown,
+  Handshake,
   Loader2,
   MapPin,
   Search,
@@ -183,6 +184,8 @@ export default function BrowseFilterBar() {
     setSelectedCategory,
     selectedSubcategories,
     setSelectedSubcategories,
+    partnersOnly,
+    setPartnersOnly,
     hasActiveFilters,
     clearAllFilters,
     searchQuery,
@@ -339,6 +342,21 @@ export default function BrowseFilterBar() {
             </button>
           )}
         </div>
+
+        {/* Homico Partners - bookable pros. A direct boolean toggle, not a
+            dropdown, so it reads as an instant on/off filter. */}
+        <button
+          type="button"
+          onClick={() => setPartnersOnly(!partnersOnly)}
+          className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition-colors ${
+            partnersOnly
+              ? "bg-[var(--hm-brand-500)] text-white"
+              : "border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
+          }`}
+        >
+          <Handshake className="w-3.5 h-3.5" />
+          {t("browse.partnersOnly")}
+        </button>
 
         {/* City */}
         <DropdownWrapper
@@ -549,8 +567,20 @@ export default function BrowseFilterBar() {
         </DropdownWrapper>
       </div>
 
-      {/* Mobile: sort only (category handled by scroller above) */}
+      {/* Mobile: partner toggle + sort (category handled by scroller above) */}
       <div className="flex lg:hidden items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setPartnersOnly(!partnersOnly)}
+          className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[12.5px] font-medium transition-colors ${
+            partnersOnly
+              ? "bg-[var(--hm-brand-500)] text-white"
+              : "border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)]"
+          }`}
+        >
+          <Handshake className="w-3.5 h-3.5" />
+          {t("browse.partnersOnly")}
+        </button>
         <div className="flex-1" />
         <DropdownWrapper
           id="sort"
