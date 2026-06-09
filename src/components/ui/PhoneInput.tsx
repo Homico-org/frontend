@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, forwardRef, InputHTMLAttributes } from 'react';
+import { useState, useEffect, useCallback, useRef, forwardRef, InputHTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Check } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { countries } from '@/contexts/LanguageContext';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import { useClickOutsideMultiple } from '@/hooks/useClickOutside';
 
 export type CountryCode = keyof typeof countries;
 
@@ -76,8 +76,17 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     const [selectedCountry, setSelectedCountry] = useState<CountryCode>(country);
     const [showDropdown, setShowDropdown] = useState(false);
     const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
-    const triggerRef = useClickOutside<HTMLDivElement>(() => setShowDropdown(false), showDropdown);
-    const dropdownRef = useClickOutside<HTMLDivElement>(() => setShowDropdown(false), showDropdown);
+    // The dropdown is portaled out of the trigger's DOM subtree, so a single
+    // click-outside on the trigger would treat clicks ON the dropdown as
+    // "outside" and close it (on mousedown) before a country click registers.
+    // Check BOTH the trigger and the dropdown so selecting a prefix works.
+    const triggerRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    useClickOutsideMultiple(
+      [triggerRef, dropdownRef],
+      () => setShowDropdown(false),
+      showDropdown,
+    );
 
     const actualVariant = error ? 'error' : variant;
     const countryData = countries[selectedCountry];
