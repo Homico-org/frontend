@@ -1,4 +1,11 @@
-import { BadgeCheck, Handshake, ListChecks, type LucideIcon } from 'lucide-react';
+import {
+  BadgeCheck,
+  Handshake,
+  ListChecks,
+  SlidersHorizontal,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react';
 
 type Localized = { en: string; ka: string; ru: string };
 
@@ -21,12 +28,12 @@ export interface ReleaseNotesContent {
 
 /**
  * The current release notes. To announce a new release:
- *   1. bump `version` (e.g. "2026.06" -> "2026.07")
- *   2. replace `title` + `items` with what's new
+ *   1. bump `version` (e.g. "2026.06.1" -> "2026.07")
+ *   2. replace `title` + `items` with what's new (keep each line short)
  * That's it - the modal handles "show once, never again" automatically.
  */
 export const RELEASE_NOTES: ReleaseNotesContent = {
-  version: '2026.06',
+  version: '2026.06.1',
   title: { en: "What's new", ka: 'სიახლეები', ru: 'Что нового' },
   items: [
     {
@@ -37,9 +44,9 @@ export const RELEASE_NOTES: ReleaseNotesContent = {
         ru: 'Партнёры Homico',
       },
       description: {
-        en: 'Book vetted pros under a Homico contract directly - look for the Homico Partner badge.',
-        ka: 'დაჯავშნეთ Homico-ს კონტრაქტით გადამოწმებული ოსტატები პირდაპირ - მოძებნეთ Homico პარტნიორის ნიშანი.',
-        ru: 'Бронируйте проверенных мастеров по контракту с Homico напрямую - ищите значок «Партнёр Homico».',
+        en: 'Book contract-vetted pros directly.',
+        ka: 'დაჯავშნეთ კონტრაქტით გადამოწმებული ოსტატები პირდაპირ.',
+        ru: 'Бронируйте проверенных по контракту мастеров напрямую.',
       },
     },
     {
@@ -50,22 +57,48 @@ export const RELEASE_NOTES: ReleaseNotesContent = {
         ru: 'Понятный вид проекта',
       },
       description: {
-        en: 'Track your renovation at a glance: progress, what needs your decision, and payments in one place.',
-        ka: 'თვალი ადევნეთ რემონტს ერთი შეხედვით: პროგრესი, თქვენი გადასაწყვეტი და გადახდები ერთ ადგილას.',
-        ru: 'Следите за ремонтом с первого взгляда: прогресс, что требует вашего решения, и платежи в одном месте.',
+        en: 'Progress, decisions, and payments in one view.',
+        ka: 'პროგრესი, გადაწყვეტილებები და გადახდები ერთ ხედში.',
+        ru: 'Прогресс, решения и платежи в одном виде.',
+      },
+    },
+    {
+      icon: Wallet,
+      title: {
+        en: 'Pay milestones in the app',
+        ka: 'გადაიხადეთ ეტაპები აპლიკაციაში',
+        ru: 'Оплата этапов в приложении',
+      },
+      description: {
+        en: 'Approve and fund each work step securely.',
+        ka: 'დაამტკიცეთ და გადაიხადეთ თითო ეტაპი უსაფრთხოდ.',
+        ru: 'Утверждайте и оплачивайте каждый этап безопасно.',
+      },
+    },
+    {
+      icon: SlidersHorizontal,
+      title: {
+        en: 'Find bookable pros fast',
+        ka: 'იპოვეთ დასაჯავშნი ოსტატები სწრაფად',
+        ru: 'Быстро находите мастеров для брони',
+      },
+      description: {
+        en: 'A new "Homico Partners" filter - they rank first.',
+        ka: 'ახალი "Homico პარტნიორების" ფილტრი - ისინი ზემოთ.',
+        ru: 'Новый фильтр «Партнёры Homico» - они в начале.',
       },
     },
     {
       icon: BadgeCheck,
       title: {
-        en: 'Find the best pros faster',
-        ka: 'იპოვეთ საუკეთესო ოსტატები სწრაფად',
-        ru: 'Быстрее находите лучших мастеров',
+        en: 'Clearer pro badges',
+        ka: 'მკაფიო ნიშნები',
+        ru: 'Понятные значки',
       },
       description: {
-        en: 'Clearer badges and a "Homico Partners" filter help you spot top, bookable pros right away.',
-        ka: 'მკაფიო ნიშნები და "Homico პარტნიორების" ფილტრი დაგეხმარებათ მაშინვე იპოვოთ ტოპ, დასაჯავშნი ოსტატები.',
-        ru: 'Понятные значки и фильтр «Партнёры Homico» помогут сразу найти лучших мастеров для брони.',
+        en: 'Verified, top-rated and partner, on every card.',
+        ka: 'გადამოწმებული, საუკეთესო და პარტნიორი - ყველა ბარათზე.',
+        ru: 'Проверен, топ и партнёр - на каждой карточке.',
       },
     },
   ],

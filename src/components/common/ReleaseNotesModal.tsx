@@ -53,31 +53,31 @@ export default function ReleaseNotesModal() {
         title={pick(RELEASE_NOTES.title)}
       />
       <ModalBody>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {RELEASE_NOTES.items.map((item, i) => {
             const Icon = item.icon;
             return (
-              <div key={i} className="flex gap-3">
+              <div key={i} className="flex items-start gap-3">
                 <span
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
                   style={{
                     backgroundColor:
                       'color-mix(in srgb, var(--hm-brand-500) 12%, transparent)',
                     color: 'var(--hm-brand-500)',
                   }}
                 >
-                  <Icon className="h-[18px] w-[18px]" />
+                  <Icon className="h-4 w-4" />
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 pt-0.5">
                   <p
-                    className="text-[14px] font-semibold"
+                    className="text-[13.5px] font-semibold leading-tight"
                     style={{ color: 'var(--hm-fg-primary)' }}
                   >
                     {pick(item.title)}
                   </p>
                   <p
-                    className="mt-0.5 text-[13px] leading-relaxed"
-                    style={{ color: 'var(--hm-fg-secondary)' }}
+                    className="mt-0.5 text-[12.5px] leading-snug"
+                    style={{ color: 'var(--hm-fg-muted)' }}
                   >
                     {pick(item.description)}
                   </p>
