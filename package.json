@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "start:local": "NEXT_PUBLIC_API_URL=http://localhost:3001 next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "NODE_ENV=production next build",
+    "start": "NODE_ENV=production next start",
     "lint": "next lint",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
