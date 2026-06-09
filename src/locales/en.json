@@ -1639,6 +1639,14 @@
         "title": "System Announcement",
         "message": "New system announcement"
       },
+      "premium_expiring": {
+        "title": "Premium expiring soon",
+        "message": "Renew to keep your Premium badge and top placement in search."
+      },
+      "premium_expired": {
+        "title": "Premium expired",
+        "message": "Renew to get your Premium badge and top placement back."
+      },
       "work_completed": {
         "title": "Work Completed",
         "message": "Work completed, leave a review"
