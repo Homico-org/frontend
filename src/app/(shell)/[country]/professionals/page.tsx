@@ -42,6 +42,7 @@ export default function ProfessionalsPage() {
     selectedCity,
     budgetMin,
     budgetMax,
+    partnersOnly,
     clearAllFilters,
     hasActiveFilters,
   } = useBrowseContext();
@@ -64,6 +65,10 @@ export default function ProfessionalsPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  // Quality floor: by default browse hides empty-shell profiles (no work, no
+  // pricing, no reviews) so a first-time client sees hireable pros, not a wall
+  // of blanks. "Show all" lifts the floor.
+  const [showAll, setShowAll] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
 
   // Restore scroll position on back navigation
@@ -108,6 +113,10 @@ export default function ProfessionalsPage() {
         // Marketplace scope - sent on every listing call so the backend
         // returns only pros from this country.
         params.append("country", country);
+        // Default to hireable pros only (quality floor); "Show all" lifts it.
+        if (!showAll) params.append("completeOnly", "true");
+        // "Homico Partner" filter: only the bookable, contracted pros.
+        if (partnersOnly) params.append("partnersOnly", "true");
 
         const response = await api.get(`/users/pros?${params.toString()}`, {
           signal: controller.signal,
@@ -144,6 +153,8 @@ export default function ProfessionalsPage() {
       budgetMin,
       budgetMax,
       country,
+      showAll,
+      partnersOnly,
     ],
   );
 
@@ -161,6 +172,8 @@ export default function ProfessionalsPage() {
       budgetMin,
       budgetMax,
       country,
+      showAll,
+      partnersOnly,
     });
 
     if (prevFiltersRef.current === filterKey && hasFetchedRef.current) return;
@@ -199,6 +212,8 @@ export default function ProfessionalsPage() {
     budgetMin,
     budgetMax,
     country,
+    showAll,
+    partnersOnly,
     fetchProfessionals,
     trackEvent,
   ]);
@@ -437,6 +452,31 @@ export default function ProfessionalsPage() {
           </div>
         )}
       </div>
+
+      {/* Quality-floor escape hatch. By default browse hides empty-shell
+          profiles so the first impression is hireable pros; this lets a user
+          reveal everyone (and explains why some are hidden). */}
+      {!isLoading && (
+        <div className="flex justify-center pb-8">
+          <button
+            type="button"
+            onClick={() => setShowAll((v) => !v)}
+            className="text-[12px] font-medium text-[var(--hm-fg-muted)] transition-colors hover:text-[var(--hm-brand-500)]"
+          >
+            {showAll
+              ? pick({
+                  en: "Showing everyone · Show complete profiles only",
+                  ka: "ნაჩვენებია ყველა · მხოლოდ შევსებული პროფილები",
+                  ru: "Показаны все · Только заполненные профили",
+                })
+              : pick({
+                  en: "Some pros are hidden until they complete their profile · Show all",
+                  ka: "ზოგი ოსტატი დამალულია პროფილის შევსებამდე · ყველას ჩვენება",
+                  ru: "Часть мастеров скрыта до заполнения профиля · Показать всех",
+                })}
+          </button>
+        </div>
+      )}
 
       {bookingPro && (
         <ServiceBookingModal

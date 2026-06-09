@@ -27,6 +27,9 @@ interface BrowseContextType {
   setSearchQuery: (query: string) => void;
   sortBy: string;
   setSortBy: (sort: string) => void;
+  // Show only Homico Partners (the bookable pros).
+  partnersOnly: boolean;
+  setPartnersOnly: (value: boolean) => void;
   clearAllFilters: () => void;
   hasActiveFilters: boolean;
 }
@@ -65,6 +68,7 @@ function readFiltersFromParams(params: URLSearchParams) {
     selectedCity: params.get("city"),
     searchQuery: params.get("search"),
     sortBy: params.get("sort"),
+    partnersOnly: params.has("partnersOnly"),
   };
 }
 
@@ -108,6 +112,7 @@ export function BrowseProvider({
   const [selectedCity, setSelectedCity] = useState<string>(initialFromUrl?.selectedCity ?? "all");
   const [searchQuery, setSearchQuery] = useState<string>(initialFromUrl?.searchQuery ?? "");
   const [sortBy, setSortBy] = useState<string>(initialFromUrl?.sortBy ?? "recommended");
+  const [partnersOnly, setPartnersOnly] = useState<boolean>(initialFromUrl?.partnersOnly ?? false);
 
   // Sync state to URL when filters change. Every browse-list-shaped
   // page should be deep-linkable: paste the URL into a new tab and
@@ -127,6 +132,7 @@ export function BrowseProvider({
     if (selectedCity && selectedCity !== "all") params.set("city", selectedCity);
     if (searchQuery) params.set("search", searchQuery);
     if (sortBy && sortBy !== "recommended") params.set("sort", sortBy);
+    if (partnersOnly) params.set("partnersOnly", "true");
 
     const queryString = params.toString();
     const targetUrl = queryString ? `${pathname}?${queryString}` : pathname;
@@ -151,6 +157,7 @@ export function BrowseProvider({
     selectedCity,
     searchQuery,
     sortBy,
+    partnersOnly,
     pathname,
   ]);
 
@@ -183,6 +190,7 @@ export function BrowseProvider({
     setSelectedCity("all");
     setSearchQuery("");
     setSortBy("recommended");
+    setPartnersOnly(false);
   }, []);
 
   const hasActiveFilters =
@@ -194,6 +202,7 @@ export function BrowseProvider({
     budgetMax !== null ||
     selectedCity !== "all" ||
     searchQuery !== "" ||
+    partnersOnly ||
     (sortBy !== "" && sortBy !== "recommended");
 
   return (
@@ -220,6 +229,8 @@ export function BrowseProvider({
         setSearchQuery,
         sortBy,
         setSortBy,
+        partnersOnly,
+        setPartnersOnly,
         clearAllFilters,
         hasActiveFilters,
       }}
