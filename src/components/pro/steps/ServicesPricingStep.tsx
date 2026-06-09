@@ -1,6 +1,6 @@
 "use client";
 
-import CategoryIcon from "@/components/categories/CategoryIcon";
+import CategoryCard from "@/components/categories/CategoryCard";
 import RequestCustomServiceModal from "@/components/pro/RequestCustomServiceModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import AiSearchBar from "@/components/common/AiSearchBar";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { useMarketplaceCountry } from "@/hooks/useCountry";
 import { currencySymbol } from "@/utils/currency";
-import { ArrowLeft, Check, CheckCircle2, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, ChevronDown, Plus, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 // ─── Exported types ──────────────────────────────────────────────────────────
@@ -779,67 +779,19 @@ export default function ServicesPricingStep({
               const hasSelections = selectedCount > 0;
 
               return (
-                <button
+                <CategoryCard
                   key={cat.key}
-                  type="button"
+                  name={catName}
+                  iconType={cat.icon || cat.key}
+                  color={accent}
+                  selected={hasSelections}
+                  meta={
+                    hasSelections
+                      ? `${selectedCount} ${t("browse.selectedCount")}`
+                      : `${cat.subcategories.length} ${t("common.options")}`
+                  }
                   onClick={() => goToCategory(cat.key)}
-                  className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-2.5 sm:gap-3 p-3 sm:p-3.5 rounded-2xl text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--hm-brand-500)]/40"
-                  style={{
-                    backgroundColor: 'var(--hm-bg-elevated)',
-                    border: `1px solid ${hasSelections ? accent : 'var(--hm-border-subtle)'}`,
-                    boxShadow: hasSelections
-                      ? `0 4px 14px -6px ${accent}40, 0 1px 2px rgba(0,0,0,0.03)`
-                      : '0 1px 2px rgba(0,0,0,0.02)',
-                  }}
-                >
-                  {/* Selected check pill - top-right, vermillion */}
-                  {hasSelections && (
-                    <div
-                      className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
-                      style={{
-                        background: 'var(--hm-brand-500)',
-                        boxShadow: '0 2px 6px -2px rgba(239,78,36,0.45)',
-                      }}
-                    >
-                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                    </div>
-                  )}
-
-                  {/* Icon - color-tinted backplate using the category's real color */}
-                  <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all group-hover:scale-105"
-                    style={{
-                      backgroundColor: `${accent}14`,
-                      color: accent,
-                    }}
-                  >
-                    <CategoryIcon type={cat.icon || cat.key} className="w-5 h-5" />
-                  </div>
-
-                  {/* Name + count */}
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[13px] sm:text-[14px] font-semibold block leading-tight" style={{ color: 'var(--hm-fg-primary)' }}>
-                      {catName}
-                    </span>
-                    {hasSelections ? (
-                      <span className="text-[11px] font-semibold mt-0.5 inline-block" style={{ color: 'var(--hm-brand-500)' }}>
-                        {selectedCount} {t("browse.selectedCount")}
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-[var(--hm-fg-muted)] mt-0.5 inline-block">
-                        {cat.subcategories.length} {t("common.options")}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Arrow - visible only when no selection (replaced by check pill when selected) */}
-                  {!hasSelections && (
-                    <ChevronRight
-                      className="w-4 h-4 shrink-0 transition-all hidden sm:block opacity-0 group-hover:opacity-60 group-hover:translate-x-0.5"
-                      style={{ color: 'var(--hm-fg-muted)' }}
-                    />
-                  )}
-                </button>
+                />
               );
             })}
           </div>
@@ -899,19 +851,26 @@ export default function ServicesPricingStep({
             const isSelected = selectedKeys.has(sub.key);
             const subData = selectedSubcategories.find((s) => s.key === sub.key);
             const subName = pick({ en: sub.name, ka: sub.nameKa });
+            const subAccent = activeCategory.color || 'var(--hm-brand-500)';
 
             return (
               <div
                 key={sub.key}
-                className="rounded-2xl transition-all"
+                className="relative overflow-hidden rounded-2xl transition-all"
                 style={{
                   backgroundColor: 'var(--hm-bg-elevated)',
-                  border: `1px solid ${isSelected ? 'var(--hm-brand-500)' : 'var(--hm-border-subtle)'}`,
-                  boxShadow: isSelected
-                    ? '0 4px 14px -8px rgba(239,78,36,0.30)'
-                    : '0 1px 2px rgba(0,0,0,0.02)',
+                  border: `1px solid ${isSelected ? subAccent : 'var(--hm-border-subtle)'}`,
                 }}
               >
+                {/* Selected rows get a thin accent spine in the category color
+                    instead of a drop shadow - depth via hairline, not blur. */}
+                {isSelected && (
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-y-0 left-0 w-[3px]"
+                    style={{ backgroundColor: subAccent }}
+                  />
+                )}
                 {/* Toggle row */}
                 <div className="flex items-center gap-3 px-4 py-3">
                   <Toggle
@@ -958,7 +917,7 @@ export default function ServicesPricingStep({
                     {/* Warning: no services selected */}
                     {subData.services.length > 0 && !subData.services.some(s => s.isActive) && (
                       <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]" style={{ backgroundColor: 'rgba(245,158,11,0.08)', color: 'rgb(180,110,10)' }}>
-                        <span>⚠</span>
+                        <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                         <span>{t("register.selectAtLeastOneService")}</span>
                       </div>
                     )}
