@@ -68,7 +68,16 @@ export function initAmplitude(): void {
         sessions: true,
         formInteractions: true,
         fileDownloads: true,
-        elementInteractions: true,
+        // Object form (not just `true`) so we can opt into
+        // `viewportContentUpdated` - the element-exposure event that powers
+        // Amplitude Zoning Insights. Element click/change capture stays on by
+        // default; this just adds the viewport-exposure signal on top.
+        // Verify: "[Amplitude] Viewport Content Updated" events in Amplitude.
+        elementInteractions: {
+          // The docs show `viewportContentUpdated: true`, but the installed
+          // SDK types it as an object - so use `{ enabled: true }`.
+          viewportContentUpdated: { enabled: true },
+        },
         // Failed XHR/fetch requests - surfaces broken APIs in real user
         // sessions without us having to instrument every call site.
         networkTracking: true,
