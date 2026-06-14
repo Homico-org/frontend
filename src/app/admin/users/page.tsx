@@ -3,7 +3,7 @@
 import AuthGuard from "@/components/common/AuthGuard";
 import Avatar from "@/components/common/Avatar";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/input";
+import { Input, Textarea } from "@/components/ui/input";
 import { ADMIN_THEME as THEME } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -30,6 +30,7 @@ import {
   Instagram,
   Linkedin,
   RefreshCw,
+  Search,
   Shield,
   UserCheck,
   UserPlus,
@@ -101,6 +102,11 @@ function AdminUsersPageContent() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [roleFilter, setRoleFilter] = useState(() => getListParam("role", "all"));
   const [verificationFilter, setVerificationFilter] = useState(() => getListParam("verification", "all"));
+  // `searchInput` is what the admin types; `searchTerm` is the debounced value
+  // that actually drives the query (and the URL mirror), so we don't hit
+  // /admin/users on every keystroke. Backend matches name/email/phone.
+  const [searchInput, setSearchInput] = useState(() => getListParam("q", ""));
+  const [searchTerm, setSearchTerm] = useState(() => getListParam("q", ""));
   const [page, setPage] = useState(() => Math.max(1, parseInt(getListParam("page", "1"), 10) || 1));
   const [totalPages, setTotalPages] = useState(1);
   const [showVerificationModal, setShowVerificationModal] = useState<User | null>(null);
@@ -134,7 +140,7 @@ function AdminUsersPageContent() {
   const fetchDataAbortRef = useRef<AbortController | null>(null);
   const fetchData = useCallback(
     async (showRefresh = false) => {
-      const fetchKey = `${page}-${roleFilter}-${verificationFilter}`;
+      const fetchKey = `${page}-${roleFilter}-${verificationFilter}-${searchTerm}`;
       const now = Date.now();
       if (
         !showRefresh &&
@@ -160,6 +166,7 @@ function AdminUsersPageContent() {
         if (roleFilter !== "all") params.set("role", roleFilter);
         if (verificationFilter !== "all")
           params.set("verificationStatus", verificationFilter);
+        if (searchTerm.trim()) params.set("search", searchTerm.trim());
 
         const statsRes = await api.get(`/admin/stats`, { signal: controller.signal }).catch((err) => {
           if ((err as { name?: string })?.name === "CanceledError") throw err;
@@ -218,7 +225,7 @@ function AdminUsersPageContent() {
         }
       }
     },
-    [page, roleFilter, verificationFilter, toast, locale]
+    [page, roleFilter, verificationFilter, searchTerm, toast, locale]
   );
 
   useEffect(() => {
@@ -226,6 +233,18 @@ function AdminUsersPageContent() {
       fetchData();
     }
   }, [isAuthenticated, fetchData]);
+
+  // Debounce the search box: wait 350ms after the last keystroke before
+  // committing to searchTerm (which triggers the fetch). Reset to page 1 so
+  // results aren't hidden on a page that no longer exists for the new query.
+  useEffect(() => {
+    if (searchInput === searchTerm) return;
+    const id = setTimeout(() => {
+      setSearchTerm(searchInput);
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(id);
+  }, [searchInput, searchTerm]);
 
   // Mirror the list state into the URL (replaceState: no extra history
   // entries, no Next navigation) so back-nav and refresh land on the same
@@ -235,9 +254,10 @@ function AdminUsersPageContent() {
     if (page > 1) params.set("page", String(page));
     if (roleFilter !== "all") params.set("role", roleFilter);
     if (verificationFilter !== "all") params.set("verification", verificationFilter);
+    if (searchTerm.trim()) params.set("q", searchTerm.trim());
     const qs = params.toString();
     window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-  }, [page, roleFilter, verificationFilter]);
+  }, [page, roleFilter, verificationFilter, searchTerm]);
 
   const getRoleColor = (role: string) => getAdminRoleColor(role);
   const getRoleLabel = (role: string) => getAdminRoleLabel(role, locale as "en" | "ka" | "ru");
@@ -449,6 +469,30 @@ function AdminUsersPageContent() {
                 <span className="hidden sm:inline">{t("admin.refresh")}</span>
               </Button>
             </div>
+          </div>
+
+          {/* User search - name / email / phone (backend matches all three) */}
+          <div className="mt-3">
+            <Input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={t("admin.searchUsersPlaceholder")}
+              leftIcon={<Search className="w-4 h-4" />}
+              rightIcon={
+                searchInput ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearchInput("")}
+                    aria-label={t("common.clearSearch")}
+                    className="flex items-center justify-center"
+                    style={{ color: THEME.textMuted }}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                ) : undefined
+              }
+            />
           </div>
 
           {/* Mobile Filters Panel */}

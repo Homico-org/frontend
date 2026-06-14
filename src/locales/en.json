@@ -3699,6 +3699,7 @@
     "userId": "User Id",
     "userManagement": "User Management",
     "usersTotal": "Users Total",
+    "searchUsersPlaceholder": "Search by name, email or phone",
     "createUser": "Create user",
     "createUserTitle": "Create new user",
     "createUserSubtitle": "Set up an account with a specific role. The user can log in immediately - no SMS verification needed.",
