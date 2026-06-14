@@ -79,6 +79,16 @@ interface UserStats {
   thisMonth: number;
 }
 
+// Reads a list-state param from the URL. The list state (page + filters)
+// is mirrored into the query string so that navigating to a user profile
+// and coming back restores the same page instead of resetting to 1. Safe
+// to touch window in the lazy useState initializers below: AuthGuard
+// renders a fallback until client-side auth resolves, so this component
+// never mounts during SSR.
+function getListParam(key: string, fallback: string): string {
+  return new URLSearchParams(window.location.search).get(key) || fallback;
+}
+
 function AdminUsersPageContent() {
   const { isAuthenticated } = useAuth();
   const { t, locale } = useLanguage();
@@ -89,9 +99,9 @@ function AdminUsersPageContent() {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [verificationFilter, setVerificationFilter] = useState("all");
-  const [page, setPage] = useState(1);
+  const [roleFilter, setRoleFilter] = useState(() => getListParam("role", "all"));
+  const [verificationFilter, setVerificationFilter] = useState(() => getListParam("verification", "all"));
+  const [page, setPage] = useState(() => Math.max(1, parseInt(getListParam("page", "1"), 10) || 1));
   const [totalPages, setTotalPages] = useState(1);
   const [showVerificationModal, setShowVerificationModal] = useState<User | null>(null);
   const [verificationAction, setVerificationAction] = useState<"approve" | "reject" | null>(null);
@@ -217,9 +227,17 @@ function AdminUsersPageContent() {
     }
   }, [isAuthenticated, fetchData]);
 
+  // Mirror the list state into the URL (replaceState: no extra history
+  // entries, no Next navigation) so back-nav and refresh land on the same
+  // page/filters. Defaults are omitted to keep /admin/users clean.
   useEffect(() => {
-    setPage(1);
-  }, [roleFilter, verificationFilter]);
+    const params = new URLSearchParams();
+    if (page > 1) params.set("page", String(page));
+    if (roleFilter !== "all") params.set("role", roleFilter);
+    if (verificationFilter !== "all") params.set("verification", verificationFilter);
+    const qs = params.toString();
+    window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+  }, [page, roleFilter, verificationFilter]);
 
   const getRoleColor = (role: string) => getAdminRoleColor(role);
   const getRoleLabel = (role: string) => getAdminRoleLabel(role, locale as "en" | "ka" | "ru");
@@ -514,7 +532,10 @@ function AdminUsersPageContent() {
           </p>
           {roleFilter !== "all" && (
             <button
-              onClick={() => setRoleFilter("all")}
+              onClick={() => {
+                setRoleFilter("all");
+                setPage(1);
+              }}
               className="flex items-center gap-1 text-xs px-2 py-1 rounded-full"
               style={{ background: `${THEME.primary}20`, color: THEME.primary }}
             >
