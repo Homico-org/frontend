@@ -33,6 +33,7 @@ import {
   Hammer,
   HelpCircle,
   Image as ImageIcon,
+  ImagePlus,
   LayoutDashboard,
   LayoutGrid,
   ListChecks,
@@ -1365,6 +1366,25 @@ export default function Header({
                                 </div>
                               </Link>
                             )}
+
+                            {/* Add portfolio work - pros kept reporting they
+                                couldn't find where to add their work; the only
+                                paths were My profile → portfolio tab or the
+                                my-space nudge. Lands on the same editor. */}
+                            <Link
+                              href="/pro/profile-setup/portfolio"
+                              className="group flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] transition-all duration-200"
+                              onClick={() => setShowDropdown(false)}
+                            >
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
+                                <ImagePlus
+                                  className="w-4 h-4"
+                                  style={{ color: ACCENT_COLOR }}
+                                  strokeWidth={1.5}
+                                />
+                              </div>
+                              <span>{t("header.addWork")}</span>
+                            </Link>
 
                             {/* Edit services & pricing - lands on the
                                 profile-setup services step where pros manage
