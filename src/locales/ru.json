@@ -3518,6 +3518,7 @@
     "reports": "Отчёты",
     "support": "Поддержка",
     "activityLogs": "Журнал активности",
+    "viewTracking": "Отслеживание просмотров",
     "activityLogsSearchPlaceholder": "Поиск: email / name / userId / targetId",
     "activityLogsNoBeforeAfterChanges": "Этот лог не содержит изменений До/После (пока не записано).",
     "failedToLoadActivityLogs": "Не удалось загрузить журнал активности",

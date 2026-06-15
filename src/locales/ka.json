@@ -3523,6 +3523,7 @@
     "reports": "რეპორტები",
     "support": "მხარდაჭერა",
     "activityLogs": "აქტივობის ჟურნალი",
+    "viewTracking": "ნახვების მონიტორინგი",
     "activityLogsSearchPlaceholder": "ძებნა: ელ-ფოსტა / სახელი / userId / targetId",
     "activityLogsNoBeforeAfterChanges": "ამ ჩანაწერს არ აქვს before/after ცვლილებები (ჯერ არ არის ჩაწერილი ლოგებში).",
     "failedToLoadActivityLogs": "ვერ მოხერხდა აქტივობის ჩატვირთვა",
