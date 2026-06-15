@@ -16,13 +16,14 @@ import { api } from "@/lib/api";
 import { LikeTargetType, ProProfile } from "@/types";
 import { ArrowRight, Users } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCountry } from "@/hooks/useCountry";
 import { useRefreshOnFocus } from "@/hooks/useRefreshOnFocus";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import PullToRefreshIndicator from "@/components/common/PullToRefreshIndicator";
 import { useToast } from "@/contexts/ToastContext";
 import { addSavedSearch, listSavedSearches } from "@/utils/savedSearches";
+import { getScrollParent } from "@/utils/scrollUtils";
 import { Bookmark as BookmarkIcon, BookmarkCheck as BookmarkCheckIcon } from "lucide-react";
 
 export default function ProfessionalsPage() {
@@ -71,15 +72,25 @@ export default function ProfessionalsPage() {
   const [showAll, setShowAll] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  // Restore scroll position on back navigation
+  // Scroll position saved by ProCard on click. Applied only once the
+  // restored list has rendered - scrolling on mount (the old 100ms
+  // setTimeout) clamped to the top because only the first 12 results
+  // existed in the document at that point. The shell scrolls inside an
+  // overflow-y-auto <main>, not the window, so the restore targets the
+  // real scroll container (same logic as the save in ProCard).
+  const rootRef = useRef<HTMLDivElement>(null);
+  const pendingScrollYRef = useRef<number | null>(null);
   useEffect(() => {
-    const saved = sessionStorage.getItem('browseScrollY');
-    if (saved) {
-      const y = parseInt(saved, 10);
-      sessionStorage.removeItem('browseScrollY');
-      setTimeout(() => window.scrollTo(0, y), 100);
-    }
-  }, []);
+    if (isLoading || results.length === 0) return;
+    if (pendingScrollYRef.current === null) return;
+    const y = pendingScrollYRef.current;
+    pendingScrollYRef.current = null;
+    requestAnimationFrame(() => {
+      const scrollParent = getScrollParent(rootRef.current);
+      if (scrollParent) scrollParent.scrollTop = y;
+      else window.scrollTo(0, y);
+    });
+  }, [isLoading, results.length]);
 
   // Shared abort controller for the latest fetchProfessionals call.
   // Each new invocation aborts the previous so React Strict Mode no
@@ -88,7 +99,7 @@ export default function ProfessionalsPage() {
   // if the user changes a filter mid-fetch.
   const fetchProsAbortRef = useRef<AbortController | null>(null);
   const fetchProfessionals = useCallback(
-    async (pageNum: number, reset = false) => {
+    async (pageNum: number, reset = false, fetchLimit = 12) => {
       fetchProsAbortRef.current?.abort();
       const controller = new AbortController();
       fetchProsAbortRef.current = controller;
@@ -98,7 +109,7 @@ export default function ProfessionalsPage() {
 
         const params = new URLSearchParams();
         params.append("page", pageNum.toString());
-        params.append("limit", "12");
+        params.append("limit", fetchLimit.toString());
 
         if (selectedCategory) params.append("category", selectedCategory);
         if (selectedSubcategories.length > 0)
@@ -129,7 +140,8 @@ export default function ProfessionalsPage() {
         else setResults((prev) => [...prev, ...profiles]);
 
         setHasMore(
-          pagination.hasMore ?? (profiles.length === 12 && profiles.length > 0),
+          pagination.hasMore ??
+            (profiles.length === fetchLimit && profiles.length > 0),
         );
       } catch (error) {
         if ((error as { name?: string })?.name === "CanceledError") return;
@@ -160,9 +172,29 @@ export default function ProfessionalsPage() {
 
   const hasFetchedRef = useRef(false);
   const prevFiltersRef = useRef<string | null>(null);
+  // Page whose fetch the page-effect below must skip: set when the restore
+  // path already fetched pages 1..N itself in a single request.
+  const skipFetchForPageRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    const filterKey = JSON.stringify({
+  // Signature of the active filter set. Doubles as the guard key for the
+  // saved pagination state - restoring depth for a different filter combo
+  // would rebuild the wrong results.
+  const filterKey = useMemo(
+    () =>
+      JSON.stringify({
+        selectedCategory,
+        selectedSubcategories,
+        minRating,
+        searchQuery,
+        sortBy,
+        selectedCity,
+        budgetMin,
+        budgetMax,
+        country,
+        showAll,
+        partnersOnly,
+      }),
+    [
       selectedCategory,
       selectedSubcategories,
       minRating,
@@ -174,8 +206,10 @@ export default function ProfessionalsPage() {
       country,
       showAll,
       partnersOnly,
-    });
+    ],
+  );
 
+  useEffect(() => {
     if (prevFiltersRef.current === filterKey && hasFetchedRef.current) return;
 
     if (hasFetchedRef.current && prevFiltersRef.current !== filterKey) {
@@ -199,10 +233,42 @@ export default function ProfessionalsPage() {
     }
 
     prevFiltersRef.current = filterKey;
+
+    // Back navigation: if the user clicked through to a profile from page N
+    // of this exact filter set, rebuild pages 1..N in a single request so
+    // the list (and the saved scroll position) can be restored. Without
+    // this the remount resets to page 1 and the scroll restore lands at
+    // the top of the list.
+    if (!hasFetchedRef.current && typeof window !== "undefined") {
+      const scrollRaw = sessionStorage.getItem("browseScrollY");
+      sessionStorage.removeItem("browseScrollY");
+      try {
+        const stateRaw = sessionStorage.getItem("browseListState");
+        const saved = stateRaw
+          ? (JSON.parse(stateRaw) as { page?: number; filterKey?: string })
+          : null;
+        if (saved?.filterKey === filterKey) {
+          if (scrollRaw) pendingScrollYRef.current = parseInt(scrollRaw, 10);
+          // Cap the depth so a corrupt value can't trigger a huge query.
+          const savedPage = Math.min(saved.page ?? 1, 30);
+          if (savedPage > 1) {
+            hasFetchedRef.current = true;
+            skipFetchForPageRef.current = savedPage;
+            setPage(savedPage);
+            fetchProfessionals(1, true, savedPage * 12);
+            return;
+          }
+        }
+      } catch {
+        // Corrupt saved state - fall through to a fresh first page.
+      }
+    }
+
     hasFetchedRef.current = true;
     setPage(1);
     fetchProfessionals(1, true);
   }, [
+    filterKey,
     selectedCategory,
     selectedSubcategories,
     minRating,
@@ -217,6 +283,17 @@ export default function ProfessionalsPage() {
     fetchProfessionals,
     trackEvent,
   ]);
+
+  // Persist the depth reached for this filter set so the restore branch
+  // above can rebuild it on back navigation. sessionStorage keeps it
+  // per-tab and drops it when the tab closes.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    sessionStorage.setItem(
+      "browseListState",
+      JSON.stringify({ page, filterKey }),
+    );
+  }, [page, filterKey]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -237,16 +314,38 @@ export default function ProfessionalsPage() {
     return () => observer.disconnect();
   }, [hasMore, isLoading, isLoadingMore]);
 
+  const prevPageRef = useRef(1);
   useEffect(() => {
-    if (page > 1) fetchProfessionals(page);
+    const prevPage = prevPageRef.current;
+    prevPageRef.current = page;
+    // Also re-runs when `fetchProfessionals` changes identity (filter
+    // change); only fetch when the page number itself moved, otherwise a
+    // stale page > 1 would append old-depth results onto fresh filters.
+    if (page === prevPage || page <= 1) return;
+    if (skipFetchForPageRef.current === page) {
+      // Restore path already fetched pages 1..N in a single request.
+      skipFetchForPageRef.current = null;
+      return;
+    }
+    fetchProfessionals(page);
   }, [page, fetchProfessionals]);
 
   // Refetch on tab return so stale data doesn't trick users into
-  // contacting pros who've gone offline since the last load.
-  useRefreshOnFocus(() => fetchProfessionals(1, true));
+  // contacting pros who've gone offline since the last load. Resetting
+  // `page` too keeps the infinite-scroll cursor in sync with the single
+  // page now displayed.
+  useRefreshOnFocus(() => {
+    setPage(1);
+    fetchProfessionals(1, true);
+  });
 
   // Pull-down-to-refresh on mobile. Hook is touch-only.
-  const pullState = usePullToRefresh({ onRefresh: () => fetchProfessionals(1, true) });
+  const pullState = usePullToRefresh({
+    onRefresh: () => {
+      setPage(1);
+      return fetchProfessionals(1, true);
+    },
+  });
 
   const toast = useToast();
   const handleSaveCurrentSearch = () => {
@@ -323,7 +422,7 @@ export default function ProfessionalsPage() {
   );
 
   return (
-    <div className="space-y-2 sm:space-y-3">
+    <div ref={rootRef} className="space-y-2 sm:space-y-3">
       <PullToRefreshIndicator
         pullDistance={pullState.pullDistance}
         canTrigger={pullState.canTrigger}

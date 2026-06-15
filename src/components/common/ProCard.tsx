@@ -18,6 +18,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trackEvent } from "@/hooks/useTracker";
+import { getScrollParent } from "@/utils/scrollUtils";
 
 interface ProCardProps {
   profile: ProProfile;
@@ -342,11 +343,15 @@ export default function ProCard({
     });
   }, [profile.totalReviews, t]);
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     trackEvent('pro_click', profile.id, profile.name);
-    // Save scroll position for back navigation
+    // Save scroll position for back navigation. The browse shell scrolls
+    // inside an overflow-y-auto <main>, not the window - window.scrollY
+    // is always 0 there, so read the real scroll container instead.
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('browseScrollY', window.scrollY.toString());
+      const scrollParent = getScrollParent(e.currentTarget);
+      const y = scrollParent ? scrollParent.scrollTop : window.scrollY;
+      sessionStorage.setItem('browseScrollY', y.toString());
     }
   }, [profile.id, profile.name]);
 
