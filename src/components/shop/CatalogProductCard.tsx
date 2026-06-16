@@ -23,7 +23,7 @@ interface CatalogProductCardProps {
   cartMode?: boolean;
 }
 
-const fmt = (n: number) => `${n.toLocaleString()} ₾`;
+const fmt = (n: number) => `${(Number.isFinite(n) ? n : 0).toLocaleString()} ₾`;
 
 /**
  * Catalog-specific wrapper over the shared <ProductCard>: feeds the shop

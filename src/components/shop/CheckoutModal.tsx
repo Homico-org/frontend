@@ -63,7 +63,8 @@ interface CheckoutModalProps {
   onOrderPlaced: () => void;
 }
 
-const fmt = (minor: number) => `${(minor / 100).toLocaleString()} ₾`;
+const fmt = (minor: number) =>
+  `${(Number.isFinite(minor) ? minor / 100 : 0).toLocaleString()} ₾`;
 
 export default function CheckoutModal({
   isOpen,

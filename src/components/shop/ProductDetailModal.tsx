@@ -26,7 +26,8 @@ interface ProductDetailModalProps {
   inCartQty?: number;
 }
 
-const fmt = (n: number) => `${n.toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
+const fmt = (n: number) =>
+  `${(Number.isFinite(n) ? n : 0).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
 
 export default function ProductDetailModal({
   product,

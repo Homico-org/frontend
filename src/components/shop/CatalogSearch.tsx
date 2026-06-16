@@ -161,7 +161,8 @@ export default function CatalogSearch({
     setFilters((f) => ({ ...f, supplierKey: key, category: undefined }));
 
   const totalProducts = suppliers.reduce((sum, s) => sum + (s.productCount || 0), 0);
-  const num = (n: number) => n.toLocaleString('en-US').replace(/,/g, ' ');
+  const num = (n: number) =>
+    (Number.isFinite(n) ? n : 0).toLocaleString('en-US').replace(/,/g, ' ');
 
   // Shop card - bigger, scannable tile so each shop is easy to spot and
   // enter (vs the old thin chip row). Selected shop gets a brand ring.
