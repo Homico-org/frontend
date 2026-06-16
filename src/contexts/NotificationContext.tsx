@@ -129,6 +129,11 @@ interface NotificationContextType {
   deleteNotification: (id: string) => Promise<void>;
   deleteAllNotifications: () => Promise<void>;
   refreshUnreadCount: () => Promise<void>;
+  // True while the notifications dropdown/panel is open. The critical-booking
+  // overlay reads this to avoid throwing a redundant modal over the panel the
+  // user is already looking at.
+  notificationsPanelOpen: boolean;
+  setNotificationsPanelOpen: (open: boolean) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -136,6 +141,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [activityCounts, setActivityCounts] = useState<ActivityUnreadCounts>(
     EMPTY_ACTIVITY_COUNTS,
@@ -431,7 +437,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     deleteNotification,
     deleteAllNotifications,
     refreshUnreadCount,
-  }), [notifications, unreadCount, activityCounts, refreshActivityCounts, isLoading, isConnected, fetchNotifications, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications, refreshUnreadCount]);
+    notificationsPanelOpen,
+    setNotificationsPanelOpen,
+  }), [notifications, unreadCount, activityCounts, refreshActivityCounts, isLoading, isConnected, fetchNotifications, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications, refreshUnreadCount, notificationsPanelOpen]);
 
   return (
     <NotificationContext.Provider value={contextValue}>
