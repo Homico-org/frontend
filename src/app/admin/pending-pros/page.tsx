@@ -356,6 +356,25 @@ function AdminPendingProsPageContent() {
       )}
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Moderation hub tabs: New pros (this page) | Profile changes */}
+        <div className="flex gap-2 mb-4 sm:mb-6">
+          <span
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium"
+            style={{ background: `${THEME.primary}20`, color: THEME.primary, border: `1px solid ${THEME.primary}` }}
+          >
+            <UserCheck className="w-4 h-4" />
+            {t('admin.approvals')}
+          </span>
+          <Link
+            href="/admin/moderation"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            style={{ background: THEME.surfaceLight, color: THEME.textMuted, border: `1px solid ${THEME.border}` }}
+          >
+            <Eye className="w-4 h-4" />
+            {t('admin.profileModeration')}
+          </Link>
+        </div>
+
         {/* Stats Cards - Compact on mobile */}
         {stats && (
           <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
