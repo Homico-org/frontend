@@ -3523,6 +3523,7 @@
     "reports": "Reports",
     "support": "Support",
     "activityLogs": "Activity Logs",
+    "viewTracking": "View tracking",
     "activityLogsSearchPlaceholder": "Search: email / name / userId / targetId",
     "activityLogsNoBeforeAfterChanges": "This log does not include before/after changes (not recorded yet).",
     "failedToLoadActivityLogs": "Failed to load activity logs",

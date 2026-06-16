@@ -10,7 +10,8 @@ import { useToast } from '@/contexts/ToastContext';
 import { ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
 
-const fmt = (n: number) => `${n.toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
+const fmt = (n: number) =>
+  `${(Number.isFinite(n) ? n : 0).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
 
 /**
  * Standalone cross-shop store. Search every supplier in one place, browse by

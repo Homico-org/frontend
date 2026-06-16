@@ -32,7 +32,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 const fmt = (n: number) =>
-  `${n.toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
+  `${(Number.isFinite(n) ? n : 0).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
 
 export default function ProductDetailPage() {
   const params = useParams();
