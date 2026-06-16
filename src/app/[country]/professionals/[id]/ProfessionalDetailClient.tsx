@@ -31,6 +31,7 @@ import { useToast } from "@/contexts/ToastContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useCountryLink } from "@/hooks/useCountry";
 import { api } from "@/lib/api";
+import { getProfileFieldLabel } from "@/constants/profileModeration";
 import { storage } from "@/services/storage";
 import dynamic from "next/dynamic";
 
@@ -265,6 +266,33 @@ export default function ProfessionalDetailClient({
   const isOwner = user?.id === profile?.id;
   const isAdmin = user?.role === "admin";
   const canEdit = isOwner || isAdmin;
+
+  // Profile-moderation status for the owner: a verified pro's edits are staged
+  // for admin review, so surface a banner while a change is pending (or was
+  // just rejected). Fetched only for the owner viewing their own profile.
+  const [moderation, setModeration] = useState<{
+    pending: { changes?: { field: string }[]; createdAt?: string } | null;
+    lastRejected: { reason?: string | null } | null;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!isOwner || !user) {
+      setModeration(null);
+      return;
+    }
+    let cancelled = false;
+    api
+      .get("/users/me/pending-changes")
+      .then((res) => {
+        if (!cancelled) setModeration(res.data);
+      })
+      .catch(() => {
+        if (!cancelled) setModeration(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOwner, user]);
 
   // When an admin opens the structured services setup for a pro that isn't
   // themselves, the URL must carry `?proId=` so ProfileSetupContext loads and
@@ -1617,6 +1645,61 @@ export default function ProfessionalDetailClient({
                     : "/pro/profile-setup",
                 )
               }
+              className="bg-[var(--hm-error-500)] hover:bg-[var(--hm-error-500)]/90 text-white text-xs sm:text-sm flex-shrink-0"
+            >
+              {t("professional.editProfile")}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Profile-changes pending review - owner only. A verified pro's edits
+          to public fields wait for admin approval before going live. */}
+      {isOwner && moderation?.pending && (
+        <div className="bg-[var(--hm-info-50)] border-b border-[var(--hm-info-500)]/20">
+          <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 rounded-full bg-[var(--hm-info-500)]/10 flex-shrink-0">
+              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-info-500)]" strokeWidth={2} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-xs sm:text-sm text-[var(--hm-fg-primary)]">
+                {t("professional.changesPendingTitle")}
+              </p>
+              <p className="text-[10px] sm:text-sm text-[var(--hm-fg-secondary)] line-clamp-2 sm:line-clamp-none">
+                {t("professional.changesPendingDescription")}
+              </p>
+              {(moderation.pending.changes?.length ?? 0) > 0 && (
+                <p className="text-[10px] sm:text-xs mt-1 text-[var(--hm-fg-secondary)]">
+                  {moderation.pending.changes!
+                    .map((c) => getProfileFieldLabel(c.field, locale))
+                    .join(" · ")}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Last profile-changes request was rejected - owner only. */}
+      {isOwner && !moderation?.pending && moderation?.lastRejected && (
+        <div className="bg-[var(--hm-error-50)]/20 border-b border-[var(--hm-error-500)]/20">
+          <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 rounded-full bg-[var(--hm-error-100)] flex-shrink-0">
+              <X className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-error-500)]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-xs sm:text-sm text-[var(--hm-error-500)]">
+                {t("professional.changesRejectedTitle")}
+              </p>
+              {moderation.lastRejected.reason && (
+                <p className="text-[10px] sm:text-sm text-[var(--hm-error-500)] line-clamp-2 sm:line-clamp-none">
+                  {moderation.lastRejected.reason}
+                </p>
+              )}
+            </div>
+            <Button
+              size="sm"
+              onClick={() => router.push("/pro/profile-setup")}
               className="bg-[var(--hm-error-500)] hover:bg-[var(--hm-error-500)]/90 text-white text-xs sm:text-sm flex-shrink-0"
             >
               {t("professional.editProfile")}
