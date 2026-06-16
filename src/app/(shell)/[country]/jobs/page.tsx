@@ -427,10 +427,10 @@ export default function JobsPage() {
               <Link
                 href={`/${country.toLowerCase()}/post-job`}
                 onClick={(e) => e.stopPropagation()}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/10 hover:bg-[var(--hm-brand-500)]/20 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
-                {t("browse.newest")}
+                {t("browse.postAJob")}
               </Link>
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[var(--hm-bg-tertiary)] flex items-center justify-center">
                 {showMyJobs ? (
