@@ -23,6 +23,7 @@ import {
   Activity,
   BarChart3,
   Bell,
+  BookOpen,
   Briefcase,
   Building2,
   Calculator,
@@ -88,7 +89,7 @@ export default function Header({
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { t } = useLanguage();
-  const { unreadCount, activityCounts } = useNotifications();
+  const { unreadCount, activityCounts, setNotificationsPanelOpen } = useNotifications();
   // Country-aware nav. Keeps `/professionals`, `/jobs`, `/post-job`
   // links inside the active marketplace so clicks don't bounce
   // through the middleware redirect.
@@ -101,6 +102,12 @@ export default function Header({
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  // Share the panel-open state so the critical-booking overlay can suppress
+  // itself while the user is viewing the notifications panel (avoids a
+  // redundant booking modal stacking over the list).
+  useEffect(() => {
+    setNotificationsPanelOpen(showNotifications);
+  }, [showNotifications, setNotificationsPanelOpen]);
   const notificationsTriggerRef = useRef<HTMLButtonElement>(null);
   const notificationsPanelRef = useRef<HTMLDivElement>(null);
   const notificationsSheetRef = useRef<HTMLDivElement>(null);
@@ -353,6 +360,7 @@ export default function Header({
     { key: "all-professionals", href: cl("/professionals"), label: t("header.allProfessionals"), description: t("header.descriptions.allProfessionals"), icon: Users, showFor: "all" },
     { key: "become-pro", href: cl("/become-pro"), label: t("header.becomePro"), description: t("header.descriptions.becomePro"), icon: Briefcase, showFor: "all" },
     { key: "how-it-works", href: cl("/how-it-works"), label: t("header.howItWorks"), description: t("header.descriptions.howItWorks"), icon: HelpCircle, showFor: "all" },
+    { key: "blog", href: cl("/blog"), label: t("blog.eyebrow"), description: t("blog.subtitle"), icon: BookOpen, showFor: "all" },
     { key: "accountability", href: "/pro/accountability", label: t("header.accountability"), description: t("header.descriptions.accountability"), icon: Shield, showFor: "all" },
     { key: "my-profile", href: user?.id ? `/professionals/${user.id}` : "/professionals", label: t("header.myProfile"), description: t("header.descriptions.myProfile"), icon: ImageIcon, showFor: "proAndAdmin" },
   ];
