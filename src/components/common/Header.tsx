@@ -1064,11 +1064,13 @@ export default function Header({
             <MarketplaceSelector hideCountry={!features.marketplaceSelector} />
           </div>
 
-          {/* Language selector on mobile/tablet (<lg). Desktop has it in the
-              block above; re-added here on mobile (2026-06-17, requested by
-              Bjavakh) so the language can be switched from the top bar like on
-              desktop, not only via /settings. Same compact pill component. */}
-          <div className="flex lg:hidden items-center">
+          {/* Theme + Language on mobile/tablet (<lg). Desktop has both in the
+              block above; mirrored here on mobile (2026-06-17, per Bjavakh)
+              because the logged-in avatar dropdown has neither — so a signed-in
+              mobile user otherwise had no way to switch theme/language from the
+              header. Same compact components as desktop. */}
+          <div className="flex lg:hidden items-center gap-1.5">
+            <ThemeToggle />
             <MarketplaceSelector hideCountry={!features.marketplaceSelector} />
           </div>
 
