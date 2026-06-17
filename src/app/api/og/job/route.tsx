@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { currencySymbol } from "@/utils/currency";
+import { jobServicesTotal } from "@/utils/jobPrice";
 
 // Per-job social share card (Facebook / Twitter / WhatsApp preview).
 // Always renders the CURRENT Homico logo + job details, so a share never
@@ -52,6 +53,13 @@ function formatPrice(job: Record<string, unknown>): string {
     ? currencySymbol({ currency })
     : currencySymbol({ country });
   const n = (v: number) => v.toLocaleString("en-US").replace(/,/g, " ");
+
+  // Service-based jobs: show the total of all selected services, not the
+  // legacy single budgetAmount. Mirrors the metadata in the job page.
+  const servicesTotal = jobServicesTotal(job);
+  if (servicesTotal) {
+    return `${n(servicesTotal)} ${sym}`;
+  }
 
   if (budgetType === "fixed" && (budgetAmount || budgetMin)) {
     return `${n((budgetAmount ?? budgetMin)!)} ${sym}`;
