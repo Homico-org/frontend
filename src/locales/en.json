@@ -29,6 +29,7 @@
     "fullName": "Full name",
     "fullNameHint": "This is how clients will see you on your profile.",
     "cancel": "Cancel",
+    "client": "Client",
     "proposals": "proposals",
     "change": "Change",
     "delete": "Delete",
