@@ -116,6 +116,16 @@ export default function MobileNavDrawer({
   // BROWSE - always visible. Mirrors the desktop sidebar primary tabs so the
   // app's "map" is the same on every device.
   const browseItems: NavLink[] = [
+    // Post A Job - primary action, shown to EVERYONE (logged in or out),
+    // mirroring the desktop sidebar which has no auth/role gate. On mobile the
+    // sidebar is hidden, so this is the only entry point. Guests clicking it
+    // hit the login prompt on /post-job, same as desktop.
+    {
+      key: "post-job",
+      href: cl("/post-job"),
+      label: t("browse.postAJob"),
+      icon: Plus,
+    },
     { key: "home", href: cl("/"), label: t("nav.home"), icon: Home },
     {
       key: "pros",
@@ -157,15 +167,6 @@ export default function MobileNavDrawer({
   // PERSONAL - auth only
   if (isAuthenticated) {
     const personalItems: NavLink[] = [];
-    // Post A Job - primary action, shown to everyone (matches the desktop
-    // sidebar which has no role gate). On mobile the sidebar is hidden, so
-    // without this the button was unreachable for pros. Canonical label.
-    personalItems.push({
-      key: "post-job",
-      href: cl("/post-job"),
-      label: t("browse.postAJob"),
-      icon: Plus,
-    });
     personalItems.push({
       key: "projects",
       href: "/projects",
