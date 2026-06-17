@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import JobDetailClient from "./JobDetailClient";
 import { currencySymbol } from "@/utils/currency";
+import { jobServicesTotal } from "@/utils/jobPrice";
 
 interface Props {
   params: Promise<{ country: string; id: string }>;
@@ -23,6 +24,13 @@ function formatPrice(job: Record<string, unknown>): string {
   const sym = currency
     ? currencySymbol({ currency })
     : currencySymbol({ country });
+
+  // Service-based jobs: show the total of all selected services (e.g. 2310₾),
+  // not the legacy budgetAmount (which showed a single line, e.g. 110₾).
+  const servicesTotal = jobServicesTotal(job);
+  if (servicesTotal) {
+    return `${servicesTotal.toLocaleString()} ${sym}`;
+  }
 
   if (budgetType === "fixed" && (budgetAmount || budgetMin)) {
     return `${(budgetAmount ?? budgetMin)!.toLocaleString()} ${sym}`;
