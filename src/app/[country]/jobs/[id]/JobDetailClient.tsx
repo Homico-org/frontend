@@ -120,6 +120,16 @@ import {
 interface PageJob extends Omit<Job, "clientId"> {
   clientId: JobClient & { email?: string; phone?: string };
   updatedAt?: string;
+  // Owner-only: invited pros + whether each has opened the job. Returned by
+  // the backend findJobById only when the requester is the job owner.
+  invitedProsViews?: Array<{
+    _id: string;
+    name?: string;
+    avatar?: string;
+    title?: string;
+    viewed: boolean;
+    viewedAt?: string | null;
+  }>;
 }
 
 // Services view-model types. `mode` controls which price expression
@@ -3351,6 +3361,43 @@ export default function JobDetailClient() {
                             {t("jobDetail.empty.shareCta")}
                           </Button>
                         </div>
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Invited pros - owner only: which invited craftsmen have
+                      opened the job, so the client sees who saw the request. */}
+                  {isOwner && (job.invitedProsViews?.length ?? 0) > 0 && (
+                    <section className="bg-[var(--hm-bg-elevated)] rounded-xl p-4 sm:p-5 border border-[var(--hm-border-subtle)]">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-[var(--hm-fg-primary)] flex items-center gap-2">
+                          <Users className="w-4 h-4 text-[var(--hm-brand-500)]" />
+                          {t("job.invitedProsTitle")}
+                        </h3>
+                        <span className="text-sm font-medium text-[var(--hm-fg-secondary)]">
+                          {job.invitedProsViews!.filter((p) => p.viewed).length}/
+                          {job.invitedProsViews!.length}
+                        </span>
+                      </div>
+                      <div className="space-y-2.5">
+                        {job.invitedProsViews!.map((pro) => (
+                          <div key={pro._id} className="flex items-center gap-3">
+                            <Avatar src={pro.avatar} name={pro.name || "?"} size="sm" />
+                            <span className="flex-1 min-w-0 truncate text-sm text-[var(--hm-fg-primary)]">
+                              {pro.name || "—"}
+                            </span>
+                            {pro.viewed ? (
+                              <span className="flex items-center gap-1 text-xs font-medium text-[var(--hm-brand-500)]">
+                                <Eye className="w-3.5 h-3.5" />
+                                {t("job.invitedViewed")}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-[var(--hm-fg-muted)]">
+                                {t("job.invitedNotViewed")}
+                              </span>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </section>
                   )}
