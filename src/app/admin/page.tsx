@@ -34,6 +34,7 @@ import {
   Send,
   RefreshCw,
   Shield,
+  ShieldCheck,
   Tag,
   Target,
   Eye,
@@ -136,6 +137,7 @@ function AdminDashboardPageContent() {
   const [jobsByCategory, setJobsByCategory] = useState<CategoryData[]>([]);
   const [jobsByLocation, setJobsByLocation] = useState<LocationData[]>([]);
   const [pendingProsCount, setPendingProsCount] = useState<number>(0);
+  const [moderationPendingCount, setModerationPendingCount] = useState<number>(0);
   const [dailySignups, setDailySignups] = useState<DailyData[]>([]);
   const [dailyJobs, setDailyJobs] = useState<DailyData[]>([]);
   const [dailyProposals, setDailyProposals] = useState<DailyData[]>([]);
@@ -187,6 +189,7 @@ function AdminDashboardPageContent() {
         dailyJobsRes,
         dailyProposalsRes,
         pendingProsRes,
+        moderationRes,
       ] = await Promise.all([
         api.get(`/admin/stats`),
         api.get(`/admin/recent-users?limit=6`),
@@ -198,6 +201,7 @@ function AdminDashboardPageContent() {
         api.get(`/admin/daily-jobs?days=14`),
         api.get(`/admin/daily-proposals?days=14`),
         api.get(`/admin/pending-pros/stats`),
+        api.get(`/admin/profile-changes/stats`),
       ]);
 
       setStats(statsRes.data);
@@ -210,6 +214,7 @@ function AdminDashboardPageContent() {
       setDailyJobs(dailyJobsRes.data);
       setDailyProposals(dailyProposalsRes.data);
       setPendingProsCount(pendingProsRes.data.pending || 0);
+      setModerationPendingCount(moderationRes.data.pending || 0);
       setLastUpdated(new Date());
     } catch (err) {
       logApiError('Admin Dashboard', err);
@@ -555,6 +560,7 @@ function AdminDashboardPageContent() {
             { label: t('adminFunnel.title'), icon: TrendingUp, href: '/admin/funnel', color: THEME.success },
             { label: t('admin.users'), icon: Users, href: '/admin/users', color: THEME.primary, count: stats?.users.total },
             { label: t('admin.approvals'), icon: UserCheck, href: '/admin/pending-pros', color: '#f59e0b', count: pendingProsCount, badge: pendingProsCount > 0 ? pendingProsCount : undefined },
+            { label: t('admin.profileModeration'), icon: ShieldCheck, href: '/admin/moderation', color: '#f97316', count: moderationPendingCount, badge: moderationPendingCount > 0 ? moderationPendingCount : undefined },
             { label: t('admin.jobs'), icon: Briefcase, href: '/admin/jobs', color: THEME.info, count: stats?.jobs.total },
             { label: t('admin.support'), icon: MessageCircle, href: '/admin/support', color: THEME.warning, count: stats?.support.open, badge: stats?.support.unread },
             { label: t('admin.activityLogs'), icon: ActivityIcon, href: '/admin/activity-logs', color: THEME.success },
