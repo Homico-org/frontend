@@ -1064,6 +1064,14 @@ export default function Header({
             <MarketplaceSelector hideCountry={!features.marketplaceSelector} />
           </div>
 
+          {/* Language selector on mobile/tablet (<lg). Desktop has it in the
+              block above; re-added here on mobile (2026-06-17, requested by
+              Bjavakh) so the language can be switched from the top bar like on
+              desktop, not only via /settings. Same compact pill component. */}
+          <div className="flex lg:hidden items-center">
+            <MarketplaceSelector hideCountry={!features.marketplaceSelector} />
+          </div>
+
           {/* Cart - shows only when it has items, opens the shared drawer from
               anywhere in the app. */}
           <CartButton />
