@@ -1,6 +1,7 @@
 'use client';
 
 import CategoryIcon from '@/components/categories/CategoryIcon';
+import CleaningServicePicker from '@/components/post-job/CleaningServicePicker';
 import { useCategories } from '@/contexts/CategoriesContext';
 import type { CatalogServiceItem, Subcategory } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -64,6 +65,8 @@ export default function JobServicePicker({
   const country = useCountry();
   const sym = currencySymbol({ country });
   const [searchQuery, setSearchQuery] = useState('');
+  // Active cleaning type (subcategory) for the dedicated cleaning picker.
+  const [cleaningSubKey, setCleaningSubKey] = useState('');
   const { aiResults, aiLoading, aiAttempted, search: aiSearch, clear: aiClear } = useAiServiceSearch();
 
   // Tab strip auto-scroll. When the selected category changes - either
@@ -534,6 +537,20 @@ export default function JobServicePicker({
         return (
         <div className="space-y-4">
           {categoriesToShow.map(cat => {
+            // Cleaning uses a dedicated fixed-price picker (per-room +/− steppers,
+            // add-ons, live total) instead of the generic budget-based list.
+            if (cat.key === 'cleaning') {
+              return (
+                <CleaningServicePicker
+                  key={cat.key}
+                  category={cat}
+                  selectedServices={selectedServices}
+                  onServicesChange={onServicesChange}
+                  activeSubKey={cleaningSubKey}
+                  onActiveSubChange={setCleaningSubKey}
+                />
+              );
+            }
             const accent = cat.color || 'var(--hm-brand-500)';
             const subcats = cat.subcategories.filter(sub => sub.isActive && sub.services && sub.services.length > 0);
             if (subcats.length === 0) return null;
