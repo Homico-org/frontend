@@ -93,14 +93,6 @@ export default function CleaningServicePicker({
     return keys;
   }, [activeSub]);
 
-  const total = useMemo(
-    () =>
-      selectedServices
-        .filter((s) => activeKeys.has(s.serviceKey))
-        .reduce((sum, s) => sum + s.budget * (s.quantity || 1), 0),
-    [selectedServices, activeKeys],
-  );
-
   // Switching cleaning type clears the previous type's lines (you book one type).
   const switchSub = (key: string) => {
     if (key === activeSub?.key) return;
@@ -112,10 +104,18 @@ export default function CleaningServicePicker({
   if (!activeSub) return null;
 
   const sym = '₾';
+  const accent = category.color || 'var(--hm-brand-500)';
+  const descText = activeSub.description
+    ? pick({
+        en: activeSub.description.en,
+        ka: activeSub.description.ka,
+        ru: activeSub.description.ru,
+      })
+    : '';
 
   return (
-    <div className="space-y-5">
-      {/* Cleaning type tabs */}
+    <div className="space-y-3">
+      {/* Cleaning type pills */}
       <div className="flex flex-wrap gap-2">
         {subs.map((s) => {
           const on = s.key === activeSub.key;
@@ -136,143 +136,138 @@ export default function CleaningServicePicker({
         })}
       </div>
 
-      {/* Description */}
-      {activeSub.description &&
-        pick({
-          en: activeSub.description.en,
-          ka: activeSub.description.ka,
-          ru: activeSub.description.ru,
-        }).trim().length > 0 && (
+      {/* Single container card — matches the other categories' look */}
+      <div
+        className="rounded-2xl border bg-[var(--hm-bg-elevated)] overflow-hidden"
+        style={{ borderColor: 'var(--hm-border-subtle)' }}
+      >
+        {/* Header: accent bar + name */}
+        <div
+          className="flex items-center gap-2.5 px-4 py-3 border-b"
+          style={{ borderColor: 'var(--hm-border-subtle)' }}
+        >
+          <span className="block w-[3px] h-4 rounded-full" style={{ background: accent }} />
+          <span className="text-[13px] font-semibold text-[var(--hm-fg-primary)]">
+            {label(activeSub)}
+          </span>
+        </div>
+
+        {/* Description */}
+        {descText.trim().length > 0 && (
           <div
-            className="rounded-2xl border bg-[var(--hm-bg-elevated)] p-3 sm:p-4 text-xs sm:text-sm text-[var(--hm-fg-secondary)] whitespace-pre-line leading-relaxed"
+            className="px-4 py-3 border-b text-xs sm:text-sm text-[var(--hm-fg-muted)] whitespace-pre-line leading-relaxed"
             style={{ borderColor: 'var(--hm-border-subtle)' }}
           >
-            {pick({
-              en: activeSub.description.en,
-              ka: activeSub.description.ka,
-              ru: activeSub.description.ru,
-            })}
+            {descText}
           </div>
         )}
 
-      {/* Rooms */}
-      <div className="space-y-2">
-        {(activeSub.services ?? []).map((svc) => {
-          const isArea = AREA_UNITS.has((svc.unit || '').toLowerCase());
-          const qty = qtyOf(svc.key);
-          return (
-            <div
-              key={svc.key}
-              className="flex items-center justify-between gap-3 rounded-2xl border bg-[var(--hm-bg-elevated)] px-3 py-2.5"
-              style={{ borderColor: 'var(--hm-border-subtle)' }}
-            >
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-[var(--hm-fg-primary)] truncate">
-                  {label(svc)}
-                </p>
-                <p className="text-xs text-[var(--hm-fg-muted)]">
-                  {svc.basePrice}
-                  {sym}
-                  {isArea ? ` / ${pick({ en: svc.unitName ?? 'm²', ka: svc.unitNameKa ?? 'მ²' })}` : ''}
-                </p>
-              </div>
-
-              {isArea ? (
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="number"
-                    min={0}
-                    inputMode="numeric"
-                    value={qty || ''}
-                    onChange={(e) => {
-                      const n = parseInt(e.target.value);
-                      setLine(svc, isNaN(n) || n < 0 ? 0 : n);
-                    }}
-                    placeholder="0"
-                    className="w-16 h-9 rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-secondary)] text-center text-sm text-[var(--hm-fg-primary)]"
-                  />
-                  <span className="text-xs text-[var(--hm-fg-muted)]">მ²</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setLine(svc, Math.max(0, qty - 1))}
-                    disabled={qty <= 0}
-                    className="h-8 w-8 rounded-full border border-[var(--hm-border)] flex items-center justify-center text-[var(--hm-fg-secondary)] disabled:opacity-40 hover:border-[var(--hm-brand-500)] transition-colors"
-                    aria-label="−"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <span className="w-6 text-center text-sm font-semibold text-[var(--hm-fg-primary)]">
-                    {qty}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setLine(svc, qty + 1)}
-                    className="h-8 w-8 rounded-full border border-[var(--hm-border)] flex items-center justify-center text-[var(--hm-fg-secondary)] hover:border-[var(--hm-brand-500)] transition-colors"
-                    aria-label="+"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Add-ons */}
-      {(activeSub.addons ?? []).length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hm-fg-muted)]">
-            {pick({ en: 'Add-ons', ka: 'დამატებითი სერვისები', ru: 'Доп. услуги' })}
-          </p>
-          {(activeSub.addons ?? []).map((a) => {
-            const on = isSelected(a.key);
+        {/* Rooms — divided rows */}
+        <div className="divide-y divide-[var(--hm-border-subtle)]">
+          {(activeSub.services ?? []).map((svc) => {
+            const isArea = AREA_UNITS.has((svc.unit || '').toLowerCase());
+            const qty = qtyOf(svc.key);
             return (
-              <button
-                key={a.key}
-                type="button"
-                onClick={() => setLine(a, on ? 0 : 1)}
-                className={`w-full flex items-center justify-between gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors ${
-                  on
-                    ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5'
-                    : 'border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] hover:border-[var(--hm-brand-500)]/50'
-                }`}
+              <div
+                key={svc.key}
+                className="flex items-center justify-between gap-3 px-4 py-3"
               >
-                <span className="flex items-center gap-2 min-w-0">
-                  <span
-                    className={`h-5 w-5 rounded-md border flex items-center justify-center flex-shrink-0 ${
-                      on
-                        ? 'bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)]'
-                        : 'border-[var(--hm-border)]'
-                    }`}
-                  >
-                    {on && <Check className="w-3.5 h-3.5 text-white" />}
-                  </span>
-                  <span className="text-sm text-[var(--hm-fg-primary)] truncate">
-                    {label(a)}
-                  </span>
-                </span>
-                <span className="text-sm font-medium text-[var(--hm-brand-500)] flex-shrink-0">
-                  +{a.basePrice}
-                  {sym}
-                </span>
-              </button>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-[var(--hm-fg-primary)] truncate">
+                    {label(svc)}
+                  </p>
+                  <p className="text-xs text-[var(--hm-fg-muted)]">
+                    {svc.basePrice}
+                    {sym}
+                    {isArea ? ` / ${pick({ en: svc.unitName ?? 'm²', ka: svc.unitNameKa ?? 'მ²' })}` : ''}
+                  </p>
+                </div>
+
+                {isArea ? (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      min={0}
+                      inputMode="numeric"
+                      value={qty || ''}
+                      onChange={(e) => {
+                        const n = parseInt(e.target.value);
+                        setLine(svc, isNaN(n) || n < 0 ? 0 : n);
+                      }}
+                      placeholder="0"
+                      className="w-16 h-9 rounded-lg border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-secondary)] text-center text-sm text-[var(--hm-fg-primary)]"
+                    />
+                    <span className="text-xs text-[var(--hm-fg-muted)]">მ²</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setLine(svc, Math.max(0, qty - 1))}
+                      disabled={qty <= 0}
+                      className="h-8 w-8 rounded-full border border-[var(--hm-border-subtle)] flex items-center justify-center text-[var(--hm-fg-secondary)] disabled:opacity-40 hover:border-[var(--hm-brand-500)] transition-colors"
+                      aria-label="−"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className="w-6 text-center text-sm font-semibold text-[var(--hm-fg-primary)]">
+                      {qty}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setLine(svc, qty + 1)}
+                      className="h-8 w-8 rounded-full border border-[var(--hm-border-subtle)] flex items-center justify-center text-[var(--hm-fg-secondary)] hover:border-[var(--hm-brand-500)] transition-colors"
+                      aria-label="+"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
-      )}
 
-      {/* Live total */}
-      <div className="flex items-center justify-between rounded-xl bg-[var(--hm-brand-500)]/10 px-4 py-3">
-        <span className="text-sm font-medium text-[var(--hm-fg-secondary)]">
-          {pick({ en: 'Total', ka: 'ჯამი', ru: 'Итого' })}
-        </span>
-        <span className="text-lg font-bold text-[var(--hm-brand-500)]">
-          {total.toLocaleString()} {sym}
-        </span>
+        {/* Add-ons — divided rows in the same card */}
+        {(activeSub.addons ?? []).length > 0 && (
+          <div className="border-t" style={{ borderColor: 'var(--hm-border-subtle)' }}>
+            <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--hm-fg-muted)]">
+              {pick({ en: 'Add-ons', ka: 'დამატებითი სერვისები', ru: 'Доп. услуги' })}
+            </p>
+            <div className="divide-y divide-[var(--hm-border-subtle)]">
+              {(activeSub.addons ?? []).map((a) => {
+                const on = isSelected(a.key);
+                return (
+                  <button
+                    key={a.key}
+                    type="button"
+                    onClick={() => setLine(a, on ? 0 : 1)}
+                    className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--hm-bg-secondary)]/40"
+                  >
+                    <span className="flex items-center gap-2.5 min-w-0">
+                      <span
+                        className={`h-5 w-5 rounded-md border flex items-center justify-center flex-shrink-0 ${
+                          on
+                            ? 'bg-[var(--hm-brand-500)] border-[var(--hm-brand-500)]'
+                            : 'border-[var(--hm-border)]'
+                        }`}
+                      >
+                        {on && <Check className="w-3.5 h-3.5 text-white" />}
+                      </span>
+                      <span className="text-sm text-[var(--hm-fg-primary)] truncate">
+                        {label(a)}
+                      </span>
+                    </span>
+                    <span className="text-sm font-medium text-[var(--hm-brand-500)] flex-shrink-0">
+                      +{a.basePrice}
+                      {sym}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
