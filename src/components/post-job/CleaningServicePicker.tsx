@@ -143,7 +143,10 @@ export default function CleaningServicePicker({
           ka: activeSub.description.ka,
           ru: activeSub.description.ru,
         }).trim().length > 0 && (
-          <div className="rounded-xl bg-[var(--hm-bg-secondary)] p-3 sm:p-4 text-xs sm:text-sm text-[var(--hm-fg-secondary)] whitespace-pre-line leading-relaxed">
+          <div
+            className="rounded-2xl border bg-[var(--hm-bg-elevated)] p-3 sm:p-4 text-xs sm:text-sm text-[var(--hm-fg-secondary)] whitespace-pre-line leading-relaxed"
+            style={{ borderColor: 'var(--hm-border-subtle)' }}
+          >
             {pick({
               en: activeSub.description.en,
               ka: activeSub.description.ka,
@@ -160,7 +163,8 @@ export default function CleaningServicePicker({
           return (
             <div
               key={svc.key}
-              className="flex items-center justify-between gap-3 rounded-xl border border-[var(--hm-border)] px-3 py-2.5"
+              className="flex items-center justify-between gap-3 rounded-2xl border bg-[var(--hm-bg-elevated)] px-3 py-2.5"
+              style={{ borderColor: 'var(--hm-border-subtle)' }}
             >
               <div className="min-w-0">
                 <p className="text-sm font-medium text-[var(--hm-fg-primary)] truncate">
@@ -231,10 +235,10 @@ export default function CleaningServicePicker({
                 key={a.key}
                 type="button"
                 onClick={() => setLine(a, on ? 0 : 1)}
-                className={`w-full flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                className={`w-full flex items-center justify-between gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors ${
                   on
                     ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/5'
-                    : 'border-[var(--hm-border)] hover:border-[var(--hm-brand-500)]/50'
+                    : 'border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] hover:border-[var(--hm-brand-500)]/50'
                 }`}
               >
                 <span className="flex items-center gap-2 min-w-0">
