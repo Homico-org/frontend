@@ -98,6 +98,46 @@ export default function ProfessionalsPage() {
   // for the same setResults. Also kills stale filter-change requests
   // if the user changes a filter mid-fetch.
   const fetchProsAbortRef = useRef<AbortController | null>(null);
+
+  // Grouped-random ordering seed. The backend shuffles the default
+  // "recommended" list randomly WITHIN each priority tier (partner → featured →
+  // premium → portfolio) using this seed. We keep ONE seed for the whole browse
+  // (passed on every page) so pagination stays consistent, generate a fresh one
+  // on each visit/refresh (new order), and reuse the saved seed on back-
+  // navigation so the restored list matches what the user just saw.
+  const browseSeedRef = useRef<number | null>(null);
+  const getBrowseSeed = useCallback(() => {
+    if (browseSeedRef.current != null) return browseSeedRef.current;
+    let seed: number | null = null;
+    if (typeof window !== "undefined") {
+      try {
+        const navType = (
+          performance.getEntriesByType(
+            "navigation",
+          )[0] as PerformanceNavigationTiming | undefined
+        )?.type;
+        if (navType === "back_forward") {
+          const raw = sessionStorage.getItem("browseSeed");
+          if (raw) seed = parseInt(raw, 10);
+        }
+      } catch {
+        /* ignore */
+      }
+      if (seed == null || !Number.isFinite(seed)) {
+        seed = Math.floor(Math.random() * 1_000_000_000);
+      }
+      try {
+        sessionStorage.setItem("browseSeed", String(seed));
+      } catch {
+        /* ignore */
+      }
+    } else {
+      seed = 0;
+    }
+    browseSeedRef.current = seed;
+    return seed;
+  }, []);
+
   const fetchProfessionals = useCallback(
     async (pageNum: number, reset = false, fetchLimit = 12) => {
       fetchProsAbortRef.current?.abort();
@@ -128,6 +168,10 @@ export default function ProfessionalsPage() {
         if (!showAll) params.append("completeOnly", "true");
         // "Homico Partner" filter: only the bookable, contracted pros.
         if (partnersOnly) params.append("partnersOnly", "true");
+        // Seed for grouped-random ordering of the default "recommended" sort.
+        // Same seed across pages = consistent pagination; backend ignores it
+        // for explicit sorts (rating/price/newest).
+        params.append("seed", getBrowseSeed().toString());
 
         const response = await api.get(`/users/pros?${params.toString()}`, {
           signal: controller.signal,
@@ -167,6 +211,7 @@ export default function ProfessionalsPage() {
       country,
       showAll,
       partnersOnly,
+      getBrowseSeed,
     ],
   );
 
