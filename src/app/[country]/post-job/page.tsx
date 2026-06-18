@@ -2018,6 +2018,19 @@ function PostJobPageContent() {
                 </Button>
               )}
 
+              {/* Running total — always visible next to the CTA so the price
+                  stays in view while scrolling the service list. */}
+              {serviceBudgetTotal > 0 && (
+                <div className="flex items-baseline gap-1.5 min-w-0">
+                  <span className="text-[11px] uppercase tracking-wide text-[var(--hm-fg-muted)] hidden sm:inline">
+                    {t('common.total')}
+                  </span>
+                  <span className="text-base sm:text-lg font-bold text-[var(--hm-brand-500)] whitespace-nowrap">
+                    {serviceBudgetTotal.toLocaleString()}{sym}
+                  </span>
+                </div>
+              )}
+
               <Button
                 onClick={handleNext}
                 disabled={
