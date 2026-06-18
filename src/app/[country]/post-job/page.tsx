@@ -927,7 +927,7 @@ function PostJobPageContent() {
   // the viewport bottom; with the footer now pinned to bottom-0
   // the larger padding left an empty gap.
   return (
-    <div className="flex flex-col min-h-screen pb-20 lg:pb-14 bg-[var(--hm-bg-page)]">
+    <div className="flex flex-col min-h-screen pb-36 lg:pb-32 bg-[var(--hm-bg-page)]">
       {/* Page Title + Progress */}
       <div className="bg-[var(--hm-bg-elevated)] border-b border-[var(--hm-border-subtle)] sticky top-14 z-40">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pt-3 pb-3">
