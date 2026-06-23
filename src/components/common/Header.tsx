@@ -1064,15 +1064,18 @@ export default function Header({
             <MarketplaceSelector hideCountry={!features.marketplaceSelector} />
           </div>
 
-          {/* Theme + Language on mobile/tablet (<lg). Desktop has both in the
-              block above; mirrored here on mobile (2026-06-17, per Bjavakh)
-              because the logged-in avatar dropdown has neither — so a signed-in
-              mobile user otherwise had no way to switch theme/language from the
-              header. Same compact components as desktop. */}
-          <div className="flex lg:hidden items-center gap-1.5">
-            <ThemeToggle />
-            <MarketplaceSelector hideCountry={!features.marketplaceSelector} />
-          </div>
+          {/* Theme + Language on mobile/tablet (<lg) — SIGNED-IN ONLY. The
+              logged-in avatar dropdown has neither, so a signed-in mobile user
+              otherwise had no header way to switch theme/language (2026-06-17,
+              per Bjavakh). Logged-out users already get both in the burger menu
+              below, so gating this to isAuthenticated avoids a duplicate
+              selector for them. Same compact components as desktop. */}
+          {isAuthenticated && (
+            <div className="flex lg:hidden items-center gap-1.5">
+              <ThemeToggle />
+              <MarketplaceSelector hideCountry={!features.marketplaceSelector} />
+            </div>
+          )}
 
           {/* Cart - shows only when it has items, opens the shared drawer from
               anywhere in the app. */}
