@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/input';
 import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCategories } from '@/contexts/CategoriesContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
@@ -28,7 +29,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type Locale = 'en' | 'ka' | 'ru';
 type StatusFilter = 'pending' | 'approved' | 'rejected' | 'all';
@@ -101,6 +102,11 @@ const TXT = {
   reasonLabel: { en: 'Reason', ka: 'მიზეზი', ru: 'Причина' },
   empty_value: { en: '(empty)', ka: '(ცარიელი)', ru: '(пусто)' },
   items: { en: 'item(s)', ka: 'ერთეული', ru: 'эл.' },
+  added: { en: 'Added', ka: 'დაემატა', ru: 'Добавлено' },
+  removed: { en: 'Removed', ka: 'წაიშალა', ru: 'Удалено' },
+  modified: { en: 'Modified', ka: 'შეიცვალა', ru: 'Изменено' },
+  unchanged: { en: 'unchanged', ka: 'უცვლელი', ru: 'без изменений' },
+  noItemChanges: { en: 'No item changes', ka: 'ცვლილება არ არის', ru: 'Нет изменений' },
 };
 
 function ModerationContent() {
@@ -110,6 +116,26 @@ function ModerationContent() {
   const router = useRouter();
   const L = (k: keyof typeof TXT) => TXT[k][(locale as Locale)] || TXT[k].en;
   const fieldLabel = (f: string) => getProfileFieldLabel(f, locale);
+  const { categories } = useCategories();
+
+  // Resolve a catalog key (service / subcategory / category) to its localized
+  // name, so the moderation diff shows "Socket install" rather than the raw
+  // `serviceKey` (which is all the servicePricing entries carry).
+  const keyToName = useMemo(() => {
+    const map = new Map<string, string>();
+    const loc = (en?: string, ka?: string, ru?: string) =>
+      (locale === 'ka' ? ka : locale === 'ru' ? ru : en) || en || ka || '';
+    for (const cat of categories) {
+      if (cat.key) map.set(cat.key, loc(cat.name, cat.nameKa));
+      for (const sub of cat.subcategories ?? []) {
+        if (sub.key) map.set(sub.key, loc(sub.name, sub.nameKa));
+        for (const svc of sub.services ?? []) {
+          if (svc.key) map.set(svc.key, loc(svc.name, svc.nameKa, svc.nameRu));
+        }
+      }
+    }
+    return map;
+  }, [categories, locale]);
 
   const [items, setItems] = useState<ChangeRequest[]>([]);
   const [stats, setStats] = useState<ModStats | null>(null);
@@ -242,6 +268,140 @@ function ModerationContent() {
     } catch {
       return String(v);
     }
+  };
+
+  // Stable identity for one array item (so we can diff old vs new by key,
+  // not by position). Falls back to a JSON hash for shapeless items.
+  const itemKey = (it: unknown, i: number): string => {
+    if (it && typeof it === 'object') {
+      const o = it as Record<string, unknown>;
+      const k =
+        o.id ?? o.serviceId ?? o.key ?? o.serviceKey ?? o.subcategoryKey ?? o.title;
+      if (k != null) return String(k);
+      try { return JSON.stringify(it); } catch { return `i${i}`; }
+    }
+    return String(it ?? `i${i}`);
+  };
+
+  // Localized name for one array item. Resolves a bare serviceKey /
+  // subcategoryKey (all that servicePricing carries) to the catalog name.
+  const itemName = (it: unknown): string => {
+    if (it == null) return L('empty_value');
+    if (typeof it !== 'object') return String(it);
+    const o = it as Record<string, any>;
+    const direct = o.nameKa || o.name || o.title || o.label?.ka || o.label?.en;
+    if (direct) return String(direct);
+    const viaKey =
+      (o.serviceKey && keyToName.get(o.serviceKey)) ||
+      (o.subcategoryKey && keyToName.get(o.subcategoryKey)) ||
+      (o.key && keyToName.get(o.key));
+    if (viaKey) return String(viaKey);
+    const raw = o.serviceKey || o.subcategoryKey || o.key;
+    if (raw) return String(raw);
+    try { return JSON.stringify(it); } catch { return String(it); }
+  };
+
+  // The "value" part of an item (price / image count) shown after the name.
+  const itemDetail = (it: unknown): string => {
+    if (!it || typeof it !== 'object') return '';
+    const o = it as Record<string, any>;
+    if (typeof o.price === 'number') {
+      return typeof o.priceMax === 'number' && o.priceMax !== o.price
+        ? `${o.price}-${o.priceMax}₾`
+        : `${o.price}₾`;
+    }
+    if (Array.isArray(o.images)) return `${o.images.length} 🖼`;
+    return '';
+  };
+
+  // Name + detail on one line (added / removed rows).
+  const itemLabel = (it: unknown): string => {
+    const d = itemDetail(it);
+    return d ? `${itemName(it)} — ${d}` : itemName(it);
+  };
+
+  // Render an old→new diff of an array of objects: what was added, removed and
+  // modified — instead of a bare "5 items vs 5 items" count that hides the
+  // actual change.
+  const renderArrayDiff = (oldV: unknown, newV: unknown) => {
+    const oldArr = Array.isArray(oldV) ? oldV : [];
+    const newArr = Array.isArray(newV) ? newV : [];
+    const oldMap = new Map(oldArr.map((it, i) => [itemKey(it, i), it]));
+    const newMap = new Map(newArr.map((it, i) => [itemKey(it, i), it]));
+    const added: unknown[] = [];
+    const removed: unknown[] = [];
+    const changed: { old: unknown; next: unknown }[] = [];
+    for (const [k, it] of oldMap) {
+      if (!newMap.has(k)) removed.push(it);
+      else if (JSON.stringify(it) !== JSON.stringify(newMap.get(k)))
+        changed.push({ old: it, next: newMap.get(k) });
+    }
+    for (const [k, it] of newMap) if (!oldMap.has(k)) added.push(it);
+    const unchanged = oldArr.length - removed.length - changed.length;
+
+    if (!added.length && !removed.length && !changed.length) {
+      return (
+        <p className="text-sm" style={{ color: THEME.textMuted }}>
+          {L('noItemChanges')} ({oldArr.length} {L('items')})
+        </p>
+      );
+    }
+    return (
+      <div className="space-y-1 text-sm">
+        {added.map((it, i) => (
+          <div key={`a${i}`} className="flex gap-1.5" style={{ color: THEME.success }}>
+            <span className="font-bold flex-shrink-0">+</span>
+            <span className="break-words">{itemLabel(it)}</span>
+          </div>
+        ))}
+        {removed.map((it, i) => (
+          <div key={`r${i}`} className="flex gap-1.5" style={{ color: THEME.error }}>
+            <span className="font-bold flex-shrink-0">−</span>
+            <span className="break-words line-through">{itemLabel(it)}</span>
+          </div>
+        ))}
+        {changed.map((c, i) => {
+          const sameName = itemName(c.old) === itemName(c.next);
+          const dOld = itemDetail(c.old);
+          const dNew = itemDetail(c.next);
+          return (
+            <div key={`c${i}`} className="flex gap-1.5" style={{ color: THEME.warning }}>
+              <span className="font-bold flex-shrink-0">~</span>
+              <span className="break-words">
+                {sameName ? (
+                  dOld !== dNew ? (
+                    <>
+                      {itemName(c.old)}{' '}
+                      <span style={{ color: THEME.textMuted }}>{dOld || '…'} → {dNew || '…'}</span>
+                    </>
+                  ) : (
+                    itemName(c.old)
+                  )
+                ) : (
+                  <>
+                    {itemLabel(c.old)} <span style={{ color: THEME.textMuted }}>→</span> {itemLabel(c.next)}
+                  </>
+                )}
+              </span>
+            </div>
+          );
+        })}
+        {unchanged > 0 && (
+          <div className="text-xs pt-1" style={{ color: THEME.textMuted }}>
+            {unchanged} {L('unchanged')}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // A field is an object-array diff when either side is an array whose items
+  // are objects (services, pricing, portfolio). Primitive arrays / scalars
+  // keep the simple before/after view.
+  const isObjectArrayField = (a: unknown, b: unknown): boolean => {
+    const probe = (v: unknown) =>
+      Array.isArray(v) && v.some((x) => x && typeof x === 'object');
+    return probe(a) || probe(b);
   };
 
   const handleStatusCardClick = (next: StatusFilter) => {
@@ -522,16 +682,24 @@ function ModerationContent() {
                 {selected.changes.map((c) => (
                   <div key={c.field} className="rounded-xl p-3" style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}>
                     <p className="text-xs font-semibold mb-2" style={{ color: THEME.primary }}>{fieldLabel(c.field)}</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <div className="rounded-lg p-2" style={{ background: `${THEME.error}10`, border: `1px solid ${THEME.error}30` }}>
-                        <p className="text-[10px] uppercase tracking-wide mb-1" style={{ color: THEME.textMuted }}>{L('before')}</p>
-                        <p className="text-sm break-words" style={{ color: THEME.text }}>{formatValue(c.oldValue)}</p>
+                    {isObjectArrayField(c.oldValue, c.newValue) ? (
+                      // Array of objects (services, pricing, portfolio): show the
+                      // actual added/removed/modified items, not just a count.
+                      <div className="rounded-lg p-2" style={{ background: THEME.surfaceLight, border: `1px solid ${THEME.border}` }}>
+                        {renderArrayDiff(c.oldValue, c.newValue)}
                       </div>
-                      <div className="rounded-lg p-2" style={{ background: `${THEME.success}10`, border: `1px solid ${THEME.success}30` }}>
-                        <p className="text-[10px] uppercase tracking-wide mb-1" style={{ color: THEME.textMuted }}>{L('after')}</p>
-                        <p className="text-sm break-words" style={{ color: THEME.text }}>{formatValue(c.newValue)}</p>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="rounded-lg p-2" style={{ background: `${THEME.error}10`, border: `1px solid ${THEME.error}30` }}>
+                          <p className="text-[10px] uppercase tracking-wide mb-1" style={{ color: THEME.textMuted }}>{L('before')}</p>
+                          <p className="text-sm break-words" style={{ color: THEME.text }}>{formatValue(c.oldValue)}</p>
+                        </div>
+                        <div className="rounded-lg p-2" style={{ background: `${THEME.success}10`, border: `1px solid ${THEME.success}30` }}>
+                          <p className="text-[10px] uppercase tracking-wide mb-1" style={{ color: THEME.textMuted }}>{L('after')}</p>
+                          <p className="text-sm break-words" style={{ color: THEME.text }}>{formatValue(c.newValue)}</p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
