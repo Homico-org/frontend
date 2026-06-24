@@ -3507,7 +3507,16 @@
     "colApproval": "დადასტურება",
     "apprApproved": "დადასტურდა",
     "apprChanges": "შესაცვლელი",
-    "apprAwaiting": "მოლოდინში"
+    "apprAwaiting": "მოლოდინში",
+    "selAddToSchedule": "ცხრილში დამატება",
+    "selOnSchedule": "ცხრილშია",
+    "selAddedToSchedule": "ცხრილში დაემატა",
+    "overBudget": "{amount} გადაჭარბება",
+    "underBudget": "{amount} დარჩა",
+    "groupBy": "დაჯგუფება",
+    "groupCategory": "კატეგორია",
+    "groupRoom": "სივრცე",
+    "groupSupplier": "მომწოდებელი"
   },
   "polls": {
     "title": "გამოკითხვები",

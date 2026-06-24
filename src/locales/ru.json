@@ -3502,7 +3502,16 @@
     "colApproval": "Согласование",
     "apprApproved": "Одобрено",
     "apprChanges": "На правку",
-    "apprAwaiting": "Ожидает"
+    "apprAwaiting": "Ожидает",
+    "selAddToSchedule": "В таблицу",
+    "selOnSchedule": "В таблице",
+    "selAddedToSchedule": "Добавлено в таблицу",
+    "overBudget": "{amount} превышение",
+    "underBudget": "{amount} осталось",
+    "groupBy": "Группировка",
+    "groupCategory": "Категория",
+    "groupRoom": "Помещение",
+    "groupSupplier": "Поставщик"
   },
   "polls": {
     "title": "Опросы",

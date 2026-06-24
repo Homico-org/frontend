@@ -3507,7 +3507,16 @@
     "colApproval": "Sign-off",
     "apprApproved": "Approved",
     "apprChanges": "Changes",
-    "apprAwaiting": "Awaiting"
+    "apprAwaiting": "Awaiting",
+    "selAddToSchedule": "Add to schedule",
+    "selOnSchedule": "On the schedule",
+    "selAddedToSchedule": "Added to the schedule",
+    "overBudget": "{amount} over",
+    "underBudget": "{amount} left",
+    "groupBy": "Group by",
+    "groupCategory": "Category",
+    "groupRoom": "Room",
+    "groupSupplier": "Supplier"
   },
   "polls": {
     "title": "Polls",

@@ -117,6 +117,8 @@ interface ProjectShoppingProps {
   canManage: boolean;
   /** The client (owner) - only they can sign off on schedule line items. */
   canApprove?: boolean;
+  /** Project budget ceiling (budgetMax) for the variance readout. */
+  budget?: number;
   onChanged: () => Promise<void> | void;
 }
 
@@ -127,6 +129,7 @@ export default function ProjectShopping({
   rooms = [],
   canManage,
   canApprove = false,
+  budget,
   onChanged,
 }: ProjectShoppingProps) {
   const { t, locale } = useLanguage();
@@ -140,6 +143,10 @@ export default function ProjectShopping({
   const [showHistory, setShowHistory] = useState(false);
   // Card grid (browse) vs schedule table (the FF&E procurement master view).
   const [view, setView] = useState<'cards' | 'schedule'>('cards');
+  // How the list is grouped: by category (default), room, or supplier (the PO view).
+  const [groupBy, setGroupBy] = useState<'category' | 'room' | 'supplier'>(
+    'category',
+  );
   // The add/edit modal: { item } edits, { category } adds into that group.
   const [modal, setModal] = useState<{
     item?: ProjectProduct;
@@ -392,21 +399,42 @@ export default function ProjectShopping({
     [products],
   );
 
-  // Group the visible products into a category tree. Uncategorized sinks last.
-  const groups = useMemo(() => {
-    const m = new Map<string, ProjectProduct[]>();
+  // Group the visible products by the selected dimension (category / room /
+  // supplier). Each entry is [key, label, items]; the empty group sinks last.
+  const groups = useMemo<[string, string, ProjectProduct[]][]>(() => {
+    const m = new Map<string, [string, ProjectProduct[]]>();
     for (const p of filtered) {
-      const key = (p.category || '').trim();
-      const arr = m.get(key) ?? [];
-      arr.push(p);
-      m.set(key, arr);
+      const key =
+        groupBy === 'room'
+          ? p.roomId || ''
+          : groupBy === 'supplier'
+            ? (p.supplierKey || p.vendor || '').toLowerCase()
+            : (p.category || '').trim();
+      const label =
+        groupBy === 'room'
+          ? roomName(p.roomId) || t('projects.wholeObject')
+          : groupBy === 'supplier'
+            ? p.vendor || p.supplierKey || t('projects.shopUncategorized')
+            : key || t('projects.shopUncategorized');
+      const entry = m.get(key) ?? [label, []];
+      entry[1].push(p);
+      m.set(key, entry);
     }
-    return [...m.entries()].sort((a, b) => {
-      if (a[0] === '') return 1;
-      if (b[0] === '') return -1;
-      return a[0].localeCompare(b[0]);
-    });
-  }, [filtered]);
+    return [...m.entries()]
+      .map(
+        ([key, [label, items]]): [string, string, ProjectProduct[]] => [
+          key,
+          label,
+          items,
+        ],
+      )
+      .sort((a, b) => {
+        if (a[0] === '') return 1;
+        if (b[0] === '') return -1;
+        return a[1].localeCompare(b[1]);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered, groupBy, rooms]);
 
   // Room scope pills: All / Whole object / one per room (only when rooms exist).
   const roomOptions = [
@@ -754,6 +782,24 @@ export default function ProjectShopping({
               <ShoppingCart className="h-3.5 w-3.5" />
               {products.length}
             </span>
+            {budget != null && budget > 0 && (
+              <>
+                <span className="text-[12px] tabular-nums text-[var(--hm-fg-muted)]">
+                  / {fmt(budget)}
+                </span>
+                <span
+                  className={`text-[12px] font-medium tabular-nums ${
+                    total > budget
+                      ? 'text-[var(--hm-error-500)]'
+                      : 'text-[var(--hm-success-600)]'
+                  }`}
+                >
+                  {total > budget
+                    ? t('projects.overBudget', { amount: fmt(total - budget) })
+                    : t('projects.underBudget', { amount: fmt(budget - total) })}
+                </span>
+              </>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1">
             {STATUSES.map((s) => (
@@ -886,20 +932,49 @@ export default function ProjectShopping({
         </div>
       )}
 
+      {/* Group-by selector (category / room / supplier-as-PO) */}
+      {products.length > 0 && (
+        <div className="mb-3 flex items-center gap-2 text-[12px]">
+          <span className="text-[var(--hm-fg-muted)]">
+            {t('projects.groupBy')}
+          </span>
+          <div className="inline-flex rounded-full bg-[var(--hm-bg-tertiary)] p-0.5">
+            {(['category', 'room', 'supplier'] as const).map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setGroupBy(g)}
+                className={`rounded-full px-2.5 py-1 font-medium transition-colors ${
+                  groupBy === g
+                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[0_1px_2px_rgba(17,16,13,0.06)]'
+                    : 'text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
+                }`}
+              >
+                {g === 'category'
+                  ? t('projects.groupCategory')
+                  : g === 'room'
+                    ? t('projects.groupRoom')
+                    : t('projects.groupSupplier')}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {filtered.length === 0 ? (
         <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-10 text-center text-[14px] text-[var(--hm-fg-muted)]">
           {t('projects.shopEmpty')}
         </div>
       ) : (
         <div className="divide-y divide-[var(--hm-border-subtle)] overflow-hidden rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]">
-          {groups.map(([cat, items]) => {
+          {groups.map(([cat, label, items]) => {
             const open = !collapsed.has(cat);
             const named = cat !== '';
+            const isCat = groupBy === 'category';
             const sub = items.reduce(
               (acc, p) => acc + (p.unitPrice || 0) * (p.qty || 0),
               0,
             );
-            const label = cat || t('projects.shopUncategorized');
             return (
               <div key={cat || '__none__'}>
                 <div className="flex items-center gap-2 px-3 py-2">
@@ -968,7 +1043,7 @@ export default function ProjectShopping({
                       <span className="shrink-0 text-[13px] font-semibold tabular-nums text-[var(--hm-fg-primary)]">
                         {fmt(sub)}
                       </span>
-                      {canManage && named && (
+                      {canManage && named && isCat && (
                         <button
                           type="button"
                           onClick={() => {
@@ -981,7 +1056,7 @@ export default function ProjectShopping({
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                       )}
-                      {canManage && (
+                      {canManage && isCat && (
                         <button
                           type="button"
                           onClick={() => setModal({ category: cat })}
