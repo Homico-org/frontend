@@ -1629,6 +1629,14 @@
         "message": "თქვენი პროფესიონალური პროფილი დამტკიცდა",
         "messageWithNote": "{notes}"
       },
+      "profile_changes_approved": {
+        "title": "პროფილის ცვლილებები დამტკიცდა",
+        "message": "თქვენ მიერ მოთხოვნილი ცვლილებები უკვე აქტიურია."
+      },
+      "profile_changes_rejected": {
+        "title": "პროფილის ცვლილებები არ დამტკიცდა",
+        "message": "თქვენ მიერ მოთხოვნილი ცვლილებები არ დამტკიცდა. მიზეზი: {reason}"
+      },
       "profile_rejected": {
         "title": "პროფილს განახლება სჭირდება",
         "message": "თქვენი პროფილი არ დამტკიცდა",
@@ -3473,7 +3481,33 @@
     "importChange": "შეცვლა",
     "importAnother": "სხვა ფაილი",
     "importCommit": "{n} პოზიციის იმპორტი",
-    "importDone": "იმპორტირდა {items} სერვისი {steps} ეტაპში"
+    "importDone": "იმპორტირდა {items} სერვისი {steps} ეტაპში",
+    "sku": "კოდი / SKU",
+    "skuHint": "მოდელი ან მომწოდებლის კოდი",
+    "dimensions": "ზომები",
+    "dimensionsHint": "მაგ. 120 x 60 x H85 სმ",
+    "leadTime": "მიწოდების ვადა",
+    "leadDaysUnit": "დღე",
+    "eta": "მიწოდების თარიღი",
+    "viewCards": "ბარათები",
+    "viewSchedule": "ცხრილი",
+    "colItem": "ნივთი",
+    "colRef": "კოდი",
+    "colQty": "რაოდ.",
+    "colUnit": "ფასი",
+    "colTotal": "ჯამი",
+    "colLead": "ვადა",
+    "colEta": "მიწოდება",
+    "colStatus": "სტატუსი",
+    "leadDays": "{n} დღე",
+    "importFromLink": "ბმულიდან შევსება",
+    "importedFromLink": "ბმულიდან შეივსო",
+    "importFailed": "ბმულის წაკითხვა ვერ მოხერხდა",
+    "export": "ექსპორტი",
+    "colApproval": "დადასტურება",
+    "apprApproved": "დადასტურდა",
+    "apprChanges": "შესაცვლელი",
+    "apprAwaiting": "მოლოდინში"
   },
   "polls": {
     "title": "გამოკითხვები",
@@ -5430,6 +5464,29 @@
       "reviewSubmit": "ახალი შეფასებები",
       "registerPro": "ახალი ოსტატები",
       "registerClient": "ახალი კლიენტები"
+    }
+  },
+  "blog": {
+    "eyebrow": "ბლოგი",
+    "title": "რემონტი ვარაუდის გარეშე",
+    "subtitle": "პრაქტიკული რჩევები, რეალური ბიუჯეტები და ისტორიები თბილისური სახლებიდან.",
+    "featured": "გამორჩეული",
+    "read": "კითხვა",
+    "minRead": "{min} წთ კითხვა",
+    "all": "ყველა",
+    "back": "ყველა სტატია",
+    "writtenBy": "ავტორი",
+    "share": "გაზიარება",
+    "keepReading": "სხვა სტატიები",
+    "ctaTitle": "რემონტს გეგმავთ?",
+    "ctaText": "იპოვეთ გადამოწმებული ოსტატი და მართეთ მთელი პროექტი ერთ ადგილას.",
+    "ctaButton": "ხელოსნის პოვნა",
+    "cat": {
+      "renovation": "რემონტი",
+      "design": "დიზაინი",
+      "budget": "ბიუჯეტი",
+      "guides": "გზამკვლევი",
+      "stories": "ისტორიები"
     }
   }
 }

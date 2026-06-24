@@ -1629,6 +1629,14 @@
         "message": "Your professional profile has been approved",
         "messageWithNote": "{notes}"
       },
+      "profile_changes_approved": {
+        "title": "Profile changes approved",
+        "message": "The changes you requested to your profile have been approved and are now live."
+      },
+      "profile_changes_rejected": {
+        "title": "Profile changes not approved",
+        "message": "Your requested profile changes were not approved. Reason: {reason}"
+      },
       "profile_rejected": {
         "title": "Profile Needs Updates",
         "message": "Your profile was not approved",
@@ -3473,7 +3481,33 @@
     "deliveryFreeHint": "Add {amount} for free delivery",
     "delivery_all_eta": "5-9 days",
     "delivery_bulk_eta": "3-7 days",
-    "delivery_by_items_eta": "2-6 days"
+    "delivery_by_items_eta": "2-6 days",
+    "sku": "Ref / SKU",
+    "skuHint": "Model or supplier code",
+    "dimensions": "Dimensions",
+    "dimensionsHint": "e.g. 120 x 60 x H85 cm",
+    "leadTime": "Lead time",
+    "leadDaysUnit": "days",
+    "eta": "Delivery date",
+    "viewCards": "Cards",
+    "viewSchedule": "Schedule",
+    "colItem": "Item",
+    "colRef": "Ref",
+    "colQty": "Qty",
+    "colUnit": "Unit",
+    "colTotal": "Total",
+    "colLead": "Lead",
+    "colEta": "ETA",
+    "colStatus": "Status",
+    "leadDays": "{n} d",
+    "importFromLink": "Fill from link",
+    "importedFromLink": "Filled from the link",
+    "importFailed": "Couldn't read that link",
+    "export": "Export",
+    "colApproval": "Sign-off",
+    "apprApproved": "Approved",
+    "apprChanges": "Changes",
+    "apprAwaiting": "Awaiting"
   },
   "polls": {
     "title": "Polls",
@@ -5431,6 +5465,29 @@
       "reviewSubmit": "Reviews submitted",
       "registerPro": "New pros",
       "registerClient": "New clients"
+    }
+  },
+  "blog": {
+    "eyebrow": "Journal",
+    "title": "Renovation, without the guesswork",
+    "subtitle": "Practical guides, real budgets, and stories from Tbilisi homes.",
+    "featured": "Featured",
+    "read": "Read",
+    "minRead": "{min} min read",
+    "all": "All",
+    "back": "All articles",
+    "writtenBy": "Written by",
+    "share": "Share",
+    "keepReading": "Keep reading",
+    "ctaTitle": "Planning a renovation?",
+    "ctaText": "Find a verified pro and run the whole project in one place.",
+    "ctaButton": "Find a pro",
+    "cat": {
+      "renovation": "Renovation",
+      "design": "Design",
+      "budget": "Budget",
+      "guides": "Guides",
+      "stories": "Stories"
     }
   }
 }

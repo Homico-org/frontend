@@ -1631,6 +1631,14 @@
         "message": "Ваш профессиональный профиль одобрен",
         "messageWithNote": "{notes}"
       },
+      "profile_changes_approved": {
+        "title": "Изменения профиля одобрены",
+        "message": "Запрошенные изменения профиля одобрены и уже активны."
+      },
+      "profile_changes_rejected": {
+        "title": "Изменения профиля не одобрены",
+        "message": "Запрошенные изменения профиля не одобрены. Причина: {reason}"
+      },
       "profile_rejected": {
         "title": "Профиль требует обновления",
         "message": "Ваш профиль не был одобрен",
@@ -3468,7 +3476,33 @@
     "importChange": "Изменить",
     "importAnother": "Другой файл",
     "importCommit": "Импортировать {n} позиций",
-    "importDone": "Импортировано {items} услуг в {steps} этапах"
+    "importDone": "Импортировано {items} услуг в {steps} этапах",
+    "sku": "Код / SKU",
+    "skuHint": "Модель или код поставщика",
+    "dimensions": "Размеры",
+    "dimensionsHint": "напр. 120 x 60 x H85 см",
+    "leadTime": "Срок поставки",
+    "leadDaysUnit": "дн.",
+    "eta": "Дата поставки",
+    "viewCards": "Карточки",
+    "viewSchedule": "Таблица",
+    "colItem": "Товар",
+    "colRef": "Код",
+    "colQty": "Кол-во",
+    "colUnit": "Цена",
+    "colTotal": "Сумма",
+    "colLead": "Срок",
+    "colEta": "Поставка",
+    "colStatus": "Статус",
+    "leadDays": "{n} дн.",
+    "importFromLink": "Заполнить по ссылке",
+    "importedFromLink": "Заполнено из ссылки",
+    "importFailed": "Не удалось прочитать ссылку",
+    "export": "Экспорт",
+    "colApproval": "Согласование",
+    "apprApproved": "Одобрено",
+    "apprChanges": "На правку",
+    "apprAwaiting": "Ожидает"
   },
   "polls": {
     "title": "Опросы",
@@ -5425,6 +5459,29 @@
       "reviewSubmit": "Новые отзывы",
       "registerPro": "Новые мастера",
       "registerClient": "Новые клиенты"
+    }
+  },
+  "blog": {
+    "eyebrow": "Журнал",
+    "title": "Ремонт без догадок",
+    "subtitle": "Практичные гайды, реальные бюджеты и истории тбилисских квартир.",
+    "featured": "Избранное",
+    "read": "Читать",
+    "minRead": "{min} мин чтения",
+    "all": "Все",
+    "back": "Все статьи",
+    "writtenBy": "Автор",
+    "share": "Поделиться",
+    "keepReading": "Другие статьи",
+    "ctaTitle": "Планируете ремонт?",
+    "ctaText": "Найдите проверенного мастера и ведите весь проект в одном месте.",
+    "ctaButton": "Найти мастера",
+    "cat": {
+      "renovation": "Ремонт",
+      "design": "Дизайн",
+      "budget": "Бюджет",
+      "guides": "Гайды",
+      "stories": "Истории"
     }
   }
 }

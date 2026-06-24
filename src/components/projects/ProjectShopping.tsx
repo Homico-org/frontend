@@ -14,9 +14,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
 import {
+  AlertTriangle,
   Check,
   ChevronDown,
   Clock,
+  Download,
   Package,
   Pencil,
   Plus,
@@ -46,6 +48,14 @@ export interface ProjectProduct {
   roomId?: string;
   stepId?: string;
   category?: string;
+  /** FF&E schedule / procurement details. */
+  sku?: string;
+  dimensions?: string;
+  leadTimeDays?: number;
+  etaDate?: string;
+  /** Client sign-off on the line item. */
+  approvalStatus?: 'none' | 'pending' | 'approved' | 'changes_requested';
+  approvedAt?: string;
   status: ProductStatus;
   note?: string;
   createdAt: string;
@@ -105,6 +115,8 @@ interface ProjectShoppingProps {
   log?: ProductLogEntry[];
   rooms?: Room[];
   canManage: boolean;
+  /** The client (owner) - only they can sign off on schedule line items. */
+  canApprove?: boolean;
   onChanged: () => Promise<void> | void;
 }
 
@@ -114,6 +126,7 @@ export default function ProjectShopping({
   log = [],
   rooms = [],
   canManage,
+  canApprove = false,
   onChanged,
 }: ProjectShoppingProps) {
   const { t, locale } = useLanguage();
@@ -125,6 +138,8 @@ export default function ProjectShopping({
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  // Card grid (browse) vs schedule table (the FF&E procurement master view).
+  const [view, setView] = useState<'cards' | 'schedule'>('cards');
   // The add/edit modal: { item } edits, { category } adds into that group.
   const [modal, setModal] = useState<{
     item?: ProjectProduct;
@@ -176,8 +191,33 @@ export default function ProjectShopping({
       return next;
     });
 
+  // Remember the view mode (cards vs schedule) per project, this device.
+  const viewKey = `homico:shop-view:${projectId}`;
+  useEffect(() => {
+    const raw = localStorage.getItem(viewKey);
+    if (raw === 'schedule' || raw === 'cards') setView(raw);
+  }, [viewKey]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(viewKey, view);
+    } catch {
+      /* ignore */
+    }
+  }, [viewKey, view]);
+
   const roomName = (roomId?: string) =>
     roomId ? rooms.find((r) => r.id === roomId)?.name : undefined;
+
+  // ETA date -> short "24 Jun"; lead time -> "14 d" (locale-aware unit).
+  const fmtEta = (iso?: string) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleDateString(
+      locale === 'en' ? 'en-US' : locale === 'ru' ? 'ru-RU' : 'ka-GE',
+      { day: 'numeric', month: 'short' },
+    );
+  };
 
   const errMsg = (err: unknown) =>
     (err as { response?: { data?: { message?: string } } })?.response?.data
@@ -194,6 +234,54 @@ export default function ProjectShopping({
   };
 
   const fmt = (n: number) => `${n.toLocaleString()} ₾`;
+
+  // Export the full schedule to CSV. UTF-8 BOM so Excel reads Georgian/Russian.
+  const exportCsv = () => {
+    const esc = (v: unknown) => {
+      const s = v == null ? '' : String(v);
+      return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const headers = [
+      'Category',
+      'Item',
+      'Ref',
+      'Room',
+      'Vendor',
+      'Dimensions',
+      'Qty',
+      'Unit price',
+      'Total',
+      'Lead (days)',
+      'ETA',
+      'Status',
+    ];
+    const rows = products.map((p) => [
+      p.category || '',
+      p.name,
+      p.sku || '',
+      roomName(p.roomId) || '',
+      p.vendor || '',
+      p.dimensions || '',
+      p.qty ?? '',
+      p.unitPrice ?? '',
+      (p.unitPrice || 0) * (p.qty || 0),
+      p.leadTimeDays ?? '',
+      p.etaDate ? p.etaDate.slice(0, 10) : '',
+      t(STATUS_LABEL_KEY[p.status]),
+    ]);
+    const csv = [headers, ...rows]
+      .map((r) => r.map(esc).join(','))
+      .join('\r\n');
+    const blob = new Blob(['﻿' + csv], {
+      type: 'text/csv;charset=utf-8;',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `schedule-${projectId}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Catalog-linked, not-yet-delivered rows can be ordered through the real
   // checkout. Map them to the cart shape CheckoutModal consumes; it re-quotes
@@ -224,6 +312,24 @@ export default function ProjectShopping({
     setBusyId(id);
     try {
       await api.patch(`/projects/${projectId}/products/${id}`, { status });
+      await onChanged();
+    } catch (err) {
+      toast.error(t('projects.tryAgain'), errMsg(err));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  // Client sign-off on a line item (approve / request changes).
+  const reviewProduct = async (
+    id: string,
+    status: 'approved' | 'changes_requested',
+  ) => {
+    setBusyId(id);
+    try {
+      await api.patch(`/projects/${projectId}/products/${id}/review`, {
+        status,
+      });
       await onChanged();
     } catch (err) {
       toast.error(t('projects.tryAgain'), errMsg(err));
@@ -386,6 +492,209 @@ export default function ProjectShopping({
     );
   };
 
+  // Schedule (FF&E) row: the procurement master view - one line per item with
+  // ref, qty, unit, total, lead time, ETA and order status.
+  const productRow = (p: ProjectProduct) => {
+    const busy = busyId === p.id;
+    const line = (p.unitPrice || 0) * (p.qty || 0);
+    const appr = p.approvalStatus || 'none';
+    return (
+      <tr key={p.id} className="align-middle text-[var(--hm-fg-primary)]">
+        <td className="px-3 py-2">
+          <div className="flex items-center gap-2.5">
+            {p.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={p.imageUrl}
+                alt=""
+                loading="lazy"
+                className="h-9 w-9 shrink-0 rounded-md object-cover ring-1 ring-[var(--hm-border-subtle)]"
+              />
+            ) : (
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]">
+                <Package className="h-4 w-4" />
+              </span>
+            )}
+            <div className="min-w-0">
+              <div className="truncate font-medium">
+                {p.url ? (
+                  <a
+                    href={p.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[var(--hm-brand-500)] hover:underline"
+                  >
+                    {p.name}
+                  </a>
+                ) : (
+                  p.name
+                )}
+              </div>
+              <div className="truncate text-[11px] text-[var(--hm-fg-muted)]">
+                {[roomName(p.roomId) || t('projects.wholeObject'), p.vendor]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td className="px-2 py-2 font-mono text-[11px] text-[var(--hm-fg-secondary)]">
+          {p.sku || '-'}
+        </td>
+        <td className="px-2 py-2 text-right tabular-nums">{p.qty}</td>
+        <td className="px-2 py-2 text-right tabular-nums text-[var(--hm-fg-secondary)]">
+          {fmt(p.unitPrice || 0)}
+        </td>
+        <td className="px-2 py-2 text-right font-semibold tabular-nums">
+          {fmt(line)}
+        </td>
+        <td className="px-2 py-2 tabular-nums text-[var(--hm-fg-secondary)]">
+          {p.leadTimeDays ? t('projects.leadDays', { n: p.leadTimeDays }) : '-'}
+        </td>
+        <td className="px-2 py-2 tabular-nums text-[var(--hm-fg-secondary)]">
+          {fmtEta(p.etaDate) || '-'}
+        </td>
+        <td className="px-2 py-2">
+          {canManage ? (
+            <div className="relative inline-block">
+              <select
+                value={p.status}
+                disabled={busy}
+                onChange={(e) =>
+                  setStatus(p.id, e.target.value as ProductStatus)
+                }
+                className={`h-7 cursor-pointer appearance-none rounded-full pl-2.5 pr-6 text-[11px] font-semibold focus:outline-none ${STATUS_PILL[p.status]}`}
+              >
+                {STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {t(STATUS_LABEL_KEY[s])}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                aria-hidden
+                className="pointer-events-none absolute right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 opacity-60"
+              />
+            </div>
+          ) : (
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[10px] font-semibold ${STATUS_PILL[p.status]}`}
+            >
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: STATUS_DOT[p.status] }}
+              />
+              {t(STATUS_LABEL_KEY[p.status])}
+            </span>
+          )}
+        </td>
+        <td className="px-2 py-2">
+          {canApprove ? (
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => reviewProduct(p.id, 'approved')}
+                disabled={busy}
+                aria-label={t('projects.approve')}
+                className={`rounded-md p-1 transition-colors ${
+                  appr === 'approved'
+                    ? 'bg-[var(--hm-success-500)]/[0.14] text-[var(--hm-success-600)]'
+                    : 'text-[var(--hm-fg-muted)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-success-600)]'
+                }`}
+              >
+                <Check className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => reviewProduct(p.id, 'changes_requested')}
+                disabled={busy}
+                aria-label={t('projects.requestChanges')}
+                className={`rounded-md p-1 transition-colors ${
+                  appr === 'changes_requested'
+                    ? 'bg-[var(--hm-warning-500)]/[0.16] text-[var(--hm-warning-600)]'
+                    : 'text-[var(--hm-fg-muted)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-warning-600)]'
+                }`}
+              >
+                <AlertTriangle className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : appr === 'approved' ? (
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[var(--hm-success-600)]">
+              <Check className="h-3.5 w-3.5" />
+              {t('projects.apprApproved')}
+            </span>
+          ) : appr === 'changes_requested' ? (
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[var(--hm-warning-600)]">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {t('projects.apprChanges')}
+            </span>
+          ) : (
+            <span className="text-[11px] text-[var(--hm-fg-muted)]">
+              {t('projects.apprAwaiting')}
+            </span>
+          )}
+        </td>
+        {canManage && (
+          <td className="px-2 py-2">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setModal({ item: p })}
+                aria-label={t('common.edit')}
+                className="rounded-md p-1.5 text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => remove(p.id)}
+                disabled={busy}
+                aria-label={t('common.delete')}
+                className="rounded-md p-1.5 text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-error-50)] hover:text-[var(--hm-error-500)]"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </td>
+        )}
+      </tr>
+    );
+  };
+
+  const scheduleTable = (items: ProjectProduct[]) => (
+    <div className="overflow-x-auto px-1 pb-1">
+      <table className="w-full min-w-[820px] border-collapse text-[12.5px]">
+        <thead>
+          <tr className="border-b border-[var(--hm-border-subtle)] text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--hm-fg-muted)]">
+            <th className="px-3 py-2 font-semibold">{t('projects.colItem')}</th>
+            <th className="px-2 py-2 font-semibold">{t('projects.colRef')}</th>
+            <th className="px-2 py-2 text-right font-semibold">
+              {t('projects.colQty')}
+            </th>
+            <th className="px-2 py-2 text-right font-semibold">
+              {t('projects.colUnit')}
+            </th>
+            <th className="px-2 py-2 text-right font-semibold">
+              {t('projects.colTotal')}
+            </th>
+            <th className="px-2 py-2 font-semibold">{t('projects.colLead')}</th>
+            <th className="px-2 py-2 font-semibold">{t('projects.colEta')}</th>
+            <th className="px-2 py-2 font-semibold">
+              {t('projects.colStatus')}
+            </th>
+            <th className="px-2 py-2 font-semibold">
+              {t('projects.colApproval')}
+            </th>
+            {canManage && <th className="px-2 py-2" />}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[var(--hm-border-subtle)]">
+          {items.map(productRow)}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
     <section>
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -501,7 +810,7 @@ export default function ProjectShopping({
       )}
 
       {/* Quick order - feed the catalog-linked rows straight into the shared
-          checkout (delivery mode + BoG payment live inside CheckoutModal). */}
+          checkout (delivery mode + Flitt payment live inside CheckoutModal). */}
       {canManage && checkoutOpen && orderable.length > 0 && (
         <CheckoutModal
           isOpen={checkoutOpen}
@@ -524,9 +833,10 @@ export default function ProjectShopping({
         />
       )}
 
-      {/* Status filter - segmented control */}
+      {/* Status filter + card/schedule view toggle */}
       {products.length > 0 && (
-        <div className="scrollbar-hide mb-4 inline-flex max-w-full overflow-x-auto rounded-full bg-[var(--hm-bg-tertiary)] p-1 align-top">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div className="scrollbar-hide inline-flex max-w-full overflow-x-auto rounded-full bg-[var(--hm-bg-tertiary)] p-1 align-top">
           {(['all', ...STATUSES] as const).map((s) => (
             <button
               key={s}
@@ -543,6 +853,36 @@ export default function ProjectShopping({
                 : t(STATUS_LABEL_KEY[s as ProductStatus])}
             </button>
           ))}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              leftIcon={<Download className="h-3.5 w-3.5" />}
+              onClick={exportCsv}
+            >
+              {t('projects.export')}
+            </Button>
+            <div className="inline-flex rounded-full bg-[var(--hm-bg-tertiary)] p-1">
+            {(['cards', 'schedule'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setView(v)}
+                className={`rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors ${
+                  view === v
+                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[0_1px_2px_rgba(17,16,13,0.06)]'
+                    : 'text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
+                }`}
+              >
+                {v === 'cards'
+                  ? t('projects.viewCards')
+                  : t('projects.viewSchedule')}
+              </button>
+            ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -654,11 +994,14 @@ export default function ProjectShopping({
                     </>
                   )}
                 </div>
-                {open && (
-                  <div className="grid grid-cols-2 gap-3 p-3 pt-1 sm:grid-cols-3 lg:grid-cols-4">
-                    {items.map(productCard)}
-                  </div>
-                )}
+                {open &&
+                  (view === 'schedule' ? (
+                    scheduleTable(items)
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 p-3 pt-1 sm:grid-cols-3 lg:grid-cols-4">
+                      {items.map(productCard)}
+                    </div>
+                  ))}
               </div>
             );
           })}
