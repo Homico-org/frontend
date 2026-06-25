@@ -4,7 +4,7 @@ import HomicoLogo from "@/components/common/HomicoLogo";
 import PaymentMarks from "@/components/common/PaymentMarks";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCountryLink } from "@/hooks/useCountry";
-import { Mail, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
 
 // Registered merchant details (shown for payment-provider / consumer-rights
@@ -56,6 +56,10 @@ export default function LandingFooter({ onIntakeOpen }: LandingFooterProps) {
                 <Phone className="w-4 h-4" strokeWidth={1.75} />
                 {CONTACT_PHONE}
               </a>
+              <p className="inline-flex items-center gap-2 text-[13px] text-white/80">
+                <MapPin className="w-4 h-4 shrink-0" strokeWidth={1.75} />
+                {t("footer.address")}
+              </p>
             </div>
           </div>
 

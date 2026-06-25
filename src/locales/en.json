@@ -2523,7 +2523,8 @@
     "youCanManageCookieSettings": "You Can Manage Cookie Settings",
     "youHaveTheFollowingRights": "You Have The Following Rights",
     "yourDataMayBeProcessed": "Your Data May Be Processed",
-    "yourPrivacyMatters": "Your Privacy Matters"
+    "yourPrivacyMatters": "Your Privacy Matters",
+    "registeredAddress": "Tbilisi, 42 Mukhrani St."
   },
   "terms": {
     "title": "Terms of Service",
@@ -2654,7 +2655,8 @@
     "deliveryHeading": "Delivery of digital services",
     "deliveryBody": "Premium is a digital subscription. Once your card payment is confirmed, premium activates on your account immediately. There is no physical delivery.",
     "refundsHeading": "Refunds",
-    "refundsBody": "Premium includes a 7-day money-back guarantee. If you are not satisfied within 7 days of payment, email contact@homico.co and we will refund you in full to the original card. See our Refund Policy for details."
+    "refundsBody": "Premium includes a 7-day money-back guarantee. If you are not satisfied within 7 days of payment, email contact@homico.co and we will refund you in full to the original card. See our Refund Policy for details.",
+    "registeredAddress": "Tbilisi, 42 Mukhrani St."
   },
   "users": {
     "title": "User",
@@ -4378,7 +4380,8 @@
     "terms": "Terms of Service",
     "contact": "Contact",
     "refundPolicy": "Refund Policy",
-    "companyDetails": "Homico LLC · ID {id}"
+    "companyDetails": "Homico LLC · ID {id}",
+    "address": "Tbilisi, 42 Mukhrani St."
   },
   "tools": {
     "back": "Tools",

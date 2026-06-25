@@ -474,7 +474,7 @@ export default function PrivacyPage() {
                         </div>
                         <div>
                           <p className="text-sm text-[var(--hm-fg-muted)] !mb-0">{t('common.address')}</p>
-                          <p className="font-medium !mb-0">{t('privacy.tbilisiGeorgia')}</p>
+                          <p className="font-medium !mb-0">{t('privacy.registeredAddress')}</p>
                         </div>
                       </div>
                     </div>
