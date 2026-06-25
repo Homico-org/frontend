@@ -1930,7 +1930,7 @@ export default function ProfessionalDetailClient({
                     pro={profile}
                     locale={locale as 'en' | 'ka' | 'ru'}
                     size="sm"
-                    max={4}
+                    max={6}
                     exclude={["verified"]}
                   />
                   {canEdit && (
@@ -2365,7 +2365,7 @@ export default function ProfessionalDetailClient({
                     pro={profile}
                     locale={locale as 'en' | 'ka' | 'ru'}
                     size="sm"
-                    max={4}
+                    max={6}
                     exclude={["verified"]}
                     className="justify-center mb-3"
                   />
