@@ -10,6 +10,7 @@ import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useCountry, useCountryLink } from "@/hooks/useCountry";
 import { getPremiumTierPrices, type PremiumTierId } from "@/data/premium-pricing";
 import { currencySymbol } from "@/utils/currency";
+import PaymentMarks from "@/components/common/PaymentMarks";
 import { ArrowLeft, ArrowUpRight, Check, Lock } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -211,8 +212,14 @@ function CheckoutContent() {
             )}
           </button>
 
-          <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[12px] font-light text-[var(--hm-fg-muted)]">
-            <Lock className="h-3.5 w-3.5" strokeWidth={1.75} />
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <p className="flex items-center gap-1.5 text-[12px] font-light text-[var(--hm-fg-muted)]">
+              <Lock className="h-3.5 w-3.5" strokeWidth={1.75} />
+              {pick({ en: "Secure payment", ka: "უსაფრთხო გადახდა" })}
+            </p>
+            <PaymentMarks />
+          </div>
+          <p className="mt-2.5 text-center text-[12px] font-light text-[var(--hm-fg-muted)]">
             {pick({
               en: "You'll be redirected to our secure payment partner. 7-day money-back guarantee.",
               ka: "გადახვალთ უსაფრთხო გადახდის გვერდზე. 7 დღიანი თანხის დაბრუნება.",

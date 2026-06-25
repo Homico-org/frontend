@@ -2645,7 +2645,16 @@
     "youViolateTheseTermsOf": "You Violate These Terms Of...",
     "youWillProvideQualityServices": "You Will Provide Quality Services",
     "youWillRespondToClient": "You Will Respond To Client",
-    "yourActionsHarmThePlatform": "Your Actions Harm The Platform"
+    "yourActionsHarmThePlatform": "Your Actions Harm The Platform",
+    "legalEntity": "Legal entity",
+    "companyLegalName": "Homico LLC",
+    "idNumber": "ID",
+    "premiumIncludes7DayRefund": "Premium subscriptions include a 7-day money-back guarantee",
+    "securePaymentProcessing": "Card payments are processed securely by our licensed payment provider",
+    "deliveryHeading": "Delivery of digital services",
+    "deliveryBody": "Premium is a digital subscription. Once your card payment is confirmed, premium activates on your account immediately. There is no physical delivery.",
+    "refundsHeading": "Refunds",
+    "refundsBody": "Premium includes a 7-day money-back guarantee. If you are not satisfied within 7 days of payment, email contact@homico.co and we will refund you in full to the original card. See our Refund Policy for details."
   },
   "users": {
     "title": "User",
@@ -4367,7 +4376,9 @@
     "helpCenter": "Help Center",
     "privacyPolicy": "Privacy Policy",
     "terms": "Terms of Service",
-    "contact": "Contact"
+    "contact": "Contact",
+    "refundPolicy": "Refund Policy",
+    "companyDetails": "Homico LLC · ID {id}"
   },
   "tools": {
     "back": "Tools",

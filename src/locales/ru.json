@@ -2648,7 +2648,16 @@
     "youViolateTheseTermsOf": "Вы нарушаете эти условия...",
     "youWillProvideQualityServices": "Вы будете предоставлять качественные услуги",
     "youWillRespondToClient": "Вы будете отвечать клиенту",
-    "yourActionsHarmThePlatform": "Ваши действия вредят платформе"
+    "yourActionsHarmThePlatform": "Ваши действия вредят платформе",
+    "legalEntity": "Юридическое лицо",
+    "companyLegalName": "ООО Homico",
+    "idNumber": "ID",
+    "premiumIncludes7DayRefund": "Подписка Premium включает 7-дневную гарантию возврата средств",
+    "securePaymentProcessing": "Платежи картой обрабатываются безопасно лицензированным платёжным провайдером",
+    "deliveryHeading": "Доставка цифровых услуг",
+    "deliveryBody": "Premium - это цифровая подписка. После подтверждения оплаты картой premium активируется на вашем аккаунте сразу. Физическая доставка отсутствует.",
+    "refundsHeading": "Возврат средств",
+    "refundsBody": "Premium включает 7-дневную гарантию возврата средств. Если в течение 7 дней после оплаты вы не удовлетворены, напишите на contact@homico.co, и мы вернём полную сумму на ту же карту. Подробности в Политике возврата."
   },
   "users": {
     "title": "Пользователь",
@@ -4361,7 +4370,9 @@
     "helpCenter": "Центр помощи",
     "privacyPolicy": "Политика конфиденциальности",
     "terms": "Условия использования",
-    "contact": "Контакты"
+    "contact": "Контакты",
+    "refundPolicy": "Политика возврата",
+    "companyDetails": "ООО Homico · ID {id}"
   },
   "tools": {
     "back": "Инструменты",

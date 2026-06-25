@@ -2645,7 +2645,16 @@
     "youViolateTheseTermsOf": "არღვევთ ამ პირობებს...",
     "youWillProvideQualityServices": "მიაწოდებთ ხარისხიან მომსახურებას",
     "youWillRespondToClient": "უპასუხებთ კლიენტს",
-    "yourActionsHarmThePlatform": "თქვენი მოქმედებები აზიანებს პლატფორმას"
+    "yourActionsHarmThePlatform": "თქვენი მოქმედებები აზიანებს პლატფორმას",
+    "legalEntity": "იურიდიული პირი",
+    "companyLegalName": "შპს ჰომიკო",
+    "idNumber": "ს/ნ",
+    "premiumIncludes7DayRefund": "Premium გამოწერა მოიცავს 7 დღიან თანხის დაბრუნების გარანტიას",
+    "securePaymentProcessing": "ბარათით გადახდები მუშავდება უსაფრთხოდ, ლიცენზირებული გადახდის პროვაიდერის მეშვეობით",
+    "deliveryHeading": "ციფრული მომსახურების მიწოდება",
+    "deliveryBody": "Premium ციფრული გამოწერაა. ბარათით გადახდის დადასტურების შემდეგ premium მაშინვე აქტიურდება თქვენს ანგარიშზე. ფიზიკური მიწოდება არ ხდება.",
+    "refundsHeading": "თანხის დაბრუნება",
+    "refundsBody": "Premium მოიცავს 7 დღიან თანხის დაბრუნების გარანტიას. თუ გადახდიდან 7 დღეში არ ხართ კმაყოფილი, მოგვწერეთ contact@homico.co-ზე და თანხას სრულად დაგიბრუნებთ იმავე ბარათზე. დეტალები იხილეთ დაბრუნების პოლიტიკაში."
   },
   "users": {
     "title": "მომხმარებელი",
@@ -4366,7 +4375,9 @@
     "helpCenter": "დახმარების ცენტრი",
     "privacyPolicy": "კონფიდენციალურობა",
     "terms": "წესები და პირობები",
-    "contact": "კონტაქტი"
+    "contact": "კონტაქტი",
+    "refundPolicy": "დაბრუნების პოლიტიკა",
+    "companyDetails": "შპს ჰომიკო · ს/ნ {id}"
   },
   "tools": {
     "back": "AI ხელსაწყოები",
