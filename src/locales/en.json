@@ -3660,6 +3660,12 @@
       "unpartnerToast": "Removed Homico Partner",
       "failedToPartner": "Failed to update partner",
       "partnerBadge": "Partner",
+      "premium": "Make Premium",
+      "unpremium": "Remove Premium",
+      "premiumToast": "Premium badge granted",
+      "unpremiumToast": "Premium badge removed",
+      "failedToPremium": "Failed to update premium",
+      "premiumBadge": "Premium",
       "noPendingProfessionals": "No pending professionals",
       "noProfessionalsFound": "No professionals found"
     },
