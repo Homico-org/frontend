@@ -186,6 +186,33 @@ const variantConfig: Record<StatusPillVariant, {
   },
 };
 
+// Short "what it is" descriptions for the trust badges, surfaced in the native
+// hover title of the icon-only chip — works even on overflow-hidden cards where
+// the floating CSS tooltip gets clipped. Only the pro trust badges need one.
+const DESCRIPTIONS: Partial<
+  Record<StatusPillVariant, { en: string; ka: string }>
+> = {
+  verified: {
+    en: 'Identity checked by Homico',
+    ka: 'ვინაობა დადასტურებულია Homico-ს მიერ',
+  },
+  topRated: {
+    en: '4.8★ or higher with 5+ reviews',
+    ka: '4.8★ ან მეტი, 5+ შეფასებით',
+  },
+  experienced: {
+    en: '10+ jobs completed on Homico',
+    ka: '10+ დასრულებული სამუშაო Homico-ზე',
+  },
+  new: { en: 'New to Homico', ka: 'ახალი Homico-ზე' },
+  premium: { en: 'Premium member', ka: 'პრემიუმ წევრი' },
+  featured: { en: 'Hand-picked by Homico', ka: 'შერჩეული Homico-ს მიერ' },
+  homicoPartner: {
+    en: 'Contracted partner — directly bookable',
+    ka: 'კონტრაქტორი პარტნიორი — პირდაპირ დაჯავშნადი',
+  },
+};
+
 // Saturated fill colour per variant for the icon-only chip treatment. Each
 // trust badge gets a distinct hue (Featured vermillion, Premium violet, so the
 // two no longer both read warm). Tokens where they exist; a literal violet for
@@ -250,9 +277,17 @@ export function StatusPill({
     const glyph =
       size === 'xs' ? 'w-3 h-3' : size === 'md' ? 'w-4 h-4' : 'w-3.5 h-3.5';
     const fill = SOLID_FILL[variant];
+    // Native browser tooltip: "Label — what it is". Always set (even when the
+    // animated CSS tooltip is off) so hovering a badge explains it on any
+    // surface, including overflow-hidden cards.
+    const desc = DESCRIPTIONS[variant];
+    const titleText = desc
+      ? `${displayLabel} — ${locale === 'ka' ? desc.ka : desc.en}`
+      : displayLabel;
     return (
       <span
         aria-label={displayLabel}
+        title={titleText}
         role="img"
         className={cn(
           'relative inline-flex items-center justify-center rounded-full text-white ring-1 ring-inset ring-white/15',
