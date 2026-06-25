@@ -3661,6 +3661,12 @@
       "unpremiumToast": "Бейдж Premium убран",
       "failedToPremium": "Не удалось обновить Premium",
       "premiumBadge": "Premium",
+      "topQuality": "Выдать «Top Quality»",
+      "untopQuality": "Убрать «Top Quality»",
+      "topQualityToast": "Бейдж «Top Quality» выдан",
+      "untopQualityToast": "Бейдж «Top Quality» убран",
+      "failedToTopQuality": "Не удалось обновить «Top Quality»",
+      "topQualityBadge": "Top Quality",
       "noPendingProfessionals": "Нет специалистов на рассмотрении",
       "noProfessionalsFound": "Специалисты не найдены"
     },
