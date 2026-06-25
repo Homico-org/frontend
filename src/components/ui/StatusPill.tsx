@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { BadgeCheck, Star, Plus, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft, Moon, Award, Crown, Handshake } from 'lucide-react';
+import { BadgeCheck, Star, Plus, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft, Moon, Award, Crown, Handshake, Gem } from 'lucide-react';
 import { ACCENT_COLOR } from '@/constants/theme';
 
 export type StatusPillVariant =
@@ -13,6 +13,7 @@ export type StatusPillVariant =
   | 'applied'
   | 'premium'
   | 'featured'
+  | 'topQuality' // Admin-granted quality badge (best photos/description/portfolio)
   | 'pending'
   | 'completed'
   | 'accepted'
@@ -125,6 +126,13 @@ const variantConfig: Record<StatusPillVariant, {
     labelEn: 'Featured',
     labelKa: 'გამორჩეული',
   },
+  topQuality: {
+    bgClass: 'bg-[var(--hm-success-50)]',
+    textClass: 'text-[var(--hm-success-600)]',
+    icon: Gem,
+    labelEn: 'Top Quality',
+    labelKa: 'ტოპ ხარისხი',
+  },
   homicoPartner: {
     // Solid brand fill - the premier badge; it's the only bookable status.
     bgClass: 'bg-[var(--hm-brand-500)]',
@@ -207,6 +215,10 @@ const DESCRIPTIONS: Partial<
   new: { en: 'New to Homico', ka: 'ახალი Homico-ზე' },
   premium: { en: 'Premium member', ka: 'პრემიუმ წევრი' },
   featured: { en: 'Hand-picked by Homico', ka: 'შერჩეული Homico-ს მიერ' },
+  topQuality: {
+    en: 'Top-quality profile — verified by Homico',
+    ka: 'მაღალი ხარისხის პროფილი — დადასტურებული Homico-ს მიერ',
+  },
   homicoPartner: {
     en: 'Contracted partner — directly bookable',
     ka: 'კონტრაქტორი პარტნიორი — პირდაპირ დაჯავშნადი',
@@ -224,6 +236,9 @@ const SOLID_FILL: Partial<Record<StatusPillVariant, string>> = {
   topRated: 'var(--hm-warning-500)',
   experienced: 'var(--hm-info-500)',
   premium: '#7C3AED',
+  // Teal — distinct from verified's green and premium's violet, reads as a
+  // calm "quality" hue.
+  topQuality: '#0D9488',
   new: 'var(--hm-info-500)',
 };
 

@@ -26,6 +26,8 @@ export interface ProBadgeInput {
   isFeatured?: boolean;
   /** Signed Homico contract - the only bookable pros (server-set). */
   isHomicoPartner?: boolean;
+  /** Admin-granted quality badge: best photos/description/portfolio (server-set). */
+  isTopQuality?: boolean;
 }
 
 // Thresholds kept in one place so they're easy to tune as the marketplace grows.
@@ -51,6 +53,8 @@ export function deriveProBadges(
   // the only bookable pros).
   if (pro.isHomicoPartner) out.push('homicoPartner');
   if (pro.isFeatured) out.push('featured');
+  // Admin-granted quality signal — sits just below Featured, above auto badges.
+  if (pro.isTopQuality) out.push('topQuality');
   if (pro.verificationStatus === 'verified') out.push('verified');
   if (rating >= TOP_RATED_MIN_RATING && reviews >= TOP_RATED_MIN_REVIEWS)
     out.push('topRated');
