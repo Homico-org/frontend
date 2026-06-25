@@ -28,6 +28,7 @@ import {
   RefreshCw,
   Crown,
   Handshake,
+  Sparkles,
   UserCheck,
   Users,
   X,
@@ -71,6 +72,7 @@ interface PendingPro {
   verificationStatus?: 'pending' | 'verified' | 'rejected';
   isFeatured?: boolean;
   isHomicoPartner?: boolean;
+  isPremium?: boolean;
   adminRejectionReason?: string;
   createdAt: string;
   portfolioProjects?: Array<{
@@ -257,6 +259,28 @@ function AdminPendingProsPageContent() {
     } catch (error) {
       console.error('Error toggling partner:', error);
       toast.error(t('admin.pendingPros.failedToPartner'));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleTogglePremium = async (proId: string, next: boolean) => {
+    if (!proId) return;
+    try {
+      setActionLoading(proId);
+      await api.patch(`/admin/pros/${proId}/premium`, { premium: next });
+      toast.success(
+        next
+          ? t('admin.pendingPros.premiumToast')
+          : t('admin.pendingPros.unpremiumToast'),
+      );
+      fetchPendingPros();
+      setSelectedPro((prev) =>
+        prev && getProId(prev) === proId ? { ...prev, isPremium: next } : prev,
+      );
+    } catch (error) {
+      console.error('Error toggling premium:', error);
+      toast.error(t('admin.pendingPros.failedToPremium'));
     } finally {
       setActionLoading(null);
     }
@@ -549,6 +573,13 @@ function AdminPendingProsPageContent() {
                             {t('admin.pendingPros.partnerBadge')}
                           </span>
                         )}
+                        {pro.isPremium && (
+                          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold flex-shrink-0 inline-flex items-center gap-1"
+                            style={{ background: `${THEME.warning}20`, color: THEME.warning }}>
+                            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />
+                            {t('admin.pendingPros.premiumBadge')}
+                          </span>
+                        )}
                       </div>
 
                       {/* Contact info - simplified on mobile */}
@@ -670,6 +701,25 @@ function AdminPendingProsPageContent() {
                         >
                           <Handshake className="w-4 h-4 mr-1" />
                           {pro.isHomicoPartner ? t('admin.pendingPros.unpartner') : t('admin.pendingPros.partner')}
+                        </Button>
+                      )}
+                      {pro.verificationStatus === 'verified' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleTogglePremium(getProId(pro), !pro.isPremium);
+                          }}
+                          disabled={actionLoading === getProId(pro)}
+                          style={
+                            pro.isPremium
+                              ? { background: THEME.warning, color: '#fff', borderColor: THEME.warning }
+                              : { borderColor: THEME.border, color: THEME.textMuted }
+                          }
+                        >
+                          <Sparkles className={`w-4 h-4 mr-1 ${pro.isPremium ? 'fill-current' : ''}`} />
+                          {pro.isPremium ? t('admin.pendingPros.unpremium') : t('admin.pendingPros.premium')}
                         </Button>
                       )}
                       <Link

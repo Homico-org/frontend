@@ -3660,6 +3660,12 @@
       "unpartnerToast": "პარტნიორობა მოიხსნა",
       "failedToPartner": "განახლება ვერ მოხერხდა",
       "partnerBadge": "პარტნიორი",
+      "premium": "Premium-ის მინიჭება",
+      "unpremium": "Premium-ის მოხსნა",
+      "premiumToast": "Premium ბეჯი მიენიჭა",
+      "unpremiumToast": "Premium ბეჯი მოიხსნა",
+      "failedToPremium": "Premium-ის განახლება ვერ მოხერხდა",
+      "premiumBadge": "Premium",
       "noPendingProfessionals": "მოლოდინში არ არის პროფესიონალები",
       "noProfessionalsFound": "პროფესიონალები ვერ მოიძებნა"
     },
