@@ -4,7 +4,7 @@ import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
 import { currencySymbol } from '@/utils/currency';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/input';
+import { Input, Textarea } from '@/components/ui/input';
 import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCategories } from '@/contexts/CategoriesContext';
@@ -28,6 +28,7 @@ import {
   RefreshCw,
   Crown,
   Handshake,
+  Search,
   Sparkles,
   UserCheck,
   Users,
@@ -103,6 +104,10 @@ function AdminPendingProsPageContent() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
+  // `searchInput` = what the admin types; `searchTerm` = debounced value that
+  // actually drives the fetch (backend matches name / email / phone / city).
+  const [searchInput, setSearchInput] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedPro, setSelectedPro] = useState<PendingPro | null>(null);
@@ -133,6 +138,7 @@ function AdminPendingProsPageContent() {
           page,
           limit: 20,
           status: statusFilter,
+          ...(searchTerm.trim() ? { search: searchTerm.trim() } : {}),
         },
         signal: controller.signal,
       });
@@ -151,7 +157,18 @@ function AdminPendingProsPageContent() {
         setIsRefreshing(false);
       }
     }
-  }, [page, statusFilter, t]);
+  }, [page, statusFilter, searchTerm, t]);
+
+  // Debounce the search box: 350ms after the last keystroke, commit to
+  // searchTerm (triggers the fetch) and reset to page 1.
+  useEffect(() => {
+    if (searchInput === searchTerm) return;
+    const id = setTimeout(() => {
+      setSearchTerm(searchInput);
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(id);
+  }, [searchInput, searchTerm]);
 
   const fetchStats = useCallback(async () => {
     fetchStatsAbortRef.current?.abort();
@@ -492,6 +509,30 @@ function AdminPendingProsPageContent() {
             </button>
           </div>
         )}
+
+        {/* Search - name / email / phone / city (backend matches all) */}
+        <div className="mb-4">
+          <Input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder={t('admin.searchUsersPlaceholder')}
+            leftIcon={<Search className="w-4 h-4" />}
+            rightIcon={
+              searchInput ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchInput('')}
+                  aria-label={t('common.clearSearch')}
+                  className="flex items-center justify-center"
+                  style={{ color: THEME.textMuted }}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              ) : undefined
+            }
+          />
+        </div>
 
         {/* Professionals List */}
         <div
