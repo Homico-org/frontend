@@ -563,8 +563,9 @@ export default function PremiumPlansPage() {
   }, []);
 
   const handleSelectPlan = (tierId: string) => {
-    // Payments gated off until BoG is live - no paid upgrade on prod.
-    if (!features.payments) return;
+    // Premium is the MVP paid product (pay-per-period, no escrow). Gated by its
+    // own flag so it can launch while escrow/marketplace payments stay off.
+    if (!features.premium) return;
     if (!isAuthenticated) {
       router.push("/register?redirect=/pro/premium");
       return;

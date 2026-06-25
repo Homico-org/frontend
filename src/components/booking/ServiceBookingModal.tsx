@@ -503,7 +503,7 @@ export default function ServiceBookingModal({
       // flow", because the screen needs ANOTHER click before payment.
       //
       // `paymentRedirectUrl` from the backend is the canonical "where
-      // payment happens" URL (mock-confirm in dev, BoG hosted page in
+      // payment happens" URL (mock-confirm in dev, Flitt hosted page in
       // prod). `window.location.href` is a hard navigation - more
       // reliable than router.push when called from a closing modal,
       // since router.push can race with the unmount. The /bookings/.../pay

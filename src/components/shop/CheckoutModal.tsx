@@ -232,7 +232,7 @@ export default function CheckoutModal({
     ? quote.subtotalMinor + quote.feeMinor + deliveryFee
     : 0;
 
-  // Payments gated off until BoG is live - never open the checkout flow.
+  // Payments gated off until the payment provider is live - never open the checkout flow.
   if (!features.payments) return null;
 
   // While the order is being created + payment intent prepared, swap the whole

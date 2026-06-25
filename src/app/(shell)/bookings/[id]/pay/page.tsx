@@ -33,7 +33,7 @@ interface PaymentSummary {
  *  - Failed / cancelled / no redirect URL    -> show "Try again" button
  *                                                that mints a new intent
  *
- * The actual payment happens off-site (BoG / Stripe hosted page) or on the
+ * The actual payment happens off-site (Flitt hosted page) or on the
  * mock-confirm page in dev. After payment the provider redirects to
  * /bookings/[id]/pay/return.
  */
@@ -97,14 +97,8 @@ export default function PayPage() {
 
   const providerLabel = (name: string) => {
     switch (name) {
-      case "bog":
-        return "Bank of Georgia";
-      case "tbc":
-        return "TBC Bank";
-      case "stripe":
-        return "Stripe";
-      case "pay-ge":
-        return "Pay.ge";
+      case "flitt":
+        return "Flitt";
       case "mock":
         return t("pay.mockProviderLabel");
       default:

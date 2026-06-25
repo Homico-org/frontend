@@ -130,9 +130,9 @@ function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Payments gated off until BoG is live - block direct access to checkout.
+  // Premium is gated by its own flag (decoupled from escrow/marketplace).
   useEffect(() => {
-    if (!features.payments) router.replace("/pro/premium");
+    if (!features.premium) router.replace("/pro/premium");
   }, [router]);
 
   const tierId = searchParams.get("tier") || 'pro';

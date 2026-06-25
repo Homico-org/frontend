@@ -7,8 +7,12 @@ import { Mail } from "lucide-react";
 import Link from "next/link";
 
 interface LandingFooterProps {
-  /** Used by the "Request a quote" button in the Product column. */
-  onIntakeOpen: () => void;
+  /**
+   * Used by the "Request a quote" button in the Product column. Optional -
+   * on surfaces without an intake modal (e.g. the blog) the row falls back
+   * to a link to the assistant on the home page.
+   */
+  onIntakeOpen?: () => void;
 }
 
 export default function LandingFooter({ onIntakeOpen }: LandingFooterProps) {
@@ -48,13 +52,22 @@ export default function LandingFooter({ onIntakeOpen }: LandingFooterProps) {
             </p>
             <ul className="space-y-2">
               <li>
-                <button
-                  type="button"
-                  onClick={onIntakeOpen}
-                  className="text-[13px] text-white/70 hover:text-white transition-colors"
-                >
-                  {t("concierge.requestQuote")}
-                </button>
+                {onIntakeOpen ? (
+                  <button
+                    type="button"
+                    onClick={onIntakeOpen}
+                    className="text-[13px] text-white/70 hover:text-white transition-colors"
+                  >
+                    {t("concierge.requestQuote")}
+                  </button>
+                ) : (
+                  <Link
+                    href={cl("/")}
+                    className="text-[13px] text-white/70 hover:text-white transition-colors"
+                  >
+                    {t("concierge.requestQuote")}
+                  </Link>
+                )}
               </li>
               <li>
                 <Link
@@ -87,6 +100,14 @@ export default function LandingFooter({ onIntakeOpen }: LandingFooterProps) {
                   className="text-[13px] text-white/70 hover:text-white transition-colors"
                 >
                   {t("footer.aboutUs")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={cl("/blog")}
+                  className="text-[13px] text-white/70 hover:text-white transition-colors"
+                >
+                  {t("blog.eyebrow")}
                 </Link>
               </li>
               <li>
