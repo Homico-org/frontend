@@ -687,7 +687,7 @@ export default function ProCard({
               pro={profile}
               locale={locale}
               size="xs"
-              max={2}
+              max={6}
               exclude={["verified", "topRated"]}
               tooltip={false}
               className="mt-1.5"
