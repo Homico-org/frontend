@@ -3670,6 +3670,12 @@
       "unpremiumToast": "Premium badge removed",
       "failedToPremium": "Failed to update premium",
       "premiumBadge": "Premium",
+      "topQuality": "Make Top Quality",
+      "untopQuality": "Remove Top Quality",
+      "topQualityToast": "Top Quality badge granted",
+      "untopQualityToast": "Top Quality badge removed",
+      "failedToTopQuality": "Failed to update Top Quality",
+      "topQualityBadge": "Top Quality",
       "noPendingProfessionals": "No pending professionals",
       "noProfessionalsFound": "No professionals found"
     },

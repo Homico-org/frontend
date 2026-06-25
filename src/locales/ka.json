@@ -3670,6 +3670,12 @@
       "unpremiumToast": "Premium ბეჯი მოიხსნა",
       "failedToPremium": "Premium-ის განახლება ვერ მოხერხდა",
       "premiumBadge": "Premium",
+      "topQuality": "ტოპ ხარისხის მინიჭება",
+      "untopQuality": "ტოპ ხარისხის მოხსნა",
+      "topQualityToast": "ტოპ ხარისხის ბეჯი მიენიჭა",
+      "untopQualityToast": "ტოპ ხარისხის ბეჯი მოიხსნა",
+      "failedToTopQuality": "ტოპ ხარისხის განახლება ვერ მოხერხდა",
+      "topQualityBadge": "ტოპ ხარისხი",
       "noPendingProfessionals": "მოლოდინში არ არის პროფესიონალები",
       "noProfessionalsFound": "პროფესიონალები ვერ მოიძებნა"
     },

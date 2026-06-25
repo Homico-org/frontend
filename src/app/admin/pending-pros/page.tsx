@@ -27,6 +27,7 @@ import {
   Phone,
   RefreshCw,
   Crown,
+  Gem,
   Handshake,
   Search,
   Sparkles,
@@ -74,6 +75,7 @@ interface PendingPro {
   isFeatured?: boolean;
   isHomicoPartner?: boolean;
   isPremium?: boolean;
+  isTopQuality?: boolean;
   adminRejectionReason?: string;
   createdAt: string;
   portfolioProjects?: Array<{
@@ -298,6 +300,28 @@ function AdminPendingProsPageContent() {
     } catch (error) {
       console.error('Error toggling premium:', error);
       toast.error(t('admin.pendingPros.failedToPremium'));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleToggleTopQuality = async (proId: string, next: boolean) => {
+    if (!proId) return;
+    try {
+      setActionLoading(proId);
+      await api.patch(`/admin/pros/${proId}/top-quality`, { topQuality: next });
+      toast.success(
+        next
+          ? t('admin.pendingPros.topQualityToast')
+          : t('admin.pendingPros.untopQualityToast'),
+      );
+      fetchPendingPros();
+      setSelectedPro((prev) =>
+        prev && getProId(prev) === proId ? { ...prev, isTopQuality: next } : prev,
+      );
+    } catch (error) {
+      console.error('Error toggling top quality:', error);
+      toast.error(t('admin.pendingPros.failedToTopQuality'));
     } finally {
       setActionLoading(null);
     }
@@ -621,6 +645,13 @@ function AdminPendingProsPageContent() {
                             {t('admin.pendingPros.premiumBadge')}
                           </span>
                         )}
+                        {pro.isTopQuality && (
+                          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold flex-shrink-0 inline-flex items-center gap-1"
+                            style={{ background: '#0D948820', color: '#0D9488' }}>
+                            <Gem className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                            {t('admin.pendingPros.topQualityBadge')}
+                          </span>
+                        )}
                       </div>
 
                       {/* Contact info - simplified on mobile */}
@@ -761,6 +792,25 @@ function AdminPendingProsPageContent() {
                         >
                           <Sparkles className={`w-4 h-4 mr-1 ${pro.isPremium ? 'fill-current' : ''}`} />
                           {pro.isPremium ? t('admin.pendingPros.unpremium') : t('admin.pendingPros.premium')}
+                        </Button>
+                      )}
+                      {pro.verificationStatus === 'verified' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleTopQuality(getProId(pro), !pro.isTopQuality);
+                          }}
+                          disabled={actionLoading === getProId(pro)}
+                          style={
+                            pro.isTopQuality
+                              ? { background: '#0D9488', color: '#fff', borderColor: '#0D9488' }
+                              : { borderColor: THEME.border, color: THEME.textMuted }
+                          }
+                        >
+                          <Gem className="w-4 h-4 mr-1" />
+                          {pro.isTopQuality ? t('admin.pendingPros.untopQuality') : t('admin.pendingPros.topQuality')}
                         </Button>
                       )}
                       <Link
