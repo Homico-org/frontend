@@ -3655,6 +3655,12 @@
       "unpartnerToast": "Партнёрство снято",
       "failedToPartner": "Не удалось обновить",
       "partnerBadge": "Партнёр",
+      "premium": "Выдать Premium",
+      "unpremium": "Убрать Premium",
+      "premiumToast": "Бейдж Premium выдан",
+      "unpremiumToast": "Бейдж Premium убран",
+      "failedToPremium": "Не удалось обновить Premium",
+      "premiumBadge": "Premium",
       "noPendingProfessionals": "Нет специалистов на рассмотрении",
       "noProfessionalsFound": "Специалисты не найдены"
     },
