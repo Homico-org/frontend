@@ -1645,6 +1645,10 @@
         "title": "Profile changes not approved",
         "message": "Your requested profile changes were not approved. Reason: {reason}"
       },
+      "profile_changes_submitted": {
+        "title": "Profile changes submitted",
+        "message": "Your profile changes have been submitted and are awaiting review by the Homico team. You'll be notified once they're approved."
+      },
       "profile_rejected": {
         "title": "Profile Needs Updates",
         "message": "Your profile was not approved",
