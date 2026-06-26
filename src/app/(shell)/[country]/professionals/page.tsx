@@ -138,6 +138,22 @@ export default function ProfessionalsPage() {
     return seed;
   }, []);
 
+  // Force a brand-new browse seed (new grouped-random order). Desktop gets this
+  // for free on a full reload (the component remounts and browseSeedRef resets),
+  // but mobile pull-to-refresh only refetches in place — getBrowseSeed would
+  // return the cached in-memory seed, so the list never reshuffled. Call this
+  // before a pull-to-refresh fetch so mobile matches the desktop reload.
+  const resetBrowseSeed = useCallback(() => {
+    const seed = Math.floor(Math.random() * 1_000_000_000);
+    browseSeedRef.current = seed;
+    try {
+      sessionStorage.setItem("browseSeed", String(seed));
+    } catch {
+      /* ignore */
+    }
+    return seed;
+  }, []);
+
   const fetchProfessionals = useCallback(
     async (pageNum: number, reset = false, fetchLimit = 12) => {
       fetchProsAbortRef.current?.abort();
@@ -384,9 +400,13 @@ export default function ProfessionalsPage() {
     fetchProfessionals(1, true);
   });
 
-  // Pull-down-to-refresh on mobile. Hook is touch-only.
+  // Pull-down-to-refresh on mobile. Hook is touch-only. Reshuffle the
+  // grouped-random order on each pull, mirroring a desktop browser reload —
+  // without resetting the seed the in-place refetch reuses the cached seed and
+  // the leaderboard never changes on mobile.
   const pullState = usePullToRefresh({
     onRefresh: () => {
+      resetBrowseSeed();
       setPage(1);
       return fetchProfessionals(1, true);
     },
