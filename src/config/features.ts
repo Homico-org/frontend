@@ -28,6 +28,13 @@ export const features = {
   bookings: parseFlag(process.env.NEXT_PUBLIC_FEATURE_BOOKINGS),
   /** Payment methods (settings tab, saved cards). OFF until payment provider is integrated. */
   payments: parseFlag(process.env.NEXT_PUBLIC_FEATURE_PAYMENTS),
+  /**
+   * Premium subscriptions for pros (pay-per-period, manual renewal, no escrow).
+   * Decoupled from `payments` so premium can launch for the MVP as a simple
+   * platform charge while escrow / marketplace payouts stay off until the bank
+   * approves that model.
+   */
+  premium: parseFlag(process.env.NEXT_PUBLIC_FEATURE_PREMIUM),
   /** Self-service account deletion. OFF until backend deletion + retention policy is finalized. */
   accountDeletion: parseFlag(process.env.NEXT_PUBLIC_FEATURE_ACCOUNT_DELETION),
   /** Email notifications & email settings. OFF until SendGrid is configured. */

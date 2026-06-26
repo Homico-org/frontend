@@ -1639,6 +1639,14 @@
         "message": "Ваш профессиональный профиль одобрен",
         "messageWithNote": "{notes}"
       },
+      "profile_changes_approved": {
+        "title": "Изменения профиля одобрены",
+        "message": "Запрошенные изменения профиля одобрены и уже активны."
+      },
+      "profile_changes_rejected": {
+        "title": "Изменения профиля не одобрены",
+        "message": "Запрошенные изменения профиля не одобрены. Причина: {reason}"
+      },
       "profile_rejected": {
         "title": "Профиль требует обновления",
         "message": "Ваш профиль не был одобрен",
@@ -2526,7 +2534,8 @@
     "youCanManageCookieSettings": "Вы можете управлять настройками cookies",
     "youHaveTheFollowingRights": "У вас есть следующие права",
     "yourDataMayBeProcessed": "Ваши данные могут обрабатываться",
-    "yourPrivacyMatters": "Ваша конфиденциальность важна"
+    "yourPrivacyMatters": "Ваша конфиденциальность важна",
+    "registeredAddress": "Тбилиси, ул. Мухрани 42"
   },
   "terms": {
     "title": "Условия использования",
@@ -2648,7 +2657,17 @@
     "youViolateTheseTermsOf": "Вы нарушаете эти условия...",
     "youWillProvideQualityServices": "Вы будете предоставлять качественные услуги",
     "youWillRespondToClient": "Вы будете отвечать клиенту",
-    "yourActionsHarmThePlatform": "Ваши действия вредят платформе"
+    "yourActionsHarmThePlatform": "Ваши действия вредят платформе",
+    "legalEntity": "Юридическое лицо",
+    "companyLegalName": "ООО Homico",
+    "idNumber": "ID",
+    "premiumIncludes7DayRefund": "Подписка Premium включает 7-дневную гарантию возврата средств",
+    "securePaymentProcessing": "Платежи картой обрабатываются безопасно лицензированным платёжным провайдером",
+    "deliveryHeading": "Доставка цифровых услуг",
+    "deliveryBody": "Premium - это цифровая подписка. После подтверждения оплаты картой premium активируется на вашем аккаунте сразу. Физическая доставка отсутствует.",
+    "refundsHeading": "Возврат средств",
+    "refundsBody": "Premium включает 7-дневную гарантию возврата средств. Если в течение 7 дней после оплаты вы не удовлетворены, напишите на contact@homico.co, и мы вернём полную сумму на ту же карту. Подробности в Политике возврата.",
+    "registeredAddress": "Тбилиси, ул. Мухрани 42"
   },
   "users": {
     "title": "Пользователь",
@@ -3476,7 +3495,42 @@
     "importChange": "Изменить",
     "importAnother": "Другой файл",
     "importCommit": "Импортировать {n} позиций",
-    "importDone": "Импортировано {items} услуг в {steps} этапах"
+    "importDone": "Импортировано {items} услуг в {steps} этапах",
+    "sku": "Код / SKU",
+    "skuHint": "Модель или код поставщика",
+    "dimensions": "Размеры",
+    "dimensionsHint": "напр. 120 x 60 x H85 см",
+    "leadTime": "Срок поставки",
+    "leadDaysUnit": "дн.",
+    "eta": "Дата поставки",
+    "viewCards": "Карточки",
+    "viewSchedule": "Таблица",
+    "colItem": "Товар",
+    "colRef": "Код",
+    "colQty": "Кол-во",
+    "colUnit": "Цена",
+    "colTotal": "Сумма",
+    "colLead": "Срок",
+    "colEta": "Поставка",
+    "colStatus": "Статус",
+    "leadDays": "{n} дн.",
+    "importFromLink": "Заполнить по ссылке",
+    "importedFromLink": "Заполнено из ссылки",
+    "importFailed": "Не удалось прочитать ссылку",
+    "export": "Экспорт",
+    "colApproval": "Согласование",
+    "apprApproved": "Одобрено",
+    "apprChanges": "На правку",
+    "apprAwaiting": "Ожидает",
+    "selAddToSchedule": "В таблицу",
+    "selOnSchedule": "В таблице",
+    "selAddedToSchedule": "Добавлено в таблицу",
+    "overBudget": "{amount} превышение",
+    "underBudget": "{amount} осталось",
+    "groupBy": "Группировка",
+    "groupCategory": "Категория",
+    "groupRoom": "Помещение",
+    "groupSupplier": "Поставщик"
   },
   "polls": {
     "title": "Опросы",
@@ -4341,7 +4395,10 @@
     "helpCenter": "Центр помощи",
     "privacyPolicy": "Политика конфиденциальности",
     "terms": "Условия использования",
-    "contact": "Контакты"
+    "contact": "Контакты",
+    "refundPolicy": "Политика возврата",
+    "companyDetails": "ООО Homico · ID {id}",
+    "address": "Тбилиси, ул. Мухрани 42"
   },
   "tools": {
     "back": "Инструменты",
@@ -5448,6 +5505,29 @@
       "reviewSubmit": "Новые отзывы",
       "registerPro": "Новые мастера",
       "registerClient": "Новые клиенты"
+    }
+  },
+  "blog": {
+    "eyebrow": "Журнал",
+    "title": "Ремонт без догадок",
+    "subtitle": "Практичные гайды, реальные бюджеты и истории тбилисских квартир.",
+    "featured": "Избранное",
+    "read": "Читать",
+    "minRead": "{min} мин чтения",
+    "all": "Все",
+    "back": "Все статьи",
+    "writtenBy": "Автор",
+    "share": "Поделиться",
+    "keepReading": "Другие статьи",
+    "ctaTitle": "Планируете ремонт?",
+    "ctaText": "Найдите проверенного мастера и ведите весь проект в одном месте.",
+    "ctaButton": "Найти мастера",
+    "cat": {
+      "renovation": "Ремонт",
+      "design": "Дизайн",
+      "budget": "Бюджет",
+      "guides": "Гайды",
+      "stories": "Истории"
     }
   }
 }

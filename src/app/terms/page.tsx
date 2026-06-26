@@ -3,7 +3,7 @@
 import Header, { HeaderSpacer } from '@/components/common/Header';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ArrowRight, Clock, FileText, Mail, MapPin, Menu, Shield, X } from 'lucide-react';
+import { ArrowRight, Building2, Clock, FileText, Mail, MapPin, Menu, Phone, Shield, X } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
@@ -369,12 +369,19 @@ export default function TermsPage() {
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
                     <li>{t('terms.paymentsAreMadeDirectlyBetween')}</li>
-                    <li>{t('terms.premiumSubscriptionFeesAreNonrefundable')}</li>
+                    <li>{t('terms.premiumIncludes7DayRefund')}</li>
+                    <li>{t('terms.securePaymentProcessing')}</li>
                     <li>{t('terms.pricesAreListedInGeorgian')}</li>
                   </ul>
                   <p className="mt-4">
                     {t('terms.homicoIsNotResponsibleFor')}
                   </p>
+
+                  <h3 className="mt-6 font-semibold text-[var(--hm-fg-primary)]">{t('terms.deliveryHeading')}</h3>
+                  <p className="mt-2">{t('terms.deliveryBody')}</p>
+
+                  <h3 className="mt-6 font-semibold text-[var(--hm-fg-primary)]">{t('terms.refundsHeading')}</h3>
+                  <p className="mt-2">{t('terms.refundsBody')}</p>
                 </section>
 
                 {/* Section 8: Content */}
@@ -489,11 +496,29 @@ export default function TermsPage() {
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-[var(--hm-brand-500)] flex items-center justify-center flex-shrink-0">
+                          <Building2 className="w-5 h-5 text-white" strokeWidth={1.5} />
+                        </div>
+                        <div>
+                          <p className="text-sm text-[var(--hm-fg-muted)] !mb-0">{t('terms.legalEntity')}</p>
+                          <p className="font-medium !mb-0">{t('terms.companyLegalName')} · {t('terms.idNumber')} 400458606</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-[var(--hm-brand-500)] flex items-center justify-center flex-shrink-0">
                           <Mail className="w-5 h-5 text-white" strokeWidth={1.5} />
                         </div>
                         <div>
                           <p className="text-sm text-[var(--hm-fg-muted)] !mb-0">{t('common.email')}</p>
-                          <a href="mailto:info@homico.ge" className="font-medium">info@homico.ge</a>
+                          <a href="mailto:contact@homico.co" className="font-medium">contact@homico.co</a>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-[var(--hm-brand-500)] flex items-center justify-center flex-shrink-0">
+                          <Phone className="w-5 h-5 text-white" strokeWidth={1.5} />
+                        </div>
+                        <div>
+                          <p className="text-sm text-[var(--hm-fg-muted)] !mb-0">{t('common.phone')}</p>
+                          <a href="tel:+995571072007" className="font-medium">+995 571 07 20 07</a>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -502,7 +527,7 @@ export default function TermsPage() {
                         </div>
                         <div>
                           <p className="text-sm text-[var(--hm-fg-muted)] !mb-0">{t('common.address')}</p>
-                          <p className="font-medium !mb-0">{t('terms.tbilisiGeorgia')}</p>
+                          <p className="font-medium !mb-0">{t('terms.registeredAddress')}</p>
                         </div>
                       </div>
                     </div>

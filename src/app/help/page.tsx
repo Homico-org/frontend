@@ -593,7 +593,7 @@ export default function HelpPage() {
         <section>
           <div className="grid sm:grid-cols-2 gap-3">
             <a
-              href="mailto:info@homico.ge"
+              href="mailto:contact@homico.co"
               className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)] hover:border-[var(--hm-brand-500)]/30 transition-colors group"
             >
               <div className="w-9 h-9 rounded-lg bg-[var(--hm-brand-500)]/10 flex items-center justify-center flex-shrink-0">
@@ -601,7 +601,7 @@ export default function HelpPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs text-[var(--hm-fg-muted)]">Email</p>
-                <p className="text-sm font-medium text-[var(--hm-fg-primary)] group-hover:text-[var(--hm-brand-500)] transition-colors">info@homico.ge</p>
+                <p className="text-sm font-medium text-[var(--hm-fg-primary)] group-hover:text-[var(--hm-brand-500)] transition-colors">contact@homico.co</p>
               </div>
             </a>
             <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)]">

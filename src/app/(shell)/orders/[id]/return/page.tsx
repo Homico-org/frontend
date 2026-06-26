@@ -9,7 +9,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 /**
- * BoG return URL. Reconciles the payment (handles the webhook-vs-return race),
+ * Flitt return URL. Reconciles the payment (handles the webhook-vs-return race),
  * then shows the result and links into the order.
  */
 export default function OrderReturnPage() {

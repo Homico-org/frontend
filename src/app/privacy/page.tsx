@@ -465,7 +465,7 @@ export default function PrivacyPage() {
                         </div>
                         <div>
                           <p className="text-sm text-[var(--hm-fg-muted)] !mb-0">{t('common.email')}</p>
-                          <a href="mailto:info@homico.ge" className="font-medium">info@homico.ge</a>
+                          <a href="mailto:contact@homico.co" className="font-medium">contact@homico.co</a>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -474,7 +474,7 @@ export default function PrivacyPage() {
                         </div>
                         <div>
                           <p className="text-sm text-[var(--hm-fg-muted)] !mb-0">{t('common.address')}</p>
-                          <p className="font-medium !mb-0">{t('privacy.tbilisiGeorgia')}</p>
+                          <p className="font-medium !mb-0">{t('privacy.registeredAddress')}</p>
                         </div>
                       </div>
                     </div>

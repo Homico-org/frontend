@@ -1348,10 +1348,9 @@ export default function Header({
                         {/* Pro-specific items */}
                         {user.role === "pro" && (
                           <>
-                            {/* Premium Plans - gated behind the premiumPage
-                                feature flag. OFF in prod until the paid-
-                                subscription launch; ON on dev for testing. */}
-                            {features.premiumPage && (
+                            {/* Premium Plans - shown to pros only when the
+                                premium MVP flag is on (decoupled from escrow). */}
+                            {features.premium && (
                               <Link
                                 href={cl("/pro/premium")}
                                 className="group flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 mx-2 rounded-xl"

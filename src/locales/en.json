@@ -1637,6 +1637,14 @@
         "message": "Your professional profile has been approved",
         "messageWithNote": "{notes}"
       },
+      "profile_changes_approved": {
+        "title": "Profile changes approved",
+        "message": "The changes you requested to your profile have been approved and are now live."
+      },
+      "profile_changes_rejected": {
+        "title": "Profile changes not approved",
+        "message": "Your requested profile changes were not approved. Reason: {reason}"
+      },
       "profile_rejected": {
         "title": "Profile Needs Updates",
         "message": "Your profile was not approved",
@@ -2523,7 +2531,8 @@
     "youCanManageCookieSettings": "You Can Manage Cookie Settings",
     "youHaveTheFollowingRights": "You Have The Following Rights",
     "yourDataMayBeProcessed": "Your Data May Be Processed",
-    "yourPrivacyMatters": "Your Privacy Matters"
+    "yourPrivacyMatters": "Your Privacy Matters",
+    "registeredAddress": "Tbilisi, 42 Mukhrani St."
   },
   "terms": {
     "title": "Terms of Service",
@@ -2645,7 +2654,17 @@
     "youViolateTheseTermsOf": "You Violate These Terms Of...",
     "youWillProvideQualityServices": "You Will Provide Quality Services",
     "youWillRespondToClient": "You Will Respond To Client",
-    "yourActionsHarmThePlatform": "Your Actions Harm The Platform"
+    "yourActionsHarmThePlatform": "Your Actions Harm The Platform",
+    "legalEntity": "Legal entity",
+    "companyLegalName": "Homico LLC",
+    "idNumber": "ID",
+    "premiumIncludes7DayRefund": "Premium subscriptions include a 7-day money-back guarantee",
+    "securePaymentProcessing": "Card payments are processed securely by our licensed payment provider",
+    "deliveryHeading": "Delivery of digital services",
+    "deliveryBody": "Premium is a digital subscription. Once your card payment is confirmed, premium activates on your account immediately. There is no physical delivery.",
+    "refundsHeading": "Refunds",
+    "refundsBody": "Premium includes a 7-day money-back guarantee. If you are not satisfied within 7 days of payment, email contact@homico.co and we will refund you in full to the original card. See our Refund Policy for details.",
+    "registeredAddress": "Tbilisi, 42 Mukhrani St."
   },
   "users": {
     "title": "User",
@@ -3481,7 +3500,42 @@
     "deliveryFreeHint": "Add {amount} for free delivery",
     "delivery_all_eta": "5-9 days",
     "delivery_bulk_eta": "3-7 days",
-    "delivery_by_items_eta": "2-6 days"
+    "delivery_by_items_eta": "2-6 days",
+    "sku": "Ref / SKU",
+    "skuHint": "Model or supplier code",
+    "dimensions": "Dimensions",
+    "dimensionsHint": "e.g. 120 x 60 x H85 cm",
+    "leadTime": "Lead time",
+    "leadDaysUnit": "days",
+    "eta": "Delivery date",
+    "viewCards": "Cards",
+    "viewSchedule": "Schedule",
+    "colItem": "Item",
+    "colRef": "Ref",
+    "colQty": "Qty",
+    "colUnit": "Unit",
+    "colTotal": "Total",
+    "colLead": "Lead",
+    "colEta": "ETA",
+    "colStatus": "Status",
+    "leadDays": "{n} d",
+    "importFromLink": "Fill from link",
+    "importedFromLink": "Filled from the link",
+    "importFailed": "Couldn't read that link",
+    "export": "Export",
+    "colApproval": "Sign-off",
+    "apprApproved": "Approved",
+    "apprChanges": "Changes",
+    "apprAwaiting": "Awaiting",
+    "selAddToSchedule": "Add to schedule",
+    "selOnSchedule": "On the schedule",
+    "selAddedToSchedule": "Added to the schedule",
+    "overBudget": "{amount} over",
+    "underBudget": "{amount} left",
+    "groupBy": "Group by",
+    "groupCategory": "Category",
+    "groupRoom": "Room",
+    "groupSupplier": "Supplier"
   },
   "polls": {
     "title": "Polls",
@@ -4347,7 +4401,10 @@
     "helpCenter": "Help Center",
     "privacyPolicy": "Privacy Policy",
     "terms": "Terms of Service",
-    "contact": "Contact"
+    "contact": "Contact",
+    "refundPolicy": "Refund Policy",
+    "companyDetails": "Homico LLC · ID {id}",
+    "address": "Tbilisi, 42 Mukhrani St."
   },
   "tools": {
     "back": "Tools",
@@ -5454,6 +5511,29 @@
       "reviewSubmit": "Reviews submitted",
       "registerPro": "New pros",
       "registerClient": "New clients"
+    }
+  },
+  "blog": {
+    "eyebrow": "Journal",
+    "title": "Renovation, without the guesswork",
+    "subtitle": "Practical guides, real budgets, and stories from Tbilisi homes.",
+    "featured": "Featured",
+    "read": "Read",
+    "minRead": "{min} min read",
+    "all": "All",
+    "back": "All articles",
+    "writtenBy": "Written by",
+    "share": "Share",
+    "keepReading": "Keep reading",
+    "ctaTitle": "Planning a renovation?",
+    "ctaText": "Find a verified pro and run the whole project in one place.",
+    "ctaButton": "Find a pro",
+    "cat": {
+      "renovation": "Renovation",
+      "design": "Design",
+      "budget": "Budget",
+      "guides": "Guides",
+      "stories": "Stories"
     }
   }
 }
