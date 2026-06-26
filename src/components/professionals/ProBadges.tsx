@@ -49,17 +49,19 @@ export function deriveProBadges(
   const jobs = pro.completedJobs ?? 0;
 
   const out: StatusPillVariant[] = [];
-  // Homico Partner first - it's the strongest trust signal (signed contract +
-  // the only bookable pros).
+  // Power order, strongest first. Homico Partner leads (signed contract + the
+  // only bookable pros). Premium sits right below it: it's the paid/granted
+  // promotion, so it must surface near the top instead of being buried under
+  // the auto-earned badges and clipped by `max`.
   if (pro.isHomicoPartner) out.push('homicoPartner');
+  if (pro.isPremium) out.push('premium');
   if (pro.isFeatured) out.push('featured');
-  // Admin-granted quality signal — sits just below Featured, above auto badges.
+  // Admin-granted quality signal — below the commercial badges, above auto ones.
   if (pro.isTopQuality) out.push('topQuality');
   if (pro.verificationStatus === 'verified') out.push('verified');
   if (rating >= TOP_RATED_MIN_RATING && reviews >= TOP_RATED_MIN_REVIEWS)
     out.push('topRated');
   if (jobs >= EXPERIENCED_MIN_JOBS) out.push('experienced');
-  if (pro.isPremium) out.push('premium');
   if (reviews === 0 && jobs === 0 && out.length === 0) out.push('new');
 
   return out.slice(0, max);
