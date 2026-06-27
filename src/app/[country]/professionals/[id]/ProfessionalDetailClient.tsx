@@ -610,6 +610,13 @@ export default function ProfessionalDetailClient({
     profile?.premiumTier === "none" ||
     profile?.premiumTier === "basic";
 
+  // The "Contact" (in-app messaging) CTA is a premium-tier perk, but it
+  // depends on the messaging marketplace, which is OFF for the premium-only
+  // launch (gated by features.bookings). While that's off, every pro - paid
+  // or free - surfaces the phone reveal instead, so no one lands on a dead
+  // messaging path. Premium pros get the messaging CTA back once it's on.
+  const showPhoneCta = isBasicTier || !features.bookings;
+
   const pricingMeta = useMemo(() => {
     if (!profile) return null;
     const model =
@@ -688,7 +695,7 @@ export default function ProfessionalDetailClient({
     // we only gate the auth wall on the messaging path because that
     // creates a server-side conversation thread that needs a real
     // account on both ends.
-    if (isBasicTier && profile?.phone) {
+    if (showPhoneCta && profile?.phone) {
       setPhoneRevealed(true);
       trackEvent(AnalyticsEvent.CONTACT_REVEAL, {
         proId: profile.id,
@@ -2442,12 +2449,12 @@ export default function ProfessionalDetailClient({
                             }}
                           >
                             <span className="relative flex items-center gap-2">
-                              {isBasicTier ? (
+                              {showPhoneCta ? (
                                 <Phone className="w-4 h-4" strokeWidth={2.25} />
                               ) : (
                                 <MessageSquare className="w-4 h-4" strokeWidth={2.25} />
                               )}
-                              {isBasicTier
+                              {showPhoneCta
                                 ? t("professional.showPhone")
                                 : t("professional.contact")}
                             </span>
@@ -3338,7 +3345,7 @@ export default function ProfessionalDetailClient({
                 }}
               />
               <span className="relative flex items-center justify-center gap-2">
-                {isBasicTier ? (
+                {showPhoneCta ? (
                   <motion.span
                     animate={{ rotate: [0, -12, 12, -8, 0] }}
                     transition={{
@@ -3352,7 +3359,7 @@ export default function ProfessionalDetailClient({
                 ) : (
                   <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
-                {isBasicTier
+                {showPhoneCta
                   ? t("professional.showPhone")
                   : t("professional.contact")}
               </span>
