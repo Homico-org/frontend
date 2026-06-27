@@ -52,6 +52,7 @@
     "filters": "Фильтры",
     "clear": "Очистить",
     "clearSearch": "Очистить поиск",
+    "searchLocationPlaceholder": "Найдите город или район…",
     "emailSupport": "Поддержка по email",
     "breadcrumb": "Хлебные крошки",
     "networkError": "Ошибка соединения, проверьте интернет",
