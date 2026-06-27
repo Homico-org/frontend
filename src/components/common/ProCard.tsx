@@ -13,7 +13,7 @@ import { storage } from "@/services/storage";
 import { ProProfile, ProStatus } from "@/types";
 import { currencySymbol, formatCurrency, formatCurrencyRange } from "@/utils/currency";
 import { translateCity } from "@/data/cities";
-import { ArrowUpRight, Briefcase, CalendarPlus, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, MapPin, Play, Plus, Star, Wallet, Zap } from "lucide-react";
+import { ArrowUpRight, Briefcase, CalendarPlus, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, ImageOff, MapPin, Play, Plus, Star, Wallet, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -48,6 +48,13 @@ export default function ProCard({
   const { categories: catalogCategories, getSubcategoriesForCategory } = useCategories();
   const [imageError, setImageError] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  // Portfolio slides that failed to load. The carousel <Image> has no native
+  // fallback, so a transient load failure would otherwise leave the browser's
+  // broken-image glyph stuck with nothing behind it. Track per source URL and
+  // swap to a neutral placeholder instead.
+  const [failedSlideSrcs, setFailedSlideSrcs] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [isHovered, setIsHovered] = useState(false);
   const autoSlideRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -520,6 +527,13 @@ export default function ProCard({
                   </div>
                 );
               }
+              if (failedSlideSrcs.has(slide.src)) {
+                return (
+                  <div className="absolute inset-0 flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
+                    <ImageOff className="w-6 h-6 text-[var(--hm-fg-muted)]" />
+                  </div>
+                );
+              }
               return (
                 <Image
                   src={storage.getOptimizedImageUrl(slide.src, { width: 500, quality: 70 })}
@@ -528,6 +542,13 @@ export default function ProCard({
                   sizes="(max-width: 640px) 100vw, 400px"
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
+                  onError={() =>
+                    setFailedSlideSrcs((prev) => {
+                      const next = new Set(prev);
+                      next.add(slide.src);
+                      return next;
+                    })
+                  }
                 />
               );
             })()}
