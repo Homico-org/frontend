@@ -32,7 +32,10 @@ export const features = {
    * Premium subscriptions for pros (pay-per-period, manual renewal, no escrow).
    * Decoupled from `payments` so premium can launch for the MVP as a simple
    * platform charge while escrow / marketplace payouts stay off until the bank
-   * approves that model.
+   * approves that model. SINGLE source of truth for the whole feature: the
+   * header/dropdown link, the /pro/premium page, AND the middleware route gate
+   * (so the link and the page can never disagree - the old split premiumPage
+   * flag let the link show while the route redirected to the landing).
    */
   premium: parseFlag(process.env.NEXT_PUBLIC_FEATURE_PREMIUM),
   /** Self-service account deletion. OFF until backend deletion + retention policy is finalized. */
@@ -46,13 +49,4 @@ export const features = {
    * catalogs + pricing + city lists are seeded for additional countries.
    */
   marketplaceSelector: parseFlag(process.env.NEXT_PUBLIC_FEATURE_MARKETPLACE_SELECTOR),
-  /**
-   * Pro premium pricing page (`/pro/premium` + checkout/success). OFF in
-   * production until the paid-subscription launch is announced - the page
-   * shipped earlier but must not be publicly reachable yet. Stays ON on
-   * dev for internal testing (set NEXT_PUBLIC_FEATURE_PREMIUM_PAGE=true).
-   * When disabled, the header link is hidden AND the middleware bounces
-   * any /pro/premium* URL (direct or shared) to the home landing.
-   */
-  premiumPage: parseFlag(process.env.NEXT_PUBLIC_FEATURE_PREMIUM_PAGE),
 } as const;

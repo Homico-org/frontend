@@ -50,6 +50,14 @@ interface User {
   isProfileDeactivated?: boolean;
   deactivatedUntil?: string;
   deactivationReason?: string;
+  // Premium subscription state (pros). `/users/me` returns these already
+  // expiry-checked: `isPremium`/`premiumTier` are only truthy while the
+  // subscription is live, so the UI can trust them without re-comparing
+  // dates. Drives the avatar-dropdown premium item, the /pro/premium status
+  // banner, and the success page's real-status confirmation.
+  isPremium?: boolean;
+  premiumTier?: 'none' | 'basic' | 'pro' | 'elite';
+  premiumExpiresAt?: string;
 }
 
 interface AuthContextType {
@@ -61,6 +69,7 @@ interface AuthContextType {
   login: (accessToken: string, user: User, refreshToken?: string) => void;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
+  refreshUser: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -112,7 +121,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         selectedServices: userData.selectedServices,
         accountType: userData.accountType,
         isProfileCompleted: userData.isProfileCompleted,
-        verificationStatus: userData.verificationStatus
+        verificationStatus: userData.verificationStatus,
+        // Without these, the avatar dropdown + premium page can never tell a
+        // paid pro from a free one - `/users/me` returns them already
+        // expiry-checked, so a lapsed sub arrives as isPremium:false.
+        isPremium: userData.isPremium,
+        premiumTier: userData.premiumTier,
+        premiumExpiresAt: userData.premiumExpiresAt,
       };
     } catch (err) {
       console.error('Token validation failed:', err);
@@ -276,6 +291,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  // Re-pull the canonical user from `/users/me` and replace local state.
+  // Used after side-effecting flows (premium purchase, profile edits) so the
+  // whole app reflects the new server state without a full reload. Returns
+  // the fresh user (or null if the token is no longer valid).
+  const refreshUser = useCallback(async (): Promise<User | null> => {
+    const activeToken =
+      token || (typeof window !== 'undefined' ? localStorage.getItem('access_token') : null);
+    if (!activeToken) return null;
+    const fresh = await validateToken(activeToken);
+    if (fresh) {
+      setUser(prev => {
+        // Preserve a freshly-uploaded local avatar (data URL) the backend
+        // may not have yet - same merge rule as boot validation.
+        const merged =
+          prev?.avatar?.startsWith('data:') && !fresh.avatar
+            ? { ...fresh, avatar: prev.avatar }
+            : fresh;
+        localStorage.setItem('user', JSON.stringify(merged));
+        return merged;
+      });
+    }
+    return fresh;
+  }, [token, validateToken]);
+
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
     user,
@@ -286,7 +325,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     updateUser,
-  }), [user, token, isLoading, isAuthValidated, login, logout, updateUser]);
+    refreshUser,
+  }), [user, token, isLoading, isAuthValidated, login, logout, updateUser, refreshUser]);
 
   return (
     <AuthContext.Provider value={contextValue}>

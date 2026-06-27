@@ -15,6 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useCountryLink } from "@/hooks/useCountry";
 import { stripCountryPrefix } from "@/utils/countryLink";
+import { formatPremiumDate, isPaidTier, premiumTierName } from "@/utils/premium";
 import { useSupportUnread } from "@/hooks/useSupportUnread";
 import { trackEvent } from "@/hooks/useTracker";
 import { useMyProjects } from "@/hooks/useMyProjects";
@@ -37,6 +38,7 @@ import {
   ImagePlus,
   LayoutDashboard,
   LayoutGrid,
+  Crown,
   ListChecks,
   LogIn,
   LogOut,
@@ -88,7 +90,7 @@ export default function Header({
 }) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { t } = useLanguage();
+  const { t, locale, pick } = useLanguage();
   const { unreadCount, activityCounts, setNotificationsPanelOpen } = useNotifications();
   // Country-aware nav. Keeps `/professionals`, `/jobs`, `/post-job`
   // links inside the active marketplace so clicks don't bounce
@@ -1348,45 +1350,76 @@ export default function Header({
                         {/* Pro-specific items */}
                         {user.role === "pro" && (
                           <>
-                            {/* Premium Plans - shown to pros only when the
-                                premium MVP flag is on (decoupled from escrow). */}
-                            {features.premium && (
-                              <Link
-                                href={cl("/pro/premium")}
-                                className="group flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 mx-2 rounded-xl"
-                                style={{
-                                  background: `linear-gradient(135deg, ${ACCENT_COLOR}12 0%, ${ACCENT_COLOR}08 100%)`,
-                                  border: `1px solid ${ACCENT_COLOR}25`,
-                                }}
-                                onClick={() => setShowDropdown(false)}
-                              >
-                                <div
-                                  className="w-8 h-8 rounded-lg flex items-center justify-center"
-                                  style={{
-                                    background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #D13C14 100%)`,
-                                  }}
+                            {/* Premium - shown to pros only when the premium
+                                MVP flag is on (decoupled from escrow). The item
+                                is state-aware: an ACTIVE subscriber sees a calm
+                                "Premium active · until {date}" confirmation
+                                (success-tinted, manage-on-click); a free pro
+                                sees the single-accent "Premium Plans" upsell. */}
+                            {features.premium &&
+                              (isPaidTier(user.premiumTier) && user.isPremium ? (
+                                <Link
+                                  href={cl("/pro/premium")}
+                                  className="group flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 mx-2 rounded-xl border border-[var(--hm-success-500)]/25 bg-[var(--hm-success-500)]/[0.07] hover:bg-[var(--hm-success-500)]/[0.12]"
+                                  onClick={() => setShowDropdown(false)}
                                 >
-                                  <Shield
-                                    className="w-4 h-4 text-white"
-                                    strokeWidth={1.5}
-                                  />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <span
-                                    className="font-semibold block"
-                                    style={{ color: ACCENT_COLOR }}
+                                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--hm-success-500)]/[0.12] text-[var(--hm-success-600)]">
+                                    <Crown className="w-4 h-4" strokeWidth={1.75} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <span className="font-semibold block text-[var(--hm-fg-primary)]">
+                                      {premiumTierName(user.premiumTier, pick) ||
+                                        t("header.premiumPlans")}
+                                    </span>
+                                    <span className="text-[10px] text-[var(--hm-success-600)]">
+                                      {user.premiumExpiresAt
+                                        ? t("header.premiumActiveUntil", {
+                                            date: formatPremiumDate(
+                                              user.premiumExpiresAt,
+                                              locale,
+                                            ),
+                                          })
+                                        : t("header.premiumActive")}
+                                    </span>
+                                  </div>
+                                </Link>
+                              ) : (
+                                <Link
+                                  href={cl("/pro/premium")}
+                                  className="group flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 mx-2 rounded-xl"
+                                  style={{
+                                    background: `linear-gradient(135deg, ${ACCENT_COLOR}12 0%, ${ACCENT_COLOR}08 100%)`,
+                                    border: `1px solid ${ACCENT_COLOR}25`,
+                                  }}
+                                  onClick={() => setShowDropdown(false)}
+                                >
+                                  <div
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                                    style={{
+                                      background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #D13C14 100%)`,
+                                    }}
                                   >
-                                    {t("header.premiumPlans")}
-                                  </span>
-                                  <span
-                                    className="text-[10px]"
-                                    style={{ color: `${ACCENT_COLOR}99` }}
-                                  >
-                                    {t("header.boostVisibility")}
-                                  </span>
-                                </div>
-                              </Link>
-                            )}
+                                    <Shield
+                                      className="w-4 h-4 text-white"
+                                      strokeWidth={1.5}
+                                    />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <span
+                                      className="font-semibold block"
+                                      style={{ color: ACCENT_COLOR }}
+                                    >
+                                      {t("header.premiumPlans")}
+                                    </span>
+                                    <span
+                                      className="text-[10px]"
+                                      style={{ color: `${ACCENT_COLOR}99` }}
+                                    >
+                                      {t("header.boostVisibility")}
+                                    </span>
+                                  </div>
+                                </Link>
+                              ))}
 
                             {/* Add portfolio work - pros kept reporting they
                                 couldn't find where to add their work; the only

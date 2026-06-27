@@ -5,7 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { features } from "@/config/features";
-import { ArrowUpRight, Check, ChevronDown, Star } from "lucide-react";
+import { formatPremiumDate, premiumTierName } from "@/utils/premium";
+import { ArrowUpRight, Check, ChevronDown, Crown, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -256,17 +257,18 @@ function FAQItem({
 
 export default function PremiumPlansPage() {
   const { user, isAuthenticated } = useAuth();
-  const { t, pick } = useLanguage();
+  const { t, pick, locale } = useLanguage();
   const router = useRouter();
   const { trackEvent } = useAnalytics();
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("yearly");
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
   const isPro = user?.role === "pro";
+  // `/users/me` already expiry-checks these, returning "none"/false once a
+  // subscription lapses - so an active tier here is always live.
   const currentTier =
-    user && "proProfile" in user
-      ? (user as { proProfile?: { premiumTier?: string } }).proProfile?.premiumTier || "none"
-      : "none";
+    user?.isPremium && user.premiumTier ? user.premiumTier : "none";
+  const premiumExpiresAt = user?.premiumExpiresAt;
 
   useEffect(() => {
     trackEvent(AnalyticsEvent.PREMIUM_VIEW);
@@ -299,7 +301,7 @@ export default function PremiumPlansPage() {
     },
     {
       title: { en: "On the homepage", ka: "მთავარ გვერდზე" },
-      body: { en: "A featured spot where demand starts.", ka: "გამორჩeული ადგილი, სადაც ძიება იწყება." },
+      body: { en: "A featured spot where demand starts.", ka: "გამორჩეული ადგილი, სადაც ძიება იწყება." },
     },
     {
       title: { en: "A badge that builds trust", ka: "ბეჯი, რომელიც ანდობს" },
@@ -349,6 +351,22 @@ export default function PremiumPlansPage() {
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="grid items-center gap-20 lg:grid-cols-[1.05fr_0.95fr]">
               <div>
+                {currentTier !== "none" && (
+                  <div className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-[var(--hm-success-500)]/30 bg-[var(--hm-success-500)]/[0.08] px-4 py-2.5 text-[13px] text-[var(--hm-success-600)]">
+                    <Crown className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+                    <span className="font-semibold">
+                      {premiumTierName(currentTier, pick)}{" "}
+                      {t("premium.plan")}
+                    </span>
+                    <span className="text-[var(--hm-fg-muted)]">
+                      {premiumExpiresAt
+                        ? t("header.premiumActiveUntil", {
+                            date: formatPremiumDate(premiumExpiresAt, locale),
+                          })
+                        : t("header.premiumActive")}
+                    </span>
+                  </div>
+                )}
                 <p className="mb-8 font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--hm-fg-subtle)]">
                   Homico Premium
                 </p>
@@ -361,7 +379,7 @@ export default function PremiumPlansPage() {
                 <p className="mt-8 max-w-md text-[16px] font-light leading-relaxed text-[var(--hm-fg-muted)] sm:text-[17px]">
                   {pick({
                     en: "Premium pros appear at the top of search, on the homepage, and with a standout badge - right where clients decide who to call.",
-                    ka: "Premium ოსტატები ჩნდებიან ძიების თავში, მთავარ გვერდზე და გამორჩeული ბეჯით. იქ, სადაც კლიენტი ირჩევს.",
+                    ka: "Premium ოსტატები ჩნდებიან ძიების თავში, მთავარ გვერდზე და გამორჩეული ბეჯით. იქ, სადაც კლიენტი ირჩევს.",
                   })}
                 </p>
 
