@@ -52,6 +52,7 @@
     "filters": "Filters",
     "clear": "Clear",
     "clearSearch": "Clear search",
+    "searchLocationPlaceholder": "Search a city or area…",
     "emailSupport": "Email support",
     "breadcrumb": "Breadcrumb",
     "networkError": "Network error - please check your connection",

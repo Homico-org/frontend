@@ -52,6 +52,7 @@
     "filters": "ფილტრები",
     "clear": "გასუფთავება",
     "clearSearch": "ძიების გასუფთავება",
+    "searchLocationPlaceholder": "მოძებნე ქალაქი ან მდებარეობა…",
     "emailSupport": "მხარდაჭერა ელფოსტით",
     "breadcrumb": "გვერდის გზა",
     "networkError": "კავშირის შეცდომა, შეამოწმეთ ინტერნეტი",
