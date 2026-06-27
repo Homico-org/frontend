@@ -13,7 +13,7 @@ import { storage } from "@/services/storage";
 import { ProProfile, ProStatus } from "@/types";
 import { currencySymbol, formatCurrency, formatCurrencyRange } from "@/utils/currency";
 import { translateCity } from "@/data/cities";
-import { ArrowUpRight, Briefcase, CalendarPlus, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, ImageOff, MapPin, Play, Plus, Star, Wallet, Zap } from "lucide-react";
+import { ArrowUpRight, Briefcase, CalendarPlus, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, MapPin, Play, Plus, Star, Wallet, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -257,6 +257,14 @@ export default function ProCard({
     return slides;
   }, [profile.portfolioPreviewImages, profile.portfolioPreviewBeforeAfter, profile.portfolioPreviewVideos, profile.portfolioProjects]);
 
+  // Drop image slides that failed to load (e.g. a deleted file or a stale
+  // seed reference). The card then shows the next valid photo, or the clean
+  // no-portfolio band if none remain - never a broken-image icon.
+  const visibleSlides = useMemo(
+    () => mediaSlides.filter((s) => !(s.type === 'image' && failedSlideSrcs.has(s.src))),
+    [mediaSlides, failedSlideSrcs],
+  );
+
   const totalMediaCount = useMemo(() => {
     const previewImages = profile.portfolioPreviewImages?.length || 0;
     const previewBA = profile.portfolioPreviewBeforeAfter?.length || 0;
@@ -278,16 +286,16 @@ export default function ProCard({
 
   // Auto-advance slides every 4s, pause on hover or when offscreen
   useEffect(() => {
-    if (isHovered || !isInView || mediaSlides.length <= 1) {
+    if (isHovered || !isInView || visibleSlides.length <= 1) {
       if (autoSlideRef.current) clearInterval(autoSlideRef.current);
       autoSlideRef.current = null;
       return;
     }
     autoSlideRef.current = setInterval(() => {
-      setActiveSlide((p) => (p + 1) % mediaSlides.length);
+      setActiveSlide((p) => (p + 1) % visibleSlides.length);
     }, 4000);
     return () => { if (autoSlideRef.current) clearInterval(autoSlideRef.current); };
-  }, [isHovered, isInView, mediaSlides.length]);
+  }, [isHovered, isInView, visibleSlides.length]);
 
   // Match the canonical Top-Rated rule (deriveProBadges): rating + review
   // volume. `completedProjects` was the wrong field - it's usually undefined,
@@ -482,7 +490,7 @@ export default function ProCard({
   }
 
   // Default / Compact variant - unified card with portfolio photos
-  const hasMedia = mediaSlides.length > 0;
+  const hasMedia = visibleSlides.length > 0;
   return (
     <Link ref={cardRef} href={`/${(profile.country ?? 'GE').toLowerCase()}/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} - ${t('browse.professionals')}`}>
       <div
@@ -503,7 +511,7 @@ export default function ProCard({
           >
             {/* Current slide */}
             {(() => {
-              const slide = mediaSlides[activeSlide] || mediaSlides[0];
+              const slide = visibleSlides[activeSlide] || visibleSlides[0];
               if (!slide) return null;
               if (slide.type === 'beforeAfter') {
                 return (
@@ -529,13 +537,6 @@ export default function ProCard({
                   </div>
                 );
               }
-              if (failedSlideSrcs.has(slide.src)) {
-                return (
-                  <div className="absolute inset-0 flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
-                    <ImageOff className="w-6 h-6 text-[var(--hm-fg-muted)]" />
-                  </div>
-                );
-              }
               return (
                 <Image
                   src={storage.getOptimizedImageUrl(slide.src, { width: 500, quality: 70 })}
@@ -556,18 +557,18 @@ export default function ProCard({
             })()}
 
             {/* Slide nav arrows */}
-            {mediaSlides.length > 1 && (
+            {visibleSlides.length > 1 && (
               <>
                 <button
                   aria-label="Previous image"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide((p) => (p - 1 + mediaSlides.length) % mediaSlides.length); }}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide((p) => (p - 1 + visibleSlides.length) % visibleSlides.length); }}
                   className="absolute left-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10"
                 >
                   <ChevronLeft className="w-4 h-4 text-[var(--hm-fg-secondary)]" />
                 </button>
                 <button
                   aria-label="Next image"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide((p) => (p + 1) % mediaSlides.length); }}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide((p) => (p + 1) % visibleSlides.length); }}
                   className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10"
                 >
                   <ChevronRight className="w-4 h-4 text-[var(--hm-fg-secondary)]" />
@@ -576,17 +577,17 @@ export default function ProCard({
             )}
 
             {/* Dot indicators */}
-            {mediaSlides.length > 1 && (
+            {visibleSlides.length > 1 && (
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-                {mediaSlides.slice(0, 6).map((_, i) => (
+                {visibleSlides.slice(0, 6).map((_, i) => (
                   <button
                     key={i}
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide(i); }}
                     className={`w-1.5 h-1.5 rounded-full transition-all ${activeSlide === i ? 'bg-[var(--hm-bg-elevated)] w-3' : 'bg-white/50'}`}
                   />
                 ))}
-                {mediaSlides.length > 6 && (
-                  <span className="text-[8px] text-white/70 font-medium self-center ml-0.5">+{mediaSlides.length - 6}</span>
+                {visibleSlides.length > 6 && (
+                  <span className="text-[8px] text-white/70 font-medium self-center ml-0.5">+{visibleSlides.length - 6}</span>
                 )}
               </div>
             )}
