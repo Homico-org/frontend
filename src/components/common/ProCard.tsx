@@ -132,13 +132,15 @@ export default function ProCard({
 
   const avatarUrl = profile.avatar ? storage.getFileUrl(profile.avatar) : null;
 
-  // Completed jobs count
-  const portfolioCount = profile.portfolioProjects?.length || 0;
+  // Completed jobs count.
   const portfolioItemCount = profile.portfolioItemCount || 0;
   const externalJobs = profile.externalCompletedJobs || 0;
-  const completedProjects = profile.completedProjects || 0;
   const completedJobsCounter = profile.completedJobs || 0;
-  const completedJobs = Math.max(completedJobsCounter, portfolioCount, portfolioItemCount, completedProjects, externalJobs);
+  // "Completed jobs" must mean actual jobs done — NOT portfolio size. Folding
+  // portfolio counts in here made a pro with e.g. 10 portfolio photos and zero
+  // jobs show "10 completed jobs", which is false. Count only real platform
+  // jobs + the pro's declared off-platform jobs.
+  const completedJobs = Math.max(completedJobsCounter, externalJobs);
 
   // Filter-aware pricing: show price only for the filtered service(s).
   // Range-aware - when an entry has `priceMin`/`priceMax`, use its bounds
@@ -715,23 +717,31 @@ export default function ProCard({
             />
           </div>
 
-          {/* Stats row */}
+          {/* Stats row. Separators are LEADING (shown only when something
+              precedes), so any item can be absent — e.g. completed-jobs is
+              hidden at 0 — without leaving a dangling "·". */}
           <div className="flex items-center gap-1.5 text-[11px] text-[var(--hm-fg-muted)] mb-2 flex-wrap">
             {matchedExperience && (
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {matchedExperience}
+              </span>
+            )}
+            {completedJobs > 0 && (
               <>
+                {matchedExperience && (
+                  <span className="text-[var(--hm-fg-muted)]">·</span>
+                )}
                 <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {matchedExperience}
+                  {completedJobs} {t('professional.completedJobsCount')}
                 </span>
-                <span className="text-[var(--hm-fg-muted)]">·</span>
               </>
             )}
-            <span className="flex items-center gap-1">
-              {completedJobs} {t('professional.completedJobsCount')}
-            </span>
             {matchedPricing && (
               <>
-                <span className="text-[var(--hm-fg-muted)]">·</span>
+                {(matchedExperience || completedJobs > 0) && (
+                  <span className="text-[var(--hm-fg-muted)]">·</span>
+                )}
                 <span className="flex items-center gap-1 text-[var(--hm-brand-500)] font-semibold">
                   <Wallet className="w-3 h-3" />
                   {matchedPricing.value}
@@ -740,7 +750,9 @@ export default function ProCard({
             )}
             {responseTimeLabel && (
               <>
-                <span className="text-[var(--hm-fg-muted)]">·</span>
+                {(matchedExperience || completedJobs > 0 || matchedPricing) && (
+                  <span className="text-[var(--hm-fg-muted)]">·</span>
+                )}
                 <span
                   className={`flex items-center gap-1 font-medium ${
                     responseTimeLabel.isFast
