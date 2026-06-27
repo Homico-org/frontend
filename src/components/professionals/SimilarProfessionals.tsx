@@ -1,6 +1,7 @@
 "use client";
 
 import ServiceBookingModal from "@/components/booking/ServiceBookingModal";
+import { features } from "@/config/features";
 import ProCard from "@/components/common/ProCard";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ACCENT_COLOR } from "@/constants/theme";
@@ -168,7 +169,7 @@ export default function SimilarProfessionals({
                   variant="compact"
                   showLikeButton={false}
                   activeSubcategories={subcategories}
-                  onBook={handleBook}
+                  onBook={features.bookings ? handleBook : undefined}
                 />
               </div>
             ))}
@@ -202,7 +203,7 @@ export default function SimilarProfessionals({
                   variant="compact"
                   showLikeButton={false}
                   activeSubcategories={subcategories}
-                  onBook={handleBook}
+                  onBook={features.bookings ? handleBook : undefined}
                 />
               </div>
             ))}

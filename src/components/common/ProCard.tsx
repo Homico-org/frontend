@@ -435,9 +435,9 @@ export default function ProCard({
         >
           <div className="flex items-center gap-3.5">
             <div className="relative flex-shrink-0">
-              <div className="w-14 h-14 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] ring-2 ring-white shadow-md">
+              <div className="relative w-14 h-14 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] ring-2 ring-white shadow-md">
                 {avatarUrl && !imageError ? (
-                  <Image src={avatarUrl} alt={profile.name} fill sizes="56px" className="object-cover" onError={() => setImageError(true)} />
+                  <Image src={avatarUrl} alt={profile.name} fill sizes="56px" unoptimized className="object-cover" onError={() => setImageError(true)} />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-lg font-bold text-[var(--hm-fg-muted)]">{profile.name.charAt(0)}</div>
                 )}
