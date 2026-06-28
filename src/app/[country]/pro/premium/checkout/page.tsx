@@ -82,11 +82,65 @@ function CheckoutContent() {
   const yearlySaving = tierPrices.monthly * 12 - tierPrices.yearly;
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [promoInput, setPromoInput] = useState("");
+  const [promo, setPromo] = useState<{ finalAmount: number; code: string } | null>(null);
+  const [promoErr, setPromoErr] = useState("");
+  const [applyingPromo, setApplyingPromo] = useState(false);
+
+  // Effective price after any applied promo. Monthly-only at launch, so the
+  // promo always discounts the monthly amount.
+  const effectivePrice = promo ? promo.finalAmount : price;
+
+  const PROMO_MESSAGES: Record<string, { en: string; ka: string }> = {
+    INVALID_PROMO: { en: "Invalid code", ka: "არასწორი კოდი" },
+    EXPIRED_PROMO: { en: "This code has expired", ka: "კოდს ვადა გაუვიდა" },
+    PROMO_USED_UP: { en: "This code is used up", ka: "კოდი ამოწურულია" },
+    PROMO_NOT_FOR_TIER: { en: "Not valid for this plan", ka: "არ მოქმედებს ამ გეგმაზე" },
+  };
+
+  const applyPromo = async () => {
+    const code = promoInput.trim();
+    if (!code) return;
+    setApplyingPromo(true);
+    setPromoErr("");
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_URL}/payments/premium/preview`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ tier: tierId, period, promoCode: code }),
+      });
+      const data = (await res.json()) as {
+        finalAmount?: number;
+        discounted?: boolean;
+        code?: string;
+        message?: string;
+      };
+      if (!res.ok || !data?.discounted) {
+        const m = PROMO_MESSAGES[String(data?.message || "")] || {
+          en: "Code didn't apply",
+          ka: "კოდი არ მოქმედებს",
+        };
+        setPromoErr(pick(m));
+        setPromo(null);
+        return;
+      }
+      setPromo({ finalAmount: data.finalAmount ?? price, code: data.code ?? code });
+    } catch {
+      setPromoErr(pick({ en: "Couldn't check the code", ka: "კოდის შემოწმება ვერ მოხერხდა" }));
+    } finally {
+      setApplyingPromo(false);
+    }
+  };
 
   const handlePay = async () => {
     setIsProcessing(true);
     try {
-      trackEvent(AnalyticsEvent.PREMIUM_PURCHASE, { planType: tierId, planPrice: price });
+      trackEvent(AnalyticsEvent.PREMIUM_PURCHASE, { planType: tierId, planPrice: effectivePrice });
       // Create a premium intent and hand off to the provider's hosted page.
       // The /pro/premium/return page reconciles + grants on the way back.
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -97,7 +151,7 @@ function CheckoutContent() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ tier: tierId, period }),
+        body: JSON.stringify({ tier: tierId, period, promoCode: promo?.code }),
       });
       if (!res.ok) {
         // Already subscribed - one plan at a time. Bounce back with a clear note.
@@ -173,16 +227,22 @@ function CheckoutContent() {
               </span>
             </div>
 
-            <div className="mt-4 flex items-baseline gap-1.5">
+            <div className="mt-4 flex items-baseline gap-2">
+              {promo && (
+                <span className="text-[20px] font-light tabular-nums text-[var(--hm-fg-subtle)] line-through">
+                  {currency}
+                  {price}
+                </span>
+              )}
               <span className="text-[44px] font-light leading-none tabular-nums tracking-[-0.03em] text-[var(--hm-fg-primary)]">
                 {currency}
-                {price}
+                {effectivePrice}
               </span>
               <span className="font-mono text-[11px] uppercase tracking-[0.04em] text-[var(--hm-fg-subtle)]">
                 / {periodLabel}
               </span>
             </div>
-            {period === "yearly" && yearlySaving > 0 && (
+            {period === "yearly" && yearlySaving > 0 && !promo && (
               <p className="mt-2 text-[12px] text-[var(--hm-fg-muted)]">
                 {t("premium.saveAmount", { currency, amount: yearlySaving })}
               </p>
@@ -203,13 +263,61 @@ function CheckoutContent() {
 
             <div className="my-6 h-px bg-[var(--hm-border-subtle)]" />
 
+            {/* Promo code */}
+            {promo ? (
+              <div className="flex items-center justify-between rounded-xl border border-[var(--hm-success-500)]/30 bg-[var(--hm-success-500)]/[0.07] px-3 py-2.5">
+                <span className="flex items-center gap-1.5 text-[13px] font-medium text-[var(--hm-success-600)]">
+                  <Check className="h-4 w-4" strokeWidth={2.25} />
+                  {promo.code}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPromo(null);
+                    setPromoInput("");
+                  }}
+                  className="text-[12px] text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"
+                >
+                  {pick({ en: "Remove", ka: "მოშორება" })}
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="flex gap-2">
+                  <input
+                    value={promoInput}
+                    onChange={(e) => {
+                      setPromoInput(e.target.value.toUpperCase());
+                      setPromoErr("");
+                    }}
+                    onKeyDown={(e) => e.key === "Enter" && applyPromo()}
+                    placeholder={pick({ en: "Promo code", ka: "პრომო კოდი" })}
+                    className="h-10 flex-1 rounded-xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-page)] px-3 text-[14px] uppercase tracking-wide text-[var(--hm-fg-primary)] outline-none placeholder:tracking-normal placeholder:text-[var(--hm-fg-subtle)] focus:border-[var(--hm-brand-500)]"
+                  />
+                  <button
+                    type="button"
+                    onClick={applyPromo}
+                    disabled={applyingPromo || !promoInput.trim()}
+                    className="h-10 shrink-0 rounded-xl border border-[var(--hm-border-strong)] px-4 text-[13px] font-medium text-[var(--hm-fg-primary)] transition-colors hover:bg-[var(--hm-bg-tertiary)] disabled:opacity-50"
+                  >
+                    {applyingPromo ? <LoadingSpinner size="sm" /> : pick({ en: "Apply", ka: "გამოყენება" })}
+                  </button>
+                </div>
+                {promoErr && (
+                  <p className="mt-2 text-[12px] text-[var(--hm-error-500)]">{promoErr}</p>
+                )}
+              </div>
+            )}
+
+            <div className="my-6 h-px bg-[var(--hm-border-subtle)]" />
+
             <div className="flex items-baseline justify-between">
               <span className="text-[13px] font-light text-[var(--hm-fg-muted)]">
                 {pick({ en: "Total today", ka: "ჯამი" })}
               </span>
               <span className="text-[20px] font-light tabular-nums tracking-[-0.02em] text-[var(--hm-fg-primary)]">
                 {currency}
-                {price}
+                {effectivePrice}
               </span>
             </div>
           </div>
@@ -239,8 +347,8 @@ function CheckoutContent() {
           </div>
           <p className="mt-2.5 text-center text-[12px] font-light text-[var(--hm-fg-muted)]">
             {pick({
-              en: "You'll be redirected to our secure payment partner. 7-day money-back guarantee.",
-              ka: "გადახვალთ უსაფრთხო გადახდის გვერდზე. 7 დღიანი თანხის დაბრუნება.",
+              en: "You'll be redirected to our secure payment partner. 3-day money-back guarantee.",
+              ka: "გადახვალთ უსაფრთხო გადახდის გვერდზე. 3 დღიანი თანხის დაბრუნება.",
             })}
           </p>
         </div>

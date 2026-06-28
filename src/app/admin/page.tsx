@@ -573,6 +573,7 @@ function AdminDashboardPageContent() {
             { label: t('admin.disputes'), icon: AlertCircle, href: '/admin/disputes', color: '#EF4E24' },
             { label: t('admin.reports'), icon: Flag, href: '/admin/reports', color: '#F43F5E' },
             { label: t('admin.payouts'), icon: Banknote, href: '/admin/payouts', color: '#10B981' },
+            { label: 'Promo codes', icon: Tag, href: '/admin/promo-codes', color: '#EF4E24' },
             { label: t('admin.catalogSuggestions'), icon: Lightbulb, href: '/admin/catalog-suggestions', color: '#A855F7' },
             { label: t('admin.invites'), icon: Send, href: '/admin/invites', color: 'var(--hm-brand-500)', count: undefined },
             { label: t('admin.requests'), icon: MessageSquare, href: '/admin/requests', color: '#EF4E24', count: undefined },
