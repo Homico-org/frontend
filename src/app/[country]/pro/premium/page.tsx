@@ -18,7 +18,6 @@ import { isAxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const VERIFIED_PROS = "650+";
 const AVG_RATING = "4.9";
 
 type Loc = Record<"en" | "ka" | "ru", string>;
@@ -58,7 +57,7 @@ export default function PremiumPlansPage() {
   const currentTier =
     user?.isPremium && user.premiumTier ? user.premiumTier : "none";
   const isActive = currentTier !== "none";
-  const refundable = isActive && isPremiumRefundable(user?.premiumStartedAt);
+  const refundable = isActive && isPremiumRefundable(user?.premiumStartedAt, user?.premiumExpiresAt);
   const currency = currencySymbol({ country });
 
   useEffect(() => {
@@ -256,7 +255,6 @@ export default function PremiumPlansPage() {
           <span className="flex items-center gap-1">
             <span className="font-semibold text-[var(--hm-fg-primary)]">{AVG_RATING}</span>
             <Star className="h-3 w-3 fill-[var(--hm-brand-500)] text-[var(--hm-brand-500)]" />
-            · {VERIFIED_PROS} {pick({ en: "pros", ka: "ოსტატი", ru: "мастеров" })}
           </span>
         </div>
       </main>

@@ -58,11 +58,24 @@ export function formatPremiumDate(
 // days of starting it. After that it simply runs to expiry (no auto-renew).
 export const PREMIUM_REFUND_WINDOW_DAYS = 3;
 
-/** True while a just-started premium plan is still inside the refund window. */
-export function isPremiumRefundable(startedAt: string | undefined): boolean {
-  if (!startedAt) return false;
-  const start = new Date(startedAt).getTime();
-  if (Number.isNaN(start)) return false;
+/**
+ * True while a just-started premium plan is still inside the refund window.
+ * Prefers the explicit start; if it isn't populated yet (older API response /
+ * stale cache) it derives the start from the monthly expiry (expiry - 30d),
+ * and if neither timestamp is present it fails OPEN - the backend is the real
+ * gate on the refund, so we'd rather show the option than hide it wrongly.
+ */
+export function isPremiumRefundable(
+  startedAt?: string,
+  expiresAt?: string,
+): boolean {
   const windowMs = PREMIUM_REFUND_WINDOW_DAYS * 24 * 60 * 60 * 1000;
-  return Date.now() - start <= windowMs;
+  const startMs = startedAt ? new Date(startedAt).getTime() : NaN;
+  if (!Number.isNaN(startMs)) return Date.now() - startMs <= windowMs;
+  const expMs = expiresAt ? new Date(expiresAt).getTime() : NaN;
+  if (!Number.isNaN(expMs)) {
+    const derivedStart = expMs - 30 * 24 * 60 * 60 * 1000;
+    return Date.now() - derivedStart <= windowMs;
+  }
+  return true;
 }
