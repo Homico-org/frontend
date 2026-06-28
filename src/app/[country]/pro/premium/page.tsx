@@ -10,17 +10,16 @@ import { getPremiumTierPrices } from "@/data/premium-pricing";
 import { currencySymbol } from "@/utils/currency";
 import { features } from "@/config/features";
 import { formatPremiumDate, premiumTierName } from "@/utils/premium";
-import { ArrowRight, BadgeCheck, Check, Crown, Star, TrendingUp } from "lucide-react";
+import { ArrowRight, Check, Crown, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-// Single launch plan: Pro. The multi-tier comparison + marketing sections
-// were retired for the premium-only MVP - one plan, one decision.
+// Single launch plan: Pro, monthly only. The multi-tier comparison, the
+// billing toggle, and the marketing sections were retired for the
+// premium-only MVP - one plan, one price, one decision.
 const PLAN_ID = "pro";
 const VERIFIED_PROS = "650+";
 const AVG_RATING = "4.9";
-
-type BillingPeriod = "monthly" | "yearly";
 
 const PRO_FEATURES: Record<"en" | "ka" | "ru", string>[] = [
   { en: "Top of search results", ka: "ძიების პირველ ადგილზე", ru: "Топ результатов поиска" },
@@ -30,35 +29,67 @@ const PRO_FEATURES: Record<"en" | "ka" | "ru", string>[] = [
   { en: "Priority support", ka: "პრიორიტეტული მხარდაჭერა", ru: "Приоритетная поддержка" },
 ];
 
-const VALUE_POINTS = [
-  {
-    icon: TrendingUp,
-    title: { en: "Top of search", ka: "ძიების თავში", ru: "Вверху поиска" },
-    body: {
-      en: "Clients see you before anyone else.",
-      ka: "კლიენტი პირველ რიგში შენ გხედავს.",
-      ru: "Клиент видит вас первым.",
-    },
-  },
-  {
-    icon: Star,
-    title: { en: "On the homepage", ka: "მთავარ გვერდზე", ru: "На главной" },
-    body: {
-      en: "A featured spot where demand starts.",
-      ka: "გამორჩეული ადგილი, სადაც ძიება იწყება.",
-      ru: "Заметное место, где начинается спрос.",
-    },
-  },
-  {
-    icon: BadgeCheck,
-    title: { en: "A badge that builds trust", ka: "ბეჯი, რომელიც ანდობს", ru: "Бейдж доверия" },
-    body: {
-      en: "Stand out as a verified premium pro.",
-      ka: "გამოირჩიე გადამოწმებული ბეჯით.",
-      ru: "Выделяйтесь проверенным бейджем.",
-    },
-  },
-];
+// "You're #1 in search" - shows what premium actually does. Monochrome +
+// one brand-highlighted winning row; theme-safe via --hm tokens.
+function SearchRankVisual() {
+  const { pick } = useLanguage();
+  return (
+    <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-5 sm:p-6">
+      <div className="mb-5 flex items-center justify-between">
+        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--hm-fg-subtle)]">
+          {pick({ en: "Search · plumbers", ka: "ძიება · სანტექნიკოსი", ru: "Поиск · сантехники" })}
+        </span>
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--hm-brand-500)] opacity-50" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--hm-brand-500)]" />
+        </span>
+      </div>
+
+      {/* Winner - you, #1 */}
+      <div className="flex items-center gap-3 rounded-xl border border-[var(--hm-brand-500)]/25 bg-[var(--hm-brand-500)]/[0.05] p-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--hm-brand-500)] text-[12px] font-semibold text-white">
+          {pick({ en: "You", ka: "შენ", ru: "Вы" })}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[13px] font-semibold text-[var(--hm-fg-primary)]">
+              {pick({ en: "Your profile", ka: "შენი პროფილი", ru: "Ваш профиль" })}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--hm-brand-500)]/12 px-1.5 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.08em] text-[var(--hm-brand-600)]">
+              <Crown className="h-2.5 w-2.5" strokeWidth={2} />
+              Pro
+            </span>
+          </div>
+          <div className="mt-0.5 flex items-center gap-1 text-[11px] text-[var(--hm-fg-muted)]">
+            <Star className="h-3 w-3 fill-[var(--hm-brand-500)] text-[var(--hm-brand-500)]" />
+            {AVG_RATING} · {pick({ en: "top match", ka: "საუკეთესო შედეგი", ru: "лучшее совпадение" })}
+          </div>
+        </div>
+        <span className="font-mono text-[16px] font-medium text-[var(--hm-brand-500)]">#1</span>
+      </div>
+
+      {/* Everyone else */}
+      {[2, 3, 4].map((n) => (
+        <div key={n} className="mt-2 flex items-center gap-3 px-3 py-2.5 opacity-45">
+          <span className="h-8 w-8 shrink-0 rounded-full bg-[var(--hm-bg-tertiary)]" />
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <span className="block h-2.5 w-24 rounded bg-[var(--hm-bg-tertiary)]" />
+            <span className="block h-2 w-16 rounded bg-[var(--hm-bg-tertiary)]" />
+          </div>
+          <span className="font-mono text-[12px] text-[var(--hm-fg-subtle)]">#{n}</span>
+        </div>
+      ))}
+
+      <p className="mt-5 text-[12px] text-[var(--hm-fg-muted)]">
+        {pick({
+          en: "Premium keeps you on top, where clients look first.",
+          ka: "Premium გამოგაჩენს თავში, სადაც კლიენტი პირველ რიგში იხედება.",
+          ru: "Premium держит вас вверху, где клиент смотрит первым.",
+        })}
+      </p>
+    </div>
+  );
+}
 
 export default function PremiumPlansPage() {
   const { user, isAuthenticated } = useAuth();
@@ -67,7 +98,6 @@ export default function PremiumPlansPage() {
   const { trackEvent } = useAnalytics();
   const cl = useCountryLink();
   const country = useCountry();
-  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("yearly");
 
   const isPro = user?.role === "pro";
   // `/users/me` already expiry-checks these, returning "none"/false once a
@@ -77,10 +107,8 @@ export default function PremiumPlansPage() {
   const premiumExpiresAt = user?.premiumExpiresAt;
   const isActive = currentTier !== "none";
 
-  const prices = getPremiumTierPrices(country, PLAN_ID);
+  const price = getPremiumTierPrices(country, PLAN_ID).monthly;
   const currency = currencySymbol({ country });
-  const price = prices[billingPeriod];
-  const yearlySaving = prices.monthly * 12 - prices.yearly;
 
   useEffect(() => {
     trackEvent(AnalyticsEvent.PREMIUM_VIEW);
@@ -100,8 +128,12 @@ export default function PremiumPlansPage() {
       planType: PLAN_ID,
       planPrice: price,
     });
-    router.push(cl(`/pro/premium/checkout?tier=${PLAN_ID}&period=${billingPeriod}`));
+    router.push(cl(`/pro/premium/checkout?tier=${PLAN_ID}&period=monthly`));
   };
+
+  // Inverted "ink" card surface - dark in light mode, light in dark mode.
+  const onCardMuted = "color-mix(in srgb, var(--hm-bg-elevated) 60%, transparent)";
+  const onCardHairline = "color-mix(in srgb, var(--hm-bg-elevated) 14%, transparent)";
 
   return (
     <div className="min-h-screen bg-[var(--hm-bg-page)]">
@@ -109,25 +141,9 @@ export default function PremiumPlansPage() {
       <HeaderSpacer />
 
       <main className="mx-auto flex min-h-[calc(100vh-var(--hm-header-h,72px))] max-w-5xl items-center px-5 py-14 sm:px-6">
-        <div className="grid w-full items-center gap-12 lg:grid-cols-[1fr_minmax(360px,420px)] lg:gap-16">
-          {/* ── Left: pitch + trust ─────────────────────────────── */}
+        <div className="grid w-full items-center gap-12 lg:grid-cols-[1fr_minmax(360px,400px)] lg:gap-16">
+          {/* ── Left: pitch + proof ─────────────────────────────── */}
           <div>
-            {isActive && (
-              <div className="mb-6 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-[var(--hm-success-500)]/30 bg-[var(--hm-success-500)]/[0.08] px-4 py-2.5 text-[13px] text-[var(--hm-success-600)]">
-                <Crown className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                <span className="font-semibold">
-                  {premiumTierName(currentTier, pick)} {t("premium.plan")}
-                </span>
-                <span className="text-[var(--hm-fg-muted)]">
-                  {premiumExpiresAt
-                    ? t("header.premiumActiveUntil", {
-                        date: formatPremiumDate(premiumExpiresAt, locale),
-                      })
-                    : t("header.premiumActive")}
-                </span>
-              </div>
-            )}
-
             <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--hm-fg-subtle)]">
               Homico Premium
             </p>
@@ -145,25 +161,9 @@ export default function PremiumPlansPage() {
               })}
             </p>
 
-            {/* Value points */}
-            <ul className="mt-9 max-w-md divide-y divide-[var(--hm-border-subtle)] border-t border-[var(--hm-border-subtle)]">
-              {VALUE_POINTS.map((vp, i) => {
-                const Icon = vp.icon;
-                return (
-                  <li key={i} className="flex items-start gap-3.5 py-4">
-                    <Icon className="mt-0.5 h-[18px] w-[18px] shrink-0 text-[var(--hm-brand-500)]" strokeWidth={1.75} />
-                    <div>
-                      <p className="text-[14px] font-medium text-[var(--hm-fg-primary)]">
-                        {pick(vp.title)}
-                      </p>
-                      <p className="mt-0.5 text-[13px] font-light leading-relaxed text-[var(--hm-fg-muted)]">
-                        {pick(vp.body)}
-                      </p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="mt-9 max-w-md">
+              <SearchRankVisual />
+            </div>
 
             {/* Trust stats */}
             <div className="mt-9 flex items-center gap-10">
@@ -187,84 +187,83 @@ export default function PremiumPlansPage() {
             </div>
           </div>
 
-          {/* ── Right: the single plan card ─────────────────────── */}
-          <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-7 shadow-[var(--hm-shadow-sm)] sm:p-8">
-            {/* Billing toggle */}
-            <div className="mb-7 flex items-center justify-between">
-              <div className="inline-flex items-center rounded-full bg-[var(--hm-bg-tertiary)] p-1">
-                {(["monthly", "yearly"] as BillingPeriod[]).map((period) => (
-                  <button
-                    key={period}
-                    onClick={() => setBillingPeriod(period)}
-                    className={`rounded-full px-4 py-1.5 text-[13px] font-medium transition-colors ${
-                      billingPeriod === period
-                        ? "bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[var(--hm-shadow-xs)]"
-                        : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"
-                    }`}
-                  >
-                    {period === "monthly" ? t("premium.monthly") : t("premium.yearly")}
-                  </button>
-                ))}
+          {/* ── Right: the offer (or membership when active) ────── */}
+          <div className="rounded-[20px] bg-[var(--hm-fg-primary)] p-7 shadow-[var(--hm-shadow-lg)] sm:p-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Crown className="h-[18px] w-[18px] text-[var(--hm-brand-400)]" strokeWidth={1.75} />
+                <h2 className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--hm-bg-elevated)]">
+                  {pick({ en: "Pro", ka: "პრო", ru: "Pro" })}
+                </h2>
               </div>
-              {billingPeriod === "yearly" && yearlySaving > 0 && (
-                <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--hm-success-600)]">
-                  {pick({ en: "Save", ka: "დაზოგე", ru: "Скидка" })} {currency}
-                  {yearlySaving}
+              {isActive && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--hm-success-500)]/20 px-2.5 py-1 text-[11px] font-semibold text-[var(--hm-success-500)]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--hm-success-500)]" />
+                  {t("header.premiumActive")}
                 </span>
               )}
             </div>
 
-            {/* Plan name + price */}
-            <div className="flex items-center gap-2">
-              <Crown className="h-[18px] w-[18px] text-[var(--hm-brand-500)]" strokeWidth={1.75} />
-              <h2 className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--hm-fg-primary)]">
-                {pick({ en: "Pro", ka: "პრო", ru: "Pro" })}
-              </h2>
-            </div>
-            <div className="mt-4 flex items-baseline gap-1.5">
-              <span className="text-[48px] font-light leading-none tabular-nums tracking-[-0.03em] text-[var(--hm-fg-primary)]">
-                {currency}
-                {price}
-              </span>
-              <span className="font-mono text-[11px] uppercase tracking-[0.04em] text-[var(--hm-fg-subtle)]">
-                / {billingPeriod === "monthly" ? t("premium.mo") : t("premium.yr")}
-              </span>
-            </div>
+            {isActive ? (
+              <p className="mt-5 text-[15px] font-light" style={{ color: onCardMuted }}>
+                {premiumExpiresAt
+                  ? t("header.premiumActiveUntil", {
+                      date: formatPremiumDate(premiumExpiresAt, locale),
+                    })
+                  : t("header.premiumActive")}
+              </p>
+            ) : (
+              <div className="mt-5 flex items-baseline gap-1.5">
+                <span className="text-[52px] font-light leading-none tabular-nums tracking-[-0.03em] text-[var(--hm-bg-elevated)]">
+                  {currency}
+                  {price}
+                </span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.04em]" style={{ color: onCardMuted }}>
+                  / {t("premium.mo")}
+                </span>
+              </div>
+            )}
 
-            {/* Features */}
-            <ul className="mt-7 space-y-3.5">
+            <div className="my-7 h-px" style={{ background: onCardHairline }} />
+
+            <ul className="space-y-3.5">
               {PRO_FEATURES.map((f, i) => (
-                <li key={i} className="flex items-center gap-3 text-[14px] text-[var(--hm-fg-primary)]">
-                  <Check className="h-4 w-4 shrink-0 text-[var(--hm-brand-500)]" strokeWidth={2.25} />
+                <li
+                  key={i}
+                  className="flex items-center gap-3 text-[14px] text-[var(--hm-bg-elevated)]"
+                >
+                  <Check className="h-4 w-4 shrink-0 text-[var(--hm-brand-400)]" strokeWidth={2.25} />
                   {pick(f)}
                 </li>
               ))}
             </ul>
 
-            {/* CTA */}
-            <Button
-              size="lg"
-              className="mt-8 w-full"
-              disabled={isActive}
-              onClick={handleSelectPlan}
-            >
-              {isActive ? (
-                t("premium.currentPlan")
-              ) : (
-                <>
-                  {t("premium.getStarted")}
+            {isActive ? (
+              <Button
+                asChild
+                size="lg"
+                className="mt-8 w-full bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] hover:opacity-90"
+              >
+                <a href="/pro/profile-setup">
+                  {pick({ en: "Manage your profile", ka: "პროფილის მართვა", ru: "Управлять профилем" })}
                   <ArrowRight className="h-[18px] w-[18px]" />
-                </>
-              )}
-            </Button>
+                </a>
+              </Button>
+            ) : (
+              <Button size="lg" className="mt-8 w-full" onClick={handleSelectPlan}>
+                {t("premium.getStarted")}
+                <ArrowRight className="h-[18px] w-[18px]" />
+              </Button>
+            )}
 
-            {/* Reassurance */}
-            <p className="mt-4 text-center text-[12px] text-[var(--hm-fg-muted)]">
-              {pick({
-                en: "7-day money-back guarantee · cancel anytime",
-                ka: "7 დღიანი თანხის დაბრუნება · გააუქმე ნებისმიერ დროს",
-                ru: "Возврат денег 7 дней · отмена в любой момент",
-              })}
+            <p className="mt-4 text-center text-[12px]" style={{ color: onCardMuted }}>
+              {isActive
+                ? pick({ en: "Cancel anytime", ka: "გააუქმე ნებისმიერ დროს", ru: "Отмена в любой момент" })
+                : pick({
+                    en: "7-day money-back · cancel anytime",
+                    ka: "7 დღიანი თანხის დაბრუნება · გააუქმე ნებისმიერ დროს",
+                    ru: "Возврат 7 дней · отмена в любой момент",
+                  })}
             </p>
           </div>
         </div>
