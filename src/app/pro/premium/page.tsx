@@ -6,14 +6,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { features } from "@/config/features";
-import { formatPremiumDate, premiumTierName } from "@/utils/premium";
-import { ArrowRight, Check, Crown, Star } from "lucide-react";
+import { formatPremiumDate } from "@/utils/premium";
+import { ArrowRight, BadgeCheck, Check, Crown, Star, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-// Single launch plan: Pro, monthly only. The multi-tier comparison, the
-// billing toggle, and the marketing sections were retired for the
-// premium-only MVP - one plan, one price, one decision.
+// Single launch plan: Pro, monthly only.
 const PLAN_ID = "pro";
 const CURRENCY = "₾";
 const PRICE = 59;
@@ -28,67 +26,35 @@ const PRO_FEATURES: Record<"en" | "ka" | "ru", string>[] = [
   { en: "Priority support", ka: "პრიორიტეტული მხარდაჭერა", ru: "Приоритетная поддержка" },
 ];
 
-// "You're #1 in search" - shows what premium actually does. Monochrome +
-// one brand-highlighted winning row; theme-safe via --hm tokens.
-function SearchRankVisual() {
-  const { pick } = useLanguage();
-  return (
-    <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-5 sm:p-6">
-      <div className="mb-5 flex items-center justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--hm-fg-subtle)]">
-          {pick({ en: "Search · plumbers", ka: "ძიება · სანტექნიკოსი", ru: "Поиск · сантехники" })}
-        </span>
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--hm-brand-500)] opacity-50" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--hm-brand-500)]" />
-        </span>
-      </div>
-
-      {/* Winner - you, #1 */}
-      <div className="flex items-center gap-3 rounded-xl border border-[var(--hm-brand-500)]/25 bg-[var(--hm-brand-500)]/[0.05] p-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--hm-brand-500)] text-[12px] font-semibold text-white">
-          {pick({ en: "You", ka: "შენ", ru: "Вы" })}
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[13px] font-semibold text-[var(--hm-fg-primary)]">
-              {pick({ en: "Your profile", ka: "შენი პროფილი", ru: "Ваш профиль" })}
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--hm-brand-500)]/12 px-1.5 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.08em] text-[var(--hm-brand-600)]">
-              <Crown className="h-2.5 w-2.5" strokeWidth={2} />
-              Pro
-            </span>
-          </div>
-          <div className="mt-0.5 flex items-center gap-1 text-[11px] text-[var(--hm-fg-muted)]">
-            <Star className="h-3 w-3 fill-[var(--hm-brand-500)] text-[var(--hm-brand-500)]" />
-            {AVG_RATING} · {pick({ en: "top match", ka: "საუკეთესო შედეგი", ru: "лучшее совпадение" })}
-          </div>
-        </div>
-        <span className="font-mono text-[16px] font-medium text-[var(--hm-brand-500)]">#1</span>
-      </div>
-
-      {/* Everyone else */}
-      {[2, 3, 4].map((n) => (
-        <div key={n} className="mt-2 flex items-center gap-3 px-3 py-2.5 opacity-45">
-          <span className="h-8 w-8 shrink-0 rounded-full bg-[var(--hm-bg-tertiary)]" />
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <span className="block h-2.5 w-24 rounded bg-[var(--hm-bg-tertiary)]" />
-            <span className="block h-2 w-16 rounded bg-[var(--hm-bg-tertiary)]" />
-          </div>
-          <span className="font-mono text-[12px] text-[var(--hm-fg-subtle)]">#{n}</span>
-        </div>
-      ))}
-
-      <p className="mt-5 text-[12px] text-[var(--hm-fg-muted)]">
-        {pick({
-          en: "Premium keeps you on top, where clients look first.",
-          ka: "Premium გამოგაჩენს თავში, სადაც კლიენტი პირველ რიგში იხედება.",
-          ru: "Premium держит вас вверху, где клиент смотрит первым.",
-        })}
-      </p>
-    </div>
-  );
-}
+const HIGHLIGHTS = [
+  {
+    icon: TrendingUp,
+    title: { en: "Top of search", ka: "ძიების თავში", ru: "Вверху поиска" },
+    body: {
+      en: "Appear above other pros, where clients look first.",
+      ka: "გამოჩნდი სხვებზე მაღლა, სადაც კლიენტი პირველ რიგში იხედება.",
+      ru: "Будьте выше других мастеров, где клиент смотрит первым.",
+    },
+  },
+  {
+    icon: Star,
+    title: { en: "On the homepage", ka: "მთავარ გვერდზე", ru: "На главной" },
+    body: {
+      en: "A featured spot where demand starts.",
+      ka: "გამორჩეული ადგილი, სადაც ძიება იწყება.",
+      ru: "Заметное место, где начинается спрос.",
+    },
+  },
+  {
+    icon: BadgeCheck,
+    title: { en: "A badge clients trust", ka: "ბეჯი, რომელსაც ენდობიან", ru: "Бейдж доверия" },
+    body: {
+      en: "Stand out as a verified premium pro.",
+      ka: "გამოირჩიე გადამოწმებული ბეჯით.",
+      ru: "Выделяйтесь проверенным бейджем.",
+    },
+  },
+];
 
 export default function PremiumPlansPage() {
   const { user, isAuthenticated } = useAuth();
@@ -125,142 +91,161 @@ export default function PremiumPlansPage() {
     router.push(`/pro/premium/checkout?tier=${PLAN_ID}&period=monthly`);
   };
 
-  // Inverted "ink" card surface - dark in light mode, light in dark mode.
-  const onCardMuted = "color-mix(in srgb, var(--hm-bg-elevated) 60%, transparent)";
-  const onCardHairline = "color-mix(in srgb, var(--hm-bg-elevated) 14%, transparent)";
-
   return (
     <div className="min-h-screen bg-[var(--hm-bg-page)]">
       <Header />
       <HeaderSpacer />
 
-      <main className="mx-auto flex min-h-[calc(100vh-var(--hm-header-h,72px))] max-w-5xl items-center px-5 py-14 sm:px-6">
-        <div className="grid w-full items-center gap-12 lg:grid-cols-[1fr_minmax(360px,400px)] lg:gap-16">
-          {/* ── Left: pitch + proof ─────────────────────────────── */}
-          <div>
-            <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--hm-fg-subtle)]">
-              Homico Premium
-            </p>
-            <h1 className="text-[36px] font-light leading-[1.04] tracking-[-0.03em] text-[var(--hm-fg-primary)] sm:text-[52px]">
-              {pick({ en: "Show up first,", ka: "გამოჩნდი პირველი,", ru: "Будьте первым," })}{" "}
-              <span className="italic">
-                {pick({ en: "win more jobs", ka: "მიიღე მეტი შეკვეთა", ru: "получайте больше заказов" })}
-              </span>
-            </h1>
-            <p className="mt-5 max-w-md text-[15px] font-light leading-relaxed text-[var(--hm-fg-muted)] sm:text-[16px]">
-              {pick({
-                en: "Premium pros appear at the top of search, on the homepage, and with a standout badge - right where clients decide who to call.",
-                ka: "Premium ოსტატები ჩნდებიან ძიების თავში, მთავარ გვერდზე და გამორჩეული ბეჯით. იქ, სადაც კლიენტი ირჩევს.",
-                ru: "Premium-мастера появляются вверху поиска, на главной странице и с заметным бейджем - там, где клиент выбирает.",
-              })}
-            </p>
+      <main className="mx-auto max-w-5xl px-5 sm:px-6">
+        {/* ── Hero ──────────────────────────────────────────── */}
+        <section className="pt-16 pb-10 text-center sm:pt-24">
+          <p className="mb-5 font-mono text-[11px] uppercase tracking-[0.24em] text-[var(--hm-brand-500)]">
+            Homico Premium
+          </p>
+          <h1 className="mx-auto max-w-2xl text-[34px] font-semibold leading-[1.08] tracking-[-0.03em] text-[var(--hm-fg-primary)] sm:text-[48px]">
+            {pick({
+              en: "Get seen first. Win more jobs.",
+              ka: "გამოჩნდი პირველი. მიიღე მეტი შეკვეთა.",
+              ru: "Будьте на виду. Получайте больше заказов.",
+            })}
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-[16px] leading-relaxed text-[var(--hm-fg-muted)]">
+            {pick({
+              en: "Premium puts you at the top of search and on the homepage - right where clients decide who to call.",
+              ka: "Premium გამოგაჩენს ძიების თავში და მთავარ გვერდზე. იქ, სადაც კლიენტი ირჩევს ვის დაურეკოს.",
+              ru: "Premium выводит вас вверх поиска и на главную - там, где клиент решает, кому позвонить.",
+            })}
+          </p>
+        </section>
 
-            <div className="mt-9 max-w-md">
-              <SearchRankVisual />
-            </div>
+        {/* ── Plan card (light) ─────────────────────────────── */}
+        <section className="mx-auto max-w-md">
+          <div className="overflow-hidden rounded-3xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] shadow-[var(--hm-shadow-md)]">
+            <div className="p-7 sm:p-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--hm-brand-500)]/[0.1]">
+                    <Crown className="h-4 w-4 text-[var(--hm-brand-500)]" strokeWidth={1.75} />
+                  </span>
+                  <h2 className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--hm-fg-primary)]">
+                    {pick({ en: "Pro", ka: "პრო", ru: "Pro" })}
+                  </h2>
+                </div>
+                {isActive && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--hm-success-500)]/[0.12] px-2.5 py-1 text-[11px] font-semibold text-[var(--hm-success-600)]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--hm-success-500)]" />
+                    {t("header.premiumActive")}
+                  </span>
+                )}
+              </div>
 
-            {/* Trust stats */}
-            <div className="mt-9 flex items-center gap-10">
-              <div>
-                <p className="text-[24px] font-light tabular-nums tracking-[-0.02em] text-[var(--hm-fg-primary)]">
-                  {VERIFIED_PROS}
+              {isActive ? (
+                <p className="mt-5 text-[15px] text-[var(--hm-fg-muted)]">
+                  {premiumExpiresAt
+                    ? t("header.premiumActiveUntil", {
+                        date: formatPremiumDate(premiumExpiresAt, locale),
+                      })
+                    : t("header.premiumActive")}
                 </p>
-                <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--hm-fg-subtle)]">
-                  {pick({ en: "verified pros", ka: "გადამოწმებული ოსტატი", ru: "проверенных мастеров" })}
-                </p>
-              </div>
-              <div>
-                <p className="flex items-center gap-1.5 text-[24px] font-light tabular-nums tracking-[-0.02em] text-[var(--hm-fg-primary)]">
-                  {AVG_RATING}
-                  <Star className="h-4 w-4 fill-[var(--hm-fg-primary)] text-[var(--hm-fg-primary)]" />
-                </p>
-                <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--hm-fg-subtle)]">
-                  {pick({ en: "average rating", ka: "საშუალო შეფასება", ru: "средний рейтинг" })}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Right: the offer (or membership when active) ────── */}
-          <div className="rounded-[20px] bg-[var(--hm-fg-primary)] p-7 shadow-[var(--hm-shadow-lg)] sm:p-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Crown className="h-[18px] w-[18px] text-[var(--hm-brand-400)]" strokeWidth={1.75} />
-                <h2 className="text-[18px] font-semibold tracking-[-0.01em] text-[var(--hm-bg-elevated)]">
-                  {pick({ en: "Pro", ka: "პრო", ru: "Pro" })}
-                </h2>
-              </div>
-              {isActive && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--hm-success-500)]/20 px-2.5 py-1 text-[11px] font-semibold text-[var(--hm-success-500)]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--hm-success-500)]" />
-                  {t("header.premiumActive")}
-                </span>
+              ) : (
+                <div className="mt-5 flex items-baseline gap-1.5">
+                  <span className="text-[52px] font-semibold leading-none tabular-nums tracking-[-0.04em] text-[var(--hm-fg-primary)]">
+                    {CURRENCY}
+                    {PRICE}
+                  </span>
+                  <span className="text-[14px] text-[var(--hm-fg-muted)]">
+                    / {t("premium.mo")}
+                  </span>
+                </div>
               )}
+
+              <Button
+                size="lg"
+                className="mt-7 w-full"
+                asChild={isActive}
+                onClick={isActive ? undefined : handleSelectPlan}
+              >
+                {isActive ? (
+                  <a href="/pro/profile-setup">
+                    {pick({ en: "Manage your profile", ka: "პროფილის მართვა", ru: "Управлять профилем" })}
+                    <ArrowRight className="h-[18px] w-[18px]" />
+                  </a>
+                ) : (
+                  <>
+                    {t("premium.getStarted")}
+                    <ArrowRight className="h-[18px] w-[18px]" />
+                  </>
+                )}
+              </Button>
+
+              <p className="mt-3.5 text-center text-[12px] text-[var(--hm-fg-muted)]">
+                {isActive
+                  ? pick({ en: "Cancel anytime", ka: "გააუქმე ნებისმიერ დროს", ru: "Отмена в любой момент" })
+                  : pick({
+                      en: "7-day money-back · cancel anytime",
+                      ka: "7 დღიანი თანხის დაბრუნება · გააუქმე ნებისმიერ დროს",
+                      ru: "Возврат 7 дней · отмена в любой момент",
+                    })}
+              </p>
             </div>
 
-            {isActive ? (
-              <p className="mt-5 text-[15px] font-light" style={{ color: onCardMuted }}>
-                {premiumExpiresAt
-                  ? t("header.premiumActiveUntil", {
-                      date: formatPremiumDate(premiumExpiresAt, locale),
-                    })
-                  : t("header.premiumActive")}
+            {/* What's included */}
+            <div className="border-t border-[var(--hm-border-subtle)] bg-[var(--hm-bg-page)]/40 p-7 sm:p-8">
+              <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-subtle)]">
+                {t("premium.includes")}
               </p>
-            ) : (
-              <div className="mt-5 flex items-baseline gap-1.5">
-                <span className="text-[52px] font-light leading-none tabular-nums tracking-[-0.03em] text-[var(--hm-bg-elevated)]">
-                  {CURRENCY}
-                  {PRICE}
-                </span>
-                <span className="font-mono text-[11px] uppercase tracking-[0.04em]" style={{ color: onCardMuted }}>
-                  / {t("premium.mo")}
-                </span>
-              </div>
-            )}
-
-            <div className="my-7 h-px" style={{ background: onCardHairline }} />
-
-            <ul className="space-y-3.5">
-              {PRO_FEATURES.map((f, i) => (
-                <li
-                  key={i}
-                  className="flex items-center gap-3 text-[14px] text-[var(--hm-bg-elevated)]"
-                >
-                  <Check className="h-4 w-4 shrink-0 text-[var(--hm-brand-400)]" strokeWidth={2.25} />
-                  {pick(f)}
-                </li>
-              ))}
-            </ul>
-
-            {isActive ? (
-              <Button
-                asChild
-                size="lg"
-                className="mt-8 w-full bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] hover:opacity-90"
-              >
-                <a href="/pro/profile-setup">
-                  {pick({ en: "Manage your profile", ka: "პროფილის მართვა", ru: "Управлять профилем" })}
-                  <ArrowRight className="h-[18px] w-[18px]" />
-                </a>
-              </Button>
-            ) : (
-              <Button size="lg" className="mt-8 w-full" onClick={handleSelectPlan}>
-                {t("premium.getStarted")}
-                <ArrowRight className="h-[18px] w-[18px]" />
-              </Button>
-            )}
-
-            <p className="mt-4 text-center text-[12px]" style={{ color: onCardMuted }}>
-              {isActive
-                ? pick({ en: "Cancel anytime", ka: "გააუქმე ნებისმიერ დროს", ru: "Отмена в любой момент" })
-                : pick({
-                    en: "7-day money-back · cancel anytime",
-                    ka: "7 დღიანი თანხის დაბრუნება · გააუქმე ნებისმიერ დროს",
-                    ru: "Возврат 7 дней · отмена в любой момент",
-                  })}
-            </p>
+              <ul className="space-y-3">
+                {PRO_FEATURES.map((f, i) => (
+                  <li key={i} className="flex items-center gap-3 text-[14px] text-[var(--hm-fg-primary)]">
+                    <Check className="h-4 w-4 shrink-0 text-[var(--hm-brand-500)]" strokeWidth={2.25} />
+                    {pick(f)}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
+        </section>
+
+        {/* ── Feature highlights ────────────────────────────── */}
+        <section className="mt-20 border-t border-[var(--hm-border-subtle)] py-16 sm:py-20">
+          <div className="grid gap-10 sm:grid-cols-3">
+            {HIGHLIGHTS.map((h, i) => {
+              const Icon = h.icon;
+              return (
+                <div key={i}>
+                  <Icon className="h-5 w-5 text-[var(--hm-brand-500)]" strokeWidth={1.75} />
+                  <h3 className="mt-3 text-[16px] font-semibold tracking-[-0.01em] text-[var(--hm-fg-primary)]">
+                    {pick(h.title)}
+                  </h3>
+                  <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--hm-fg-muted)]">
+                    {pick(h.body)}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ── Trust ─────────────────────────────────────────── */}
+        <section className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 border-t border-[var(--hm-border-subtle)] py-12 pb-24">
+          <div className="flex items-baseline gap-2">
+            <span className="text-[22px] font-semibold tabular-nums tracking-[-0.02em] text-[var(--hm-fg-primary)]">
+              {VERIFIED_PROS}
+            </span>
+            <span className="text-[13px] text-[var(--hm-fg-muted)]">
+              {pick({ en: "verified pros", ka: "გადამოწმებული ოსტატი", ru: "проверенных мастеров" })}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1 text-[22px] font-semibold tabular-nums tracking-[-0.02em] text-[var(--hm-fg-primary)]">
+              {AVG_RATING}
+              <Star className="h-4 w-4 fill-[var(--hm-brand-500)] text-[var(--hm-brand-500)]" />
+            </span>
+            <span className="text-[13px] text-[var(--hm-fg-muted)]">
+              {pick({ en: "average rating", ka: "საშუალო შეფასება", ru: "средний рейтинг" })}
+            </span>
+          </div>
+        </section>
       </main>
     </div>
   );
