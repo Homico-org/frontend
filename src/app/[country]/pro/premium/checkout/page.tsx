@@ -95,7 +95,21 @@ function CheckoutContent() {
         },
         body: JSON.stringify({ tier: tierId, period }),
       });
-      if (!res.ok) throw new Error(`Premium checkout failed (${res.status})`);
+      if (!res.ok) {
+        // Already subscribed - one plan at a time. Bounce back with a clear note.
+        let code = "";
+        try {
+          code = String(((await res.json()) as { message?: string })?.message || "");
+        } catch {
+          /* non-JSON body */
+        }
+        if (code.includes("ALREADY_PREMIUM")) {
+          toastError(t("premium.alreadyActive"));
+          router.replace(cl("/pro/premium"));
+          return;
+        }
+        throw new Error(`Premium checkout failed (${res.status})`);
+      }
       const data = (await res.json()) as { paymentId?: string; redirectUrl?: string };
       if (data.paymentId) sessionStorage.setItem("premiumPaymentId", data.paymentId);
       if (data.redirectUrl) {

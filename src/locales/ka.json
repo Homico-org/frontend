@@ -1505,7 +1505,9 @@
     "yr": "წელი",
     "readyToGrow": "მზად ხარ ბიზნესის გასაზრდელად",
     "payAmount": "გადაიხადე {currency}{amount}",
-    "saveAmount": "დაზოგე {currency}{amount}/წელი"
+    "saveAmount": "დაზოგე {currency}{amount}/წელი",
+    "planActive": "გეგმა აქტიურია",
+    "alreadyActive": "უკვე გაქვთ აქტიური premium გეგმა."
   },
   "notifications": {
     "title": "შეტყობინებები",

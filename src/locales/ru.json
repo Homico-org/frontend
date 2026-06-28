@@ -1507,7 +1507,9 @@
     "yr": "г",
     "readyToGrow": "Вы в одном шаге от роста вашего бизнеса",
     "payAmount": "Оплатить {currency}{amount}",
-    "saveAmount": "Экономия {currency}{amount}/год"
+    "saveAmount": "Экономия {currency}{amount}/год",
+    "planActive": "План активен",
+    "alreadyActive": "У вас уже есть активный план premium."
   },
   "notifications": {
     "title": "Уведомления",

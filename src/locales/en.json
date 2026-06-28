@@ -1505,7 +1505,9 @@
     "yr": "Yr",
     "readyToGrow": "You're one step away from growing your business",
     "payAmount": "Pay {currency}{amount}",
-    "saveAmount": "Save {currency}{amount}/year"
+    "saveAmount": "Save {currency}{amount}/year",
+    "planActive": "Plan active",
+    "alreadyActive": "You already have an active premium plan."
   },
   "notifications": {
     "title": "Notifications",

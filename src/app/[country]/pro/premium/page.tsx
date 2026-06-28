@@ -143,6 +143,10 @@ function PremiumCard({
   const price = tierPrices[billingPeriod];
   const currency = currencySymbol({ country });
   const isCurrent = currentTier === tier.id;
+  // One plan at a time: while any subscription is active, every plan's CTA is
+  // locked (you can buy again once it expires).
+  const hasActivePremium = currentTier !== "none";
+  const blocked = isCurrent || hasActivePremium;
   const dark = tier.popular;
 
   return (
@@ -209,9 +213,9 @@ function PremiumCard({
 
       <button
         onClick={onChoose}
-        disabled={isCurrent}
+        disabled={blocked}
         className={`mt-8 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-xl text-[14px] font-medium transition-colors ${
-          isCurrent
+          blocked
             ? "cursor-not-allowed bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]"
             : dark
               ? "bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] hover:opacity-90"
@@ -220,6 +224,8 @@ function PremiumCard({
       >
         {isCurrent ? (
           t("premium.currentPlan")
+        ) : hasActivePremium ? (
+          t("premium.planActive")
         ) : (
           <>
             {t("premium.getStarted")}
@@ -281,6 +287,8 @@ export default function PremiumPlansPage() {
 
   const handleSelectPlan = (tierId: string) => {
     if (!features.premium) return;
+    // Already subscribed - no re-purchase while a plan is active.
+    if (currentTier !== "none") return;
     if (!isAuthenticated) {
       router.push("/register?redirect=/pro/premium");
       return;
@@ -545,16 +553,29 @@ export default function PremiumPlansPage() {
               {pick({ en: `Join ${VERIFIED_PROS} verified pros on Homico.`, ka: `შემოგვიერთდი ${VERIFIED_PROS} გადამოწმებულ ოსტატს Homico-ზე.` })}
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
-              <button
-                onClick={() => handleSelectPlan("pro")}
-                className="inline-flex h-12 items-center justify-center gap-1.5 rounded-xl bg-[var(--hm-bg-elevated)] px-7 text-[14px] font-medium text-[var(--hm-fg-primary)] transition-opacity hover:opacity-90"
-              >
-                {t("premium.getStarted")}
-                <ArrowUpRight className="h-4 w-4" strokeWidth={1.75} />
-              </button>
-              <span className="text-[13px] font-light text-white/55">
-                {pick({ en: "7-day money-back guarantee", ka: "7 დღიანი გარანტია" })}
-              </span>
+              {currentTier === "none" ? (
+                <>
+                  <button
+                    onClick={() => handleSelectPlan("pro")}
+                    className="inline-flex h-12 items-center justify-center gap-1.5 rounded-xl bg-[var(--hm-bg-elevated)] px-7 text-[14px] font-medium text-[var(--hm-fg-primary)] transition-opacity hover:opacity-90"
+                  >
+                    {t("premium.getStarted")}
+                    <ArrowUpRight className="h-4 w-4" strokeWidth={1.75} />
+                  </button>
+                  <span className="text-[13px] font-light text-white/55">
+                    {pick({ en: "7-day money-back guarantee", ka: "7 დღიანი გარანტია" })}
+                  </span>
+                </>
+              ) : (
+                <span className="inline-flex items-center gap-2 text-[14px] font-medium text-[var(--hm-bg-elevated)]">
+                  <Crown className="h-4 w-4" strokeWidth={1.75} />
+                  {premiumExpiresAt
+                    ? t("header.premiumActiveUntil", {
+                        date: formatPremiumDate(premiumExpiresAt, locale),
+                      })
+                    : t("header.premiumActive")}
+                </span>
+              )}
             </div>
           </div>
         </section>
