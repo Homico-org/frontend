@@ -13,7 +13,8 @@ const TIER_NAMES: Record<
 > = {
   basic: { en: "Premium", ka: "პრემიუმ", ru: "Premium" },
   pro: { en: "Pro", ka: "პრო", ru: "Pro" },
-  elite: { en: "Elite", ka: "ელიტა", ru: "Elite" },
+  // `elite` is the internal id; it ships to users as "Super Pro".
+  elite: { en: "Super Pro", ka: "სუპერ პრო", ru: "Супер Pro" },
 };
 
 /** True only while the tier is a real, non-"none" paid plan. */

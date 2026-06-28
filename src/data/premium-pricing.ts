@@ -31,9 +31,10 @@ export const PREMIUM_PRICES_BY_COUNTRY: Record<
   Record<PremiumTierId, TierPrice>
 > = {
   GE: {
+    // Launch pricing (GEL). `elite` is sold as "Super Pro".
     basic: { monthly: 29, yearly: 290 },
-    pro: { monthly: 59, yearly: 590 },
-    elite: { monthly: 99, yearly: 990 },
+    pro: { monthly: 100, yearly: 1000 },
+    elite: { monthly: 250, yearly: 2500 },
   },
   IL: {
     // Israel - shekel pricing. ~₪40/90/150 monthly bracket.

@@ -40,10 +40,10 @@ const TIER_BENEFITS: Record<string, Benefit[]> = {
     { icon: Star, text: { en: 'Featured on the homepage', ka: 'მთავარ გვერდზე გამოჩენა', ru: 'На главной странице' } },
   ],
   elite: [
-    { icon: Crown, text: { en: 'Elite badge on your profile', ka: 'ელიტ ბეჯი პროფილზე', ru: 'Элитный бейдж в профиле' } },
-    { icon: TrendingUp, text: { en: '#1 in search results', ka: '#1 ძიების შედეგებში', ru: '#1 в результатах поиска' } },
-    { icon: Eye, text: { en: '10x more profile views', ka: '10x მეტი ნახვა', ru: '10x больше просмотров' } },
-    { icon: UserCog, text: { en: 'A personal account manager', ka: 'პერსონალური მენეჯერი', ru: 'Персональный менеджер' } },
+    { icon: BadgeCheck, text: { en: 'Everything in Pro', ka: 'ყველაფერი Pro-დან', ru: 'Всё из Pro' } },
+    { icon: TrendingUp, text: { en: 'Promotion on Facebook & Instagram', ka: 'პრომოცია Facebook-სა და Instagram-ზე', ru: 'Продвижение в Facebook и Instagram' } },
+    { icon: Star, text: { en: 'Content & storytelling made for you', ka: 'კონტენტი და სთორითელინგი შენთვის', ru: 'Контент и сторителлинг для вас' } },
+    { icon: UserCog, text: { en: 'Marketing & PR support', ka: 'მარკეტინგი და PR მხარდაჭერა', ru: 'Поддержка маркетинга и PR' } },
   ],
 };
 
