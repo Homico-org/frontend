@@ -41,12 +41,12 @@ const PREMIUM_TIERS: Record<
   },
   elite: {
     id: "elite",
-    name: { en: "Elite", ka: "ელიტა" },
+    name: { en: "Super Pro", ka: "სუპერ პრო" },
     features: [
-      { en: "#1 search priority", ka: "#1 ძიების პრიორიტეტი" },
-      { en: "Exclusive homepage spotlight", ka: "ექსკლუზიური ადგილი მთავარზე" },
-      { en: "10x more profile views", ka: "10x მეტი ნახვა" },
-      { en: "Personal manager", ka: "პერსონალური მენეჯერი" },
+      { en: "Everything in Pro", ka: "ყველაფერი Pro-დან" },
+      { en: "Promotion on Facebook & Instagram", ka: "პრომოცია Facebook-სა და Instagram-ზე" },
+      { en: "Content & storytelling made for you", ka: "კონტენტი და სთორითელინგი შენთვის" },
+      { en: "Marketing & PR support", ka: "მარკეტინგი და PR მხარდაჭერა" },
     ],
   },
 };
