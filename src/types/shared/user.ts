@@ -268,6 +268,8 @@ export interface ProCard {
   completedJobs: number;
   yearsExperience: number;
   isPremium: boolean;
+  /** Active paid tier (when isPremium): 'basic' | 'pro' | 'elite'. 'elite' = super premium. */
+  premiumTier?: string;
   isFeatured?: boolean;
   isAvailable: boolean;
   status: ProStatus;

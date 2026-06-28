@@ -611,6 +611,15 @@ export default function ProfessionalDetailClient({
     profile?.premiumTier === "none" ||
     profile?.premiumTier === "basic";
 
+  // Tier treatment for the profile (matches the card): 'elite' = super premium
+  // (thicker vermillion top bar), 'premium' = paid pro/basic (thin bar). On-brand
+  // monochrome + a single vermillion accent.
+  const profileTier: "free" | "premium" | "elite" = profile?.isPremium
+    ? profile?.premiumTier === "elite"
+      ? "elite"
+      : "premium"
+    : "free";
+
   // The "Contact" (in-app messaging) CTA is a premium-tier perk, but it
   // depends on the messaging marketplace, which is OFF for the premium-only
   // launch (gated by features.bookings). While that's off, every pro - paid
@@ -1595,6 +1604,18 @@ export default function ProfessionalDetailClient({
     <div className="min-h-screen bg-[var(--hm-bg-page)]">
       <Header />
       <HeaderSpacer />
+
+      {/* Premium tier accent - a vermillion bar across the top of the profile.
+          Thin for Premium, thicker for Elite (super premium). On-brand: one
+          accent colour, no gold/gradient. */}
+      {profileTier !== "free" && (
+        <div
+          aria-hidden
+          className={`w-full bg-[var(--hm-brand-500)] ${
+            profileTier === "elite" ? "h-1" : "h-[3px]"
+          }`}
+        />
+      )}
 
       {/* Floating back chip - appears once the user scrolls past 400px
           so they don't have to scroll back up to find the header's

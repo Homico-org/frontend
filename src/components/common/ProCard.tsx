@@ -122,6 +122,14 @@ export default function ProCard({
   }, [getSubcategoriesForCategory, userSubcategories, servicesWithExperience]);
 
   const isPremium = profile.isPremium || false;
+  // Tier treatment (on-brand, monochrome + vermillion). 'elite' = super premium
+  // (vermillion frame + thicker top-edge), 'premium' = paid pro/basic (thin
+  // vermillion top-edge). Replaces the old off-brand amber ring + gold star.
+  const premiumTier: "free" | "premium" | "elite" = isPremium
+    ? profile.premiumTier === "elite"
+      ? "elite"
+      : "premium"
+    : "free";
 
   // Only offer the Book CTA when the pro has at least one active, priced
   // service - otherwise the booking modal's first step would be empty.
@@ -494,12 +502,27 @@ export default function ProCard({
   return (
     <Link ref={cardRef} href={`/${(profile.country ?? 'GE').toLowerCase()}/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} - ${t('browse.professionals')}`}>
       <div
-        className={`relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] group-hover:border-[var(--hm-brand-500)]/30 transition-all duration-200 group-hover:shadow-lg group-hover:-translate-y-[2px] ${isPremium ? 'ring-1 ring-amber-300/30' : ''}`}
+        className={`relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border transition-all duration-200 group-hover:shadow-lg group-hover:-translate-y-[2px] ${
+          premiumTier === 'elite'
+            ? 'border-[var(--hm-brand-500)]/70 group-hover:border-[var(--hm-brand-500)]'
+            : premiumTier === 'premium'
+              ? 'border-[var(--hm-brand-500)]/25 group-hover:border-[var(--hm-brand-500)]/50'
+              : 'border-[var(--hm-border-subtle)] group-hover:border-[var(--hm-brand-500)]/30'
+        }`}
         style={{
           boxShadow:
             "0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.04)",
         }}
       >
+        {/* Tier accent edge - thin vermillion for Premium, thicker for Elite. */}
+        {premiumTier !== "free" && (
+          <span
+            aria-hidden
+            className={`pointer-events-none absolute inset-x-0 top-0 z-20 bg-[var(--hm-brand-500)] ${
+              premiumTier === "elite" ? "h-[3px]" : "h-[2px]"
+            }`}
+          />
+        )}
 
         {/* Portfolio media carousel - wide-and-short aspect so the photo
             doesn't dominate the card. */}
@@ -839,14 +862,6 @@ export default function ProCard({
           )}
         </div>
 
-        {/* Premium badge */}
-        {isPremium && (
-          <div className="absolute top-2 right-2 z-10">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-white">
-              <Star className="w-3 h-3 text-white fill-current" />
-            </div>
-          </div>
-        )}
 
         {/* Hover-reveal "open" affordance - sits over the bottom-right
             corner. Hidden until hover so it doesn't compete with the card
