@@ -58,6 +58,9 @@ interface User {
   isPremium?: boolean;
   premiumTier?: 'none' | 'basic' | 'pro' | 'elite';
   premiumExpiresAt?: string;
+  // Start of the current paid period - drives the 3-day money-back
+  // cancellation window on the premium page.
+  premiumStartedAt?: string;
 }
 
 interface AuthContextType {
@@ -128,6 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isPremium: userData.isPremium,
         premiumTier: userData.premiumTier,
         premiumExpiresAt: userData.premiumExpiresAt,
+        premiumStartedAt: userData.premiumStartedAt,
       };
     } catch (err) {
       console.error('Token validation failed:', err);

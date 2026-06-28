@@ -6,10 +6,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { features } from "@/config/features";
-import { formatPremiumDate } from "@/utils/premium";
+import { ConfirmModal } from "@/components/ui/Modal";
+import { useToast } from "@/contexts/ToastContext";
+import { api } from "@/lib/api";
+import { formatPremiumDate, isPremiumRefundable } from "@/utils/premium";
 import { ArrowRight, BadgeCheck, Check, Crown, Star, TrendingUp } from "lucide-react";
+import { isAxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Single launch plan: Pro, monthly only.
 const PLAN_ID = "pro";
@@ -57,10 +61,13 @@ const HIGHLIGHTS = [
 ];
 
 export default function PremiumPlansPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, refreshUser } = useAuth();
   const { t, pick, locale } = useLanguage();
   const router = useRouter();
   const { trackEvent } = useAnalytics();
+  const toast = useToast();
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   const isPro = user?.role === "pro";
   // `/users/me` already expiry-checks these, returning "none"/false once a
@@ -69,6 +76,7 @@ export default function PremiumPlansPage() {
     user?.isPremium && user.premiumTier ? user.premiumTier : "none";
   const premiumExpiresAt = user?.premiumExpiresAt;
   const isActive = currentTier !== "none";
+  const refundable = isActive && isPremiumRefundable(user?.premiumStartedAt);
 
   useEffect(() => {
     trackEvent(AnalyticsEvent.PREMIUM_VIEW);
@@ -89,6 +97,35 @@ export default function PremiumPlansPage() {
       planPrice: PRICE,
     });
     router.push(`/pro/premium/checkout?tier=${PLAN_ID}&period=monthly`);
+  };
+
+  const handleCancel = async () => {
+    setCancelling(true);
+    try {
+      const { data } = await api.post<{ refunded?: boolean }>(
+        "/payments/premium/cancel",
+      );
+      await refreshUser();
+      setCancelOpen(false);
+      toast.success(
+        pick({ en: "Subscription cancelled", ka: "გამოწერა გაუქმდა", ru: "Подписка отменена" }),
+        data?.refunded
+          ? pick({
+              en: "Your refund is on the way.",
+              ka: "თანხა მალე დაგიბრუნდებათ.",
+              ru: "Возврат уже в пути.",
+            })
+          : undefined,
+      );
+    } catch (err) {
+      const msg =
+        isAxiosError(err) && typeof err.response?.data?.message === "string"
+          ? err.response.data.message
+          : pick({ en: "Couldn't cancel - try again.", ka: "გაუქმება ვერ მოხერხდა.", ru: "Не удалось отменить." });
+      toast.error(msg);
+    } finally {
+      setCancelling(false);
+    }
   };
 
   return (
@@ -178,15 +215,37 @@ export default function PremiumPlansPage() {
                 )}
               </Button>
 
-              <p className="mt-3.5 text-center text-[12px] text-[var(--hm-fg-muted)]">
-                {isActive
-                  ? pick({ en: "Cancel anytime", ka: "გააუქმე ნებისმიერ დროს", ru: "Отмена в любой момент" })
-                  : pick({
-                      en: "7-day money-back · cancel anytime",
-                      ka: "7 დღიანი თანხის დაბრუნება · გააუქმე ნებისმიერ დროს",
-                      ru: "Возврат 7 дней · отмена в любой момент",
+              {isActive ? (
+                refundable ? (
+                  <button
+                    type="button"
+                    onClick={() => setCancelOpen(true)}
+                    className="mt-3.5 w-full text-center text-[12px] text-[var(--hm-fg-muted)] underline-offset-4 transition-colors hover:text-[var(--hm-error-500)] hover:underline"
+                  >
+                    {pick({
+                      en: "Cancel & get a full refund",
+                      ka: "გააუქმე და დაიბრუნე თანხა",
+                      ru: "Отменить и вернуть деньги",
                     })}
-              </p>
+                  </button>
+                ) : (
+                  <p className="mt-3.5 text-center text-[12px] text-[var(--hm-fg-muted)]">
+                    {pick({
+                      en: "Your plan won't auto-renew",
+                      ka: "გეგმა ავტომატურად არ განახლდება",
+                      ru: "Тариф не продлевается автоматически",
+                    })}
+                  </p>
+                )
+              ) : (
+                <p className="mt-3.5 text-center text-[12px] text-[var(--hm-fg-muted)]">
+                  {pick({
+                    en: "3-day money-back guarantee",
+                    ka: "3 დღიანი თანხის დაბრუნების გარანტია",
+                    ru: "Возврат денег в течение 3 дней",
+                  })}
+                </p>
+              )}
             </div>
 
             {/* What's included */}
@@ -247,6 +306,31 @@ export default function PremiumPlansPage() {
           </div>
         </section>
       </main>
+
+      <ConfirmModal
+        isOpen={cancelOpen}
+        onClose={() => setCancelOpen(false)}
+        onConfirm={handleCancel}
+        variant="danger"
+        isLoading={cancelling}
+        title={pick({
+          en: "Cancel your Pro plan?",
+          ka: "გავაუქმოთ პრო გეგმა?",
+          ru: "Отменить тариф Pro?",
+        })}
+        description={pick({
+          en: "You're within the 3-day window, so you'll get a full refund and Pro will end right away.",
+          ka: "ხარ 3 დღიან ვადაში, ამიტომ თანხას სრულად დაგიბრუნებთ და პრო მაშინვე დასრულდება.",
+          ru: "Вы в пределах 3 дней, поэтому получите полный возврат, а Pro завершится сразу.",
+        })}
+        confirmLabel={pick({
+          en: "Cancel & refund",
+          ka: "გაუქმება და დაბრუნება",
+          ru: "Отменить и вернуть",
+        })}
+        cancelLabel={pick({ en: "Keep Pro", ka: "დატოვე პრო", ru: "Оставить Pro" })}
+        loadingLabel={pick({ en: "Cancelling...", ka: "უქმდება...", ru: "Отмена..." })}
+      />
     </div>
   );
 }
