@@ -15,6 +15,12 @@ import { ArrowLeft, ArrowUpRight, Check, Lock } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
+// Tiers we currently sell. The offering is two tiers, MONTHLY only - the
+// checkout must refuse anything else (e.g. ?tier=basic or ?period=yearly)
+// rather than render/POST a plan that no longer exists.
+const ALLOWED_TIERS = ["pro", "elite"] as const;
+const ALLOWED_PERIODS = ["monthly"] as const;
+
 const PREMIUM_TIERS: Record<
   string,
   {
@@ -23,16 +29,6 @@ const PREMIUM_TIERS: Record<
     features: { en: string; ka: string }[];
   }
 > = {
-  basic: {
-    id: "basic",
-    name: { en: "Premium", ka: "პრემიუმ" },
-    features: [
-      { en: "Premium badge", ka: "პრემიუმ ბეჯი" },
-      { en: "Priority in search", ka: "პრიორიტეტი ძიებაში" },
-      { en: "2x more profile views", ka: "2x მეტი ნახვა" },
-      { en: "Profile analytics", ka: "პროფილის ანალიტიკა" },
-    ],
-  },
   pro: {
     id: "pro",
     name: { en: "Pro", ka: "პრო" },
@@ -64,14 +60,22 @@ function CheckoutContent() {
   const cl = useCountryLink();
   const country = useCountry();
 
-  useEffect(() => {
-    if (!features.premium) router.replace(cl("/pro/premium"));
-  }, [router, cl]);
-
   const tierId = searchParams.get("tier") || "pro";
   const period = (searchParams.get("period") || "monthly") as "monthly" | "yearly";
 
-  const tier = PREMIUM_TIERS[tierId];
+  // Only the currently-offered combos are valid: tier in {pro, elite},
+  // period === monthly. A URL with a stale/unknown tier (e.g. ?tier=basic)
+  // or a retired period (?period=yearly) is bounced back to the plan page
+  // so we never render a price or POST a checkout for a plan we don't sell.
+  const isValidCombo =
+    (ALLOWED_TIERS as readonly string[]).includes(tierId) &&
+    (ALLOWED_PERIODS as readonly string[]).includes(period);
+
+  useEffect(() => {
+    if (!features.premium || !isValidCombo) router.replace(cl("/pro/premium"));
+  }, [router, cl, isValidCombo]);
+
+  const tier = isValidCombo ? PREMIUM_TIERS[tierId] : undefined;
   const tierPrices = tier ? getPremiumTierPrices(country, tier.id) : { monthly: 0, yearly: 0 };
   const price = tierPrices[period] || 0;
   const currency = currencySymbol({ country });
