@@ -1595,7 +1595,18 @@ export default function ProfessionalDetailClient({
   }
 
   const avatarUrl = profile.avatar;
-  const avatarSrc = avatarUrl ? storage.getFileUrl(avatarUrl) : "";
+  // Cloudinary-downscale the avatar instead of shipping the raw upload (can be
+  // several MB) - it's only ever shown as a small circle. The Next optimizer is
+  // a no-op in prod (sharp not bundled), so sizing must happen at the URL.
+  const avatarSrc = avatarUrl
+    ? storage.getOptimizedImageUrl(avatarUrl, "avatarLarge")
+    : "";
+  // Full-resolution-ish source for the avatar zoom/lightbox (still
+  // Cloudinary-sized, not the raw multi-MB upload) - the small `avatarSrc`
+  // crop would look blurry stretched full-screen.
+  const avatarZoomSrc = avatarUrl
+    ? storage.getOptimizedImageUrl(avatarUrl, "lightbox")
+    : "";
   const portfolioImages = getAllPortfolioImages();
   const portfolioProjects = getUnifiedProjects();
   const groupedServices = getGroupedServices();
@@ -3694,7 +3705,7 @@ export default function ProfessionalDetailClient({
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={avatarSrc}
+              src={avatarZoomSrc}
               alt={profile.name}
               fill
               sizes="100vw"
@@ -4373,7 +4384,7 @@ function ProjectFormModal({
                         className="relative aspect-square rounded-xl overflow-hidden group ring-1 ring-[var(--hm-border-subtle)]"
                       >
                         <Image
-                          src={storage.getFileUrl(img)}
+                          src={storage.getOptimizedImageUrl(img, "thumbnailSmall")}
                           alt=""
                           fill
                           className="rounded-full object-cover"
