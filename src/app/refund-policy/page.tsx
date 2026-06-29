@@ -6,20 +6,15 @@ import { Clock, ReceiptText } from 'lucide-react';
 import Link from 'next/link';
 
 /**
- * Public refund policy page. Mirrors what the cancellation flow actually
- * enforces in code (BookingsService.computeCancellationQuote + the dispute
- * resolution rules). Update both in sync when the policy changes - the
- * in-app modal's preview is the visible enforcement, this page is the
- * legal-ish public statement.
- *
- * Structure stays single-column on purpose (no TOC) - the policy is short
- * enough that a sidebar would be visual clutter.
+ * Public refund policy. Covers the ONLY thing Homico charges for: the Premium
+ * subscription (Pro / Super Pro). Homico does not process payments for
+ * renovation work - those are arranged directly between client and pro - so
+ * there is no booking/escrow refund flow here. Keep in sync with the premium
+ * cancel flow (POST /payments/premium/cancel + isPremiumRefundable).
  */
 export default function RefundPolicyPage() {
-  const { t } = useLanguage();
-  // Bump this when you materially change the policy. Surfaced in the hero
-  // as "Last updated: ..."
-  const lastUpdated = t('refundPolicy.lastUpdated');
+  const { pick } = useLanguage();
+  const lastUpdated = pick({ en: 'June 2026', ka: '2026 წლის ივნისი', ru: 'Июнь 2026 г.' });
 
   return (
     <div className="min-h-screen bg-[var(--hm-bg-page)]">
@@ -34,17 +29,21 @@ export default function RefundPolicyPage() {
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-center">
           <span className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white/90 text-sm font-medium mb-6">
             <ReceiptText className="w-4 h-4" strokeWidth={1.5} />
-            {t('refundPolicy.eyebrow')}
+            {pick({ en: 'Refund Policy', ka: 'დაბრუნების პოლიტიკა', ru: 'Политика возврата' })}
           </span>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-medium text-white mb-4 tracking-tight">
-            {t('refundPolicy.title')}
+            {pick({ en: 'Refund Policy', ka: 'თანხის დაბრუნების პოლიტიკა', ru: 'Политика возврата средств' })}
           </h1>
           <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed mb-6">
-            {t('refundPolicy.lead')}
+            {pick({
+              en: 'How refunds work for the Homico Premium subscription.',
+              ka: 'როგორ ხდება თანხის დაბრუნება Homico Premium გამოწერაზე.',
+              ru: 'Как работает возврат средств за подписку Homico Premium.',
+            })}
           </p>
           <div className="inline-flex items-center gap-2 text-sm text-white/50">
             <Clock className="w-4 h-4" strokeWidth={1.5} />
-            {t('refundPolicy.lastUpdatedLabel')} {lastUpdated}
+            {pick({ en: 'Last updated:', ka: 'ბოლო განახლება:', ru: 'Обновлено:' })} {lastUpdated}
           </div>
         </div>
       </section>
@@ -62,56 +61,70 @@ export default function RefundPolicyPage() {
             prose-strong:text-[var(--hm-fg-primary)] prose-strong:font-semibold
             prose-a:text-[var(--hm-brand-500)] prose-a:no-underline hover:prose-a:underline"
         >
-          <h2>{t('refundPolicy.howItWorks.title')}</h2>
-          <p>{t('refundPolicy.howItWorks.body')}</p>
-
-          <h2>{t('refundPolicy.clientCancel.title')}</h2>
-          <p>{t('refundPolicy.clientCancel.intro')}</p>
-          <ul>
-            <li>
-              <strong>{t('refundPolicy.clientCancel.rule24h.label')}:</strong>{' '}
-              {t('refundPolicy.clientCancel.rule24h.body')}
-            </li>
-            <li>
-              <strong>{t('refundPolicy.clientCancel.rule2h.label')}:</strong>{' '}
-              {t('refundPolicy.clientCancel.rule2h.body')}
-            </li>
-            <li>
-              <strong>{t('refundPolicy.clientCancel.ruleLate.label')}:</strong>{' '}
-              {t('refundPolicy.clientCancel.ruleLate.body')}
-            </li>
-          </ul>
-
-          <h2>{t('refundPolicy.proCancel.title')}</h2>
-          <p>{t('refundPolicy.proCancel.body')}</p>
-
-          <h2>{t('refundPolicy.completion.title')}</h2>
-          <p>{t('refundPolicy.completion.body')}</p>
-          <ul>
-            <li>{t('refundPolicy.completion.bullet1')}</li>
-            <li>{t('refundPolicy.completion.bullet2')}</li>
-            <li>{t('refundPolicy.completion.bullet3')}</li>
-          </ul>
-
-          <h2>{t('refundPolicy.disputes.title')}</h2>
-          <p>{t('refundPolicy.disputes.body')}</p>
-          <ul>
-            <li>{t('refundPolicy.disputes.bullet1')}</li>
-            <li>{t('refundPolicy.disputes.bullet2')}</li>
-            <li>{t('refundPolicy.disputes.bullet3')}</li>
-            <li>{t('refundPolicy.disputes.bullet4')}</li>
-          </ul>
-
-          <h2>{t('refundPolicy.timing.title')}</h2>
-          <p>{t('refundPolicy.timing.body')}</p>
-
-          <h2>{t('refundPolicy.changes.title')}</h2>
-          <p>{t('refundPolicy.changes.body')}</p>
-
-          <h2>{t('refundPolicy.contact.title')}</h2>
+          <h2>{pick({ en: 'What this covers', ka: 'რას მოიცავს ეს პოლიტიკა', ru: 'Что охватывает эта политика' })}</h2>
           <p>
-            {t('refundPolicy.contact.body')}{' '}
-            <Link href="/help">{t('refundPolicy.contact.helpLink')}</Link>.
+            {pick({
+              en: 'This policy covers refunds for the Homico Premium subscription (Pro and Super Pro). Homico does not process payments for renovation work - those are arranged and paid directly between the client and the professional - so this policy applies only to the Premium subscription you buy from Homico.',
+              ka: 'ეს პოლიტიკა მოიცავს Homico Premium გამოწერის (Pro და Super Pro) თანხის დაბრუნებას. Homico არ ამუშავებს გადახდებს სარემონტო სამუშაოზე - ისინი თანხმდება და იხდება უშუალოდ კლიენტსა და ოსტატს შორის - ამიტომ ეს პოლიტიკა ეხება მხოლოდ Homico-სგან შეძენილ Premium გამოწერას.',
+              ru: 'Эта политика охватывает возврат средств за подписку Homico Premium (Pro и Super Pro). Homico не обрабатывает платежи за ремонтные работы - они согласовываются и оплачиваются напрямую между клиентом и мастером, - поэтому политика касается только подписки Premium, которую вы покупаете у Homico.',
+            })}
+          </p>
+
+          <h2>{pick({ en: '3-day money-back guarantee', ka: '3 დღიანი თანხის დაბრუნების გარანტია', ru: '3-дневная гарантия возврата' })}</h2>
+          <p>
+            {pick({
+              en: 'Every Premium subscription includes a 3-day money-back guarantee. If you are not satisfied, cancel within 3 days of your payment and we will refund you in full to the card you paid with.',
+              ka: 'ყველა Premium გამოწერა მოიცავს 3 დღიან თანხის დაბრუნების გარანტიას. თუ კმაყოფილი არ ხართ, გააუქმეთ გადახდიდან 3 დღეში და თანხას სრულად დაგიბრუნებთ იმავე ბარათზე.',
+              ru: 'Каждая подписка Premium включает 3-дневную гарантию возврата средств. Если вы недовольны, отмените в течение 3 дней после оплаты, и мы вернём полную сумму на карту, которой вы платили.',
+            })}
+          </p>
+
+          <h2>{pick({ en: 'Cancelling after 3 days', ka: 'გაუქმება 3 დღის შემდეგ', ru: 'Отмена после 3 дней' })}</h2>
+          <p>
+            {pick({
+              en: 'You can cancel your subscription at any time. After the first 3 days, cancelling stops the next renewal - your Premium stays active until the end of the period you already paid for, and that remaining period is not refunded.',
+              ka: 'გამოწერის გაუქმება ნებისმიერ დროს შეგიძლიათ. პირველი 3 დღის შემდეგ გაუქმება აჩერებს შემდეგ განახლებას - Premium აქტიური რჩება უკვე გადახდილი პერიოდის ბოლომდე და ეს დარჩენილი პერიოდი არ ბრუნდება.',
+              ru: 'Вы можете отменить подписку в любое время. После первых 3 дней отмена останавливает следующее продление - Premium остаётся активным до конца уже оплаченного периода, и этот остаток не возвращается.',
+            })}
+          </p>
+
+          <h2>{pick({ en: 'How refunds are issued', ka: 'როგორ ბრუნდება თანხა', ru: 'Как возвращаются средства' })}</h2>
+          <p>
+            {pick({
+              en: 'Refunds are returned to the original card through our licensed payment provider. The amount usually appears within a few business days, depending on your bank.',
+              ka: 'თანხა ბრუნდება იმავე ბარათზე ლიცენზირებული გადახდის პროვაიდერის მეშვეობით. თანხა, როგორც წესი, რამდენიმე სამუშაო დღეში აისახება, თქვენი ბანკის მიხედვით.',
+              ru: 'Возврат осуществляется на исходную карту через нашего лицензированного платёжного провайдера. Сумма обычно поступает в течение нескольких рабочих дней, в зависимости от банка.',
+            })}
+          </p>
+
+          <h2>{pick({ en: 'How to cancel or request a refund', ka: 'როგორ გააუქმოთ ან მოითხოვოთ დაბრუნება', ru: 'Как отменить или запросить возврат' })}</h2>
+          <p>
+            {pick({
+              en: 'You can cancel from the Premium page in your account, or email us at contact@homico.co. For a guarantee refund, please contact us within 3 days of your payment.',
+              ka: 'გაუქმება შეგიძლიათ ანგარიშის Premium გვერდიდან, ან მოგვწერეთ contact@homico.co-ზე. გარანტიით დაბრუნებისთვის დაგვიკავშირდით გადახდიდან 3 დღეში.',
+              ru: 'Вы можете отменить на странице Premium в вашем аккаунте или написать нам на contact@homico.co. Для гарантийного возврата свяжитесь с нами в течение 3 дней после оплаты.',
+            })}
+          </p>
+
+          <h2>{pick({ en: 'Changes to this policy', ka: 'პოლიტიკის ცვლილება', ru: 'Изменения политики' })}</h2>
+          <p>
+            {pick({
+              en: 'We may update this policy from time to time. The current version is always available on this page.',
+              ka: 'ჩვენ პერიოდულად შეიძლება განვაახლოთ ეს პოლიტიკა. მიმდინარე ვერსია ყოველთვის ხელმისაწვდომია ამ გვერდზე.',
+              ru: 'Мы можем периодически обновлять эту политику. Актуальная версия всегда доступна на этой странице.',
+            })}
+          </p>
+
+          <h2>{pick({ en: 'Contact', ka: 'კონტაქტი', ru: 'Контакт' })}</h2>
+          <p>
+            {pick({
+              en: 'Questions about a refund? Email',
+              ka: 'გაქვთ კითხვა დაბრუნებაზე? მოგვწერეთ',
+              ru: 'Вопросы о возврате? Напишите на',
+            })}{' '}
+            <a href="mailto:contact@homico.co">contact@homico.co</a>{' '}
+            {pick({ en: 'or visit our', ka: 'ან ეწვიეთ', ru: 'или посетите наш' })}{' '}
+            <Link href="/help">{pick({ en: 'Help Center', ka: 'დახმარების ცენტრს', ru: 'Центр помощи' })}</Link>.
           </p>
         </article>
       </div>
