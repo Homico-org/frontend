@@ -95,6 +95,7 @@ function CheckoutContent() {
     INVALID_PROMO: { en: "Invalid code", ka: "არასწორი კოდი" },
     EXPIRED_PROMO: { en: "This code has expired", ka: "კოდს ვადა გაუვიდა" },
     PROMO_USED_UP: { en: "This code is used up", ka: "კოდი ამოწურულია" },
+    PROMO_ALREADY_USED: { en: "You've already used this code", ka: "ამ კოდით უკვე ისარგებლეთ" },
     PROMO_NOT_FOR_TIER: { en: "Not valid for this plan", ka: "არ მოქმედებს ამ გეგმაზე" },
   };
 
