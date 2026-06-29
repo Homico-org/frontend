@@ -115,14 +115,14 @@ const variantConfig: Record<StatusPillVariant, {
   premium: {
     bgClass: 'bg-[var(--hm-brand-50)]',
     textClass: 'text-[var(--hm-brand-700)]',
-    icon: Zap,
+    icon: Crown,
     labelEn: 'Premium',
     labelKa: 'პრემიუმ',
   },
   featured: {
     bgClass: 'bg-[var(--hm-brand-50)]',
     textClass: 'text-[var(--hm-brand-600)]',
-    icon: Crown,
+    icon: Zap,
     labelEn: 'Featured',
     labelKa: 'გამორჩეული',
   },
