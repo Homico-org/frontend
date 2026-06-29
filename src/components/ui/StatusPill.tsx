@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { BadgeCheck, Star, Clock, AlertTriangle, CheckCircle, XCircle, CornerUpLeft, Moon, Award, Crown, Handshake, Gem, Diamond, Sprout } from 'lucide-react';
+import { BadgeCheck, Star, Clock, AlertTriangle, CheckCircle, XCircle, CornerUpLeft, Moon, Award, Crown, Handshake, Gem, Zap, Sprout } from 'lucide-react';
 import { ACCENT_COLOR } from '@/constants/theme';
 
 export type StatusPillVariant =
@@ -115,14 +115,14 @@ const variantConfig: Record<StatusPillVariant, {
   premium: {
     bgClass: 'bg-[var(--hm-brand-50)]',
     textClass: 'text-[var(--hm-brand-700)]',
-    icon: Diamond,
+    icon: Crown,
     labelEn: 'Premium',
     labelKa: 'პრემიუმ',
   },
   featured: {
     bgClass: 'bg-[var(--hm-brand-50)]',
     textClass: 'text-[var(--hm-brand-600)]',
-    icon: Crown,
+    icon: Zap,
     labelEn: 'Featured',
     labelKa: 'გამორჩეული',
   },
