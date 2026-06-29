@@ -1187,6 +1187,26 @@ export default function Header({
                   filter layer and renders semi-transparent (the page
                   bleeds through). We keep only the TRIGGER here and
                   portal the panel to document.body below. */}
+              {/* Persistent "Go Premium" cue next to the avatar, shown only to
+                  pros who aren't premium yet (premium pros see their tier badge
+                  in the dropdown instead). Always visible across the app via the
+                  global header, but kept tiny - icon-only on mobile, icon+label
+                  on desktop - so it nudges without cluttering. */}
+              {user.role === "pro" &&
+                features.premium &&
+                !(isPaidTier(user.premiumTier) && user.isPremium) && (
+                  <Link
+                    href={cl("/pro/premium")}
+                    onClick={() => trackEvent("nav_click", "premium_header_cta")}
+                    aria-label={t("common.premium")}
+                    title={t("common.premium")}
+                    className="inline-flex items-center gap-1 h-8 px-2 sm:px-2.5 rounded-full text-xs font-semibold bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-600)] border border-[var(--hm-brand-500)]/25 hover:bg-[var(--hm-brand-500)]/15 transition-colors duration-200"
+                  >
+                    <Crown className="w-3.5 h-3.5" strokeWidth={2} />
+                    <span className="hidden sm:inline">{t("common.premium")}</span>
+                  </Link>
+                )}
+
               <div className="relative" ref={triggerRef}>
                 {/* Avatar + first name + chevron = a visibly clickable
                     menu trigger, not just a profile photo. Matches the
