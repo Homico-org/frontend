@@ -12,51 +12,43 @@ import { NextRequest, NextResponse } from "next/server";
  * reconcile endpoint for the actual payment status. We never read the POST
  * body - the return page reconciles by entity id from its own URL.
  *
- * Open-redirect guard: only same-origin targets are honoured.
+ * Open-redirect guard: only absolute URLs on a known Homico domain are honoured.
+ * We validate the destination directly rather than comparing against our own
+ * origin: behind Render's proxy `req.nextUrl.origin` is the internal
+ * `http://localhost:10000`, so an origin-based guard rejected the real return
+ * URL and bounced the user to a dead localhost page after paying. The `to`
+ * value is built server-side from FRONTEND_URL, so it is always one of our
+ * domains in practice.
  */
-/**
- * The public origin as the browser sees it. Behind Render's proxy
- * `req.nextUrl.origin` is the internal `http://localhost:10000`, which makes
- * the same-origin guard reject the real return URL and fall back to a dead
- * localhost page. Trust the proxy's forwarded headers when present.
- */
-function publicOrigin(req: NextRequest): string {
-  const fwdHost = req.headers.get("x-forwarded-host");
-  if (!fwdHost) return req.nextUrl.origin;
-  const host = fwdHost.split(",")[0].trim();
-  // Only trust the forwarded host if it's a known Homico domain. Render
-  // resets inbound x-forwarded-* on its edge, but validating here means a
-  // forged header can never turn the same-origin guard into an open redirect
-  // (a bad host just falls back to the internal origin, which rejects `to`).
-  const trusted =
-    host === "homico.ge" ||
-    host === "homico.co" ||
-    host.endsWith(".homico.ge") ||
-    host.endsWith(".homico.co");
-  if (!trusted) return req.nextUrl.origin;
-  const proto = (req.headers.get("x-forwarded-proto") || "https")
-    .split(",")[0]
-    .trim();
-  return `${proto}://${host}`;
+function trustedTarget(raw: string | null): string | null {
+  if (!raw) return null;
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return null;
+    const h = u.hostname;
+    const ok =
+      h === "homico.ge" ||
+      h === "homico.co" ||
+      h.endsWith(".homico.ge") ||
+      h.endsWith(".homico.co") ||
+      h === "localhost"; // local dev (FRONTEND_URL=http://localhost:3000)
+    return ok ? u.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 function bounce(req: NextRequest): NextResponse {
-  const origin = publicOrigin(req);
-  const to = req.nextUrl.searchParams.get("to");
-
-  let target = `${origin}/`;
-  if (to) {
-    try {
-      const u = new URL(to, origin);
-      if (u.origin === origin) target = u.toString();
-    } catch {
-      // malformed `to` - fall back to home
-    }
+  const target = trustedTarget(req.nextUrl.searchParams.get("to"));
+  if (target) {
+    // 303 forces the follow-up request to be a GET regardless of the inbound
+    // method, which is exactly what we want after a POST redirect.
+    return NextResponse.redirect(target, 303);
   }
-
-  // 303 forces the follow-up request to be a GET regardless of the inbound
-  // method, which is exactly what we want after a POST redirect.
-  return NextResponse.redirect(target, 303);
+  // Missing / untrusted target: send the browser to the site root. A RELATIVE
+  // Location resolves against the address-bar URL (the public domain), so it
+  // avoids the internal localhost:10000 origin Next.js sees behind the proxy.
+  return new NextResponse(null, { status: 303, headers: { Location: "/" } });
 }
 
 export function POST(req: NextRequest): NextResponse {
