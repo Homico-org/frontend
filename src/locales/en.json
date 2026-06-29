@@ -1679,6 +1679,14 @@
         "title": "Premium expired",
         "message": "Renew to get your Premium badge and top placement back."
       },
+      "premium_purchased": {
+        "title": "Premium activated",
+        "message": "Your {tier} plan is now active."
+      },
+      "admin_premium_purchase": {
+        "title": "New premium purchase",
+        "message": "{name} bought {tier} ({amount} ₾)"
+      },
       "work_completed": {
         "title": "Work Completed",
         "message": "Work completed, leave a review"

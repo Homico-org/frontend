@@ -1681,6 +1681,14 @@
         "title": "Premium истёк",
         "message": "Продлите, чтобы вернуть значок Premium и топ-позицию."
       },
+      "premium_purchased": {
+        "title": "Premium активирован",
+        "message": "Ваш план {tier} теперь активен."
+      },
+      "admin_premium_purchase": {
+        "title": "Новая покупка Premium",
+        "message": "{name} купил(а) {tier} ({amount} ₾)"
+      },
       "work_completed": {
         "title": "Работа завершена",
         "message": "Работа завершена, оставьте отзыв"

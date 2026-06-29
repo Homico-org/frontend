@@ -1679,6 +1679,14 @@
         "title": "Premium ამოიწურა",
         "message": "განაახლეთ, რომ დაიბრუნოთ Premium ნიშანი და მაღალი პოზიცია."
       },
+      "premium_purchased": {
+        "title": "Premium გააქტიურდა",
+        "message": "თქვენი {tier} გეგმა ახლა აქტიურია."
+      },
+      "admin_premium_purchase": {
+        "title": "ახალი Premium შენაძენი",
+        "message": "{name}-მა შეიძინა {tier} ({amount} ₾)"
+      },
       "work_completed": {
         "title": "სამუშაო დასრულდა",
         "message": "სამუშაო დასრულდა, დატოვეთ შეფასება"
