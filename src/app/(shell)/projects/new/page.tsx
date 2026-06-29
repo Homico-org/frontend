@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { FormGroup, Input, Label, Textarea } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
@@ -43,6 +44,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export default function StartProjectPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
+  const { openLoginModal } = useAuthModal();
   const { t } = useLanguage();
   const { error: toastError } = useToast();
 
@@ -67,9 +69,9 @@ export default function StartProjectPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/auth/login?redirect=/projects/new');
+      openLoginModal('/projects/new');
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, openLoginModal]);
 
   // Note: we deliberately do NOT pre-fill location from user.city - doing so
   // re-populated the field every time it was cleared, so the address couldn't

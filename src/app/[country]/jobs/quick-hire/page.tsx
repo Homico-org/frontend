@@ -8,11 +8,13 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthModal } from '@/contexts/AuthModalContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useCountryLink } from '@/hooks/useCountry';
+import { api } from '@/lib/api';
 import type { ProProfile } from '@/types/shared';
 import { ChevronLeft, Check, Search, Star } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 interface MediaItem {
@@ -48,8 +50,9 @@ const steps = [
 ];
 
 export default function QuickHirePage() {
-  const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
+  const { openLoginModal } = useAuthModal();
+  const toast = useToast();
   const cl = useCountryLink();
 
   const [step, setStep] = useState(1);
@@ -67,9 +70,9 @@ export default function QuickHirePage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/auth/login?redirect=/jobs/quick-hire');
+      openLoginModal('/jobs/quick-hire');
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, openLoginModal]);
 
   useEffect(() => {
     if (user?.city && !location) {
@@ -131,31 +134,67 @@ export default function QuickHirePage() {
 
     setIsSubmitting(true);
     try {
-      const formData = new FormData();
-      formData.append('category', selectedCategory);
-      formData.append('description', description);
-      formData.append('location', location);
+      // Upload media first (same Cloudinary helper as post-job). Resilient:
+      // a single failed upload shouldn't sink the whole request - collect
+      // the successes and warn if any were skipped.
+      const uploadResults = await Promise.allSettled(
+        media.map(async (item) => {
+          const formDataUpload = new FormData();
+          formDataUpload.append('file', item.file);
+          const uploadRes = await api.post('/upload', formDataUpload);
+          return {
+            type: item.type,
+            url: (uploadRes.data.url || uploadRes.data.filename) as string,
+          };
+        }),
+      );
+      const uploadedMedia = uploadResults
+        .filter(
+          (r): r is PromiseFulfilledResult<{ type: MediaItem['type']; url: string }> =>
+            r.status === 'fulfilled',
+        )
+        .map((r) => r.value);
+      if (uploadResults.length - uploadedMedia.length > 0) {
+        toast.error('Some uploads failed');
+      }
+
+      // Build a CreateJobDto-valid payload. Providing `invitedPros` is what
+      // flips the job to a direct_request on the backend (see jobs.service
+      // createJob), so we set the type explicitly to match.
+      const jobData: Record<string, unknown> = {
+        jobType: 'direct_request',
+        // No dedicated title in Quick Hire - derive one from the category
+        // so the required CreateJobDto.title is never empty.
+        title: `${selectedCategory} - Quick Hire`,
+        description,
+        category: selectedCategory,
+        location,
+        // Quick Hire has no budget step; negotiable is the schema default
+        // and a valid JobBudgetType.
+        budgetType: 'negotiable',
+        invitedPros: selectedPros,
+      };
+
       if (coordinates) {
-        formData.append('coordinates', JSON.stringify(coordinates));
+        jobData.address = {
+          formattedAddress: location,
+          lat: coordinates.lat,
+          lng: coordinates.lng,
+        };
       }
-      formData.append('selectedPros', JSON.stringify(selectedPros));
-      media.forEach((item) => {
-        formData.append('media', item.file);
-      });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/quick-hire`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      });
-
-      if (response.ok) {
-        setRequestSent(true);
-      } else {
-        setRequestSent(true);
+      const imageUrls = uploadedMedia
+        .filter((m) => m.type === 'image')
+        .map((m) => m.url);
+      if (imageUrls.length > 0) {
+        jobData.images = imageUrls;
       }
-    } catch (error) {
+
+      await api.post('/jobs', jobData);
       setRequestSent(true);
+    } catch (error) {
+      console.error('Failed to send quick hire request:', error);
+      toast.error('Failed to send request. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
