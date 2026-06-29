@@ -14,8 +14,34 @@ import { NextRequest, NextResponse } from "next/server";
  *
  * Open-redirect guard: only same-origin targets are honoured.
  */
+/**
+ * The public origin as the browser sees it. Behind Render's proxy
+ * `req.nextUrl.origin` is the internal `http://localhost:10000`, which makes
+ * the same-origin guard reject the real return URL and fall back to a dead
+ * localhost page. Trust the proxy's forwarded headers when present.
+ */
+function publicOrigin(req: NextRequest): string {
+  const fwdHost = req.headers.get("x-forwarded-host");
+  if (!fwdHost) return req.nextUrl.origin;
+  const host = fwdHost.split(",")[0].trim();
+  // Only trust the forwarded host if it's a known Homico domain. Render
+  // resets inbound x-forwarded-* on its edge, but validating here means a
+  // forged header can never turn the same-origin guard into an open redirect
+  // (a bad host just falls back to the internal origin, which rejects `to`).
+  const trusted =
+    host === "homico.ge" ||
+    host === "homico.co" ||
+    host.endsWith(".homico.ge") ||
+    host.endsWith(".homico.co");
+  if (!trusted) return req.nextUrl.origin;
+  const proto = (req.headers.get("x-forwarded-proto") || "https")
+    .split(",")[0]
+    .trim();
+  return `${proto}://${host}`;
+}
+
 function bounce(req: NextRequest): NextResponse {
-  const origin = req.nextUrl.origin;
+  const origin = publicOrigin(req);
   const to = req.nextUrl.searchParams.get("to");
 
   let target = `${origin}/`;
