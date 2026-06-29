@@ -1226,13 +1226,25 @@ export default function Header({
                   aria-haspopup="menu"
                   aria-expanded={showDropdown}
                 >
-                  <Avatar
-                    src={user.avatar}
-                    name={user.name}
-                    size="sm"
-                    rounded="xl"
-                    className="w-8 h-8 transition-all duration-300"
-                  />
+                  <span className="relative inline-flex">
+                    <Avatar
+                      src={user.avatar}
+                      name={user.name}
+                      size="sm"
+                      rounded="xl"
+                      className="w-8 h-8 transition-all duration-300"
+                    />
+                    {/* Premium tier mark on the avatar - a small vermillion crown
+                        so paid pros read as premium straight from the top bar. */}
+                    {isPaidTier(user.premiumTier) && user.isPremium && (
+                      <span
+                        className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--hm-brand-500)] ring-2 ring-[var(--hm-bg-elevated)]"
+                        aria-hidden
+                      >
+                        <Crown className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
+                      </span>
+                    )}
+                  </span>
                   {/* Compact dot indicator on the avatar when support has
                       replied. Sits without count to keep the avatar clean -
                       the full count lives inside the dropdown next to Help. */}
