@@ -1,6 +1,8 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { features } from '@/config/features';
+import { useCountryLink } from '@/hooks/useCountry';
 import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
 import { trackPixel } from '@/utils/metaPixel';
 import { useRouter } from 'next/navigation';
@@ -75,6 +77,7 @@ export interface UseProRegistrationReturn {
 
 export function useProRegistration(): UseProRegistrationReturn {
   const router = useRouter();
+  const cl = useCountryLink();
   const { login } = useAuth();
   const { country, locale, pick } = useLanguage();
   
@@ -339,16 +342,20 @@ export function useProRegistration(): UseProRegistrationReturn {
         trackPixel("CompleteRegistration");
       }
 
-      // Skip the celebration step — drop the user straight into profile-setup
-      // so they can fill the structured fields (firstName + lastName, areas,
-      // services with pricing, portfolio) without an interim screen.
-      router.push('/pro/profile-setup/about');
+      // Premium push: a freshly-created pro lands on the premium pitch page
+      // first (capture the upsell intent right after signup), gated by the
+      // `premium` flag. When OFF, drop straight into profile-setup as before.
+      if (features.premium) {
+        router.push(cl('/pro/premium'));
+      } else {
+        router.push('/pro/profile-setup/about');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : pick({ en: 'Registration failed', ka: 'რეგისტრაცია ვერ მოხერხდა' }));
     } finally {
       setIsLoading(false);
     }
-  }, [phone, phoneCountry, fullName, city, password, uploadedAvatarUrl, selectedServices, login, pick, router]);
+  }, [phone, phoneCountry, fullName, city, password, uploadedAvatarUrl, selectedServices, login, pick, router, cl]);
   
   const handleNext = useCallback(async () => {
     setError('');
