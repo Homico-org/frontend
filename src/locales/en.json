@@ -463,7 +463,14 @@
     "signIn": "Sign In...",
     "signUp": "Sign Up",
     "sessionExpiredTitle": "Session expired",
-    "sessionExpiredBody": "Please sign in to continue."
+    "sessionExpiredBody": "Please sign in to continue.",
+    "googleAddPhoneTitle": "Add your phone number",
+    "googleAddPhoneSubtitle": "To finish creating your account, verify a phone number.",
+    "googleVerifyPhoneTitle": "Verify your phone",
+    "googleVerifyPhoneSubtitle": "Enter the 4-digit code we sent you.",
+    "googlePhoneTaken": "This phone number is already in use.",
+    "googleSignInFailed": "Google sign-in failed. Please try again.",
+    "phoneVerified": "Phone number verified!"
   },
   "header": {
     "home": "Home",
@@ -1340,6 +1347,7 @@
     "projectsWillAppearHere": "Projects Will Appear Here",
     "saved": "Saved",
     "savedSuccessfully": "Saved Successfully",
+    "changeSubmittedForReview": "Change submitted for review",
     "showcaseYourBestWork": "Showcase Your Best Work",
     "showcaseYourBestWorkTo": "Showcase Your Best Work To...",
     "similarProfessionals": "Similar Professionals",
@@ -1414,6 +1422,12 @@
     "youAreNowAProfessional": "You Are Now A Professional"
   },
   "premium": {
+    "announce": {
+      "title": "Premium is here",
+      "message": "Stand out from the crowd. Premium puts your profile in front of more clients, unlocks priority placement and exclusive badges — so you win more jobs.",
+      "cta": "View Premium",
+      "later": "Maybe later"
+    },
     "title": "Premium Plans",
     "subtitle": "Join elite professionals and unlock new opportunities",
     "monthly": "Monthly",

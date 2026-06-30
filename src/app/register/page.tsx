@@ -9,13 +9,20 @@ import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackEvent } from '@/hooks/useTracker';
 import { ArrowRight, Briefcase, Search, Shield, Star, Users } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 function RegisterContent() {
   const { t, pick: pickLang } = useLanguage();
   const { openLoginModal } = useAuthModal();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Carry a `redirect` (e.g. from the premium "Get started" CTA) through the
+  // client/pro chooser so the chosen flow can return the user to it.
+  const redirectParam = searchParams.get('redirect');
+  const redirectQs = redirectParam
+    ? `?redirect=${encodeURIComponent(redirectParam)}`
+    : '';
   const [isVisible, setIsVisible] = useState(false);
 
   const pick = (en: string, ka: string) => pickLang({ en, ka });
@@ -72,7 +79,7 @@ function RegisterContent() {
           >
             {/* Client card */}
             <button
-              onClick={() => { trackEvent('register_click', 'client'); router.push('/register/client'); }}
+              onClick={() => { trackEvent('register_click', 'client'); router.push(`/register/client${redirectQs}`); }}
               className="w-full group flex items-center gap-4 p-4 sm:p-5 rounded-2xl text-left transition-all hover:shadow-md active:scale-[0.99]"
               style={{
                 backgroundColor: 'var(--hm-bg-elevated)',
@@ -95,7 +102,7 @@ function RegisterContent() {
 
             {/* Pro card */}
             <button
-              onClick={() => { trackEvent('register_click', 'pro'); router.push('/register/professional'); }}
+              onClick={() => { trackEvent('register_click', 'pro'); router.push(`/register/professional${redirectQs}`); }}
               className="w-full group flex items-center gap-4 p-4 sm:p-5 rounded-2xl text-left transition-all hover:shadow-md active:scale-[0.99]"
               style={{
                 backgroundColor: 'rgba(239,78,36,0.06)',

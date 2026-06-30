@@ -2,6 +2,7 @@
 
 import { useProRegistration } from './hooks/useProRegistration';
 import { StepPhone, StepProfile } from './steps';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 import AvatarCropper from '@/components/common/AvatarCropper';
 import Header from '@/components/common/Header';
 import { Alert } from '@/components/ui/Alert';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { StepperBars } from '@/components/ui/Stepper';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 // Two visible steps now — services + the celebration step were dropped.
 // On profile completion the hook redirects straight into /pro/profile-setup
@@ -26,6 +28,7 @@ interface ProRegistrationProps {
 export default function ProRegistration({ onSwitchToClient }: ProRegistrationProps) {
   const reg = useProRegistration();
   const { t, locale } = useLanguage();
+  const router = useRouter();
 
   // Show avatar cropper modal
   if (reg.showAvatarCropper && reg.rawAvatarImage) {
@@ -105,8 +108,31 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
             />
           )}
 
+          {/* Google sign-up (pro). Only on the phone step before OTP, and
+              only when Google OAuth is configured. role='pro' so a fresh
+              Google account is created as a professional. */}
+          {reg.currentStep === 'phone' &&
+            !reg.showOtp &&
+            process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+              <div className="w-full max-w-sm mx-auto mt-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="h-px flex-1 bg-[var(--hm-border-subtle)]" />
+                  <span className="text-[11px] uppercase tracking-wide text-[var(--hm-fg-muted)]">
+                    {t('auth.orContinueWith')}
+                  </span>
+                  <div className="h-px flex-1 bg-[var(--hm-border-subtle)]" />
+                </div>
+                <GoogleSignInButton
+                  role="pro"
+                  onSignedIn={() => router.push('/pro/profile-setup')}
+                />
+              </div>
+            )}
+
           {reg.currentStep === 'profile' && (
             <StepProfile
+              fullName={reg.fullName}
+              onFullNameChange={reg.setFullName}
               city={reg.city}
               onCityChange={reg.setCity}
               password={reg.password}

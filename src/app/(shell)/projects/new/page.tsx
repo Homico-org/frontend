@@ -9,6 +9,7 @@ import { FormGroup, Input, Label, Textarea } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
+import { useGooglePhoneGate } from '@/contexts/GooglePhoneGateContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
@@ -45,6 +46,7 @@ export default function StartProjectPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
+  const { requirePhone } = useGooglePhoneGate();
   const { t } = useLanguage();
   const { error: toastError } = useToast();
 
@@ -251,6 +253,12 @@ export default function StartProjectPage() {
 
   const handleSubmit = async () => {
     if (!canCreate) return;
+
+    // Key action: Google clients without a phone verify one here first
+    // (resolves true immediately for users who already have a phone).
+    const ok = await requirePhone();
+    if (!ok) return;
+
     setIsSubmitting(true);
     try {
       // 1. Upload media in parallel -> collect URLs.

@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import { useRegistration } from '@/components/register/hooks';
 import { StepAccount } from '@/components/register/steps';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 import BackButton from '@/components/common/BackButton';
 import Header from '@/components/common/Header';
 import { OTPInput } from '@/components/ui/OTPInput';
@@ -144,6 +145,25 @@ function ClientRegisterContent() {
             onNext={reg.handleNext}
             onSwitchType={() => router.push('/register')}
           />
+
+          {/* Google sign-up. Hides itself when Google OAuth isn't
+              configured. On success it either signs the user in or
+              raises the blocking phone gate. */}
+          {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+            <div className="mt-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-px flex-1 bg-[var(--hm-border-subtle)]" />
+                <span className="text-[11px] uppercase tracking-wide text-[var(--hm-fg-muted)]">
+                  {t('auth.orContinueWith')}
+                </span>
+                <div className="h-px flex-1 bg-[var(--hm-border-subtle)]" />
+              </div>
+              <GoogleSignInButton
+                role="client"
+                onSignedIn={() => router.push('/portfolio')}
+              />
+            </div>
+          )}
         </div>
       </main>
     </div>

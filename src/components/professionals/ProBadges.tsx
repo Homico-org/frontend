@@ -21,6 +21,8 @@ export interface ProBadgeInput {
   avgRating?: number;
   totalReviews?: number;
   completedJobs?: number;
+  /** Pro's declared off-platform jobs; summed with completedJobs for totals. */
+  externalCompletedJobs?: number;
   isPremium?: boolean;
   /** Admin-curated, hand-picked pro (server-set). */
   isFeatured?: boolean;
@@ -46,7 +48,9 @@ export function deriveProBadges(
 ): StatusPillVariant[] {
   const rating = pro.avgRating ?? 0;
   const reviews = pro.totalReviews ?? 0;
-  const jobs = pro.completedJobs ?? 0;
+  // Total = platform jobs + declared off-platform jobs (distinct counters),
+  // matching the card/detail count so the "experienced" threshold is consistent.
+  const jobs = (pro.completedJobs ?? 0) + (pro.externalCompletedJobs ?? 0);
 
   const out: StatusPillVariant[] = [];
   // Power order, strongest first. Homico Partner leads (signed contract + the

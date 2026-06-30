@@ -463,7 +463,14 @@
     "signIn": "შესვლა",
     "signUp": "რეგისტრაცია",
     "sessionExpiredTitle": "სესია ამოიწურა",
-    "sessionExpiredBody": "შედით თავიდან."
+    "sessionExpiredBody": "შედით თავიდან.",
+    "googleAddPhoneTitle": "დაამატეთ ტელეფონის ნომერი",
+    "googleAddPhoneSubtitle": "ანგარიშის შესაქმნელად დაადასტურეთ ტელეფონის ნომერი.",
+    "googleVerifyPhoneTitle": "დაადასტურეთ ტელეფონი",
+    "googleVerifyPhoneSubtitle": "შეიყვანეთ 4-ნიშნა კოდი, რომელიც გამოგიგზავნეთ.",
+    "googlePhoneTaken": "ეს ტელეფონის ნომერი უკვე გამოყენებულია.",
+    "googleSignInFailed": "Google-ით შესვლა ვერ მოხერხდა. სცადეთ თავიდან.",
+    "phoneVerified": "ტელეფონის ნომერი დადასტურდა!"
   },
   "header": {
     "home": "მთავარი",
@@ -1340,6 +1347,7 @@
     "projectsWillAppearHere": "პროექტები აქ გამოჩნდება",
     "saved": "შენახული",
     "savedSuccessfully": "წარმატებით შეინახა",
+    "changeSubmittedForReview": "ცვლილება გადაგზავნილია განსახილველად",
     "showcaseYourBestWork": "აჩვენეთ საუკეთესო ნამუშევრები",
     "showcaseYourBestWorkTo": "აჩვენეთ საუკეთესო ნამუშევრები...",
     "similarProfessionals": "მსგავსი სპეციალისტები",
@@ -1414,6 +1422,12 @@
     "youAreNowAProfessional": "ახლა ოსტატი ხართ"
   },
   "premium": {
+    "announce": {
+      "title": "პრემიუმი უკვე აქ არის",
+      "message": "გამოირჩიე სხვებისგან. პრემიუმი შენს პროფილს მეტ კლიენტს აჩვენებს, გაძლევს პრიორიტეტულ ადგილს და ექსკლუზიურ ნიშნებს — რათა მეტი შეკვეთა მოიგო.",
+      "cta": "ნახე პრემიუმი",
+      "later": "შესაძლოა მოგვიანებით"
+    },
     "title": "პრემიუმ გეგმები",
     "subtitle": "შეუერთდი ელიტა პროფესიონალებს და გახსენი ახალი შესაძლებლობები",
     "monthly": "თვიური",

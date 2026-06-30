@@ -9,6 +9,7 @@ import {
   ExperienceLevel,
   SelectedService,
 } from "@/components/register/steps/StepSelectServices";
+import { features } from "@/config/features";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCategories, type Subcategory } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -223,7 +224,7 @@ export function ProfileSetupProvider({
   adminTargetProId: string | null;
 }) {
   const router = useRouter();
-  const { user, isLoading: authLoading, updateUser } = useAuth();
+  const { user, isLoading: authLoading, updateUser, logout } = useAuth();
   const { t, locale, pick } = useLanguage();
   const marketplaceCountry = useMarketplaceCountry();
 
@@ -1359,9 +1360,12 @@ export function ProfileSetupProvider({
     (croppedDataUrl: string) => {
       setAvatarPreview(croppedDataUrl);
       setFormData((prev) => ({ ...prev, avatar: croppedDataUrl }));
-      updateUser({ avatar: croppedDataUrl });
+      // When an admin edits someone else's profile, don't push the target's
+      // avatar onto the admin's own AuthContext/localStorage (that swapped the
+      // admin's identity/avatar in the header).
+      if (!isAdminEditing) updateUser({ avatar: croppedDataUrl });
     },
-    [updateUser],
+    [updateUser, isAdminEditing],
   );
 
   // ── Navigation ───────────────────────────────────────────────────────────────
@@ -1538,17 +1542,20 @@ export function ProfileSetupProvider({
       if (Object.keys(payload).length > 0) {
         try {
           const token = localStorage.getItem("access_token");
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`,
-            {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify(payload),
+          // Admin editing someone else's profile must write to the TARGET pro,
+          // never to /users/me (that would overwrite the admin's own account -
+          // "the admin becomes the client"). Mirror handleSubmit's routing.
+          const saveUrl = isAdminEditing
+            ? `${process.env.NEXT_PUBLIC_API_URL}/users/pros/${adminTargetProId}/profile`
+            : `${process.env.NEXT_PUBLIC_API_URL}/users/me/pro-profile`;
+          const response = await fetch(saveUrl, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
-          );
+            body: JSON.stringify(payload),
+          });
           if (!response.ok) {
             const data = (await response.json().catch(() => ({}))) as {
               message?: string | string[];
@@ -1574,23 +1581,36 @@ export function ProfileSetupProvider({
       // Reset after a short delay to cover the route transition
       setTimeout(() => setIsSaving(false), 500);
     },
-    [router, getStepPayload, isSaving, buildStepHref],
+    [router, getStepPayload, isSaving, buildStepHref, isAdminEditing, adminTargetProId, t],
   );
 
   const goBack = useCallback(
     (currentSlug: ProfileSetupStepSlug) => {
+      // Editing an existing profile (not first-time onboarding): the user came
+      // to tweak one section from elsewhere (my-space, their public profile,
+      // admin from a pro detail page). Go back where they came from instead of
+      // walking the onboarding wizard to the previous step ("about"), which
+      // stranded them. `backOrNavigate` uses real in-app history when present
+      // (returns to the origin page) and a role-aware home as a deep-link-safe
+      // fallback.
+      if (isEditMode) {
+        backOrNavigate(router, defaultBackFallback(user));
+        return;
+      }
       const idx = STEP_SLUGS.indexOf(currentSlug);
       if (idx > 0) {
         router.push(buildStepHref(STEP_SLUGS[idx - 1]));
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
-        // First step - if the user opened profile-setup in a fresh
-        // tab a bare `router.back()` is a no-op. Fall through to a
-        // role-aware home instead so they're never stranded.
-        backOrNavigate(router, defaultBackFallback(user));
+        // First step = "Cancel onboarding". An incomplete pro is locked to the
+        // wizard by ProProfileGuard (every other route bounces back here), and
+        // `router.back()` could yeet them out of the tab entirely. The only
+        // clean exit is to log out (the account is already created, so they can
+        // log back in and resume) — logout clears the session and lands on `/`.
+        logout();
       }
     },
-    [router, buildStepHref, user],
+    [router, buildStepHref, user, isEditMode, logout],
   );
 
   // ── Submit ────────────────────────────────────────────────────────────────────
@@ -1778,7 +1798,10 @@ export function ProfileSetupProvider({
       // `isProfileCompleted` (the real first-completion signal): this submit
       // flips it true just below, so it only fires on the first completion,
       // not on later edits or admin-side edits.
-      if (!isAdminEditing && !user?.isProfileCompleted) {
+      // Capture BEFORE updateUser flips isProfileCompleted below — this is the
+      // pro's FIRST completion (drives both the pixel and the premium redirect).
+      const isFirstCompletion = !isAdminEditing && !user?.isProfileCompleted;
+      if (isFirstCompletion) {
         trackPixel("CompleteProfile", { custom: true });
       }
 
@@ -1826,7 +1849,14 @@ export function ProfileSetupProvider({
                 ?.split('=')[1]
                 ?.toLowerCase() ?? 'ge'
             : 'ge';
-        router.push(`/${marketplaceCookie}/professionals/${userId}`);
+        // On a pro's first completion, send them to the premium pitch (now that
+        // the profile is complete, ProProfileGuard won't bounce them). Edits
+        // and admin edits go to the public profile as before.
+        if (isFirstCompletion && features.premium) {
+          router.push(`/${marketplaceCookie}/pro/premium`);
+        } else {
+          router.push(`/${marketplaceCookie}/professionals/${userId}`);
+        }
       } else {
         const marketplaceCookie =
           typeof document !== 'undefined'

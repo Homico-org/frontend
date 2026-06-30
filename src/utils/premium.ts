@@ -61,21 +61,29 @@ export const PREMIUM_REFUND_WINDOW_DAYS = 3;
 /**
  * True while a just-started premium plan is still inside the refund window.
  * Prefers the explicit start; if it isn't populated yet (older API response /
- * stale cache) it derives the start from the monthly expiry (expiry - 30d),
- * and if neither timestamp is present it fails OPEN - the backend is the real
- * gate on the refund, so we'd rather show the option than hide it wrongly.
+ * stale cache) it derives the start from the monthly expiry (expiry - 30d).
+ *
+ * The window is `0 <= age <= windowMs` — the lower bound matters: a manually
+ * granted badge has no start and a far-future expiry (e.g. 2099), which makes
+ * the derived start land in the FUTURE (negative age). Without the `>= 0`
+ * guard that read as "refundable" and showed a "Cancel & get a full refund"
+ * button the backend then rejected (no payment to refund). If neither
+ * timestamp yields a valid in-window age we fail CLOSED.
  */
 export function isPremiumRefundable(
   startedAt?: string,
   expiresAt?: string,
 ): boolean {
   const windowMs = PREMIUM_REFUND_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  const inWindow = (startMs: number) => {
+    const age = Date.now() - startMs;
+    return age >= 0 && age <= windowMs;
+  };
   const startMs = startedAt ? new Date(startedAt).getTime() : NaN;
-  if (!Number.isNaN(startMs)) return Date.now() - startMs <= windowMs;
+  if (!Number.isNaN(startMs)) return inWindow(startMs);
   const expMs = expiresAt ? new Date(expiresAt).getTime() : NaN;
   if (!Number.isNaN(expMs)) {
-    const derivedStart = expMs - 30 * 24 * 60 * 60 * 1000;
-    return Date.now() - derivedStart <= windowMs;
+    return inWindow(expMs - 30 * 24 * 60 * 60 * 1000);
   }
-  return true;
+  return false;
 }
