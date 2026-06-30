@@ -2,6 +2,7 @@
 "use client";
 
 import { Alert } from "@/components/ui/Alert";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import { Button } from "@/components/ui/button";
 import { IconBadge } from "@/components/ui/IconBadge";
 import { FormGroup, Label } from "@/components/ui/input";
@@ -339,6 +340,34 @@ export default function LoginModal(): React.ReactElement | null {
                 {t("auth.signIn")}
               </Button>
             </form>
+
+            {/* Divider + Google sign-in. The button hides itself when
+                NEXT_PUBLIC_GOOGLE_CLIENT_ID is unset, so the divider is
+                only meaningful when Google is configured. */}
+            {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+              <div className="mt-4 sm:mt-3">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="h-px flex-1 bg-[var(--hm-border-subtle)]" />
+                  <span className="text-[11px] uppercase tracking-wide text-[var(--hm-fg-muted)]">
+                    {t("auth.orContinueWith")}
+                  </span>
+                  <div className="h-px flex-1 bg-[var(--hm-border-subtle)]" />
+                </div>
+                <GoogleSignInButton
+                  role="client"
+                  onSignedIn={() => {
+                    // Same post-login behaviour as the mobile form: close
+                    // the modal and honour any pending redirect.
+                    haptic("success");
+                    closeLoginModal();
+                    if (redirectPath) {
+                      router.push(redirectPath);
+                      clearRedirectPath();
+                    }
+                  }}
+                />
+              </div>
+            )}
 
             {/* Dev quick-fill test accounts */}
             {process.env.NODE_ENV === "development" && (

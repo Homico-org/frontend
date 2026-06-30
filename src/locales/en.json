@@ -463,7 +463,14 @@
     "signIn": "Sign In...",
     "signUp": "Sign Up",
     "sessionExpiredTitle": "Session expired",
-    "sessionExpiredBody": "Please sign in to continue."
+    "sessionExpiredBody": "Please sign in to continue.",
+    "googleAddPhoneTitle": "Add your phone number",
+    "googleAddPhoneSubtitle": "To finish creating your account, verify a phone number.",
+    "googleVerifyPhoneTitle": "Verify your phone",
+    "googleVerifyPhoneSubtitle": "Enter the 4-digit code we sent you.",
+    "googlePhoneTaken": "This phone number is already in use.",
+    "googleSignInFailed": "Google sign-in failed. Please try again.",
+    "phoneVerified": "Phone number verified!"
   },
   "header": {
     "home": "Home",

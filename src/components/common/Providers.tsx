@@ -14,6 +14,9 @@ import { NotificationProvider } from '@/contexts/NotificationContext';
 import NavigationProvider from '@/components/common/NavigationProvider';
 import { CommandPaletteProvider } from '@/contexts/CommandPaletteContext';
 import { CartUIProvider } from '@/contexts/CartUIContext';
+import { GooglePhoneGateProvider } from '@/contexts/GooglePhoneGateContext';
+import GooglePhoneGate from '@/components/auth/GooglePhoneGate';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -28,7 +31,13 @@ export default function Providers({
   initialLocale,
   initialCountry,
 }: ProvidersProps) {
-  return (
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+  // The whole tree. The Google OAuth provider is only added when a
+  // clientId is configured; otherwise we render the tree unchanged so a
+  // missing env var never breaks the app (the Google buttons hide
+  // themselves on their own).
+  const tree = (
     <ThemeProvider>
       <LanguageProvider initialLocale={initialLocale} initialCountry={initialCountry}>
         <CategoriesProvider>
@@ -41,7 +50,13 @@ export default function Providers({
                       <ConfirmProvider>
                         <CommandPaletteProvider>
                           <CartUIProvider>
-                            <NavigationProvider>{children}</NavigationProvider>
+                            <GooglePhoneGateProvider>
+                              <NavigationProvider>{children}</NavigationProvider>
+                              {/* Blocking phone-verification screen for
+                                  Google sign-ups. Renders nothing unless
+                                  the gate is active. */}
+                              <GooglePhoneGate />
+                            </GooglePhoneGateProvider>
                           </CartUIProvider>
                         </CommandPaletteProvider>
                       </ConfirmProvider>
@@ -55,4 +70,9 @@ export default function Providers({
       </LanguageProvider>
     </ThemeProvider>
   );
+
+  if (googleClientId) {
+    return <GoogleOAuthProvider clientId={googleClientId}>{tree}</GoogleOAuthProvider>;
+  }
+  return tree;
 }
