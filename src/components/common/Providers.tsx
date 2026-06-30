@@ -16,6 +16,7 @@ import { CommandPaletteProvider } from '@/contexts/CommandPaletteContext';
 import { CartUIProvider } from '@/contexts/CartUIContext';
 import { GooglePhoneGateProvider } from '@/contexts/GooglePhoneGateContext';
 import GooglePhoneGate from '@/components/auth/GooglePhoneGate';
+import PremiumAnnouncementModal from '@/components/premium/PremiumAnnouncementModal';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 interface ProvidersProps {
@@ -56,6 +57,11 @@ export default function Providers({
                                   Google sign-ups. Renders nothing unless
                                   the gate is active. */}
                               <GooglePhoneGate />
+                              {/* One-time "Premium is here" launch
+                                  announcement for existing non-premium pros.
+                                  Self-gates (flag + role + tier + localStorage);
+                                  renders nothing for everyone else. */}
+                              <PremiumAnnouncementModal />
                             </GooglePhoneGateProvider>
                           </CartUIProvider>
                         </CommandPaletteProvider>

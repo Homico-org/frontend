@@ -1421,6 +1421,12 @@
     "youAreNowAProfessional": "You Are Now A Professional"
   },
   "premium": {
+    "announce": {
+      "title": "Premium is here",
+      "message": "Stand out from the crowd. Premium puts your profile in front of more clients, unlocks priority placement and exclusive badges — so you win more jobs.",
+      "cta": "View Premium",
+      "later": "Maybe later"
+    },
     "title": "Premium Plans",
     "subtitle": "Join elite professionals and unlock new opportunities",
     "monthly": "Monthly",

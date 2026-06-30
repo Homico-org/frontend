@@ -9,6 +9,8 @@ import {
   useLanguage,
 } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
+import { useCountryLink } from "@/hooks/useCountry";
+import { features } from "@/config/features";
 import { trackPixel } from "@/utils/metaPixel";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -222,6 +224,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
   const { login, isAuthenticated, isLoading: authLoading, user } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { country, locale, pick } = useLanguage();
+  const cl = useCountryLink();
   const { trackEvent } = useAnalytics();
   const { categories } = useCategories();
 
@@ -969,7 +972,16 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
             ),
           }),
         );
-        router.push("/pro/profile-setup");
+        // Premium push: a freshly-created pro lands on the premium pitch page
+        // instead of profile-setup so we capture the upsell intent right after
+        // signup. Gated by the `premium` flag (single source of truth) and
+        // role === "pro" only - clients never reach this branch. When the flag
+        // is OFF we keep the original profile-setup destination untouched.
+        if (features.premium) {
+          router.push(cl("/pro/premium"));
+        } else {
+          router.push("/pro/profile-setup");
+        }
       } else {
         const postRedirect = sessionStorage.getItem('postRegisterRedirect');
         if (postRedirect) {
@@ -996,6 +1008,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
     login,
     trackEvent,
     router,
+    cl,
     pick,
   ]);
 
