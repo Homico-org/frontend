@@ -198,7 +198,11 @@ export function useProRegistration(): UseProRegistrationReturn {
     
     // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      setError('Image must be less than 10MB');
+      setError(pick({
+        en: 'Image must be under 10MB.',
+        ka: 'სურათი უნდა იყოს 10MB-ზე ნაკლები.',
+        ru: 'Изображение должно быть меньше 10 МБ.',
+      }));
       return;
     }
     
@@ -209,7 +213,7 @@ export function useProRegistration(): UseProRegistrationReturn {
     };
     reader.readAsDataURL(file);
     e.target.value = '';
-  }, []);
+  }, [pick]);
   
   const handleCroppedAvatar = useCallback(async (croppedBlob: Blob) => {
     setShowAvatarCropper(false);
@@ -230,13 +234,17 @@ export function useProRegistration(): UseProRegistrationReturn {
       setUploadedAvatarUrl(data.url);
       setAvatarPreview(data.url);
     } catch (err) {
-      setError('Failed to upload image');
+      setError(pick({
+        en: 'Photo upload failed. Please try again.',
+        ka: 'ფოტოს ატვირთვა ვერ მოხერხდა. სცადეთ თავიდან.',
+        ru: 'Не удалось загрузить фото. Попробуйте ещё раз.',
+      }));
     } finally {
       setAvatarUploading(false);
       setRawAvatarImage(null);
     }
-  }, []);
-  
+  }, [pick]);
+
   const handleCropCancel = useCallback(() => {
     setShowAvatarCropper(false);
     setRawAvatarImage(null);

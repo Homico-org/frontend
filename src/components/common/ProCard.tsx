@@ -13,7 +13,7 @@ import { storage } from "@/services/storage";
 import { ProProfile, ProStatus } from "@/types";
 import { currencySymbol, formatCurrency, formatCurrencyRange } from "@/utils/currency";
 import { translateCity } from "@/data/cities";
-import { ArrowUpRight, Briefcase, CalendarPlus, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, MapPin, Play, Plus, Star, Wallet, Zap } from "lucide-react";
+import { ArrowUpRight, Briefcase, CalendarPlus, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock, ImageOff, MapPin, Play, Plus, Star, Wallet, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -557,6 +557,13 @@ export default function ProCard({
                         <Play className="w-4 h-4 text-[var(--hm-fg-secondary)] ml-0.5" />
                       </div>
                     </div>
+                  </div>
+                );
+              }
+              if (failedSlideSrcs.has(slide.src)) {
+                return (
+                  <div className="absolute inset-0 flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
+                    <ImageOff className="w-6 h-6 text-[var(--hm-fg-muted)]" />
                   </div>
                 );
               }

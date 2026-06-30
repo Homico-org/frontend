@@ -63,6 +63,20 @@ export default function StepProfile({
     }));
   }, [phoneCountry, locale]);
 
+  // What's still blocking the "Continue" button. Mirrors canProceedFromProfile
+  // in useProRegistration so we can explain WHY the button is disabled instead
+  // of leaving the user stuck on a greyed-out button with no feedback.
+  // (avatarPreview tracks uploadedAvatarUrl 1:1 — both set on a successful
+  // upload, both cleared on remove.)
+  const missingRequirements = useMemo(() => {
+    const items: string[] = [];
+    if (!avatarPreview && !avatarUploading) items.push(t('register.photoRequired'));
+    if (city.trim().length < 2) items.push(t('register.selectCity'));
+    if (password.length < 6) items.push(t('register.min6Chars'));
+    else if (password !== confirmPassword) items.push(t('validation.passwordsNotMatch'));
+    return items;
+  }, [avatarPreview, avatarUploading, city, password, confirmPassword, t]);
+
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Header */}
@@ -168,6 +182,7 @@ export default function StepProfile({
             onChange={(e) => onPasswordChange(e.target.value)}
             placeholder={t('register.min6Chars')}
             className="h-10 sm:h-11"
+            error={password.length > 0 && password.length < 6 ? t('register.min6Chars') : undefined}
           />
         </div>
 
@@ -197,6 +212,24 @@ export default function StepProfile({
       >
         {t('common.continue')}
       </Button>
+
+      {/* Tell the user exactly what's missing so a disabled button is never a
+          dead end (the #1 cause of "I filled everything but can't continue"). */}
+      {!canProceed && !isLoading && missingRequirements.length > 0 && (
+        <div className="mt-3 text-xs sm:text-sm text-[var(--hm-fg-muted)]">
+          <p className="font-medium mb-1 text-[var(--hm-fg-secondary)]">
+            {t('register.completeToContinue')}
+          </p>
+          <ul className="space-y-0.5">
+            {missingRequirements.map((item, i) => (
+              <li key={i} className="flex items-center gap-1.5">
+                <span className="text-[var(--hm-brand-500)]">•</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
