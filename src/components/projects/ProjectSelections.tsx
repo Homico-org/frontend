@@ -14,6 +14,7 @@ import {
   ExternalLink,
   Palette,
   Plus,
+  ShoppingCart,
   Trash2,
   Upload,
   X,
@@ -44,6 +45,8 @@ export interface Selection {
   phase?: string;
   options: SelectionOption[];
   chosenOptionId?: string;
+  /** Set once the chosen option has been added to the procurement schedule. */
+  productId?: string;
   status: SelectionStatus;
   note?: string;
   createdAt: string;
@@ -227,6 +230,20 @@ export default function ProjectSelections({
         status,
       });
       await onChanged();
+    } catch (err) {
+      toast.error(t('projects.tryAgain'), errMsg(err));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  // Materialize the chosen option into the procurement schedule.
+  const addToSchedule = async (sid: string) => {
+    setBusyId(sid + 'sched');
+    try {
+      await api.post(`/projects/${projectId}/selections/${sid}/to-product`);
+      await onChanged();
+      toast.success(t('projects.selAddedToSchedule'));
     } catch (err) {
       toast.error(t('projects.tryAgain'), errMsg(err));
     } finally {
@@ -429,6 +446,28 @@ export default function ProjectSelections({
                     >
                       {t('projects.requestChanges')}
                     </Button>
+                  </div>
+                )}
+
+                {/* Materialize the chosen option into the procurement schedule */}
+                {canManage && sel.chosenOptionId && (
+                  <div className="mt-3 flex justify-end">
+                    {sel.productId ? (
+                      <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--hm-success-600)]">
+                        <Check className="h-3.5 w-3.5" />
+                        {t('projects.selOnSchedule')}
+                      </span>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busyId === sel.id + 'sched'}
+                        onClick={() => addToSchedule(sel.id)}
+                        leftIcon={<ShoppingCart className="h-3.5 w-3.5" />}
+                      >
+                        {t('projects.selAddToSchedule')}
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>

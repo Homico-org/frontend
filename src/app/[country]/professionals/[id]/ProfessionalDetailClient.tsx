@@ -61,6 +61,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Clock,
   Edit3,
   Eye,
   Facebook,
@@ -609,6 +610,15 @@ export default function ProfessionalDetailClient({
     !profile?.premiumTier ||
     profile?.premiumTier === "none" ||
     profile?.premiumTier === "basic";
+
+  // Tier treatment for the profile (matches the card): 'elite' = super premium
+  // (thicker vermillion top bar), 'premium' = paid pro/basic (thin bar). On-brand
+  // monochrome + a single vermillion accent.
+  const profileTier: "free" | "premium" | "elite" = profile?.isPremium
+    ? profile?.premiumTier === "elite"
+      ? "elite"
+      : "premium"
+    : "free";
 
   // The "Contact" (in-app messaging) CTA is a premium-tier perk, but it
   // depends on the messaging marketplace, which is OFF for the premium-only
@@ -1606,6 +1616,18 @@ export default function ProfessionalDetailClient({
       <Header />
       <HeaderSpacer />
 
+      {/* Premium tier accent - a vermillion bar across the top of the profile.
+          Thin for Premium, thicker for Elite (super premium). On-brand: one
+          accent colour, no gold/gradient. */}
+      {profileTier !== "free" && (
+        <div
+          aria-hidden
+          className={`w-full bg-[var(--hm-brand-500)] ${
+            profileTier === "elite" ? "h-1" : "h-[3px]"
+          }`}
+        />
+      )}
+
       {/* Floating back chip - appears once the user scrolls past 400px
           so they don't have to scroll back up to find the header's
           back affordance. Bottom-left so it stays clear of the AI
@@ -1614,16 +1636,16 @@ export default function ProfessionalDetailClient({
 
       {/* Pending Approval Banner - Only visible to the pro owner */}
       {canEdit && profile && profile.verificationStatus !== "verified" && (
-        <div className="bg-[var(--hm-warning-50)]/20 border-b border-[var(--hm-warning-500)]/20">
-          <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2 rounded-full bg-[var(--hm-warning-100)] flex-shrink-0">
-              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-warning-500)]" strokeWidth={2} />
+        <div className="bg-[var(--hm-warning-50)] border-b border-[var(--hm-warning-500)]/30">
+          <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3.5 sm:py-4 flex items-start gap-3">
+            <div className="p-2 rounded-full bg-[var(--hm-warning-100)] flex-shrink-0">
+              <AlertTriangle className="w-5 h-5 text-[var(--hm-warning-500)]" strokeWidth={2} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-xs sm:text-sm text-[var(--hm-warning-500)]">
+              <p className="font-semibold text-sm sm:text-[15px] text-[var(--hm-fg-primary)]">
                 {t("professional.pendingApprovalTitle")}
               </p>
-              <p className="text-[10px] sm:text-sm text-[var(--hm-warning-500)] line-clamp-2 sm:line-clamp-none">
+              <p className="mt-0.5 text-xs sm:text-sm leading-relaxed text-[var(--hm-fg-secondary)]">
                 {t("professional.pendingApprovalDescription")}
               </p>
               {profile.verificationNotes && (
@@ -1674,16 +1696,16 @@ export default function ProfessionalDetailClient({
       {/* Profile-changes pending review - owner only. A verified pro's edits
           to public fields wait for admin approval before going live. */}
       {isOwner && moderation?.pending && (
-        <div className="bg-[var(--hm-info-50)] border-b border-[var(--hm-info-500)]/20">
-          <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2 rounded-full bg-[var(--hm-info-500)]/10 flex-shrink-0">
-              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--hm-info-500)]" strokeWidth={2} />
+        <div className="bg-[var(--hm-info-50)] border-b border-[var(--hm-info-500)]/25">
+          <div className="max-w-6xl mx-auto px-3 sm:px-6 py-3.5 sm:py-4 flex items-start gap-3">
+            <div className="p-2 rounded-full bg-[var(--hm-info-500)]/10 flex-shrink-0">
+              <Clock className="w-5 h-5 text-[var(--hm-info-500)]" strokeWidth={2} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-xs sm:text-sm text-[var(--hm-fg-primary)]">
+              <p className="font-semibold text-sm sm:text-[15px] text-[var(--hm-fg-primary)]">
                 {t("professional.changesPendingTitle")}
               </p>
-              <p className="text-[10px] sm:text-sm text-[var(--hm-fg-secondary)] line-clamp-2 sm:line-clamp-none">
+              <p className="mt-0.5 text-xs sm:text-sm leading-relaxed text-[var(--hm-fg-secondary)]">
                 {t("professional.changesPendingDescription")}
               </p>
               {(moderation.pending.changes?.length ?? 0) > 0 && (

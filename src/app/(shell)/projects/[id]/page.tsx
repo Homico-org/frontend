@@ -3145,6 +3145,8 @@ export default function ProjectDashboardPage() {
               log={project.productLog ?? []}
               rooms={project.rooms ?? []}
               canManage={!isPro}
+              canApprove={isClient}
+              budget={project.budgetMax}
               onChanged={load}
             />
           )}

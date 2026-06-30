@@ -28,7 +28,7 @@ export default function ProMilestonePayments() {
   );
 
   useEffect(() => {
-    // Payments are gated off until the BoG provider is live (features.payments).
+    // Payments are gated off until escrow/payouts are approved (features.payments).
     // Skip the fetch entirely when off so we don't surface escrow UI on prod.
     if (!features.payments) return;
     let alive = true;

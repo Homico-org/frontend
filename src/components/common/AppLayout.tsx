@@ -42,6 +42,8 @@ const CUSTOM_LAYOUT_PATHS = [
   '/terms',
   '/how-it-works',
   '/help',
+  // Editorial blog/journal - ships its own Header + LandingFooter.
+  '/blog',
   '/jobs/',
   '/professionals/',
   '/companies/',

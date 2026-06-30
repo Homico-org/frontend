@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { BadgeCheck, Star, Plus, Clock, AlertTriangle, CheckCircle, Zap, XCircle, CornerUpLeft, Moon, Award, Crown, Handshake, Gem } from 'lucide-react';
+import { BadgeCheck, Star, Clock, AlertTriangle, CheckCircle, XCircle, CornerUpLeft, Moon, Award, Crown, Handshake, Gem, Zap, Sprout } from 'lucide-react';
 import { ACCENT_COLOR } from '@/constants/theme';
 
 export type StatusPillVariant =
@@ -66,7 +66,7 @@ const sizeConfig: Record<StatusPillSize, {
 const variantConfig: Record<StatusPillVariant, {
   bgClass: string;
   textClass: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: string | number }>;
   labelEn: string;
   labelKa: string;
 }> = {
@@ -94,7 +94,7 @@ const variantConfig: Record<StatusPillVariant, {
   new: {
     bgClass: 'bg-[var(--hm-info-50)]',
     textClass: 'text-[var(--hm-info-500)]',
-    icon: Plus,
+    icon: Sprout,
     labelEn: 'New',
     labelKa: 'ახალი',
   },
@@ -225,21 +225,34 @@ const DESCRIPTIONS: Partial<
   },
 };
 
-// Saturated fill colour per variant for the icon-only chip treatment. Each
-// trust badge gets a distinct hue (Featured vermillion, Premium violet, so the
-// two no longer both read warm). Tokens where they exist; a literal violet for
-// premium since the palette has no violet token.
-const SOLID_FILL: Partial<Record<StatusPillVariant, string>> = {
-  homicoPartner: 'var(--hm-brand-500)',
-  featured: 'var(--hm-brand-500)',
-  verified: 'var(--hm-success-500)',
-  topRated: 'var(--hm-warning-500)',
-  experienced: 'var(--hm-info-500)',
-  premium: '#7C3AED',
-  // Teal — distinct from verified's green and premium's violet, reads as a
-  // calm "quality" hue.
-  topQuality: '#0D9488',
-  new: 'var(--hm-info-500)',
+// "Engraved hallmark" treatment for the icon-only chips. Instead of a rainbow
+// of solid-fill circles (the banned icon-in-tinted-box), every badge is a
+// monochrome ink-on-paper struck disc, and the ONLY colour in the whole system
+// is vermillion - reserved for the premier (paid / contracted) tier. Hierarchy
+// reads at a glance: solid vermillion (Partner) > vermillion outline (Premium)
+// > ink hallmark (earned/verified) > grey hairline (New).
+type BadgeTier = 'premierSolid' | 'premierOutline' | 'standard' | 'muted';
+
+const BADGE_TIER: Partial<Record<StatusPillVariant, BadgeTier>> = {
+  homicoPartner: 'premierSolid',
+  premium: 'premierOutline',
+  featured: 'standard',
+  topQuality: 'standard',
+  verified: 'standard',
+  topRated: 'standard',
+  experienced: 'standard',
+  new: 'muted',
+};
+
+const TIER_SEAL: Record<BadgeTier, string> = {
+  premierSolid:
+    'bg-[var(--hm-brand-500)] text-white ring-[var(--hm-brand-600)]',
+  premierOutline:
+    'bg-[var(--hm-brand-50)] text-[var(--hm-brand-600)] ring-[var(--hm-brand-500)]',
+  standard:
+    'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] ring-[var(--hm-border-strong)]',
+  muted:
+    'bg-[var(--hm-bg-page)] text-[var(--hm-fg-muted)] ring-[var(--hm-border-subtle)]',
 };
 
 /**
@@ -288,10 +301,10 @@ export function StatusPill({
   // trust signal without shouting (design-system 4.7 - badges complement).
   if (iconOnly) {
     const chip =
-      size === 'xs' ? 'w-6 h-6' : size === 'md' ? 'w-8 h-8' : 'w-7 h-7';
+      size === 'xs' ? 'w-5 h-5' : size === 'md' ? 'w-[26px] h-[26px]' : 'w-[22px] h-[22px]';
     const glyph =
-      size === 'xs' ? 'w-3 h-3' : size === 'md' ? 'w-4 h-4' : 'w-3.5 h-3.5';
-    const fill = SOLID_FILL[variant];
+      size === 'xs' ? 'w-2.5 h-2.5' : size === 'md' ? 'w-[13px] h-[13px]' : 'w-3 h-3';
+    const seal = TIER_SEAL[BADGE_TIER[variant] ?? 'standard'];
     // Native browser tooltip: "Label — what it is". Always set (even when the
     // animated CSS tooltip is off) so hovering a badge explains it on any
     // surface, including overflow-hidden cards.
@@ -305,22 +318,20 @@ export function StatusPill({
         title={titleText}
         role="img"
         className={cn(
-          'relative inline-flex items-center justify-center rounded-full text-white ring-1 ring-inset ring-white/15',
+          // Engraved hallmark: a struck disc, ink/vermillion glyph, hairline
+          // ring. No drop shadow - depth is the ring + ground contrast.
+          'relative inline-flex items-center justify-center rounded-full ring-1 ring-inset',
           chip,
-          !fill && 'bg-[var(--hm-fg-muted)]',
-          // Hover: pop + lift, brighten fill + ring. Named group (`group/badge`)
-          // so the tooltip reacts ONLY to hovering this chip, not an ancestor
-          // card that also uses `group`. Off when tooltip is disabled (dense /
-          // clipped surfaces), where the chip stays static.
+          seal,
+          // Hover: the seal "presses" - a faint engraved inset, no balloon.
+          // Named group so the tooltip reacts ONLY to this chip, not an
+          // ancestor card that also uses `group`.
           tooltip &&
-            'group/badge transition-all duration-200 ease-out hover:-translate-y-0.5 hover:scale-125 hover:brightness-110 hover:ring-white/40',
+            'group/badge transition-shadow duration-200 ease-out hover:shadow-[inset_0_1px_2px_rgba(17,16,13,0.10)]',
           className
         )}
-        style={fill ? { backgroundColor: fill } : undefined}
       >
-        <Icon
-          className={cn(glyph, variant === 'topRated' && 'fill-current')}
-        />
+        <Icon className={glyph} strokeWidth={1.5} />
         {tooltip && (
           /* Hover tooltip - the label, animated in above the chip. */
           <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1.5 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-[var(--hm-fg-primary)] px-2 py-1 text-[10px] font-medium text-[var(--hm-bg-elevated)] opacity-0 shadow-sm transition-all duration-150 ease-out group-hover/badge:translate-y-0 group-hover/badge:opacity-100">

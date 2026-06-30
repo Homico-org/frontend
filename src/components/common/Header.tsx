@@ -15,6 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useCountryLink } from "@/hooks/useCountry";
 import { stripCountryPrefix } from "@/utils/countryLink";
+import { formatPremiumDate, isPaidTier, premiumTierName } from "@/utils/premium";
 import { useSupportUnread } from "@/hooks/useSupportUnread";
 import { trackEvent } from "@/hooks/useTracker";
 import { useMyProjects } from "@/hooks/useMyProjects";
@@ -23,6 +24,7 @@ import {
   Activity,
   BarChart3,
   Bell,
+  BookOpen,
   Briefcase,
   Building2,
   Calculator,
@@ -36,6 +38,7 @@ import {
   ImagePlus,
   LayoutDashboard,
   LayoutGrid,
+  Crown,
   ListChecks,
   LogIn,
   LogOut,
@@ -87,8 +90,8 @@ export default function Header({
 }) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { openLoginModal } = useAuthModal();
-  const { t } = useLanguage();
-  const { unreadCount, activityCounts } = useNotifications();
+  const { t, locale, pick } = useLanguage();
+  const { unreadCount, activityCounts, setNotificationsPanelOpen } = useNotifications();
   // Country-aware nav. Keeps `/professionals`, `/jobs`, `/post-job`
   // links inside the active marketplace so clicks don't bounce
   // through the middleware redirect.
@@ -101,6 +104,12 @@ export default function Header({
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  // Share the panel-open state so the critical-booking overlay can suppress
+  // itself while the user is viewing the notifications panel (avoids a
+  // redundant booking modal stacking over the list).
+  useEffect(() => {
+    setNotificationsPanelOpen(showNotifications);
+  }, [showNotifications, setNotificationsPanelOpen]);
   const notificationsTriggerRef = useRef<HTMLButtonElement>(null);
   const notificationsPanelRef = useRef<HTMLDivElement>(null);
   const notificationsSheetRef = useRef<HTMLDivElement>(null);
@@ -353,6 +362,7 @@ export default function Header({
     { key: "all-professionals", href: cl("/professionals"), label: t("header.allProfessionals"), description: t("header.descriptions.allProfessionals"), icon: Users, showFor: "all" },
     { key: "become-pro", href: cl("/become-pro"), label: t("header.becomePro"), description: t("header.descriptions.becomePro"), icon: Briefcase, showFor: "all" },
     { key: "how-it-works", href: cl("/how-it-works"), label: t("header.howItWorks"), description: t("header.descriptions.howItWorks"), icon: HelpCircle, showFor: "all" },
+    { key: "blog", href: cl("/blog"), label: t("blog.eyebrow"), description: t("blog.subtitle"), icon: BookOpen, showFor: "all" },
     { key: "accountability", href: "/pro/accountability", label: t("header.accountability"), description: t("header.descriptions.accountability"), icon: Shield, showFor: "all" },
     { key: "my-profile", href: user?.id ? `/professionals/${user.id}` : "/professionals", label: t("header.myProfile"), description: t("header.descriptions.myProfile"), icon: ImageIcon, showFor: "proAndAdmin" },
   ];
@@ -1056,6 +1066,19 @@ export default function Header({
             <MarketplaceSelector hideCountry={!features.marketplaceSelector} />
           </div>
 
+          {/* Theme + Language on mobile/tablet (<lg) — SIGNED-IN ONLY. The
+              logged-in avatar dropdown has neither, so a signed-in mobile user
+              otherwise had no header way to switch theme/language (2026-06-17,
+              per Bjavakh). Logged-out users already get both in the burger menu
+              below, so gating this to isAuthenticated avoids a duplicate
+              selector for them. Same compact components as desktop. */}
+          {isAuthenticated && (
+            <div className="flex lg:hidden items-center gap-1.5">
+              <ThemeToggle />
+              <MarketplaceSelector hideCountry={!features.marketplaceSelector} />
+            </div>
+          )}
+
           {/* Cart - shows only when it has items, opens the shared drawer from
               anywhere in the app. */}
           <CartButton />
@@ -1164,6 +1187,26 @@ export default function Header({
                   filter layer and renders semi-transparent (the page
                   bleeds through). We keep only the TRIGGER here and
                   portal the panel to document.body below. */}
+              {/* Persistent "Go Premium" cue next to the avatar, shown only to
+                  pros who aren't premium yet (premium pros see their tier badge
+                  in the dropdown instead). Always visible across the app via the
+                  global header, but kept tiny - icon-only on mobile, icon+label
+                  on desktop - so it nudges without cluttering. */}
+              {user.role === "pro" &&
+                features.premium &&
+                !(isPaidTier(user.premiumTier) && user.isPremium) && (
+                  <Link
+                    href={cl("/pro/premium")}
+                    onClick={() => trackEvent("nav_click", "premium_header_cta")}
+                    aria-label={t("common.premium")}
+                    title={t("common.premium")}
+                    className="inline-flex items-center gap-1 h-8 px-2 sm:px-2.5 rounded-full text-xs font-semibold bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-600)] border border-[var(--hm-brand-500)]/25 hover:bg-[var(--hm-brand-500)]/15 transition-colors duration-200"
+                  >
+                    <Crown className="w-3.5 h-3.5" strokeWidth={2} />
+                    <span className="hidden sm:inline">{t("common.premium")}</span>
+                  </Link>
+                )}
+
               <div className="relative" ref={triggerRef}>
                 {/* Avatar + first name + chevron = a visibly clickable
                     menu trigger, not just a profile photo. Matches the
@@ -1183,13 +1226,25 @@ export default function Header({
                   aria-haspopup="menu"
                   aria-expanded={showDropdown}
                 >
-                  <Avatar
-                    src={user.avatar}
-                    name={user.name}
-                    size="sm"
-                    rounded="xl"
-                    className="w-8 h-8 transition-all duration-300"
-                  />
+                  <span className="relative inline-flex">
+                    <Avatar
+                      src={user.avatar}
+                      name={user.name}
+                      size="sm"
+                      rounded="xl"
+                      className="w-8 h-8 transition-all duration-300"
+                    />
+                    {/* Premium tier mark on the avatar - a small vermillion crown
+                        so paid pros read as premium straight from the top bar. */}
+                    {isPaidTier(user.premiumTier) && user.isPremium && (
+                      <span
+                        className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--hm-brand-500)] ring-2 ring-[var(--hm-bg-elevated)]"
+                        aria-hidden
+                      >
+                        <Crown className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
+                      </span>
+                    )}
+                  </span>
                   {/* Compact dot indicator on the avatar when support has
                       replied. Sits without count to keep the avatar clean -
                       the full count lives inside the dropdown next to Help. */}
@@ -1275,6 +1330,12 @@ export default function Header({
                                   {user.name}
                                 </p>
                                 <ExternalLink className="w-3 h-3 text-white/70" />
+                                {isPaidTier(user.premiumTier) && user.isPremium && (
+                                  <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                                    <Crown className="h-2.5 w-2.5" strokeWidth={2.25} />
+                                    {premiumTierName(user.premiumTier, pick)}
+                                  </span>
+                                )}
                               </div>
                               <p className="text-xs text-white/80 truncate">
                                 {user.email}
@@ -1302,9 +1363,17 @@ export default function Header({
                               }}
                             />
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-white truncate">
-                                {user.name}
-                              </p>
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-sm font-semibold text-white truncate">
+                                  {user.name}
+                                </p>
+                                {isPaidTier(user.premiumTier) && user.isPremium && (
+                                  <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                                    <Crown className="h-2.5 w-2.5" strokeWidth={2.25} />
+                                    {premiumTierName(user.premiumTier, pick)}
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-xs text-white/80 truncate">
                                 {user.email}
                               </p>
@@ -1327,46 +1396,76 @@ export default function Header({
                         {/* Pro-specific items */}
                         {user.role === "pro" && (
                           <>
-                            {/* Premium Plans - gated behind the premiumPage
-                                feature flag. OFF in prod until the paid-
-                                subscription launch; ON on dev for testing. */}
-                            {features.premiumPage && (
-                              <Link
-                                href={cl("/pro/premium")}
-                                className="group flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 mx-2 rounded-xl"
-                                style={{
-                                  background: `linear-gradient(135deg, ${ACCENT_COLOR}12 0%, ${ACCENT_COLOR}08 100%)`,
-                                  border: `1px solid ${ACCENT_COLOR}25`,
-                                }}
-                                onClick={() => setShowDropdown(false)}
-                              >
-                                <div
-                                  className="w-8 h-8 rounded-lg flex items-center justify-center"
-                                  style={{
-                                    background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #D13C14 100%)`,
-                                  }}
+                            {/* Premium - shown to pros only when the premium
+                                MVP flag is on (decoupled from escrow). The item
+                                is state-aware: an ACTIVE subscriber sees a calm
+                                "Premium active · until {date}" confirmation
+                                (success-tinted, manage-on-click); a free pro
+                                sees the single-accent "Premium Plans" upsell. */}
+                            {features.premium &&
+                              (isPaidTier(user.premiumTier) && user.isPremium ? (
+                                <Link
+                                  href={cl("/pro/premium")}
+                                  className="group flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 mx-2 rounded-xl border border-[var(--hm-success-500)]/25 bg-[var(--hm-success-500)]/[0.07] hover:bg-[var(--hm-success-500)]/[0.12]"
+                                  onClick={() => setShowDropdown(false)}
                                 >
-                                  <Shield
-                                    className="w-4 h-4 text-white"
-                                    strokeWidth={1.5}
-                                  />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <span
-                                    className="font-semibold block"
-                                    style={{ color: ACCENT_COLOR }}
+                                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--hm-success-500)]/[0.12] text-[var(--hm-success-600)]">
+                                    <Crown className="w-4 h-4" strokeWidth={1.75} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <span className="font-semibold block text-[var(--hm-fg-primary)]">
+                                      {premiumTierName(user.premiumTier, pick) ||
+                                        t("header.premiumPlans")}
+                                    </span>
+                                    <span className="text-[10px] text-[var(--hm-success-600)]">
+                                      {user.premiumExpiresAt
+                                        ? t("header.premiumActiveUntil", {
+                                            date: formatPremiumDate(
+                                              user.premiumExpiresAt,
+                                              locale,
+                                            ),
+                                          })
+                                        : t("header.premiumActive")}
+                                    </span>
+                                  </div>
+                                </Link>
+                              ) : (
+                                <Link
+                                  href={cl("/pro/premium")}
+                                  className="group flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200 mx-2 rounded-xl"
+                                  style={{
+                                    background: `linear-gradient(135deg, ${ACCENT_COLOR}12 0%, ${ACCENT_COLOR}08 100%)`,
+                                    border: `1px solid ${ACCENT_COLOR}25`,
+                                  }}
+                                  onClick={() => setShowDropdown(false)}
+                                >
+                                  <div
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                                    style={{
+                                      background: `linear-gradient(135deg, ${ACCENT_COLOR} 0%, #D13C14 100%)`,
+                                    }}
                                   >
-                                    {t("header.premiumPlans")}
-                                  </span>
-                                  <span
-                                    className="text-[10px]"
-                                    style={{ color: `${ACCENT_COLOR}99` }}
-                                  >
-                                    {t("header.boostVisibility")}
-                                  </span>
-                                </div>
-                              </Link>
-                            )}
+                                    <Shield
+                                      className="w-4 h-4 text-white"
+                                      strokeWidth={1.5}
+                                    />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <span
+                                      className="font-semibold block"
+                                      style={{ color: ACCENT_COLOR }}
+                                    >
+                                      {t("header.premiumPlans")}
+                                    </span>
+                                    <span
+                                      className="text-[10px]"
+                                      style={{ color: `${ACCENT_COLOR}99` }}
+                                    >
+                                      {t("header.boostVisibility")}
+                                    </span>
+                                  </div>
+                                </Link>
+                              ))}
 
                             {/* Add portfolio work - pros kept reporting they
                                 couldn't find where to add their work; the only

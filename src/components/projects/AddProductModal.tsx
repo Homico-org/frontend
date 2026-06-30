@@ -95,8 +95,14 @@ export default function AddProductModal({
     // stays orderable through checkout.
     supplierProductId: item?.supplierProductId ?? '',
     supplierKey: item?.supplierKey ?? '',
+    // FF&E schedule / procurement details.
+    sku: item?.sku ?? '',
+    dimensions: item?.dimensions ?? '',
+    leadTimeDays: item?.leadTimeDays != null ? String(item.leadTimeDays) : '',
+    etaDate: item?.etaDate ? item.etaDate.slice(0, 10) : '',
   }));
   const [saving, setSaving] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   // Category combobox dropdown.
   const [catOpen, setCatOpen] = useState(false);
@@ -130,6 +136,42 @@ export default function AddProductModal({
     }
   };
 
+  // Smart import: read og/meta/JSON-LD from the pasted link and autofill the
+  // name / image / price / vendor (the user can edit before saving).
+  const importFromUrl = async () => {
+    const url = form.url.trim();
+    if (!url) return;
+    setImporting(true);
+    try {
+      const { data } = await api.post(
+        `/projects/${projectId}/products/preview-url`,
+        { url },
+      );
+      const p = data as {
+        name?: string;
+        imageUrl?: string;
+        price?: number;
+        vendor?: string;
+      };
+      setForm((f) => ({
+        ...f,
+        name: p.name || f.name,
+        imageUrl: p.imageUrl || f.imageUrl,
+        unitPrice: p.price != null ? String(p.price) : f.unitPrice,
+        vendor: p.vendor || f.vendor,
+      }));
+      toast.success(t('projects.importedFromLink'));
+    } catch (err) {
+      toast.error(
+        t('projects.importFailed'),
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message,
+      );
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const save = async () => {
     if (!form.name.trim()) return;
     setSaving(true);
@@ -149,6 +191,10 @@ export default function AddProductModal({
         status: form.status,
         supplierProductId: form.supplierProductId || undefined,
         supplierKey: form.supplierKey || undefined,
+        sku: form.sku.trim() || undefined,
+        dimensions: form.dimensions.trim() || undefined,
+        leadTimeDays: form.leadTimeDays ? Number(form.leadTimeDays) : undefined,
+        etaDate: form.etaDate || undefined,
       };
       if (isEdit && item) {
         await api.patch(`/projects/${projectId}/products/${item.id}`, body);
@@ -272,16 +318,27 @@ export default function AddProductModal({
           <p className="mt-1 text-[12px] text-[var(--hm-fg-muted)]">
             {t('projects.shopLinkHint')}
           </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            leftIcon={<Search className="h-4 w-4" />}
-            onClick={() => setCatalogOpen(true)}
-            className="mt-2"
-          >
-            {t('projects.catalogSearch')}
-          </Button>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              leftIcon={<Link2 className="h-4 w-4" />}
+              onClick={importFromUrl}
+              disabled={!form.url.trim() || importing}
+            >
+              {importing ? t('common.loading') : t('projects.importFromLink')}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              leftIcon={<Search className="h-4 w-4" />}
+              onClick={() => setCatalogOpen(true)}
+            >
+              {t('projects.catalogSearch')}
+            </Button>
+          </div>
         </FormGroup>
 
         <FormGroup>
@@ -317,6 +374,52 @@ export default function AddProductModal({
                 ₾
               </span>
             </div>
+          </FormGroup>
+        </div>
+
+        {/* FF&E schedule / procurement details */}
+        <div className="grid grid-cols-2 gap-3">
+          <FormGroup>
+            <Label>{t('projects.sku')}</Label>
+            <Input
+              value={form.sku}
+              onChange={(e) => set('sku', e.target.value)}
+              placeholder={t('projects.skuHint')}
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label>{t('projects.dimensions')}</Label>
+            <Input
+              value={form.dimensions}
+              onChange={(e) => set('dimensions', e.target.value)}
+              placeholder={t('projects.dimensionsHint')}
+            />
+          </FormGroup>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <FormGroup>
+            <Label>{t('projects.leadTime')}</Label>
+            <div className="relative">
+              <Input
+                type="number"
+                min={0}
+                value={form.leadTimeDays}
+                onChange={(e) => set('leadTimeDays', e.target.value)}
+                className="pr-12"
+              />
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[var(--hm-fg-muted)]">
+                {t('projects.leadDaysUnit')}
+              </span>
+            </div>
+          </FormGroup>
+          <FormGroup>
+            <Label>{t('projects.eta')}</Label>
+            <Input
+              type="date"
+              value={form.etaDate}
+              onChange={(e) => set('etaDate', e.target.value)}
+            />
           </FormGroup>
         </div>
 

@@ -58,6 +58,22 @@ export interface CatalogServiceItem {
   imageUrl?: string;
 }
 
+// Priced add-on / yes-no option attached to a subcategory (e.g. ironing +5₾,
+// "bring cleaning supplies?" +12₾). `promptLabel` is the question shown.
+export interface CatalogAddonItem {
+  key: string;
+  name: string;
+  nameKa: string;
+  nameRu?: string;
+  promptLabel?: { en: string; ka: string; ru: string };
+  basePrice: number;
+  maxPrice?: number;
+  unit: string;
+  unitName?: string;
+  unitNameKa?: string;
+  iconName?: string;
+}
+
 export interface Subcategory {
   id?: string; // Stable permanent identifier — save selections by id
   key: string;
@@ -69,6 +85,8 @@ export interface Subcategory {
   isActive: boolean;
   children: SubSubcategory[];
   services?: CatalogServiceItem[];
+  addons?: CatalogAddonItem[];
+  description?: { en: string; ka: string; ru: string };
   priceRange?: { min: number; max?: number };
   // Optional flexibility (added 2026-05)
   imageUrl?: string;
@@ -122,7 +140,8 @@ interface RawSubcategory {
   key: string;
   name: string;
   nameKa?: string;
-  description?: string;
+  // as-categories sends subcategory description as a {en,ka,ru} object.
+  description?: { en?: string; ka?: string; ru?: string };
   descriptionKa?: string;
   keywords?: string[];
   isActive?: boolean;
@@ -130,6 +149,7 @@ interface RawSubcategory {
   icon?: string;
   children?: SubSubcategory[];
   services?: CatalogServiceItem[];
+  addons?: CatalogAddonItem[];
   priceRange?: { min: number; max?: number };
   imageUrl?: string;
   tags?: string[];
@@ -148,6 +168,14 @@ function transformSubcategory(sub: RawSubcategory): Subcategory {
     isActive: sub.isActive ?? true,
     children: sub.children || [],
     services: sub.services || [],
+    addons: sub.addons || [],
+    description: sub.description
+      ? {
+          en: sub.description.en ?? '',
+          ka: sub.description.ka ?? '',
+          ru: sub.description.ru ?? '',
+        }
+      : undefined,
     priceRange: sub.priceRange,
     imageUrl: sub.imageUrl,
     tags: sub.tags,

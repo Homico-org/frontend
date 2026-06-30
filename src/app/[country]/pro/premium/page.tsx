@@ -1,698 +1,280 @@
 "use client";
-import { ACCENT_COLOR } from "@/constants/theme";
 
 import Header, { HeaderSpacer } from "@/components/common/Header";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useCountry, useCountryLink } from "@/hooks/useCountry";
-import { getPremiumTierPrices, type PremiumTierId } from "@/data/premium-pricing";
+import { getPremiumTierPrices } from "@/data/premium-pricing";
 import { currencySymbol } from "@/utils/currency";
-import {
-  ArrowRight,
-  Award,
-  BadgeCheck,
-  Check,
-  ChevronDown,
-  Clock,
-  Crown,
-  Eye,
-  Gem,
-  Headphones,
-  MessageCircle,
-  Palette,
-  Shield,
-  Star,
-  TrendingUp,
-  Zap,
-} from "lucide-react";
+import { features } from "@/config/features";
+import { ConfirmModal } from "@/components/ui/Modal";
+import { useToast } from "@/contexts/ToastContext";
+import { api } from "@/lib/api";
+import { formatPremiumDate, isPremiumRefundable } from "@/utils/premium";
+import { ArrowRight, Check, Crown, Megaphone, Star } from "lucide-react";
+import { isAxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-// Luxurious color palette
-const COLORS = {
-  gold: "#D4AF37",
-  goldLight: "#E8C547",
-  goldDark: "#B8962F",
-  terracotta: ACCENT_COLOR,
-  terracottaLight: "#F06B43",
-  terracottaDark: "#A92B08",
-  cream: "#FFFBF5",
-  champagne: "#F7E7CE",
-  charcoal: "#1A1A1A",
-  platinum: "#E5E4E2",
-};
+const AVG_RATING = "4.9";
 
-// Premium tier configuration. Price + currency are intentionally NOT
-// part of this static config any more (2026-05) - they're looked up
-// per marketplace at render time from `data/premium-pricing.ts`.
-interface PremiumTier {
-  id: PremiumTierId;
-  name: { en: string; ka: string };
-  tagline: { en: string; ka: string };
-  icon: React.ElementType;
-  accentColor: string;
-  gradientFrom: string;
-  gradientTo: string;
-  glowColor: string;
-  features: {
-    icon: React.ElementType;
-    text: { en: string; ka: string };
-    included?: boolean;
-  }[];
-  popular: boolean;
-  highlightKey?: string;
-}
+type Loc = Record<"en" | "ka" | "ru", string>;
 
-const PREMIUM_TIERS: Record<string, PremiumTier> = {
-  basic: {
-    id: "basic",
-    name: { en: "Premium", ka: "პრემიუმ" },
-    tagline: { en: "Stand out from the crowd", ka: "გამოირჩიე სხვებისგან" },
-    icon: Star,
-    accentColor: "#4A9B9B",
-    gradientFrom: "#4A9B9B",
-    gradientTo: "#3D8585",
-    glowColor: "rgba(74, 155, 155, 0.3)",
-    features: [
-      { icon: BadgeCheck, text: { en: "Premium Badge", ka: "პრემიუმ ბეჯი" } },
-      { icon: TrendingUp, text: { en: "Priority Search", ka: "პრიორიტეტული ძიება" } },
-      { icon: Eye, text: { en: "2x Profile Views", ka: "2x მეტი ნახვა" } },
-      { icon: MessageCircle, text: { en: "Direct Messaging", ka: "პირდაპირი შეტყობინებები" } },
-      { icon: Clock, text: { en: "Analytics", ka: "ანალიტიკა" } },
-    ],
-    popular: false,
-  },
-  pro: {
-    id: "pro",
-    name: { en: "Pro", ka: "პრო" },
-    tagline: { en: "For serious professionals", ka: "სერიოზული პროფესიონალებისთვის" },
-    icon: Zap,
-    accentColor: COLORS.terracotta,
-    gradientFrom: COLORS.terracotta,
-    gradientTo: COLORS.terracottaDark,
-    glowColor: "rgba(239, 78, 36, 0.35)",
-    highlightKey: "premium.mostPopular",
-    features: [
-      { icon: BadgeCheck, text: { en: "Everything in Premium", ka: "ყველაფერი პრემიუმიდან" }, included: true },
-      { icon: Crown, text: { en: "Pro Badge", ka: "პრო ბეჯი" } },
-      { icon: TrendingUp, text: { en: "Top Placement", ka: "ტოპ პოზიცია" } },
-      { icon: Eye, text: { en: "5x Profile Views", ka: "5x მეტი ნახვა" } },
-      { icon: Star, text: { en: "Homepage Feature", ka: "მთავარ გვერდზე" } },
-      { icon: Shield, text: { en: "Priority Support", ka: "პრიორიტეტული მხარდაჭერა" } },
-      { icon: Award, text: { en: "Unlimited Portfolio", ka: "შეუზღუდავი პორტფოლიო" } },
-    ],
-    popular: true,
-  },
-  elite: {
-    id: "elite",
-    name: { en: "Elite", ka: "ელიტა" },
-    tagline: { en: "The ultimate experience", ka: "უმაღლესი გამოცდილება" },
-    icon: Gem,
-    accentColor: COLORS.gold,
-    gradientFrom: COLORS.gold,
-    gradientTo: COLORS.goldDark,
-    glowColor: "rgba(212, 175, 55, 0.4)",
-    features: [
-      { icon: BadgeCheck, text: { en: "Everything in Pro", ka: "ყველაფერი პრო-დან" }, included: true },
-      { icon: Crown, text: { en: "Elite Gold Badge", ka: "ელიტა ოქროს ბეჯი" } },
-      { icon: TrendingUp, text: { en: "#1 Search Priority", ka: "#1 ძიების პრიორიტეტი" } },
-      { icon: Eye, text: { en: "10x Profile Views", ka: "10x მეტი ნახვა" } },
-      { icon: Award, text: { en: "Exclusive Spotlight", ka: "ექსკლუზიური სპოტლაითი" } },
-      { icon: Headphones, text: { en: "Personal Manager", ka: "პერსონალური მენეჯერი" } },
-      { icon: MessageCircle, text: { en: "WhatsApp Support", ka: "WhatsApp მხარდაჭერა" } },
-      { icon: Palette, text: { en: "Custom Portfolio", ka: "პერსონალური პორტფოლიო" } },
-    ],
-    popular: false,
-  },
-};
+const PRO_FEATURES: Loc[] = [
+  { en: "Top of search results", ka: "ძიების პირველ ადგილზე", ru: "Топ результатов поиска" },
+  { en: "Featured on the homepage", ka: "მთავარ გვერდზე გამოჩენა", ru: "На главной странице" },
+  { en: "Pro badge on your profile", ka: "პრო ბეჯი პროფილზე", ru: "Pro-бейдж в профиле" },
+  { en: "5x more profile views", ka: "5x მეტი ნახვა", ru: "5x больше просмотров" },
+];
 
-type BillingPeriod = "monthly" | "yearly";
+const SUPER_PRO_FEATURES: Loc[] = [
+  { en: "Everything in Pro", ka: "ყველაფერი Pro-დან", ru: "Всё из Pro" },
+  { en: "Promotion on Facebook & Instagram", ka: "პრომოცია Facebook-სა და Instagram-ზე", ru: "Продвижение в Facebook и Instagram" },
+  { en: "Content & storytelling made for you", ka: "კონტენტი და სთორითელინგი შენთვის", ru: "Контент и сторителлинг для вас" },
+  { en: "Marketing & PR support", ka: "მარკეტინგი და PR მხარდაჭერა", ru: "Поддержка маркетинга и PR" },
+];
 
-// Animated Sparkle Component
-
-// Premium Card Component
-function PremiumCard({
-  tier,
-  isSelected,
-  billingPeriod,
-  currentTier,
-  onSelect,
-  onChoose,
-  index,
-}: {
-  tier: PremiumTier;
-  isSelected: boolean;
-  billingPeriod: BillingPeriod;
-  currentTier: string;
-  onSelect: () => void;
-  onChoose: () => void;
-  index: number;
-}) {
-  const { t, pick } = useLanguage();
-  const country = useCountry();
-  const TierIcon = tier.icon;
-  // Price + currency resolved from the active marketplace (added 2026-05).
-  // Israeli pros see shekel pricing, US pros see USD, etc.
-  const tierPrices = getPremiumTierPrices(country, tier.id);
-  const price = tierPrices[billingPeriod];
-  const currency = currencySymbol({ country });
-  const isCurrent = currentTier === tier.id;
-
-  return (
-    <div
-      onClick={onSelect}
-      style={{ animationDelay: `${index * 80}ms` }}
-      className={`animate-card-enter relative flex h-full cursor-pointer flex-col rounded-2xl bg-[var(--hm-bg-elevated)] p-7 transition-all duration-300 ${
-        tier.popular
-          ? "border-2 border-[var(--hm-brand-500)] shadow-[0_24px_60px_-32px_rgba(239,78,36,0.45)] md:-mt-4"
-          : "border border-[var(--hm-border-subtle)] hover:border-[var(--hm-border-strong)]"
-      } ${isSelected && !tier.popular ? "ring-1 ring-[var(--hm-brand-500)]/25" : ""}`}
-    >
-      {/* Popular pill - the one vermillion moment */}
-      {tier.popular && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--hm-brand-500)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
-          {tier.highlightKey ? t(tier.highlightKey) : ""}
-        </span>
-      )}
-
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <TierIcon
-          className="h-[18px] w-[18px]"
-          style={{ color: tier.popular ? "var(--hm-brand-500)" : "var(--hm-fg-muted)" }}
-        />
-        <h3 className="text-[19px] font-bold tracking-[-0.01em] text-[var(--hm-fg-primary)]">
-          {pick({ en: tier.name.en, ka: tier.name.ka })}
-        </h3>
-      </div>
-      <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--hm-fg-muted)]">
-        {pick({ en: tier.tagline.en, ka: tier.tagline.ka })}
-      </p>
-
-      {/* Price */}
-      <div className="mt-6">
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-[42px] font-bold leading-none tabular-nums tracking-[-0.03em] text-[var(--hm-fg-primary)]">
-            {currency}
-            {price}
-          </span>
-          <span className="text-[14px] text-[var(--hm-fg-muted)]">
-            /{billingPeriod === "monthly" ? t("premium.mo") : t("premium.yr")}
-          </span>
-        </div>
-        {billingPeriod === "yearly" && (
-          <p className="mt-2 text-[12px] font-semibold text-[var(--hm-success-600)]">
-            {t("premium.saveAmount", {
-              currency,
-              amount: tierPrices.monthly * 12 - tierPrices.yearly,
-            })}
-          </p>
-        )}
-      </div>
-
-      <div className="my-6 h-px bg-[var(--hm-border-subtle)]" />
-
-      {/* Features */}
-      <ul className="flex-1 space-y-3">
-        {tier.features.map((feature, i) => (
-          <li key={i} className="flex items-start gap-2.5">
-            <Check
-              className="mt-0.5 h-4 w-4 shrink-0"
-              style={{
-                color: feature.included
-                  ? "var(--hm-fg-subtle)"
-                  : "var(--hm-brand-500)",
-              }}
-            />
-            <span
-              className={`text-[13.5px] leading-snug ${
-                feature.included
-                  ? "text-[var(--hm-fg-muted)]"
-                  : "text-[var(--hm-fg-secondary)]"
-              }`}
-            >
-              {pick({ en: feature.text.en, ka: feature.text.ka })}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      {/* CTA */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onChoose();
-        }}
-        disabled={isCurrent}
-        className={`mt-7 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-xl text-[14px] font-semibold transition-colors ${
-          isCurrent
-            ? "cursor-not-allowed bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]"
-            : tier.popular
-              ? "bg-[var(--hm-brand-500)] text-white hover:bg-[var(--hm-brand-600)]"
-              : "border border-[var(--hm-border-strong)] text-[var(--hm-fg-primary)] hover:border-[var(--hm-brand-500)] hover:text-[var(--hm-brand-500)]"
-        }`}
-      >
-        {isCurrent ? (
-          t("premium.currentPlan")
-        ) : (
-          <>
-            {t("premium.getStarted")}
-            <ArrowRight className="h-4 w-4" />
-          </>
-        )}
-      </button>
-    </div>
-  );
-}
-
-// Testimonial Component - editorial quote card (trust comes from the words)
-function TestimonialCard({
-  name,
-  role,
-  text,
-  avatar,
-  index,
-}: {
-  name: string;
-  role: string;
-  text: string;
-  avatar: string;
-  index: number;
-}) {
-  return (
-    <figure
-      className="animate-card-enter flex h-full flex-col rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-7 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_44px_-24px_rgba(17,16,13,0.22)]"
-      style={{ animationDelay: `${index * 90}ms` }}
-    >
-      <span
-        aria-hidden
-        className="font-serif text-[52px] leading-[0.6] text-[var(--hm-brand-500)]/25"
-      >
-        &ldquo;
-      </span>
-      <blockquote className="mt-3 flex-1 text-[16px] italic leading-relaxed text-[var(--hm-fg-primary)]">
-        {text}
-      </blockquote>
-      <figcaption className="mt-6 flex items-center gap-3 border-t border-[var(--hm-border-subtle)] pt-5">
-        <span
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[13px] font-bold text-white"
-          style={{ background: "var(--hm-brand-500)" }}
-        >
-          {avatar}
-        </span>
-        <span className="min-w-0">
-          <span className="block truncate text-[14px] font-semibold text-[var(--hm-fg-primary)]">
-            {name}
-          </span>
-          <span className="block truncate text-[12px] text-[var(--hm-fg-muted)]">
-            {role}
-          </span>
-        </span>
-      </figcaption>
-    </figure>
-  );
-}
-
-// FAQ Component
-function FAQItem({
-  question,
-  answer,
-  isOpen,
-  onToggle,
-}: {
-  question: string;
-  answer: string;
-  isOpen: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <div className="border-b border-[var(--hm-border-subtle)] last:border-0">
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between gap-4 py-6 text-left group"
-      >
-        <span className="font-medium text-[var(--hm-fg-primary)] group-hover:text-[var(--hm-fg-secondary)] transition-colors">
-          {question}
-        </span>
-        <div 
-          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-          style={{ background: isOpen ? `${COLORS.terracotta}15` : "#F3F4F6" }}
-        >
-          <ChevronDown
-            className="w-4 h-4"
-            style={{ color: isOpen ? COLORS.terracotta : "#9CA3AF" }}
-          />
-        </div>
-      </button>
-      <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-48 pb-6" : "max-h-0"}`}>
-        <p className="text-[var(--hm-fg-muted)] leading-relaxed">{answer}</p>
-      </div>
-    </div>
-  );
-}
+// `pro` / `elite` are the internal tier ids; `elite` ships as "Super Pro".
+const PLANS = [
+  { id: "pro", icon: Crown, popular: false, features: PRO_FEATURES, compareAt: 0 },
+  { id: "elite", icon: Megaphone, popular: true, features: SUPER_PRO_FEATURES, compareAt: 300 },
+] as const;
 
 export default function PremiumPlansPage() {
-  const { user, isAuthenticated } = useAuth();
-  const { t, pick } = useLanguage();
+  const { user, isAuthenticated, refreshUser } = useAuth();
+  const { t, pick, locale } = useLanguage();
   const router = useRouter();
   const { trackEvent } = useAnalytics();
   const cl = useCountryLink();
   const country = useCountry();
-  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("yearly");
-  const [selectedTier, setSelectedTier] = useState<string>("pro");
-  const [openFAQ, setOpenFAQ] = useState<number | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const testimonialsRef = useRef<HTMLDivElement>(null);
-  const [testimonialsVisible, setTestimonialsVisible] = useState(false);
+  const toast = useToast();
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   const isPro = user?.role === "pro";
-  const currentTier = user && 'proProfile' in user ? (user as { proProfile?: { premiumTier?: string } }).proProfile?.premiumTier || "none" : "none";
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
+  const currentTier =
+    user?.isPremium && user.premiumTier ? user.premiumTier : "none";
+  const isActive = currentTier !== "none";
+  const refundable = isActive && isPremiumRefundable(user?.premiumStartedAt, user?.premiumExpiresAt);
+  const currency = currencySymbol({ country });
 
   useEffect(() => {
     trackEvent(AnalyticsEvent.PREMIUM_VIEW);
   }, [trackEvent]);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setTestimonialsVisible(true);
-      },
-      { threshold: 0.2 }
-    );
-    if (testimonialsRef.current) observer.observe(testimonialsRef.current);
-    return () => observer.disconnect();
-  }, []);
-
   const handleSelectPlan = (tierId: string) => {
+    if (!features.premium || currentTier === tierId) return;
     if (!isAuthenticated) {
-      router.push("/register?redirect=/pro/premium");
+      router.push(`/register?redirect=/pro/premium`);
       return;
     }
     if (!isPro) {
-      // /register stays country-agnostic (auth). /become-pro and
-      // /pro/premium are country-scoped, so we resolve them through
-      // the marketplace-aware link helper.
-      router.push(cl(`/become-pro?redirect=${encodeURIComponent(cl('/pro/premium'))}`));
+      router.push(cl(`/become-pro?redirect=${encodeURIComponent(cl("/pro/premium"))}`));
       return;
     }
     trackEvent(AnalyticsEvent.PREMIUM_CHECKOUT_START, {
       planType: tierId,
-      planPrice: getPremiumTierPrices(country, tierId as PremiumTierId)[billingPeriod],
+      planPrice: getPremiumTierPrices(country, tierId as "pro" | "elite").monthly,
     });
-    router.push(cl(`/pro/premium/checkout?tier=${tierId}&period=${billingPeriod}`));
+    router.push(cl(`/pro/premium/checkout?tier=${tierId}&period=monthly`));
   };
 
-  const testimonials = [
-    {
-      name: t('premium.giorgiMeladze'),
-      role: t('premium.interiorDesigner'),
-      text: t('premium.eliteCompletelyTransformedMyBusiness'),
-      rating: 5,
-      avatar: "გმ",
-      tier: "elite",
-    },
-    {
-      name: t('premium.ninoTsereteli'),
-      role: t('premium.architect'),
-      text: t('premium.proPlanIsTheBest'),
-      rating: 5,
-      avatar: "ნწ",
-      tier: "pro",
-    },
-    {
-      name: t('premium.davidChkheidze'),
-      role: t('premium.builder'),
-      text: t('premium.prioritySearchReallyWorksIm'),
-      rating: 5,
-      avatar: "დჩ",
-      tier: "premium",
-    },
-  ];
-
-  const faqs = [
-    {
-      q: { en: "Can I upgrade or downgrade my plan?", ka: "შემიძლია გეგმის შეცვლა?" },
-      a: { en: "Yes! You can upgrade or downgrade at any time. When upgrading, you'll be charged the prorated difference.", ka: "დიახ! შეგიძლია გეგმის შეცვლა ნებისმიერ დროს." },
-    },
-    {
-      q: { en: "What payment methods do you accept?", ka: "რა გადახდის მეთოდებს იღებთ?" },
-      a: { en: "We accept all major credit/debit cards, Bank of Georgia, TBC Bank, and Liberty Bank transfers.", ka: "ვიღებთ ყველა ძირითად ბარათს და საბანკო გადარიცხვებს." },
-    },
-    {
-      q: { en: "How does the 7-day guarantee work?", ka: "როგორ მუშაობს 7 დღიანი გარანტია?" },
-      a: { en: "If you're not satisfied within the first 7 days, contact us for a full refund. No questions asked.", ka: "თუ პირველი 7 დღის განმავლობაში არ ხარ კმაყოფილი, დაგიბრუნებთ 100%-ს." },
-    },
-    {
-      q: { en: "What happens when my subscription ends?", ka: "რა ხდება როცა გამოწერა მთავრდება?" },
-      a: { en: "Your profile reverts to the free tier. All your data and portfolio remain intact.", ka: "შენი პროფილი უფასო ვერსიაზე გადაიტანება. მონაცემები და პორტფოლიო შენარჩუნებულია." },
-    },
-  ];
+  const handleCancel = async () => {
+    setCancelling(true);
+    try {
+      const { data } = await api.post<{ refunded?: boolean }>("/payments/premium/cancel");
+      await refreshUser();
+      setCancelOpen(false);
+      toast.success(
+        pick({ en: "Subscription cancelled", ka: "გამოწერა გაუქმდა", ru: "Подписка отменена" }),
+        data?.refunded
+          ? pick({ en: "Your refund is on the way.", ka: "თანხა მალე დაგიბრუნდებათ.", ru: "Возврат уже в пути." })
+          : undefined,
+      );
+    } catch (err) {
+      const msg =
+        isAxiosError(err) && typeof err.response?.data?.message === "string"
+          ? err.response.data.message
+          : pick({ en: "Couldn't cancel - try again.", ka: "გაუქმება ვერ მოხერხდა.", ru: "Не удалось отменить." });
+      toast.error(msg);
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[var(--hm-bg-page)]">
-      {/* Custom Styles */}
-      <style jsx global>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
-          50% { transform: translateY(-20px) rotate(10deg); opacity: 0.6; }
-        }
-        
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        
-        .animate-shimmer {
-          animation: shimmer 3s ease-in-out infinite;
-        }
-      `}</style>
-
       <Header />
       <HeaderSpacer />
 
-      <main className={`relative transition-all duration-1000 ${isVisible ? "opacity-100" : "opacity-0"}`}>
-        
-        {/* ========== HERO SECTION ========== */}
-        <section className="relative overflow-hidden pt-14 pb-20">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
+      <main className="mx-auto flex min-h-[calc(100vh-var(--hm-header-h,72px))] max-w-3xl flex-col justify-center px-5 py-8">
+        {/* ── Hero ──────────────────────────────────────────── */}
+        <div className="text-center">
+          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.24em] text-[var(--hm-brand-500)]">
+            Homico Premium
+          </p>
+          <h1 className="text-[26px] font-semibold leading-[1.12] tracking-[-0.03em] text-[var(--hm-fg-primary)] sm:text-[34px]">
+            {pick({
+              en: "Get seen first. Win more jobs.",
+              ka: "გამოჩნდი პირველი. მიიღე მეტი შეკვეთა.",
+              ru: "Будьте на виду. Получайте больше заказов.",
+            })}
+          </h1>
+        </div>
 
-            {/* Trust badge */}
-            <div className="flex justify-center mb-8">
-              <div className="flex items-center gap-3 rounded-full border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] px-4 py-2 shadow-sm">
-                <div className="flex -space-x-2">
-                  {["NM", "GT", "DK", "LS"].map((initials, i) => (
-                    <div
-                      key={i}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--hm-bg-elevated)] text-[10px] font-bold text-white"
-                      style={{
-                        background: "var(--hm-brand-500)",
-                        opacity: 1 - i * 0.12,
-                        zIndex: 4 - i,
-                      }}
-                    >
-                      {initials}
-                    </div>
+        {/* ── Plans ─────────────────────────────────────────── */}
+        <div className="mt-7 grid gap-5 sm:grid-cols-2">
+          {PLANS.map((plan) => {
+            const Icon = plan.icon;
+            const price = getPremiumTierPrices(country, plan.id).monthly;
+            const isCurrent = isActive && currentTier === plan.id;
+            const showAnchor = plan.compareAt > price;
+            return (
+              <div
+                key={plan.id}
+                className={`relative flex flex-col rounded-2xl border bg-[var(--hm-bg-elevated)] p-6 ${
+                  plan.popular
+                    ? "border-[var(--hm-brand-500)]/40 shadow-[var(--hm-shadow-md)]"
+                    : "border-[var(--hm-border-subtle)]"
+                }`}
+              >
+                {plan.popular && !isActive && (
+                  <span className="absolute -top-2.5 left-6 rounded-full bg-[var(--hm-brand-500)] px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-white">
+                    {pick({ en: "Recommended", ka: "რეკომენდებული", ru: "Рекомендуем" })}
+                  </span>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--hm-brand-500)]/[0.1]">
+                      <Icon className="h-4 w-4 text-[var(--hm-brand-500)]" strokeWidth={1.75} />
+                    </span>
+                    <h2 className="text-[17px] font-semibold tracking-[-0.01em] text-[var(--hm-fg-primary)]">
+                      {plan.id === "pro"
+                        ? pick({ en: "Pro", ka: "პრო", ru: "Pro" })
+                        : pick({ en: "Super Pro", ka: "სუპერ პრო", ru: "Супер Pro" })}
+                    </h2>
+                  </div>
+                  {isCurrent && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--hm-success-500)]/[0.12] px-2 py-0.5 text-[10px] font-semibold text-[var(--hm-success-600)]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[var(--hm-success-500)]" />
+                      {t("header.premiumActive")}
+                    </span>
+                  )}
+                </div>
+
+                {/* Price / active */}
+                {isCurrent ? (
+                  <p className="mt-4 text-[13px] text-[var(--hm-fg-muted)]">
+                    {user?.premiumExpiresAt
+                      ? t("header.premiumActiveUntil", {
+                          date: formatPremiumDate(user.premiumExpiresAt, locale),
+                        })
+                      : t("header.premiumActive")}
+                  </p>
+                ) : (
+                  <div className="mt-4 flex items-baseline gap-2">
+                    {showAnchor && (
+                      <span className="text-[16px] font-medium text-[var(--hm-fg-subtle)] line-through">
+                        {currency}
+                        {plan.compareAt}
+                      </span>
+                    )}
+                    <span className="text-[34px] font-semibold leading-none tabular-nums tracking-[-0.03em] text-[var(--hm-fg-primary)]">
+                      {currency}
+                      {price}
+                    </span>
+                    <span className="text-[13px] text-[var(--hm-fg-muted)]">/ {t("premium.mo")}</span>
+                  </div>
+                )}
+
+                {/* Features */}
+                <ul className="mt-5 flex-1 space-y-2.5">
+                  {plan.features.map((f, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-[13px] text-[var(--hm-fg-primary)]">
+                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--hm-brand-500)]" strokeWidth={2.5} />
+                      {pick(f)}
+                    </li>
                   ))}
-                </div>
-                <div className="text-[13px]">
-                  <span className="font-bold text-[var(--hm-fg-primary)]">500+</span>{" "}
-                  <span className="text-[var(--hm-fg-muted)]">{t('premium.professionalsTrustUs')}</span>
-                </div>
-              </div>
-            </div>
+                </ul>
 
-            {/* Headline */}
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--hm-fg-muted)]">
-                Homico Premium
-              </p>
-              <h1 className="text-[40px] sm:text-[56px] lg:text-[64px] font-bold leading-[1.05] tracking-[-0.035em] text-[var(--hm-fg-primary)]">
-                {t('premium.headlinePrefix')}{" "}
-                <span className="italic text-[var(--hm-brand-500)]">
-                  {t('premium.headlineHighlight')}
-                </span>
-              </h1>
-              <p className="mt-5 text-[16px] sm:text-[18px] text-[var(--hm-fg-muted)] max-w-xl mx-auto leading-relaxed">
-                {t('premium.joinEliteProfessionalsAndUnlock')}
-              </p>
-            </div>
-
-            {/* Billing toggle - clean segmented */}
-            <div className="flex items-center justify-center gap-3 mb-12">
-              <div className="inline-flex items-center rounded-full bg-[var(--hm-bg-tertiary)] p-1">
-                {(["monthly", "yearly"] as BillingPeriod[]).map((period) => (
-                  <button
-                    key={period}
-                    onClick={() => setBillingPeriod(period)}
-                    className={`rounded-full px-5 py-2 text-[13px] font-semibold transition-colors ${
-                      billingPeriod === period
-                        ? "bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[0_1px_2px_rgba(17,16,13,0.06)]"
-                        : "text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"
-                    }`}
+                {/* CTA */}
+                {isCurrent ? (
+                  <>
+                    <Button asChild size="default" variant="outline" className="mt-5 w-full">
+                      <a href="/pro/profile-setup">
+                        {pick({ en: "Manage profile", ka: "პროფილის მართვა", ru: "Профиль" })}
+                      </a>
+                    </Button>
+                    {refundable ? (
+                      <button
+                        type="button"
+                        onClick={() => setCancelOpen(true)}
+                        className="mt-2.5 w-full text-center text-[11px] text-[var(--hm-fg-muted)] underline-offset-4 transition-colors hover:text-[var(--hm-error-500)] hover:underline"
+                      >
+                        {pick({ en: "Cancel & get a full refund", ka: "გააუქმე და დაიბრუნე თანხა", ru: "Отменить и вернуть деньги" })}
+                      </button>
+                    ) : (
+                      <p className="mt-2.5 text-center text-[11px] text-[var(--hm-fg-muted)]">
+                        {pick({ en: "Won't auto-renew", ka: "ავტომატურად არ განახლდება", ru: "Без автопродления" })}
+                      </p>
+                    )}
+                  </>
+                ) : isActive ? (
+                  <p className="mt-5 text-center text-[12px] text-[var(--hm-fg-muted)]">
+                    {pick({
+                      en: "Cancel your current plan to switch",
+                      ka: "გადასართავად ჯერ გააუქმე მიმდინარე გეგმა",
+                      ru: "Чтобы сменить, отмените текущий тариф",
+                    })}
+                  </p>
+                ) : (
+                  <Button
+                    size="default"
+                    variant={plan.popular ? "default" : "outline"}
+                    className="mt-5 w-full"
+                    onClick={() => handleSelectPlan(plan.id)}
                   >
-                    {period === "monthly" ? t('premium.monthly') : t('premium.yearly')}
-                  </button>
-                ))}
+                    {t("premium.getStarted")}
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
-              <span className="rounded-full bg-[var(--hm-success-500)]/[0.12] px-2.5 py-1 text-[12px] font-semibold text-[var(--hm-success-600)]">
-                -17%
-              </span>
-            </div>
+            );
+          })}
+        </div>
 
-            {/* Pricing Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 max-w-5xl mx-auto items-stretch pt-4">
-              {Object.values(PREMIUM_TIERS).map((tier, index) => (
-                <PremiumCard
-                  key={tier.id}
-                  tier={tier}
-                  isSelected={selectedTier === tier.id}
-                  billingPeriod={billingPeriod}
-                  currentTier={currentTier}
-                  onSelect={() => setSelectedTier(tier.id)}
-                  onChoose={() => handleSelectPlan(tier.id)}
-                  index={index}
-                />
-              ))}
-            </div>
-
-            {/* Guarantee */}
-            <div className="flex justify-center mt-10">
-              <span className="inline-flex items-center gap-2 text-[13px] text-[var(--hm-fg-muted)]">
-                <Shield className="w-4 h-4 text-[var(--hm-success-500)]" />
-                {t('premium.7dayMoneybackGuaranteeNoQuestions')}
-              </span>
-            </div>
-          </div>
-        </section>
-
-        {/* ========== TESTIMONIALS SECTION ========== */}
-        <section 
-          ref={testimonialsRef}
-          className="py-24 bg-[var(--hm-bg-page)]"
-        >
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12">
-              <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--hm-fg-muted)]">
-                {t('premium.realResults')}
-              </p>
-              <h2 className="text-[32px] sm:text-[40px] font-bold leading-tight tracking-[-0.03em] text-[var(--hm-fg-primary)]">
-                {t('premium.whatOurMembersSay')}
-              </h2>
-              <p className="mt-3 max-w-xl mx-auto text-[15px] text-[var(--hm-fg-muted)]">
-                {t('premium.joinHundredsOfSuccessfulProfessionals')}
-              </p>
-            </div>
-
-            <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-1000 ${
-              testimonialsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}>
-              {testimonials.map((testimonial, i) => (
-                <TestimonialCard key={i} {...testimonial} index={i} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ========== STATS SECTION ========== */}
-        <section className="border-y border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] py-16">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6">
-            <div className="grid grid-cols-2 gap-y-10 md:grid-cols-4 md:gap-y-0 md:divide-x md:divide-[var(--hm-border-subtle)]">
-              {[
-                { value: "7", label: t('premium.dayGuarantee') },
-                { value: "500+", label: t('premium.eliteMembers') },
-                { value: "4.9", label: t('premium.avgRating') },
-                { value: "10x", label: t('premium.moreViews') },
-              ].map((stat, i) => (
-                <div key={i} className="px-2 text-center">
-                  <p className="text-[44px] font-bold leading-none tabular-nums tracking-[-0.04em] text-[var(--hm-fg-primary)] sm:text-[52px]">
-                    {stat.value}
-                  </p>
-                  <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--hm-fg-muted)]">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ========== FAQ SECTION ========== */}
-        <section className="py-24 bg-[var(--hm-bg-page)]">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-10">
-              <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--hm-fg-muted)]">
-                FAQ
-              </p>
-              <h2 className="text-[28px] sm:text-[34px] font-bold leading-tight tracking-[-0.03em] text-[var(--hm-fg-primary)]">
-                {t('premium.frequentlyAskedQuestions')}
-              </h2>
-            </div>
-
-            <div className="rounded-2xl bg-[var(--hm-bg-elevated)] p-8 border border-[var(--hm-border-subtle)] shadow-sm">
-              {faqs.map((faq, i) => (
-                <FAQItem
-                  key={i}
-                  question={pick({ en: faq.q.en, ka: faq.q.ka })}
-                  answer={pick({ en: faq.a.en, ka: faq.a.ka })}
-                  isOpen={openFAQ === i}
-                  onToggle={() => setOpenFAQ(openFAQ === i ? null : i)}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ========== FINAL CTA - one bold vermillion fold ========== */}
-        <section
-          className="relative overflow-hidden py-24"
-          style={{ background: "var(--hm-brand-500)" }}
-        >
-          <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
-            <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-white/70">
-              {t('premium.becomeEliteToday')}
-            </p>
-            <h2 className="text-[34px] font-bold leading-[1.08] tracking-[-0.03em] text-white sm:text-[46px]">
-              {t('premium.readyForSuccess')}
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-white/85">
-              {t('premium.joinTheBestProfessionalsAnd')}
-            </p>
-
-            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <button
-                onClick={() => handleSelectPlan("pro")}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white px-7 text-[14px] font-semibold text-[var(--hm-brand-500)] transition-colors hover:bg-white/90"
-              >
-                {t('premium.proPlan')}
-                <ArrowRight className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => handleSelectPlan("elite")}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/40 px-7 text-[14px] font-semibold text-white transition-colors hover:bg-white/10"
-              >
-                {t('premium.chooseElite')}
-              </button>
-            </div>
-
-            <p className="mt-8 inline-flex items-center justify-center gap-2 text-[13px] text-white/70">
-              <Shield className="h-4 w-4" />
-              {t('premium.7dayMoneybackGuarantee')}
-            </p>
-          </div>
-        </section>
+        {/* ── Trust ─────────────────────────────────────────── */}
+        <div className="mt-7 flex items-center justify-center gap-5 text-[12px] text-[var(--hm-fg-muted)]">
+          <span className="text-[var(--hm-fg-muted)]">
+            {pick({ en: "3-day money-back guarantee", ka: "3 დღიანი თანხის დაბრუნება", ru: "Возврат денег 3 дня" })}
+          </span>
+          <span className="h-3 w-px bg-[var(--hm-border-strong)]" />
+          <span className="flex items-center gap-1">
+            <span className="font-semibold text-[var(--hm-fg-primary)]">{AVG_RATING}</span>
+            <Star className="h-3 w-3 fill-[var(--hm-brand-500)] text-[var(--hm-brand-500)]" />
+          </span>
+        </div>
       </main>
+
+      <ConfirmModal
+        isOpen={cancelOpen}
+        onClose={() => setCancelOpen(false)}
+        onConfirm={handleCancel}
+        variant="danger"
+        isLoading={cancelling}
+        title={pick({ en: "Cancel your plan?", ka: "გავაუქმოთ გეგმა?", ru: "Отменить тариф?" })}
+        description={pick({
+          en: "You're within the 3-day window, so you'll get a full refund and premium ends right away.",
+          ka: "ხარ 3 დღიან ვადაში, ამიტომ თანხას სრულად დაგიბრუნებთ და პრემიუმი მაშინვე დასრულდება.",
+          ru: "Вы в пределах 3 дней, поэтому получите полный возврат, а премиум завершится сразу.",
+        })}
+        confirmLabel={pick({ en: "Cancel & refund", ka: "გაუქმება და დაბრუნება", ru: "Отменить и вернуть" })}
+        cancelLabel={pick({ en: "Keep it", ka: "დატოვე", ru: "Оставить" })}
+        loadingLabel={pick({ en: "Cancelling...", ka: "უქმდება...", ru: "Отмена..." })}
+      />
     </div>
   );
 }

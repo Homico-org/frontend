@@ -1067,10 +1067,10 @@ function ShellContent({ children }: { children: ReactNode }) {
                     />
                   </Link>
                   <a
-                    href="mailto:info@homico.ge"
+                    href="mailto:contact@homico.co"
                     className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[var(--hm-bg-tertiary)] transition-colors"
                     aria-label="Email support"
-                    title="info@homico.ge"
+                    title="contact@homico.co"
                   >
                     <Mail className="w-4 h-4" style={{ color: ACCENT_COLOR }} />
                   </a>
@@ -1103,10 +1103,10 @@ function ShellContent({ children }: { children: ReactNode }) {
 
                   <div className="flex items-center gap-2">
                     <a
-                      href="mailto:info@homico.ge"
+                      href="mailto:contact@homico.co"
                       className="w-8 h-8 rounded-lg border border-[var(--hm-border)] bg-[var(--hm-bg-elevated)] flex items-center justify-center hover:bg-[var(--hm-bg-page)] transition-colors"
                       aria-label="Email support"
-                      title="info@homico.ge"
+                      title="contact@homico.co"
                     >
                       <Mail
                         className="w-4 h-4"

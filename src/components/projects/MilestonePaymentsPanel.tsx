@@ -237,7 +237,7 @@ export default function MilestonePaymentsPanel({
     }
   };
 
-  // Payments gated off until BoG is live - never render the escrow panel.
+  // Payments gated off until the payment provider is live - never render the escrow panel.
   if (!features.payments) return null;
 
   if (rows === null) {

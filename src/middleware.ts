@@ -102,11 +102,12 @@ export function middleware(req: NextRequest) {
   const first = segments[0]?.toLowerCase();
   const firstUpper = first?.toUpperCase();
 
-  // Premium pricing page is gated behind a feature flag (OFF in prod until
-  // the paid-subscription launch). When disabled, bounce ANY /pro/premium*
-  // URL - country-prefixed or bare, direct or shared link - to the home
-  // landing so it is unreachable in production while staying live on dev.
-  if (!features.premiumPage) {
+  // Premium pricing page is gated behind the `premium` feature flag (OFF in
+  // prod until the paid-subscription launch). When disabled, bounce ANY
+  // /pro/premium* URL - country-prefixed or bare, direct or shared link - to
+  // the home landing so it is unreachable in production while staying live on
+  // dev. Same flag as the header link, so they can never disagree.
+  if (!features.premium) {
     const hasCountryPrefix =
       !!firstUpper && (SUPPORTED_COUNTRIES as readonly string[]).includes(firstUpper);
     const rest = hasCountryPrefix ? segments.slice(1) : segments;

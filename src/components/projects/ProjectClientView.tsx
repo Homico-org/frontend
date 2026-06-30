@@ -102,7 +102,7 @@ export default function ProjectClientView({
   const [busy, setBusy] = useState(false);
 
   const refetchMps = useCallback(() => {
-    // Payments gated off until BoG is live - skip escrow so no money actions
+    // Payments gated off until the payment provider is live - skip escrow so no money actions
     // (fund milestone, approve schedule) surface on prod.
     if (!features.payments) {
       setMps([]);

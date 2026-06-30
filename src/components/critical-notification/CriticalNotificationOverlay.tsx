@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { useCriticalNotification } from '@/contexts/CriticalNotificationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import {
   Calendar,
   CheckCircle2,
@@ -77,6 +78,7 @@ function extractDateTimeFromMessage(message: string, locale: string): { date?: s
 
 export default function CriticalNotificationOverlay() {
   const { currentNotification, secondsRemaining, queueLength, dismissCurrent, handlePrimaryAction } = useCriticalNotification();
+  const { notificationsPanelOpen } = useNotifications();
   const { t, locale } = useLanguage();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -124,7 +126,10 @@ export default function CriticalNotificationOverlay() {
     };
   }, [currentNotification]);
 
-  if (!currentNotification) return null;
+  // Don't stack a redundant booking modal on top of the notifications panel
+  // the user just opened - it surfaces the same items. The overlay reappears
+  // (with remaining countdown) once the panel closes, if still unacted.
+  if (!currentNotification || notificationsPanelOpen) return null;
 
   const config = typeConfig[currentNotification.type] || typeConfig.new_booking;
   const Icon = config.icon;

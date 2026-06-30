@@ -9,7 +9,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 
 /**
- * Dev-only simulated payment page. Stands in for the BoG / TBC / Stripe
+ * Dev-only simulated payment page. Stands in for the Flitt
  * hosted page when PAYMENT_PROVIDER=mock. Two buttons let you exercise
  * both happy path and failure path without touching a real bank.
  *
@@ -77,7 +77,7 @@ export default function MockConfirmPage() {
         <CardBody>
           <Alert variant="warning" className="mb-5">
             This is a simulated payment page for local development. No real
-            money moves. The real provider (BoG / TBC) replaces this when
+            money moves. The real provider (Flitt) replaces this when
             PAYMENT_PROVIDER is set to a real value.
           </Alert>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import ServiceBookingModal from "@/components/booking/ServiceBookingModal";
+import { features } from "@/config/features";
 import ClientActivationCard from "@/components/dashboard/ClientActivationCard";
 import EmptyState from "@/components/common/EmptyState";
 import ProCard from "@/components/common/ProCard";
@@ -596,7 +597,7 @@ export default function ProfessionalsPage() {
                 variant="compact"
                 activeCategory={selectedCategory || undefined}
                 activeSubcategories={selectedSubcategories}
-                onBook={handleBook}
+                onBook={features.bookings ? handleBook : undefined}
               />
             </div>
           ))}

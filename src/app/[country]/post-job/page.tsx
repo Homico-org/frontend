@@ -927,7 +927,7 @@ function PostJobPageContent() {
   // the viewport bottom; with the footer now pinned to bottom-0
   // the larger padding left an empty gap.
   return (
-    <div className="flex flex-col min-h-screen pb-20 lg:pb-14 bg-[var(--hm-bg-page)]">
+    <div className="flex flex-col min-h-screen pb-36 lg:pb-32 bg-[var(--hm-bg-page)]">
       {/* Page Title + Progress */}
       <div className="bg-[var(--hm-bg-elevated)] border-b border-[var(--hm-border-subtle)] sticky top-14 z-40">
         <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 pt-3 pb-3">
@@ -2016,6 +2016,19 @@ function PostJobPageContent() {
                 >
                   {t('common.cancel')}
                 </Button>
+              )}
+
+              {/* Running total — always visible next to the CTA so the price
+                  stays in view while scrolling the service list. */}
+              {serviceBudgetTotal > 0 && (
+                <div className="flex items-baseline gap-1.5 min-w-0">
+                  <span className="text-[11px] uppercase tracking-wide text-[var(--hm-fg-muted)] hidden sm:inline">
+                    {t('common.total')}
+                  </span>
+                  <span className="text-base sm:text-lg font-bold text-[var(--hm-brand-500)] whitespace-nowrap">
+                    {serviceBudgetTotal.toLocaleString()}{sym}
+                  </span>
+                </div>
               )}
 
               <Button

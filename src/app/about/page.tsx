@@ -219,9 +219,9 @@ export default function AboutPage(): React.ReactElement {
               size="lg"
               asChild
             >
-              <a href="mailto:info@homico.ge" className="flex items-center gap-2">
+              <a href="mailto:contact@homico.co" className="flex items-center gap-2">
                 <Mail className="w-5 h-5" />
-                info@homico.ge
+                contact@homico.co
               </a>
             </Button>
             <Button

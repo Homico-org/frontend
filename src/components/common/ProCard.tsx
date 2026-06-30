@@ -122,6 +122,14 @@ export default function ProCard({
   }, [getSubcategoriesForCategory, userSubcategories, servicesWithExperience]);
 
   const isPremium = profile.isPremium || false;
+  // Tier treatment (on-brand, monochrome + vermillion). 'elite' = super premium
+  // (vermillion frame + thicker top-edge), 'premium' = paid pro/basic (thin
+  // vermillion top-edge). Replaces the old off-brand amber ring + gold star.
+  const premiumTier: "free" | "premium" | "elite" = isPremium
+    ? profile.premiumTier === "elite"
+      ? "elite"
+      : "premium"
+    : "free";
 
   // Only offer the Book CTA when the pro has at least one active, priced
   // service - otherwise the booking modal's first step would be empty.
@@ -257,6 +265,14 @@ export default function ProCard({
     return slides;
   }, [profile.portfolioPreviewImages, profile.portfolioPreviewBeforeAfter, profile.portfolioPreviewVideos, profile.portfolioProjects]);
 
+  // Drop image slides that failed to load (e.g. a deleted file or a stale
+  // seed reference). The card then shows the next valid photo, or the clean
+  // no-portfolio band if none remain - never a broken-image icon.
+  const visibleSlides = useMemo(
+    () => mediaSlides.filter((s) => !(s.type === 'image' && failedSlideSrcs.has(s.src))),
+    [mediaSlides, failedSlideSrcs],
+  );
+
   const totalMediaCount = useMemo(() => {
     const previewImages = profile.portfolioPreviewImages?.length || 0;
     const previewBA = profile.portfolioPreviewBeforeAfter?.length || 0;
@@ -278,16 +294,16 @@ export default function ProCard({
 
   // Auto-advance slides every 4s, pause on hover or when offscreen
   useEffect(() => {
-    if (isHovered || !isInView || mediaSlides.length <= 1) {
+    if (isHovered || !isInView || visibleSlides.length <= 1) {
       if (autoSlideRef.current) clearInterval(autoSlideRef.current);
       autoSlideRef.current = null;
       return;
     }
     autoSlideRef.current = setInterval(() => {
-      setActiveSlide((p) => (p + 1) % mediaSlides.length);
+      setActiveSlide((p) => (p + 1) % visibleSlides.length);
     }, 4000);
     return () => { if (autoSlideRef.current) clearInterval(autoSlideRef.current); };
-  }, [isHovered, isInView, mediaSlides.length]);
+  }, [isHovered, isInView, visibleSlides.length]);
 
   // Match the canonical Top-Rated rule (deriveProBadges): rating + review
   // volume. `completedProjects` was the wrong field - it's usually undefined,
@@ -435,9 +451,9 @@ export default function ProCard({
         >
           <div className="flex items-center gap-3.5">
             <div className="relative flex-shrink-0">
-              <div className="w-14 h-14 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] ring-2 ring-white shadow-md">
+              <div className="relative w-14 h-14 rounded-full overflow-hidden bg-[var(--hm-bg-tertiary)] ring-2 ring-white shadow-md">
                 {avatarUrl && !imageError ? (
-                  <Image src={avatarUrl} alt={profile.name} fill sizes="56px" className="object-cover" onError={() => setImageError(true)} />
+                  <Image src={avatarUrl} alt={profile.name} fill sizes="56px" unoptimized className="object-cover" onError={() => setImageError(true)} />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-lg font-bold text-[var(--hm-fg-muted)]">{profile.name.charAt(0)}</div>
                 )}
@@ -482,16 +498,31 @@ export default function ProCard({
   }
 
   // Default / Compact variant - unified card with portfolio photos
-  const hasMedia = mediaSlides.length > 0;
+  const hasMedia = visibleSlides.length > 0;
   return (
     <Link ref={cardRef} href={`/${(profile.country ?? 'GE').toLowerCase()}/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} - ${t('browse.professionals')}`}>
       <div
-        className={`relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--hm-border-subtle)] group-hover:border-[var(--hm-brand-500)]/30 transition-all duration-200 group-hover:shadow-lg group-hover:-translate-y-[2px] ${isPremium ? 'ring-1 ring-amber-300/30' : ''}`}
+        className={`relative h-full flex flex-col bg-[var(--hm-bg-elevated)] rounded-xl sm:rounded-2xl overflow-hidden border transition-all duration-200 group-hover:shadow-lg group-hover:-translate-y-[2px] ${
+          premiumTier === 'elite'
+            ? 'border-[var(--hm-brand-500)]/70 group-hover:border-[var(--hm-brand-500)]'
+            : premiumTier === 'premium'
+              ? 'border-[var(--hm-brand-500)]/25 group-hover:border-[var(--hm-brand-500)]/50'
+              : 'border-[var(--hm-border-subtle)] group-hover:border-[var(--hm-brand-500)]/30'
+        }`}
         style={{
           boxShadow:
             "0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.04)",
         }}
       >
+        {/* Tier accent edge - thin vermillion for Premium, thicker for Elite. */}
+        {premiumTier !== "free" && (
+          <span
+            aria-hidden
+            className={`pointer-events-none absolute inset-x-0 top-0 z-20 bg-[var(--hm-brand-500)] ${
+              premiumTier === "elite" ? "h-[3px]" : "h-[2px]"
+            }`}
+          />
+        )}
 
         {/* Portfolio media carousel - wide-and-short aspect so the photo
             doesn't dominate the card. */}
@@ -503,7 +534,7 @@ export default function ProCard({
           >
             {/* Current slide */}
             {(() => {
-              const slide = mediaSlides[activeSlide] || mediaSlides[0];
+              const slide = visibleSlides[activeSlide] || visibleSlides[0];
               if (!slide) return null;
               if (slide.type === 'beforeAfter') {
                 return (
@@ -556,18 +587,18 @@ export default function ProCard({
             })()}
 
             {/* Slide nav arrows */}
-            {mediaSlides.length > 1 && (
+            {visibleSlides.length > 1 && (
               <>
                 <button
                   aria-label="Previous image"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide((p) => (p - 1 + mediaSlides.length) % mediaSlides.length); }}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide((p) => (p - 1 + visibleSlides.length) % visibleSlides.length); }}
                   className="absolute left-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10"
                 >
                   <ChevronLeft className="w-4 h-4 text-[var(--hm-fg-secondary)]" />
                 </button>
                 <button
                   aria-label="Next image"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide((p) => (p + 1) % mediaSlides.length); }}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide((p) => (p + 1) % visibleSlides.length); }}
                   className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-10"
                 >
                   <ChevronRight className="w-4 h-4 text-[var(--hm-fg-secondary)]" />
@@ -576,17 +607,17 @@ export default function ProCard({
             )}
 
             {/* Dot indicators */}
-            {mediaSlides.length > 1 && (
+            {visibleSlides.length > 1 && (
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-                {mediaSlides.slice(0, 6).map((_, i) => (
+                {visibleSlides.slice(0, 6).map((_, i) => (
                   <button
                     key={i}
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveSlide(i); }}
                     className={`w-1.5 h-1.5 rounded-full transition-all ${activeSlide === i ? 'bg-[var(--hm-bg-elevated)] w-3' : 'bg-white/50'}`}
                   />
                 ))}
-                {mediaSlides.length > 6 && (
-                  <span className="text-[8px] text-white/70 font-medium self-center ml-0.5">+{mediaSlides.length - 6}</span>
+                {visibleSlides.length > 6 && (
+                  <span className="text-[8px] text-white/70 font-medium self-center ml-0.5">+{visibleSlides.length - 6}</span>
                 )}
               </div>
             )}
@@ -838,14 +869,6 @@ export default function ProCard({
           )}
         </div>
 
-        {/* Premium badge */}
-        {isPremium && (
-          <div className="absolute top-2 right-2 z-10">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-white">
-              <Star className="w-3 h-3 text-white fill-current" />
-            </div>
-          </div>
-        )}
 
         {/* Hover-reveal "open" affordance - sits over the bottom-right
             corner. Hidden until hover so it doesn't compete with the card
