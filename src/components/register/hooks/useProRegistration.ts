@@ -1,8 +1,6 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { features } from '@/config/features';
-import { useCountryLink } from '@/hooks/useCountry';
 import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
 import { trackPixel } from '@/utils/metaPixel';
 import { useRouter } from 'next/navigation';
@@ -77,7 +75,6 @@ export interface UseProRegistrationReturn {
 
 export function useProRegistration(): UseProRegistrationReturn {
   const router = useRouter();
-  const cl = useCountryLink();
   const { login } = useAuth();
   const { country, locale, pick } = useLanguage();
   
@@ -261,12 +258,15 @@ export function useProRegistration(): UseProRegistrationReturn {
   // Validation — name is collected later in /pro/profile-setup/about
   // (split into firstName + lastName), so it's no longer required here.
   const canProceedFromProfile = useCallback(() => {
+    const hasValidName = fullName.trim().length >= 2;
     const hasValidCity = city.trim().length >= 2;
     const hasAvatar = !!uploadedAvatarUrl;
     const hasValidPassword = password.length >= 6;
     const passwordsMatch = password === confirmPassword;
-    return hasValidCity && hasAvatar && hasValidPassword && passwordsMatch;
-  }, [city, uploadedAvatarUrl, password, confirmPassword]);
+    return (
+      hasValidName && hasValidCity && hasAvatar && hasValidPassword && passwordsMatch
+    );
+  }, [fullName, city, uploadedAvatarUrl, password, confirmPassword]);
   
   const canProceedFromServices = useCallback(() => {
     return selectedServices.length > 0;
@@ -290,10 +290,10 @@ export function useProRegistration(): UseProRegistrationReturn {
       const selectedCategories = [...new Set(selectedServices.map(s => s.categoryKey))];
       const selectedSubcategories = selectedServices.map(s => s.key);
       
-      // Backend requires non-empty `name` on registration. We no longer
-      // collect it on this screen (it's split into first/last name in
-      // /pro/profile-setup/about), so fall back to the phone number as a
-      // placeholder. profile-setup will overwrite it with the real value.
+      // The display name is collected on this screen (and required), so it's
+      // the real name from the start. The phone fallback only guards the
+      // degenerate empty case; /pro/profile-setup/about later refines it into
+      // first/last name.
       const placeholderName = fullName.trim() || fullPhone;
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
@@ -333,7 +333,10 @@ export function useProRegistration(): UseProRegistrationReturn {
 
       // Login the user
       if (data.access_token && data.user) {
-        login(data.access_token, data.user);
+        // Pass refresh_token so the session can survive past the 15-min
+        // access-token expiry — without it the user is force-logged-out
+        // mid-onboarding on the first 401.
+        login(data.access_token, data.user, data.refresh_token);
         // Store user ID for profile navigation
         setRegisteredUserId(data.user._id || data.user.id);
         // Meta Pixel: account created = registration complete. Fires here (at
@@ -342,20 +345,17 @@ export function useProRegistration(): UseProRegistrationReturn {
         trackPixel("CompleteRegistration");
       }
 
-      // Premium push: a freshly-created pro lands on the premium pitch page
-      // first (capture the upsell intent right after signup), gated by the
-      // `premium` flag. When OFF, drop straight into profile-setup as before.
-      if (features.premium) {
-        router.push(cl('/pro/premium'));
-      } else {
-        router.push('/pro/profile-setup/about');
-      }
+      // A freshly-created pro always starts the profile-setup wizard. The
+      // premium pitch is shown at the END of that wizard (on first completion,
+      // see ProfileSetupContext) — not here, where the half-finished profile
+      // would just bounce off /pro/premium via ProProfileGuard.
+      router.push('/pro/profile-setup/about');
     } catch (err) {
       setError(err instanceof Error ? err.message : pick({ en: 'Registration failed', ka: 'რეგისტრაცია ვერ მოხერხდა' }));
     } finally {
       setIsLoading(false);
     }
-  }, [phone, phoneCountry, fullName, city, password, uploadedAvatarUrl, selectedServices, login, pick, router, cl]);
+  }, [phone, phoneCountry, fullName, city, password, uploadedAvatarUrl, selectedServices, login, pick, router]);
   
   const handleNext = useCallback(async () => {
     setError('');

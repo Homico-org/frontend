@@ -615,7 +615,7 @@ function SettingsPageContent() {
       const token = localStorage.getItem('access_token');
       const hasIdDocuments = verificationData.idDocumentUrl && verificationData.selfieWithIdUrl;
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/profile`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

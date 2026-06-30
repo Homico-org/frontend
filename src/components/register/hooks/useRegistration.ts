@@ -355,17 +355,27 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
     if (!authLoading && isAuthenticated && user) {
       // Only redirect if not a pro with incomplete profile
       // Pro users with incomplete profile should be able to stay on register page
+      // Honour a safe internal `redirect` (e.g. arriving from the premium
+      // "Get started" CTA) instead of the default landing page.
+      const redirectParam = searchParams.get("redirect");
+      const safeRedirect =
+        redirectParam &&
+        redirectParam.startsWith("/") &&
+        !redirectParam.startsWith("//") &&
+        !redirectParam.startsWith("/\\")
+          ? redirectParam
+          : null;
       if (user.role === "admin") {
         router.replace("/admin");
       } else if (user.role === "pro" && user.isProfileCompleted === true) {
         // Only redirect completed pro users
-        router.replace("/jobs");
+        router.replace(safeRedirect ?? "/jobs");
       } else if (user.role === "client") {
-        router.replace("/portfolio");
+        router.replace(safeRedirect ?? "/portfolio");
       }
       // Pro users with incomplete profile stay on register page
     }
-  }, [authLoading, isAuthenticated, user, router, showTypeSelection]);
+  }, [authLoading, isAuthenticated, user, router, showTypeSelection, searchParams]);
 
   // Handlers
   const handleInputChange = useCallback((field: string, value: string) => {
@@ -938,7 +948,10 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         throw new Error(msg);
       }
 
-      login(data.access_token, data.user);
+      // Pass refresh_token so the freshly-registered session survives past the
+      // 15-min access-token expiry instead of being force-logged-out on the
+      // first 401.
+      login(data.access_token, data.user, data.refresh_token);
       // Meta Pixel: account created = registration complete. Fires for every
       // signup (client + pro), unlike the old placement at pro profile-setup
       // completion which most users never reached.

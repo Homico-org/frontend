@@ -131,6 +131,8 @@ export default function ProRegistration({ onSwitchToClient }: ProRegistrationPro
 
           {reg.currentStep === 'profile' && (
             <StepProfile
+              fullName={reg.fullName}
+              onFullNameChange={reg.setFullName}
               city={reg.city}
               onCityChange={reg.setCity}
               password={reg.password}

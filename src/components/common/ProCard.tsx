@@ -146,9 +146,11 @@ export default function ProCard({
   const completedJobsCounter = profile.completedJobs || 0;
   // "Completed jobs" must mean actual jobs done — NOT portfolio size. Folding
   // portfolio counts in here made a pro with e.g. 10 portfolio photos and zero
-  // jobs show "10 completed jobs", which is false. Count only real platform
-  // jobs + the pro's declared off-platform jobs.
-  const completedJobs = Math.max(completedJobsCounter, externalJobs);
+  // jobs show "10 completed jobs", which is false. Count real platform jobs
+  // PLUS the pro's declared off-platform jobs — the SUM, matching the backend
+  // canonical total and the detail page (they're distinct, non-overlapping
+  // counters, so summing them is correct and consistent everywhere).
+  const completedJobs = completedJobsCounter + externalJobs;
 
   // Filter-aware pricing: show price only for the filtered service(s).
   // Range-aware - when an entry has `priceMin`/`priceMax`, use its bounds

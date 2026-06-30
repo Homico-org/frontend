@@ -9,6 +9,7 @@ import {
   ExperienceLevel,
   SelectedService,
 } from "@/components/register/steps/StepSelectServices";
+import { features } from "@/config/features";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCategories, type Subcategory } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -223,7 +224,7 @@ export function ProfileSetupProvider({
   adminTargetProId: string | null;
 }) {
   const router = useRouter();
-  const { user, isLoading: authLoading, updateUser } = useAuth();
+  const { user, isLoading: authLoading, updateUser, logout } = useAuth();
   const { t, locale, pick } = useLanguage();
   const marketplaceCountry = useMarketplaceCountry();
 
@@ -1601,13 +1602,15 @@ export function ProfileSetupProvider({
         router.push(buildStepHref(STEP_SLUGS[idx - 1]));
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
-        // First step - if the user opened profile-setup in a fresh
-        // tab a bare `router.back()` is a no-op. Fall through to a
-        // role-aware home instead so they're never stranded.
-        backOrNavigate(router, defaultBackFallback(user));
+        // First step = "Cancel onboarding". An incomplete pro is locked to the
+        // wizard by ProProfileGuard (every other route bounces back here), and
+        // `router.back()` could yeet them out of the tab entirely. The only
+        // clean exit is to log out (the account is already created, so they can
+        // log back in and resume) — logout clears the session and lands on `/`.
+        logout();
       }
     },
-    [router, buildStepHref, user, isEditMode],
+    [router, buildStepHref, user, isEditMode, logout],
   );
 
   // ── Submit ────────────────────────────────────────────────────────────────────
@@ -1795,7 +1798,10 @@ export function ProfileSetupProvider({
       // `isProfileCompleted` (the real first-completion signal): this submit
       // flips it true just below, so it only fires on the first completion,
       // not on later edits or admin-side edits.
-      if (!isAdminEditing && !user?.isProfileCompleted) {
+      // Capture BEFORE updateUser flips isProfileCompleted below — this is the
+      // pro's FIRST completion (drives both the pixel and the premium redirect).
+      const isFirstCompletion = !isAdminEditing && !user?.isProfileCompleted;
+      if (isFirstCompletion) {
         trackPixel("CompleteProfile", { custom: true });
       }
 
@@ -1843,7 +1849,14 @@ export function ProfileSetupProvider({
                 ?.split('=')[1]
                 ?.toLowerCase() ?? 'ge'
             : 'ge';
-        router.push(`/${marketplaceCookie}/professionals/${userId}`);
+        // On a pro's first completion, send them to the premium pitch (now that
+        // the profile is complete, ProProfileGuard won't bounce them). Edits
+        // and admin edits go to the public profile as before.
+        if (isFirstCompletion && features.premium) {
+          router.push(`/${marketplaceCookie}/pro/premium`);
+        } else {
+          router.push(`/${marketplaceCookie}/professionals/${userId}`);
+        }
       } else {
         const marketplaceCookie =
           typeof document !== 'undefined'

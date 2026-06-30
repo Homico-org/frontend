@@ -113,7 +113,7 @@ function CheckoutContent() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ tier: tierId, period, promoCode: code }),
+        body: JSON.stringify({ tier: tierId, period, promoCode: code, country }),
       });
       const data = (await res.json()) as {
         finalAmount?: number;
@@ -152,7 +152,7 @@ function CheckoutContent() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ tier: tierId, period, promoCode: promo?.code }),
+        body: JSON.stringify({ tier: tierId, period, promoCode: promo?.code, country }),
       });
       if (!res.ok) {
         // Already subscribed - one plan at a time. Bounce back with a clear note.

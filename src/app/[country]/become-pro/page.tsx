@@ -19,11 +19,12 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function BecomeProPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isLoading: authLoading, isAuthenticated, login } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { t, pick: pickLang } = useLanguage();
@@ -32,6 +33,18 @@ export default function BecomeProPage() {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
+  // Where to send the user once they're a pro. Honour a safe internal
+  // `redirect` (e.g. coming from "Get started" on a premium plan) instead of
+  // always dropping them on profile-setup, so the purchase intent isn't lost.
+  const redirectParam = searchParams.get("redirect");
+  const postUpgradeTarget =
+    redirectParam &&
+    redirectParam.startsWith("/") &&
+    !redirectParam.startsWith("//") &&
+    !redirectParam.startsWith("/\\")
+      ? redirectParam
+      : "/pro/profile-setup";
+
   useEffect(() => {
     setIsVisible(true);
   }, []);
@@ -39,9 +52,9 @@ export default function BecomeProPage() {
   // Already a pro - redirect
   useEffect(() => {
     if (!authLoading && user?.role === "pro") {
-      router.replace("/pro/profile-setup");
+      router.replace(postUpgradeTarget);
     }
-  }, [authLoading, user?.role, router]);
+  }, [authLoading, user?.role, router, postUpgradeTarget]);
 
   const handleUpgrade = async () => {
     if (!isAuthenticated) {
@@ -68,7 +81,7 @@ export default function BecomeProPage() {
       }
 
       toast.success(t("becomePro.upgradeSuccess"));
-      router.push("/pro/profile-setup");
+      router.push(postUpgradeTarget);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })
         ?.response?.data?.message;
@@ -283,7 +296,13 @@ export default function BecomeProPage() {
                   asChild
                   className="px-8 inline-flex items-center gap-2"
                 >
-                  <Link href="/register/professional">
+                  <Link
+                    href={
+                      redirectParam
+                        ? `/register/professional?redirect=${encodeURIComponent(redirectParam)}`
+                        : "/register/professional"
+                    }
+                  >
                     {pick(
                       "Create pro account",
                       "შექმენით ოსტატის ანგარიში",

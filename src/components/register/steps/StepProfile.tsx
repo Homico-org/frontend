@@ -2,19 +2,21 @@
 
 import Select from '@/components/common/Select';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/input';
+import { Input, Label } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { countries, CountryCode, useLanguage } from '@/contexts/LanguageContext';
-import { Camera, Lock, MapPin, X } from 'lucide-react';
+import { Camera, Lock, MapPin, User, X } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo } from 'react';
 
-// Note: name is intentionally NOT collected here — first/last name are split
-// across two dedicated fields in /pro/profile-setup/about. Asking for it
-// twice was confusing; registration only needs phone + city + password +
-// avatar so the user can land on the setup wizard fast.
+// We collect a display name here so the account isn't created with the phone
+// number standing in for the name (which then showed in the header until the
+// user finished /pro/profile-setup/about). The about step still refines it
+// into first/last name later.
 interface StepProfileProps {
+  fullName: string;
+  onFullNameChange: (value: string) => void;
   city: string;
   onCityChange: (value: string) => void;
   password: string;
@@ -32,6 +34,8 @@ interface StepProfileProps {
 }
 
 export default function StepProfile({
+  fullName,
+  onFullNameChange,
   city,
   onCityChange,
   password,
@@ -154,6 +158,22 @@ export default function StepProfile({
 
       {/* Form Fields */}
       <div className="space-y-3 sm:space-y-4 mb-5 sm:mb-8">
+        {/* Full name */}
+        <div>
+          <Label className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 text-xs sm:text-sm">
+            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[var(--hm-fg-muted)]" />
+            {t('register.fullName')}
+            <span className="text-[var(--hm-brand-500)]">*</span>
+          </Label>
+          <Input
+            value={fullName}
+            onChange={(e) => onFullNameChange(e.target.value)}
+            placeholder={t('register.fullName')}
+            className="h-10 sm:h-11"
+            autoComplete="name"
+          />
+        </div>
+
         {/* City */}
         <div>
           <Label className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 text-xs sm:text-sm">

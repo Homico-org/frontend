@@ -305,6 +305,49 @@ export default function ProfessionalDetailClient({
       ? `/pro/profile-setup/services?proId=${encodeURIComponent(profile.id)}`
       : "/pro/profile-setup/services";
 
+  // True when an admin is editing SOMEONE ELSE's profile. Such edits MUST be
+  // written to that pro (/users/pros/:id/profile), never to /users/me — the
+  // latter would overwrite the admin's own account (silent cross-account
+  // corruption). Owners always edit their own account.
+  const editingOtherPro = isAdmin && !isOwner && !!profile?.id;
+
+  // Write a pro-profile patch to the correct account. Used for ALL inline
+  // edits — including the display name: `name` is a moderated field, and only
+  // the pro-profile endpoint stages it for a verified pro AND signals
+  // `moderationStaged`. Routing the name through /users/me instead produced a
+  // fake "Saved" that reverted on reload. updateProProfile handles `name`
+  // directly, so this works for owner (own pro) and admin (other pro) alike.
+  const patchProProfile = (body: Record<string, unknown>) =>
+    editingOtherPro
+      ? api.patch(`/users/pros/${profile!.id}/profile`, body)
+      : api.patch("/users/me/pro-profile", body);
+
+  // Refresh the moderation banner (owner only) after a staged save.
+  const refetchModeration = () => {
+    if (!isOwner || !user) return;
+    api
+      .get("/users/me/pending-changes")
+      .then((res) => setModeration(res.data))
+      .catch(() => setModeration(null));
+  };
+
+  // A verified pro's public edits are queued for admin review rather than
+  // applied live; the backend signals this with `moderationStaged`. Returns
+  // true when the save was staged (so callers skip the optimistic update and
+  // show an honest "submitted for review" message instead of faking success).
+  const handleStagedSave = (res: unknown): boolean => {
+    const staged = !!(res as { data?: { moderationStaged?: boolean } })?.data
+      ?.moderationStaged;
+    if (staged) {
+      toast.success(
+        t("professional.changeSubmittedForReview") ||
+          "Change submitted for review",
+      );
+      refetchModeration();
+    }
+    return staged;
+  };
+
   const fetchProfileAbortRef = useRef<AbortController | null>(null);
   const profileFetchInFlightRef = useRef<string | null>(null);
   const profileViewTrackedRef = useRef<string | null>(null);
@@ -817,12 +860,14 @@ export default function ProfessionalDetailClient({
     }
     setIsSaving(true);
     try {
-      await api.patch("/users/me", { name: editedName.trim() });
-      setProfile((prev) =>
-        prev ? { ...prev, name: editedName.trim() } : prev,
-      );
+      const res = await patchProProfile({ name: editedName.trim() });
       setIsEditingName(false);
-      toast.success(t("professional.savedSuccessfully"));
+      if (!handleStagedSave(res)) {
+        setProfile((prev) =>
+          prev ? { ...prev, name: editedName.trim() } : prev,
+        );
+        toast.success(t("professional.savedSuccessfully"));
+      }
     } catch (err) {
       toast.error(t("professional.failedToSave"));
     } finally {
@@ -839,12 +884,14 @@ export default function ProfessionalDetailClient({
     }
     setIsSaving(true);
     try {
-      await api.patch("/users/me/pro-profile", { title: newTitle || null });
-      setProfile((prev) =>
-        prev ? { ...prev, title: newTitle || undefined } : prev,
-      );
+      const res = await patchProProfile({ title: newTitle || null });
       setIsEditingTitle(false);
-      toast.success(t("professional.savedSuccessfully"));
+      if (!handleStagedSave(res)) {
+        setProfile((prev) =>
+          prev ? { ...prev, title: newTitle || undefined } : prev,
+        );
+        toast.success(t("professional.savedSuccessfully"));
+      }
     } catch (err) {
       toast.error(t("professional.failedToSave"));
     } finally {
@@ -898,7 +945,7 @@ export default function ProfessionalDetailClient({
       fetchProfileAbortRef.current?.abort();
       profileFetchInFlightRef.current = null;
 
-      const response = await api.patch("/users/me/pro-profile", {
+      const response = await patchProProfile({
         pricingModel: editedPricingModel,
         basePrice:
           editedPricingModel === PricingModel.BY_AGREEMENT ? null : base,
@@ -909,6 +956,12 @@ export default function ProfessionalDetailClient({
               ? max
               : null,
       });
+
+      // Staged for a verified pro: don't optimistically apply; tell the truth.
+      if (handleStagedSave(response)) {
+        setIsEditingPricing(false);
+        return;
+      }
 
       // Prefer backend-normalized payload (ensures enums/fields match what server stores).
       const updated = response?.data as ProProfile | undefined;
@@ -1008,14 +1061,14 @@ export default function ProfessionalDetailClient({
     if (!canEdit || !profile) return;
     setIsSaving(true);
     try {
-      await api.patch("/users/me/pro-profile", {
-        description: data.description,
-      });
-      setProfile((prev) =>
-        prev ? { ...prev, description: data.description } : prev,
-      );
+      const res = await patchProProfile({ description: data.description });
       setShowEditAboutModal(false);
-      toast.success(t("professional.savedSuccessfully"));
+      if (!handleStagedSave(res)) {
+        setProfile((prev) =>
+          prev ? { ...prev, description: data.description } : prev,
+        );
+        toast.success(t("professional.savedSuccessfully"));
+      }
     } catch (err) {
       toast.error(t("professional.failedToSave"));
     } finally {
@@ -1117,16 +1170,6 @@ export default function ProfessionalDetailClient({
     if (!canEdit || !deleteProjectId) return;
     setIsSaving(true);
 
-    console.log("[handleDeleteProject]", {
-      deleteProjectId,
-      portfolioIds: portfolio.map((p) => ({ id: p.id, _id: (p as any)._id })),
-      embeddedProjectIds: profile?.portfolioProjects?.map((p, idx) => ({
-        id: p.id,
-        idx,
-        fallbackId: `embedded-${idx}`,
-      })),
-    });
-
     try {
       // Check if this project exists in the portfolio collection
       // Check both id and _id in case the transformation didn't work
@@ -1135,10 +1178,6 @@ export default function ProfessionalDetailClient({
       );
 
       if (existsInPortfolio) {
-        console.log(
-          "[handleDeleteProject] Deleting from portfolio collection:",
-          deleteProjectId,
-        );
         await api.delete(`/portfolio/${deleteProjectId}`);
         setPortfolio((prev) =>
           prev.filter(
@@ -1162,9 +1201,13 @@ export default function ProfessionalDetailClient({
           const updatedProjects = profile.portfolioProjects.filter(
             (_, idx) => idx !== embeddedIdx,
           );
-          await api.patch("/users/me/pro-profile", {
+          const res = await patchProProfile({
             portfolioProjects: updatedProjects,
           });
+          if (handleStagedSave(res)) {
+            setDeleteProjectId(null);
+            return;
+          }
           setProfile((prev) =>
             prev ? { ...prev, portfolioProjects: updatedProjects } : prev,
           );
@@ -3218,25 +3261,31 @@ export default function ProfessionalDetailClient({
                     }
                   }}
                   onSaveBio={async (bio) => {
-                    await api.patch("/users/me/pro-profile", { bio });
-                    setProfile((prev) => (prev ? { ...prev, bio } : prev));
-                    toast.success(t("professional.saved"));
+                    const res = await patchProProfile({ bio });
+                    if (!handleStagedSave(res)) {
+                      setProfile((prev) => (prev ? { ...prev, bio } : prev));
+                      toast.success(t("professional.saved"));
+                    }
                   }}
                   onSaveServices={async (customServices) => {
-                    await api.patch("/users/me/pro-profile", {
-                      customServices,
-                    });
-                    setProfile((prev) =>
-                      prev ? { ...prev, customServices } : prev,
-                    );
-                    toast.success(t("common.saved"));
+                    const res = await patchProProfile({ customServices });
+                    if (!handleStagedSave(res)) {
+                      setProfile((prev) =>
+                        prev ? { ...prev, customServices } : prev,
+                      );
+                      toast.success(t("common.saved"));
+                    }
                   }}
                   onSaveSocialLinks={async (socialLinks) => {
-                    await api.patch("/users/me/pro-profile", socialLinks);
-                    setProfile((prev) =>
-                      prev ? { ...prev, ...socialLinks } : prev,
+                    const res = await patchProProfile(
+                      socialLinks as Record<string, unknown>,
                     );
-                    toast.success(t("common.saved"));
+                    if (!handleStagedSave(res)) {
+                      setProfile((prev) =>
+                        prev ? { ...prev, ...socialLinks } : prev,
+                      );
+                      toast.success(t("common.saved"));
+                    }
                   }}
                 />
               </section>

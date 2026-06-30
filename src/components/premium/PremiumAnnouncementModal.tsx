@@ -7,7 +7,7 @@ import { useCountryLink } from '@/hooks/useCountry';
 import { features } from '@/config/features';
 import { isPaidTier } from '@/utils/premium';
 import { Crown, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 /**
@@ -38,6 +38,7 @@ export default function PremiumAnnouncementModal() {
   const { t } = useLanguage();
   const cl = useCountryLink();
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   // Eligibility, recomputed when auth state settles. The localStorage
@@ -46,6 +47,18 @@ export default function PremiumAnnouncementModal() {
     if (!features.premium) return;
     if (!isAuthenticated || !user) return;
     if (user.role !== 'pro') return;
+    // This is for EXISTING (already onboarded) pros. A pro still finishing
+    // onboarding shouldn't be interrupted — and they're shown premium at the
+    // end of the wizard anyway. Mirror ProProfileGuard's completeness rule.
+    const isOnboarded =
+      user.isProfileCompleted === true || user.verificationStatus === 'verified';
+    if (!isOnboarded) return;
+    // Don't pop on the setup wizard or the premium page itself.
+    if (
+      pathname?.includes('/pro/profile-setup') ||
+      pathname?.includes('/pro/premium')
+    )
+      return;
     // Already a paying pro -> nothing to upsell.
     if (isPaidTier(user.premiumTier) && user.isPremium) return;
     try {
@@ -55,7 +68,7 @@ export default function PremiumAnnouncementModal() {
       return;
     }
     setOpen(true);
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, pathname]);
 
   const dismiss = () => {
     try {

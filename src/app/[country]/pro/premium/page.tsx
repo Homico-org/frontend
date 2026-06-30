@@ -257,6 +257,20 @@ export default function PremiumPlansPage() {
             <Star className="h-3 w-3 fill-[var(--hm-brand-500)] text-[var(--hm-brand-500)]" />
           </span>
         </div>
+
+        {/* Skip — a pro without an active plan (e.g. just finished signup) can
+            move on without subscribing. Goes to their workspace. */}
+        {isPro && !isActive && (
+          <div className="mt-6 text-center">
+            <button
+              type="button"
+              onClick={() => router.push(cl("/my-space"))}
+              className="text-[13px] text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] transition-colors p-1"
+            >
+              {pick({ en: "Skip for now", ka: "ახლა გამოტოვება", ru: "Пропустить пока" })}
+            </button>
+          </div>
+        )}
       </main>
 
       <ConfirmModal
