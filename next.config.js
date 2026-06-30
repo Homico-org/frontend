@@ -5,7 +5,12 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
+  // NOTE: do NOT set `output: 'standalone'`. Render starts the app with
+  // `next start` (see render.yaml / package.json `start`), which is
+  // incompatible with standalone output ("next start does not work with
+  // output: standalone"). Standalone would require `node
+  // .next/standalone/server.js` + manually copying `.next/static` + `public`.
+  // Keep the plain build so `next start` serves correctly.
   eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
