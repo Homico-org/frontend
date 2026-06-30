@@ -9,28 +9,62 @@ import {
 } from '@/contexts/GooglePhoneGateContext';
 import { countries, useLanguage } from '@/contexts/LanguageContext';
 import { isValidPhone } from '@/utils/phoneValidation';
-import { Shield, Smartphone } from 'lucide-react';
+import { Shield, Smartphone, X } from 'lucide-react';
 
 /**
- * Full-screen, non-dismissible "add + verify your phone" screen shown
- * after a Google sign-up. Mounted at the layout level: when the gate is
- * active it renders INSTEAD of the app, so the user can't navigate
- * anywhere until the phone is verified. There is intentionally no close
- * button and no logout — the only exit is completing verification.
+ * "Add + verify your phone" screen for Google sign-ups. Renders in TWO
+ * mutually-exclusive modes:
+ *
+ *   1. FULL-SCREEN, non-dismissible (`isGateActive`, PROS only): mounted at
+ *      the layout level, it covers the whole app so the pro can't navigate
+ *      anywhere until the phone is verified. No close button, no logout.
+ *
+ *   2. MODAL, dismissible (`isPhoneModalOpen`, CLIENTS on a key action):
+ *      opened on demand by `requirePhone()`. Same UI inside, but presented
+ *      as a centered card over a dimmed backdrop with a close (X) button
+ *      that cancels the pending action.
+ *
+ * Same `useAttachPhone` flow drives both; the only difference is the chrome.
  */
 export default function GooglePhoneGate() {
-  const { isGateActive } = useGooglePhoneGate();
+  const { isGateActive, isPhoneModalOpen, cancelPhoneModal } = useGooglePhoneGate();
   const { t } = useLanguage();
   const att = useAttachPhone();
 
-  if (!isGateActive) return null;
+  if (!isGateActive && !isPhoneModalOpen) return null;
+
+  // Modal mode is the dismissible client variant; full-screen is the pro gate.
+  const isModal = !isGateActive && isPhoneModalOpen;
 
   return (
     <div
-      className="fixed inset-0 z-[300] flex items-center justify-center px-4 overflow-y-auto"
-      style={{ backgroundColor: 'var(--hm-bg-page)' }}
+      className={
+        isModal
+          ? 'fixed inset-0 z-[300] flex items-center justify-center px-4 overflow-y-auto bg-black/50'
+          : 'fixed inset-0 z-[300] flex items-center justify-center px-4 overflow-y-auto'
+      }
+      style={isModal ? undefined : { backgroundColor: 'var(--hm-bg-page)' }}
+      onClick={isModal ? cancelPhoneModal : undefined}
     >
-      <div className="w-full max-w-sm mx-auto py-8">
+      <div
+        className={
+          isModal
+            ? 'relative w-full max-w-sm mx-auto py-8 px-5 rounded-2xl shadow-xl'
+            : 'w-full max-w-sm mx-auto py-8'
+        }
+        style={isModal ? { backgroundColor: 'var(--hm-bg-elevated)' } : undefined}
+        onClick={isModal ? (e) => e.stopPropagation() : undefined}
+      >
+        {isModal && (
+          <button
+            type="button"
+            onClick={cancelPhoneModal}
+            aria-label={t('common.cancel')}
+            className="absolute top-3 right-3 p-2 rounded-lg text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] hover:bg-[var(--hm-bg-tertiary)] transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[var(--hm-brand-500)]/10 flex items-center justify-center mx-auto mb-4">

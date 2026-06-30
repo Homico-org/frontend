@@ -21,6 +21,7 @@ import ProBadges from "@/components/professionals/ProBadges";
 import { features } from "@/config/features";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
+import { useGooglePhoneGate } from "@/contexts/GooglePhoneGateContext";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { humanizeServiceKey } from "@/hooks/useCategoryLabels";
 import FloatingBack from "@/components/common/FloatingBack";
@@ -172,6 +173,7 @@ export default function ProfessionalDetailClient({
   const cl = useCountryLink();
   const { user } = useAuth();
   const { openLoginModal } = useAuthModal();
+  const { requirePhone } = useGooglePhoneGate();
   const { t, locale, pick } = useLanguage();
   const toast = useToast();
   const { trackEvent } = useAnalytics();
@@ -699,7 +701,15 @@ export default function ProfessionalDetailClient({
     return null;
   }, [profile, t]);
 
-  const handleContact = () => {
+  const handleContact = async () => {
+    // Key action: a logged-in Google client without a phone is asked to
+    // verify one before contacting / revealing. `requirePhone` resolves
+    // true with no UI for anonymous visitors and for users who already
+    // have a phone, so the unauthenticated reveal flow below is untouched
+    // for everyone else.
+    const ok = await requirePhone();
+    if (!ok) return;
+
     // Phone reveal is unauthenticated (2026-05). Anonymous visitors
     // browsing a pro's page can tap "Show phone" and call directly;
     // we only gate the auth wall on the messaging path because that

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthModal } from '@/contexts/AuthModalContext';
+import { useGooglePhoneGate } from '@/contexts/GooglePhoneGateContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useCountryLink } from '@/hooks/useCountry';
 import { api } from '@/lib/api';
@@ -52,6 +53,7 @@ const steps = [
 export default function QuickHirePage() {
   const { user, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
+  const { requirePhone } = useGooglePhoneGate();
   const toast = useToast();
   const cl = useCountryLink();
 
@@ -131,6 +133,11 @@ export default function QuickHirePage() {
 
   const handleSubmit = async () => {
     if (selectedPros.length === 0) return;
+
+    // Key action: ask Google clients without a phone to verify one before
+    // sending the request (no-op + true for everyone who already has a phone).
+    const ok = await requirePhone();
+    if (!ok) return;
 
     setIsSubmitting(true);
     try {

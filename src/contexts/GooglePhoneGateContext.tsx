@@ -9,6 +9,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -32,12 +33,34 @@ const PENDING_KEY = 'pendingPhoneVerification';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 interface GooglePhoneGateContextType {
-  /** True while the blocking phone-verification screen must be shown. */
+  /**
+   * True while the BLOCKING, full-screen phone-verification screen must be
+   * shown. Reserved for PROS without a phone after a Google sign-up - they
+   * are hard-gated immediately. Clients are never blocked this way.
+   */
   isGateActive: boolean;
+  /**
+   * True while the DISMISSIBLE modal variant (opened by `requirePhone`) is
+   * showing - used by clients on a key action. Distinct from `isGateActive`
+   * so the component can render a close button only in this mode.
+   */
+  isPhoneModalOpen: boolean;
   /** Called by the Google flow when /auth/google returns needsPhone. */
   beginGate: () => void;
   /** Clears the gate (after a successful attach-phone). */
   endGate: () => void;
+  /**
+   * On-demand phone requirement for key client actions. Resolves:
+   *   - `true` immediately when there's nothing to do (no user, or the user
+   *     already has a phone) -> existing users are NEVER impacted;
+   *   - `true` once the phone is attached through the modal;
+   *   - `false` if the client closes / cancels the modal.
+   * Callers do `const ok = await requirePhone(); if (!ok) return;` before
+   * running the action.
+   */
+  requirePhone: () => Promise<boolean>;
+  /** Closes the dismissible modal, resolving the pending promise as `false`. */
+  cancelPhoneModal: () => void;
 }
 
 const GooglePhoneGateContext = createContext<GooglePhoneGateContextType | undefined>(
@@ -47,6 +70,15 @@ const GooglePhoneGateContext = createContext<GooglePhoneGateContextType | undefi
 export function GooglePhoneGateProvider({ children }: { children: React.ReactNode }) {
   const { user, isAuthValidated } = useAuth();
   const [marker, setMarker] = useState(false);
+
+  // Dismissible-modal state (the on-demand client flow). Kept separate from
+  // `marker` so the pro full-screen gate and the client modal can never be
+  // mistaken for one another.
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  // The pending `requirePhone` resolver. Stored in a ref so it survives
+  // re-renders and so the resolve/close effects can reach it without
+  // re-creating callbacks.
+  const phoneResolverRef = useRef<((ok: boolean) => void) | null>(null);
 
   // Hydrate the marker from localStorage on mount (e.g. user reloaded the
   // page mid-gate). SSR-safe: defaults to false on the server.
@@ -91,17 +123,65 @@ export function GooglePhoneGateProvider({ children }: { children: React.ReactNod
     }
   }, [marker, isAuthValidated, user, endGate]);
 
-  // The gate is only active when BOTH the marker is set AND we have a
-  // logged-in user that lacks a phone. This double condition is the
-  // guarantee that existing phone-having users are never blocked.
+  // The BLOCKING full-screen gate is active only when the marker is set, we
+  // have a logged-in user that lacks a phone, AND that user is NOT a client.
+  // In practice this means PROS (and any non-client role) are hard-gated;
+  // clients are never blocked full-screen - they go through `requirePhone`
+  // on a key action instead. The marker + missing-phone double condition
+  // still guarantees existing phone-having users are never blocked.
   const isGateActive = useMemo(
-    () => marker && !!user && !user.phone,
+    () => marker && !!user && !user.phone && user.role !== 'client',
     [marker, user],
   );
 
+  // On-demand phone requirement for client key actions. Resolves true with
+  // no UI when there's nothing to ask; otherwise opens the dismissible modal
+  // and resolves once the phone lands (see effect below) or on cancel.
+  const requirePhone = useCallback((): Promise<boolean> => {
+    // Nothing to do: not logged in, or the user already has a phone. This is
+    // the path every existing user hits -> zero impact on them.
+    if (!user || user.phone) return Promise.resolve(true);
+    return new Promise<boolean>((resolve) => {
+      // If a previous request was somehow still pending, settle it false.
+      if (phoneResolverRef.current) phoneResolverRef.current(false);
+      phoneResolverRef.current = resolve;
+      setIsPhoneModalOpen(true);
+    });
+  }, [user]);
+
+  // Manual cancel/close of the modal -> resolve the pending promise false.
+  const cancelPhoneModal = useCallback(() => {
+    setIsPhoneModalOpen(false);
+    const resolve = phoneResolverRef.current;
+    phoneResolverRef.current = null;
+    if (resolve) resolve(false);
+  }, []);
+
+  // Resolve the pending promise while the modal is open:
+  //  - success: `user.phone` just became truthy (verifyAndAttach -> login
+  //    re-posed the session) -> resolve true + close.
+  //  - the user disappeared (logged out mid-modal) -> resolve false + close,
+  //    so the awaiting action never hangs on an unsettled promise.
+  useEffect(() => {
+    if (!isPhoneModalOpen) return;
+    if (user?.phone || !user) {
+      setIsPhoneModalOpen(false);
+      const resolve = phoneResolverRef.current;
+      phoneResolverRef.current = null;
+      if (resolve) resolve(!!user?.phone);
+    }
+  }, [isPhoneModalOpen, user]);
+
   const value = useMemo(
-    () => ({ isGateActive, beginGate, endGate }),
-    [isGateActive, beginGate, endGate],
+    () => ({
+      isGateActive,
+      isPhoneModalOpen,
+      beginGate,
+      endGate,
+      requirePhone,
+      cancelPhoneModal,
+    }),
+    [isGateActive, isPhoneModalOpen, beginGate, endGate, requirePhone, cancelPhoneModal],
   );
 
   return (

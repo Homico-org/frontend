@@ -17,6 +17,7 @@ import { Stepper } from "@/components/ui/Stepper";
 import { ACCENT_COLOR } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
+import { useGooglePhoneGate } from "@/contexts/GooglePhoneGateContext";
 import { useCategories } from "@/contexts/CategoriesContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
@@ -82,6 +83,7 @@ function ReviewRow({ label, onEdit, editLabel, children }: { label: string; onEd
 function PostJobPageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
+  const { requirePhone } = useGooglePhoneGate();
   const { t, locale, pick } = useLanguage();
   const { categories } = useCategories();
   const toast = useToast();
@@ -694,6 +696,11 @@ function PostJobPageContent() {
     // Prevent double submission using ref (synchronous check)
     if (submittingRef.current) return;
     if (!canProceedFromCategory() || !canProceedFromLocation()) return;
+
+    // Key action: clients who signed up with Google and have no phone yet
+    // are asked to verify one here (no-op + resolves true for everyone else).
+    const ok = await requirePhone();
+    if (!ok) return;
 
     submittingRef.current = true;
     setIsSubmitting(true);
