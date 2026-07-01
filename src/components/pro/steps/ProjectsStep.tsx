@@ -75,6 +75,18 @@ export interface PortfolioProject {
   services?: PortfolioProjectService[];
 }
 
+// A project is complete enough to save: a title + at least one media item
+// (photo, video, or before/after). Location is optional. Shared by the Save
+// button's enabled state AND the unmount safety-net flush.
+function isProjectComplete(p: PortfolioProject): boolean {
+  return (
+    !!p.title.trim() &&
+    (p.images.length > 0 ||
+      p.videos.length > 0 ||
+      p.beforeAfterPairs.length > 0)
+  );
+}
+
 interface ProjectsStepProps {
   projects: PortfolioProject[];
   onChange: (projects: PortfolioProject[]) => void;
@@ -284,6 +296,39 @@ export default function ProjectsStep({
     isVisible: true,
   });
 
+  // Safety net against the "two orange buttons" trap: if the user fills the
+  // add/edit form but leaves the step via the wizard footer ("Save & continue")
+  // WITHOUT clicking "Add project", auto-commit the valid draft on unmount so
+  // their photos/videos aren't silently discarded. Latest values via a ref
+  // because the cleanup closure would otherwise capture stale state.
+  const flushRef = useRef({
+    currentProject,
+    projects,
+    isAddingProject,
+    editingProjectId,
+  });
+  flushRef.current = {
+    currentProject,
+    projects,
+    isAddingProject,
+    editingProjectId,
+  };
+  useEffect(() => {
+    return () => {
+      const { currentProject, projects, isAddingProject, editingProjectId } =
+        flushRef.current;
+      if (!isAddingProject || !isProjectComplete(currentProject)) return;
+      if (editingProjectId) {
+        onChange(
+          projects.map((p) => (p.id === editingProjectId ? currentProject : p)),
+        );
+      } else {
+        onChange([...projects, currentProject]);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Ensure all projects have displayOrder
   useEffect(() => {
     const needsUpdate = projects.some((p, idx) => p.displayOrder !== idx);
@@ -348,12 +393,11 @@ export default function ProjectsStep({
   };
 
   const handleSaveProject = () => {
-    if (!currentProject.title.trim()) return;
-    if (
-      currentProject.images.length === 0 &&
-      currentProject.beforeAfterPairs.length === 0
-    )
-      return;
+    // Single source of truth: mirror the button's enabled condition exactly
+    // (title + at least one media, videos included; location optional). The old
+    // guard ignored videos, so a video-only project had an enabled button that
+    // silently did nothing on click.
+    if (!canSave()) return;
 
     if (editingProjectId) {
       onChange(
@@ -555,13 +599,9 @@ export default function ProjectsStep({
   };
 
   const canSave = () => {
-    if (!currentProject.title.trim()) return false;
-    if (!currentProject.location?.trim()) return false;
-    return (
-      currentProject.images.length > 0 ||
-      currentProject.videos.length > 0 ||
-      currentProject.beforeAfterPairs.length > 0
-    );
+    // Location is optional — a title + at least one media is enough. (Requiring
+    // location silently disabled the button, reading as "Save does nothing".)
+    return isProjectComplete(currentProject);
   };
 
   const totalMedia =
@@ -1000,7 +1040,6 @@ export default function ProjectsStep({
                   }
                   locale={locale as "ka" | "en" | "ru"}
                   label={t('common.location')}
-                  required
                 />
               </div>
             </div>
