@@ -2,6 +2,7 @@
 
 import AuthGuard from '@/components/common/AuthGuard';
 import Avatar from '@/components/common/Avatar';
+import { features } from '@/config/features';
 import { ADMIN_THEME as THEME } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -45,7 +46,8 @@ import {
   Users,
   MousePointer,
   Zap,
-  LayoutList
+  LayoutList,
+  Crown
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -576,6 +578,12 @@ function AdminDashboardPageContent() {
             { label: t('admin.payouts'), icon: Banknote, href: '/admin/payouts', color: '#10B981' },
             { label: 'Promo codes', icon: Tag, href: '/admin/promo-codes', color: '#EF4E24' },
             { label: 'Premium purchases', icon: ShoppingBag, href: '/admin/premium-purchases', color: '#0EA5E9' },
+            // Preview the pro-facing Premium pricing page (admins have no pro CTA).
+            // Flag-gated to match the Header link + middleware: when premium is
+            // OFF, /pro/premium bounces to home, so we hide the tile too.
+            ...(features.premium
+              ? [{ label: t('admin.premiumPreview'), icon: Crown, href: '/pro/premium', color: 'var(--hm-brand-500)' }]
+              : []),
             { label: 'Super Pro content', icon: Megaphone, href: '/admin/super-pro-content', color: '#8B5CF6' },
             { label: t('admin.catalogSuggestions'), icon: Lightbulb, href: '/admin/catalog-suggestions', color: '#A855F7' },
             { label: t('admin.invites'), icon: Send, href: '/admin/invites', color: 'var(--hm-brand-500)', count: undefined },

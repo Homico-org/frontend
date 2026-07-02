@@ -1558,6 +1558,26 @@ export default function Header({
                           </Link>
                         )}
 
+                        {/* Admin-only: preview the pro-facing Premium pricing
+                            page. Admins have no pro "Go Premium" CTA, so this is
+                            their only in-app entry point to open it. */}
+                        {user.role === "admin" && features.premium && (
+                          <Link
+                            href={cl("/pro/premium")}
+                            className="group flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--hm-fg-secondary)] hover:text-[var(--hm-fg-primary)] transition-all duration-200"
+                            onClick={() => setShowDropdown(false)}
+                          >
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--hm-bg-tertiary)]">
+                              <Crown
+                                className="w-4 h-4"
+                                style={{ color: ACCENT_COLOR }}
+                                strokeWidth={1.5}
+                              />
+                            </div>
+                            <span>{t("header.premiumPreview")}</span>
+                          </Link>
+                        )}
+
                         {/* The mobile-only theme + language pair that used to
                           live here was removed (2026-05-16) - it clutters the
                           dropdown and users said they didn't want it. Mobile

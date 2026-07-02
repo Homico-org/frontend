@@ -75,6 +75,10 @@ interface PendingPro {
   isFeatured?: boolean;
   isHomicoPartner?: boolean;
   isPremium?: boolean;
+  // Admin-only: expiry of the current premium + how it was obtained
+  // ('admin' = free grant, 'purchase' = paid via Flitt). Never public.
+  premiumExpiresAt?: string;
+  premiumSource?: 'admin' | 'purchase' | null;
   isTopQuality?: boolean;
   adminRejectionReason?: string;
   createdAt: string;
@@ -303,6 +307,22 @@ function AdminPendingProsPageContent() {
     } finally {
       setActionLoading(null);
     }
+  };
+
+  // Admin-only premium chip: shows whether the badge was granted (free) or
+  // purchased, plus its expiry date. Legacy admin grants carry a far-future
+  // (2099) expiry and no source → treated as "granted", shown without a date.
+  const premiumChipLabel = (pro: PendingPro): string => {
+    const exp = pro.premiumExpiresAt ? new Date(pro.premiumExpiresAt) : null;
+    const legacyPermanent = !!exp && exp.getFullYear() >= 2099;
+    const granted =
+      pro.premiumSource === 'admin' || (!pro.premiumSource && legacyPermanent);
+    const base = granted
+      ? t('admin.pendingPros.premiumGranted')
+      : t('admin.pendingPros.premiumPurchased');
+    return exp && !legacyPermanent
+      ? `${base} · ${exp.toLocaleDateString()}`
+      : base;
   };
 
   const handleToggleTopQuality = async (proId: string, next: boolean) => {
@@ -642,7 +662,7 @@ function AdminPendingProsPageContent() {
                           <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold flex-shrink-0 inline-flex items-center gap-1"
                             style={{ background: `${THEME.warning}20`, color: THEME.warning }}>
                             <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />
-                            {t('admin.pendingPros.premiumBadge')}
+                            {premiumChipLabel(pro)}
                           </span>
                         )}
                         {pro.isTopQuality && (
