@@ -1,7 +1,7 @@
 'use client';
 
 import BackButton from '@/components/common/BackButton';
-import LocationPicker from '@/components/common/LocationPicker';
+import AddressPicker from '@/components/common/AddressPicker';
 import MediaUpload from '@/components/common/MediaUpload';
 import AddSpaceModal, { SpaceInput } from '@/components/projects/AddSpaceModal';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,7 @@ export default function StartProjectPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { openLoginModal } = useAuthModal();
   const { requirePhone } = useGooglePhoneGate();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { error: toastError } = useToast();
 
   const [projectName, setProjectName] = useState('');
@@ -377,13 +377,13 @@ export default function StartProjectPage() {
 
           <FormGroup>
             <Label>{t('common.location')}</Label>
-            <LocationPicker
+            <AddressPicker
               value={location}
               onChange={(address, coords) => {
                 setLocation(address);
                 setCoordinates(coords);
               }}
-              placeholder={t('projects.locationPlaceholder')}
+              locale={locale as 'ka' | 'en' | 'ru'}
             />
           </FormGroup>
 
