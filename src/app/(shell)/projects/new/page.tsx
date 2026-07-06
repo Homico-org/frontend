@@ -11,6 +11,7 @@ import { useAuthModal } from '@/contexts/AuthModalContext';
 import { useGooglePhoneGate } from '@/contexts/GooglePhoneGateContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
+import { invalidateMyProjects } from '@/hooks/useMyProjects';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { Boxes, Pencil, Plus, X } from 'lucide-react';
@@ -232,6 +233,9 @@ export default function StartProjectPage() {
       const projectId = res.data?._id || res.data?.id;
       if (projectId) {
         clearDraft();
+        // Refresh the shared projects list so the new project shows in the
+        // sidebar immediately (no manual refresh needed).
+        invalidateMyProjects();
         router.push(`/projects/${projectId}`);
         return;
       }
