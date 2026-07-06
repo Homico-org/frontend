@@ -7,6 +7,7 @@ import {
   useAttachPhone,
   useGooglePhoneGate,
 } from '@/contexts/GooglePhoneGateContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { countries, useLanguage } from '@/contexts/LanguageContext';
 import { isValidPhone } from '@/utils/phoneValidation';
 import { Shield, Smartphone, X } from 'lucide-react';
@@ -27,11 +28,21 @@ import { Shield, Smartphone, X } from 'lucide-react';
  * Same `useAttachPhone` flow drives both; the only difference is the chrome.
  */
 export default function GooglePhoneGate() {
-  const { isGateActive, isPhoneModalOpen, cancelPhoneModal } = useGooglePhoneGate();
+  const { isGateActive, isPhoneModalOpen, cancelPhoneModal, endGate } =
+    useGooglePhoneGate();
+  const { logout } = useAuth();
   const { t } = useLanguage();
   const att = useAttachPhone();
 
   if (!isGateActive && !isPhoneModalOpen) return null;
+
+  // Escape hatch for the full-screen PRO gate: if the OTP SMS never arrives
+  // (delivery issues), a pro would otherwise be trapped with no way out.
+  // Signing out clears the gate marker and returns them to the landing page.
+  const handleSignOut = () => {
+    endGate();
+    logout();
+  };
 
   // Modal mode is the dismissible client variant; full-screen is the pro gate.
   const isModal = !isGateActive && isPhoneModalOpen;
@@ -170,6 +181,20 @@ export default function GooglePhoneGate() {
               {t('register.sendCode')}
             </Button>
           </>
+        )}
+
+        {/* Full-screen (pro) gate only: an explicit way out so a pro whose OTP
+            never arrives isn't trapped. Clients use the dismissible modal. */}
+        {!isModal && (
+          <div className="text-center mt-6">
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="text-xs sm:text-sm text-[var(--hm-fg-muted)] underline underline-offset-2 hover:text-[var(--hm-fg-primary)] transition-colors p-2 -m-2"
+            >
+              {t('common.logout')}
+            </button>
+          </div>
         )}
       </div>
     </div>
