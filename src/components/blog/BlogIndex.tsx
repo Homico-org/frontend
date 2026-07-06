@@ -89,7 +89,7 @@ export default function BlogIndex() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={featured.image}
-                alt=""
+                alt={pick(featured.title)}
                 loading="lazy"
                 className="aspect-[40/21] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
               />
@@ -147,7 +147,7 @@ export default function BlogIndex() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={post.image}
-                  alt=""
+                  alt={pick(post.title)}
                   loading="lazy"
                   className="aspect-[40/21] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                 />

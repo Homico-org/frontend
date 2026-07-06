@@ -102,7 +102,7 @@ export default function BlogArticle({ slug }: BlogArticleProps) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={post.image}
-            alt=""
+            alt={pick(post.title)}
             loading="lazy"
             className="aspect-[40/21] w-full object-cover"
           />
@@ -149,7 +149,7 @@ export default function BlogArticle({ slug }: BlogArticleProps) {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={rp.image}
-                      alt=""
+                      alt={pick(rp.title)}
                       loading="lazy"
                       className="aspect-[40/21] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                     />
