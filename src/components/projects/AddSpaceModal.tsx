@@ -2,15 +2,16 @@
 
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
-import { FormGroup, Input, Label, Textarea } from '@/components/ui/input';
+import { FormGroup, Input, Label } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
-import { Check, Ruler, Square, Wallet } from 'lucide-react';
+import { Check, Ruler, Square } from 'lucide-react';
 import { useState } from 'react';
 
 // The shape a space carries - both the API body and the local creation-flow
-// value use this.
+// value use this. Spaces are kept lightweight: a name + optional dimensions.
+// (Budget + description were dropped - they live at the product/shopping level.)
 export interface SpaceInput {
   id?: string;
   name: string;
@@ -19,8 +20,6 @@ export interface SpaceInput {
   height?: number;
   area?: number;
   wallArea?: number;
-  budget?: number;
-  note?: string;
 }
 
 interface AddSpaceModalProps {
@@ -48,8 +47,6 @@ const SPACE_TYPES: { key: string; labelKey: string }[] = [
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 const fmtArea = (n: number) => `${round2(n)} მ²`;
-const fmtGel = (n: number) =>
-  `${Math.round(n).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
 
 const blank = {
   name: '',
@@ -58,8 +55,6 @@ const blank = {
   height: '',
   area: '',
   wallArea: '',
-  budget: '',
-  note: '',
 };
 
 export default function AddSpaceModal({
@@ -81,8 +76,6 @@ export default function AddSpaceModal({
           height: item.height != null ? String(item.height) : '',
           area: item.area != null ? String(item.area) : '',
           wallArea: item.wallArea != null ? String(item.wallArea) : '',
-          budget: item.budget != null ? String(item.budget) : '',
-          note: item.note || '',
         }
       : { ...blank },
   );
@@ -102,14 +95,13 @@ export default function AddSpaceModal({
 
   const areaNum = Number(form.area) || 0;
   const wallNum = Number(form.wallArea) || 0;
-  const budgetNum = Number(form.budget) || 0;
 
   const showFloorApply = floorCalc != null && floorCalc !== areaNum;
   const showWallApply = wallCalc != null && wallCalc !== wallNum;
 
   const effArea = areaNum || floorCalc || 0;
   const effWall = wallNum || wallCalc || 0;
-  const hasSummary = effArea > 0 || effWall > 0 || budgetNum > 0;
+  const hasSummary = effArea > 0 || effWall > 0;
 
   const save = async () => {
     if (!form.name.trim()) return;
@@ -121,8 +113,6 @@ export default function AddSpaceModal({
       // Fall back to the computed values when left blank.
       area: num(form.area) ?? floorCalc ?? undefined,
       wallArea: num(form.wallArea) ?? wallCalc ?? undefined,
-      budget: num(form.budget),
-      note: form.note.trim() || undefined,
     };
     setSaving(true);
     try {
@@ -232,7 +222,7 @@ export default function AddSpaceModal({
             </div>
           </FormGroup>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3">
             <FormGroup>
               <Label>{t('projects.landAreaLabel')}</Label>
               <Input
@@ -259,36 +249,7 @@ export default function AddSpaceModal({
                 wallCalc != null &&
                 applyChip(wallCalc, () => set('wallArea', String(wallCalc)))}
             </FormGroup>
-            <FormGroup>
-              <Label>{t('projects.statBudgetLabel')}</Label>
-              <div className="relative">
-                <Input
-                  type="number"
-                  min={0}
-                  value={form.budget}
-                  onChange={(e) => set('budget', e.target.value)}
-                  className="pr-7"
-                />
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[14px] text-[var(--hm-fg-muted)]">
-                  ₾
-                </span>
-              </div>
-            </FormGroup>
           </div>
-
-          <FormGroup>
-            <Label>
-              {t('common.description')}{' '}
-              <span className="font-normal text-[var(--hm-fg-muted)]">
-                ({t('common.optional')})
-              </span>
-            </Label>
-            <Textarea
-              value={form.note}
-              onChange={(e) => set('note', e.target.value)}
-              rows={2}
-            />
-          </FormGroup>
 
           {hasSummary && (
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-[var(--hm-border-subtle)] pt-3 text-[13px]">
@@ -305,14 +266,6 @@ export default function AddSpaceModal({
                   {t('projects.wallAreaLabel')}
                   <span className="font-semibold tabular-nums text-[var(--hm-fg-primary)]">
                     {fmtArea(effWall)}
-                  </span>
-                </span>
-              )}
-              {budgetNum > 0 && (
-                <span className="ml-auto inline-flex items-center gap-1.5 text-[var(--hm-fg-secondary)]">
-                  <Wallet className="h-4 w-4 text-[var(--hm-fg-muted)]" />
-                  <span className="font-semibold tabular-nums text-[var(--hm-fg-primary)]">
-                    {fmtGel(budgetNum)}
                   </span>
                 </span>
               )}

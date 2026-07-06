@@ -37,6 +37,8 @@ import { Card, CardBody } from '@/components/ui/Card';
 import ProjectTabs from '@/components/projects/ProjectTabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useConfirm } from '@/contexts/ConfirmContext';
+import { invalidateMyProjects } from '@/hooks/useMyProjects';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCategories } from '@/contexts/CategoriesContext';
 import { useCountryLink } from '@/hooks/useCountry';
@@ -345,6 +347,7 @@ export default function ProjectDashboardPage() {
   const searchParams = useSearchParams();
   const cl = useCountryLink();
   const toast = useToast();
+  const confirm = useConfirm();
   const { t, pick, locale } = useLanguage();
   const { categories } = useCategories();
   const { user, isLoading: authLoading } = useAuth();
@@ -897,6 +900,34 @@ export default function ProjectDashboardPage() {
   // still work; it is only true for a (blocked) worker, so on this page it is
   // effectively always false = client + editor can edit.
   const isPro = project?.viewerRole === 'worker';
+
+  // Deleting a project is a separate action (moved out of the edit modal):
+  // a small danger button next to Edit, owner-only.
+  const handleDeleteProject = async () => {
+    const ok = await confirm({
+      title: t('projects.deleteProjectTitle'),
+      description: t('projects.deleteProjectConfirm', {
+        name: project?.title || '',
+      }),
+      confirmLabel: t('projects.deleteProjectCta'),
+      cancelLabel: t('common.cancel'),
+      variant: 'danger',
+    });
+    if (!ok) return;
+    try {
+      await api.delete(`/projects/${projectId}`);
+      invalidateMyProjects();
+      toast.success(t('projects.projectDeleted'));
+      router.push('/projects');
+    } catch (err) {
+      toast.error(
+        t('projects.tryAgain'),
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message,
+      );
+    }
+  };
+
   const isMine = (eng: Engagement): boolean => {
     const p = eng.assignedProId;
     const pid =
@@ -1204,17 +1235,30 @@ export default function ProjectDashboardPage() {
                     <div className="flex shrink-0 flex-col items-end gap-2">
                       <ProgressRing value={project.progress} />
                       {!isPro && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowEditProject(true)}
-                          leftIcon={<Pencil />}
-                          aria-label={t('common.edit')}
-                        >
-                          <span className="hidden sm:inline">
-                            {t('common.edit')}
-                          </span>
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowEditProject(true)}
+                            leftIcon={<Pencil />}
+                            aria-label={t('common.edit')}
+                          >
+                            <span className="hidden sm:inline">
+                              {t('common.edit')}
+                            </span>
+                          </Button>
+                          {isClient && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleDeleteProject}
+                              aria-label={t('projects.deleteProject')}
+                              className="border-[var(--hm-error-500)]/30 text-[var(--hm-error-500)] hover:bg-[var(--hm-error-500)]/[0.06] hover:text-[var(--hm-error-500)]"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -3360,17 +3404,10 @@ export default function ProjectDashboardPage() {
           projectId={projectId}
           initial={{
             title: project.title,
-            description: project.description,
             location: project.location,
-            budgetMax: project.budgetMax,
             status: project.status,
-            cadastralId: project.cadastralId,
-            landArea: project.landArea,
-            floorCount: project.floorCount,
           }}
           onSaved={load}
-          canDelete={isClient}
-          onDeleted={() => router.push('/projects')}
         />
       )}
 
