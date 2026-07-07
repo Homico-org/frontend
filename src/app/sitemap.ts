@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, type CountryCode } from '@/data/countries';
+import { BLOG_POSTS } from '@/config/blogPosts';
 
 // Marketplaces live under homico.co (the international root); the
 // legacy homico.ge alias still resolves but search engines should
@@ -114,6 +115,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     } catch {
       // Silently fail
     }
+  }
+
+  // Blog: the index + every article. Country-agnostic (canonical under
+  // `/blog`; `/xx/blog` 307s to it), so a single entry per article - no
+  // duplicate URLs across marketplaces.
+  entries.push({
+    url: `${BASE_URL}/blog`,
+    lastModified: now,
+    changeFrequency: 'weekly',
+    priority: 0.7,
+  });
+  for (const post of BLOG_POSTS) {
+    entries.push({
+      url: `${BASE_URL}/blog/${post.slug}`,
+      lastModified: post.date ? new Date(post.date) : now,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    });
   }
 
   // Reference DEFAULT_COUNTRY for IDE jump-to-source while keeping

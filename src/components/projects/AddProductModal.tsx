@@ -9,7 +9,9 @@ import { useClickOutside } from '@/hooks/useClickOutside';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
 import {
+  Calendar,
   Check,
+  ChevronDown,
   ImagePlus,
   Link2,
   ListChecks,
@@ -102,6 +104,18 @@ export default function AddProductModal({
     etaDate: item?.etaDate ? item.etaDate.slice(0, 10) : '',
   }));
   const [saving, setSaving] = useState(false);
+  // Advanced procurement fields (SKU / dimensions / lead time / ETA) are
+  // collapsed by default so the common add-a-product flow stays simple.
+  // Opened automatically when editing a product that already has any of them.
+  const [showMore, setShowMore] = useState(
+    () =>
+      !!(
+        item?.sku ||
+        item?.dimensions ||
+        item?.leadTimeDays != null ||
+        item?.etaDate
+      ),
+  );
   const [importing, setImporting] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   // Category combobox dropdown.
@@ -377,51 +391,71 @@ export default function AddProductModal({
           </FormGroup>
         </div>
 
-        {/* FF&E schedule / procurement details */}
-        <div className="grid grid-cols-2 gap-3">
-          <FormGroup>
-            <Label>{t('projects.sku')}</Label>
-            <Input
-              value={form.sku}
-              onChange={(e) => set('sku', e.target.value)}
-              placeholder={t('projects.skuHint')}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>{t('projects.dimensions')}</Label>
-            <Input
-              value={form.dimensions}
-              onChange={(e) => set('dimensions', e.target.value)}
-              placeholder={t('projects.dimensionsHint')}
-            />
-          </FormGroup>
-        </div>
+        {/* Advanced procurement details - collapsed by default (SKU,
+            dimensions, lead time, delivery date) to keep the flow simple. */}
+        <button
+          type="button"
+          onClick={() => setShowMore((v) => !v)}
+          className="-mt-1 inline-flex items-center gap-1 self-start text-[13px] font-medium text-[var(--hm-brand-500)] transition-opacity hover:opacity-80"
+        >
+          <ChevronDown
+            className={`h-4 w-4 transition-transform ${showMore ? 'rotate-180' : ''}`}
+          />
+          {t('projects.moreDetails')}
+        </button>
 
-        <div className="grid grid-cols-2 gap-3">
-          <FormGroup>
-            <Label>{t('projects.leadTime')}</Label>
-            <div className="relative">
-              <Input
-                type="number"
-                min={0}
-                value={form.leadTimeDays}
-                onChange={(e) => set('leadTimeDays', e.target.value)}
-                className="pr-12"
-              />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[var(--hm-fg-muted)]">
-                {t('projects.leadDaysUnit')}
-              </span>
+        {showMore && (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <FormGroup>
+                <Label>{t('projects.sku')}</Label>
+                <Input
+                  value={form.sku}
+                  onChange={(e) => set('sku', e.target.value)}
+                  placeholder={t('projects.skuHint')}
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label>{t('projects.dimensions')}</Label>
+                <Input
+                  value={form.dimensions}
+                  onChange={(e) => set('dimensions', e.target.value)}
+                  placeholder={t('projects.dimensionsHint')}
+                />
+              </FormGroup>
             </div>
-          </FormGroup>
-          <FormGroup>
-            <Label>{t('projects.eta')}</Label>
-            <Input
-              type="date"
-              value={form.etaDate}
-              onChange={(e) => set('etaDate', e.target.value)}
-            />
-          </FormGroup>
-        </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <FormGroup>
+                <Label>{t('projects.leadTime')}</Label>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.leadTimeDays}
+                    onChange={(e) => set('leadTimeDays', e.target.value)}
+                    className="pr-12"
+                  />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[var(--hm-fg-muted)]">
+                    {t('projects.leadDaysUnit')}
+                  </span>
+                </div>
+              </FormGroup>
+              <FormGroup>
+                <Label>{t('projects.eta')}</Label>
+                <div className="relative">
+                  <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--hm-fg-muted)]" />
+                  <Input
+                    type="date"
+                    value={form.etaDate}
+                    onChange={(e) => set('etaDate', e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </FormGroup>
+            </div>
+          </>
+        )}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <FormGroup>
