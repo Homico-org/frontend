@@ -1,5 +1,6 @@
 'use client';
 
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
 import { formatTimeAgoCompact } from '@/utils/dateUtils';
@@ -75,7 +76,9 @@ export default function ProjectHistory({ projectId }: { projectId: string }) {
 
   if (entries === null) {
     return (
-      <div className="py-16 text-center text-[var(--hm-fg-muted)]">…</div>
+      <div className="flex justify-center py-16">
+        <LoadingSpinner size="md" color="var(--hm-brand-500)" />
+      </div>
     );
   }
 

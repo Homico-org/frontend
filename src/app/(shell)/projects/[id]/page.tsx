@@ -1247,7 +1247,12 @@ export default function ProjectDashboardPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setClientSimpleView(true)}
+                          onClick={() => {
+                            // Reset to overview so the ?tab= param clears -
+                            // otherwise a reload drops back into the full view.
+                            setActiveTab('overview');
+                            setClientSimpleView(true);
+                          }}
                           leftIcon={<LayoutDashboard className="h-4 w-4" />}
                         >
                           <span className="hidden sm:inline">

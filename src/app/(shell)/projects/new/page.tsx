@@ -215,7 +215,6 @@ export default function StartProjectPage() {
       const res = await api.post('/projects', {
         category: DEFAULT_CATEGORY,
         title: projectName.trim(),
-        description: projectName.trim(),
         location,
         address: location,
         currency: 'GEL',
