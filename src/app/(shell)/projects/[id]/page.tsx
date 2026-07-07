@@ -1241,6 +1241,20 @@ export default function ProjectDashboardPage() {
                     {/* Ring + edit - top-right of the identity column */}
                     <div className="flex shrink-0 flex-col items-end gap-2">
                       <ProgressRing value={project.progress} />
+                      {/* Client's calm summary is their home - always one tap
+                          back from the full workspace. */}
+                      {isClient && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setClientSimpleView(true)}
+                          leftIcon={<LayoutDashboard className="h-4 w-4" />}
+                        >
+                          <span className="hidden sm:inline">
+                            {t('projects.backToSummary')}
+                          </span>
+                        </Button>
+                      )}
                       {!isPro && (
                         <div className="flex items-center gap-2">
                           <Button
