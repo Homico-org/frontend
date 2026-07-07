@@ -7,6 +7,7 @@ import ProjectDocuments, {
   ProjectDoc,
 } from '@/components/projects/ProjectDocuments';
 import { ProjectDecision } from '@/components/projects/ProjectDecisions';
+import ProjectHistory from '@/components/projects/ProjectHistory';
 import ProjectShopping, {
   ProjectProduct,
   ProductLogEntry,
@@ -23,7 +24,7 @@ import ImportEstimateModal from '@/components/projects/ImportEstimateModal';
 import AddProductModal from '@/components/projects/AddProductModal';
 import AddFilesModal from '@/components/projects/AddFilesModal';
 import DocumentReviewModal from '@/components/projects/DocumentReviewModal';
-import SpaceModal from '@/components/projects/SpaceModal';
+import AddSpaceModal from '@/components/projects/AddSpaceModal';
 import ImageLightbox from '@/components/common/ImageLightbox';
 import EditProjectModal from '@/components/projects/EditProjectModal';
 import MilestonePaymentsPanel from '@/components/projects/MilestonePaymentsPanel';
@@ -56,6 +57,7 @@ import {
   ExternalLink,
   FileSpreadsheet,
   FileText,
+  History,
   ImagePlus,
   Images,
   LayoutDashboard,
@@ -337,7 +339,7 @@ function collectProjectImages(project: Project): string[] {
 }
 
 // Top-level tabs after the 2026 "back to simple" pass: four standard surfaces.
-const TOP_TABS = ['overview', 'plan', 'rooms', 'materials', 'moodboard', 'shopping', 'library'] as const;
+const TOP_TABS = ['overview', 'plan', 'rooms', 'materials', 'moodboard', 'shopping', 'library', 'history'] as const;
 
 export default function ProjectDashboardPage() {
   const params = useParams();
@@ -1033,6 +1035,11 @@ export default function ProjectDashboardPage() {
       id: 'library',
       label: t('projects.tabDocuments'),
       icon: <FileText className={TAB_ICON} strokeWidth={1.75} />,
+    },
+    {
+      id: 'history',
+      label: t('projects.tabHistory'),
+      icon: <History className={TAB_ICON} strokeWidth={1.75} />,
     },
   ];
 
@@ -3206,6 +3213,11 @@ export default function ProjectDashboardPage() {
               />
             </div>
           )}
+
+          {/* ===== HISTORY / ACTIVITY LOG ===== */}
+          {activeTab === 'history' && (
+            <ProjectHistory projectId={projectId} />
+          )}
         </div>
           </div>
         </div>
@@ -3264,11 +3276,11 @@ export default function ProjectDashboardPage() {
       )}
 
       {spaceModal && (
-        <SpaceModal
+        <AddSpaceModal
           isOpen={!!spaceModal}
           onClose={() => setSpaceModal(null)}
           projectId={projectId}
-          space={spaceModal.space}
+          item={spaceModal.space}
           onSaved={load}
         />
       )}

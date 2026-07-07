@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
 import AddProductModal from '@/components/projects/AddProductModal';
 import CatalogPickerModal from '@/components/projects/CatalogPickerModal';
 import CheckoutModal from '@/components/shop/CheckoutModal';
@@ -17,7 +16,6 @@ import {
   AlertTriangle,
   Check,
   ChevronDown,
-  Clock,
   Download,
   Package,
   Pencil,
@@ -88,27 +86,6 @@ const STATUS_PILL: Record<ProductStatus, string> = {
   delivered: 'bg-[var(--hm-success-500)]/[0.12] text-[var(--hm-success-600)]',
 };
 
-// History action -> label key + accent color, and -> icon.
-const LOG_META: Record<string, { labelKey: string; tone: string }> = {
-  added: { labelKey: 'projects.logAdded', tone: 'var(--hm-fg-secondary)' },
-  edited: { labelKey: 'projects.logEdited', tone: 'var(--hm-fg-secondary)' },
-  removed: { labelKey: 'projects.logRemoved', tone: 'var(--hm-error-500)' },
-  to_buy: { labelKey: 'projects.prodToBuy', tone: 'var(--hm-fg-muted)' },
-  ordered: { labelKey: 'projects.prodOrdered', tone: 'var(--hm-brand-500)' },
-  delivered: {
-    labelKey: 'projects.prodDelivered',
-    tone: 'var(--hm-success-500)',
-  },
-};
-const LOG_ICON: Record<string, typeof Plus> = {
-  added: Plus,
-  edited: Pencil,
-  removed: Trash2,
-  to_buy: Package,
-  ordered: ShoppingCart,
-  delivered: Check,
-};
-
 interface ProjectShoppingProps {
   projectId: string;
   products: ProjectProduct[];
@@ -125,7 +102,6 @@ interface ProjectShoppingProps {
 export default function ProjectShopping({
   projectId,
   products,
-  log = [],
   rooms = [],
   canManage,
   canApprove = false,
@@ -140,7 +116,6 @@ export default function ProjectShopping({
   const [busyId, setBusyId] = useState<string | null>(null);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
   // Card grid (browse) vs schedule table (the FF&E procurement master view).
   const [view, setView] = useState<'cards' | 'schedule'>('cards');
   // How the list is grouped: by category (default), room, or supplier (the PO view).
@@ -156,21 +131,6 @@ export default function ProjectShopping({
   // Inline category rename (applies across every product in the group).
   const [renaming, setRenaming] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
-
-  // Shopping history, most recent first.
-  const history = useMemo(() => [...log].reverse(), [log]);
-  const dateLocale =
-    locale === 'en' ? 'en-US' : locale === 'ru' ? 'ru-RU' : 'ka-GE';
-  const fmtWhen = (iso: string) => {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return '';
-    return d.toLocaleDateString(dateLocale, {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
 
   // Remember which category groups are collapsed (per project, this device).
   const collapseKey = `homico:shop-collapsed:${projectId}`;
@@ -731,14 +691,6 @@ export default function ProjectShopping({
           <span className="truncate">{t('projects.shoppingTitle')}</span>
         </h2>
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowHistory(true)}
-            leftIcon={<Clock className="w-4 h-4" />}
-          >
-            {t('projects.shopHistory')}
-          </Button>
           {canManage && (
             <>
               <Button
@@ -1083,55 +1035,6 @@ export default function ProjectShopping({
         </div>
       )}
 
-      {/* History - opens as an overlay so the shopping list and its actions
-          stay put (no destructive view swap, no hidden buttons). */}
-      <Modal
-        isOpen={showHistory}
-        onClose={() => setShowHistory(false)}
-        size="md"
-        showCloseButton
-        ariaLabel={t('projects.shopHistory')}
-      >
-        <ModalHeader title={t('projects.shopHistory')} />
-        <ModalBody>
-          {history.length === 0 ? (
-            <p className="py-8 text-center text-[14px] text-[var(--hm-fg-muted)]">
-              {t('projects.shopHistoryEmpty')}
-            </p>
-          ) : (
-            <ol className="overflow-hidden rounded-2xl border border-[var(--hm-border-subtle)] divide-y divide-[var(--hm-border-subtle)]">
-              {history.map((e, i) => {
-                const meta = LOG_META[e.action];
-                const Icon = LOG_ICON[e.action] || Pencil;
-                return (
-                  <li key={i} className="flex items-center gap-3 px-4 py-2.5">
-                    <span
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
-                      style={{
-                        backgroundColor: `${meta?.tone ?? 'var(--hm-fg-muted)'}1a`,
-                        color: meta?.tone ?? 'var(--hm-fg-muted)',
-                      }}
-                    >
-                      <Icon className="h-3.5 w-3.5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[13px] text-[var(--hm-fg-primary)]">
-                        <span className="font-semibold">
-                          {t(meta?.labelKey ?? 'projects.logEdited')}
-                        </span>
-                        {e.name ? ` · ${e.name}` : ''}
-                      </span>
-                    </div>
-                    <span className="shrink-0 text-[11px] tabular-nums text-[var(--hm-fg-muted)]">
-                      {fmtWhen(e.at)}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
-        </ModalBody>
-      </Modal>
     </section>
   );
 }
