@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { getScrollParent } from "@/utils/scrollUtils";
 
 interface UsePullToRefreshOptions {
   /**
@@ -41,7 +42,18 @@ export interface PullToRefreshState {
  *
  * Implementation notes:
  *  - Only triggers when the user starts the gesture AT the top of
- *    the page (window.scrollY === 0). Otherwise it's a regular scroll.
+ *    the real scroll container. The app shell scrolls inside an
+ *    `overflow-y-auto` <main>, not the window, so we resolve the
+ *    actual scroller via `getScrollParent` and read its scrollTop
+ *    (falling back to window.scrollY on pages the window scrolls).
+ *    Measuring the wrong element used to leave scrollTop stuck at 0,
+ *    arming the pull anywhere in the list.
+ *  - Gesture state lives in refs, not React state, so the window
+ *    listeners stay attached for the whole gesture (no re-attach
+ *    mid-swipe) and touchend reads the live pull distance instead of
+ *    a stale closure value. This also means a swipe whose touchmove
+ *    events are swallowed by a child (e.g. a before/after slider)
+ *    never arms a phantom refresh: the ref stays 0.
  *  - Touch-only (passive false to enable preventDefault). On desktop
  *    we just skip the listeners entirely.
  *  - The visual indicator is the caller's job - this hook only
@@ -53,6 +65,21 @@ export function usePullToRefresh({ onRefresh, threshold = 70, enabled = true }: 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const startYRef = useRef<number | null>(null);
   const isTrackingRef = useRef(false);
+  // Live gesture distance, mirrored to state for rendering. touchend
+  // reads this ref (not the `pullDistance` state) so it always sees
+  // the value from the last touchmove, even though the listeners are
+  // registered once and never re-created during the gesture.
+  const pullDistanceRef = useRef(0);
+  // Latest onRefresh / isRefreshing without re-subscribing listeners.
+  const onRefreshRef = useRef(onRefresh);
+  onRefreshRef.current = onRefresh;
+  const isRefreshingRef = useRef(false);
+  isRefreshingRef.current = isRefreshing;
+
+  const setPull = (v: number) => {
+    pullDistanceRef.current = v;
+    setPullDistance(v);
+  };
 
   useEffect(() => {
     if (!enabled) return;
@@ -62,11 +89,18 @@ export function usePullToRefresh({ onRefresh, threshold = 70, enabled = true }: 
     if (!("ontouchstart" in window)) return;
 
     const handleTouchStart = (e: TouchEvent) => {
-      // Only engage when we're already at the top. If the user is
-      // mid-scroll halfway down the list, a downward swipe means
-      // scroll-up, not refresh.
-      if (window.scrollY > 5) return;
-      if (isRefreshing) return;
+      if (isRefreshingRef.current) return;
+      // Only engage when the REAL scroll container is at the top. The
+      // shell scrolls inside an `overflow-y-auto` <main>, so window.scrollY
+      // is always 0 there; resolve the actual scroller from the touched
+      // node and read its scrollTop. Fall back to window for pages the
+      // window itself scrolls (getScrollParent returns null).
+      const target = e.target instanceof HTMLElement ? e.target : null;
+      const scroller = getScrollParent(target);
+      const scrollTop = scroller ? scroller.scrollTop : window.scrollY;
+      if (scrollTop > 5) return;
+      // Fresh gesture: reset any residual pull from a previous swipe.
+      setPull(0);
       startYRef.current = e.touches[0].clientY;
       isTrackingRef.current = true;
     };
@@ -78,7 +112,7 @@ export function usePullToRefresh({ onRefresh, threshold = 70, enabled = true }: 
       if (distance <= 0) {
         // User is swiping upward (scroll-down direction). Abandon
         // the pull-to-refresh attempt; let the browser scroll.
-        setPullDistance(0);
+        setPull(0);
         isTrackingRef.current = false;
         return;
       }
@@ -86,7 +120,7 @@ export function usePullToRefresh({ onRefresh, threshold = 70, enabled = true }: 
       // finger but doesn't run away as the user pulls further. Feels
       // springy without going off-screen.
       const damped = Math.min(distance * 0.5, threshold * 2);
-      setPullDistance(damped);
+      setPull(damped);
       // Prevent the browser's native pull-to-refresh while we're
       // handling our own. Only past a small dead-zone so casual
       // taps don't get blocked.
@@ -98,17 +132,17 @@ export function usePullToRefresh({ onRefresh, threshold = 70, enabled = true }: 
     const handleTouchEnd = async () => {
       if (!isTrackingRef.current) return;
       isTrackingRef.current = false;
-      const crossed = pullDistance >= threshold;
-      if (crossed && !isRefreshing) {
+      const crossed = pullDistanceRef.current >= threshold;
+      setPull(0);
+      startYRef.current = null;
+      if (crossed && !isRefreshingRef.current) {
         setIsRefreshing(true);
         try {
-          await onRefresh();
+          await onRefreshRef.current();
         } finally {
           setIsRefreshing(false);
         }
       }
-      setPullDistance(0);
-      startYRef.current = null;
     };
 
     // `passive: false` on touchmove so we can preventDefault to
@@ -126,7 +160,10 @@ export function usePullToRefresh({ onRefresh, threshold = 70, enabled = true }: 
       window.removeEventListener("touchend", handleTouchEnd);
       window.removeEventListener("touchcancel", handleTouchEnd);
     };
-  }, [enabled, isRefreshing, onRefresh, pullDistance, threshold]);
+    // Listeners read live values through refs, so they only need to be
+    // (re)wired when the gesture is enabled/disabled or the threshold
+    // changes - never mid-swipe.
+  }, [enabled, threshold]);
 
   return {
     isRefreshing,
