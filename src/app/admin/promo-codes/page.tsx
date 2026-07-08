@@ -12,7 +12,9 @@ import { useCallback, useEffect, useState } from "react";
 type DiscountType = "amount_off" | "percent_off" | "fixed_price";
 
 interface PromoCode {
-  _id: string;
+  // The api client normalizes Mongo's _id to `id` on every response
+  // (see lib/api.ts transformIds), so the list objects carry `id`, not `_id`.
+  id: string;
   code: string;
   discountType: DiscountType;
   value: number;
@@ -95,9 +97,9 @@ function PromoCodesContent() {
 
   const toggle = async (c: PromoCode) => {
     try {
-      await api.patch(`/payments/admin/promo-codes/${c._id}`, { active: !c.active });
+      await api.patch(`/payments/admin/promo-codes/${c.id}`, { active: !c.active });
       setCodes((prev) =>
-        prev.map((p) => (p._id === c._id ? { ...p, active: !c.active } : p)),
+        prev.map((p) => (p.id === c.id ? { ...p, active: !c.active } : p)),
       );
     } catch {
       toast.error("Couldn't update code");
@@ -205,7 +207,7 @@ function PromoCodesContent() {
               </thead>
               <tbody>
                 {codes.map((c) => (
-                  <tr key={c._id} className="border-t border-[var(--hm-border-subtle)]">
+                  <tr key={c.id} className="border-t border-[var(--hm-border-subtle)]">
                     <td className="px-4 py-3 font-mono font-semibold text-[var(--hm-fg-primary)]">
                       {c.code}
                       {c.note && (
