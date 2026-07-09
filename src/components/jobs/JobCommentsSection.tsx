@@ -295,8 +295,8 @@ const CommentItem = ({
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {comment.portfolioDetails.map((item) => (
                   <Link
-                    key={item._id}
-                    href={`/portfolio/${item._id}`}
+                    key={item.id}
+                    href={`/portfolio/${item.id}`}
                     className="flex-shrink-0 group"
                   >
                     <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-[var(--hm-bg-tertiary)]">

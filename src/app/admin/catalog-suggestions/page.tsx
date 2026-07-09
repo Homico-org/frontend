@@ -23,7 +23,7 @@ import { useCallback, useEffect, useState } from "react";
 type Status = "pending" | "approved" | "rejected";
 
 interface Suggestion {
-  _id: string;
+  id: string;
   serviceName: string;
   description: string;
   suggestedCategoryKey?: string;
@@ -195,7 +195,7 @@ export default function AdminCatalogSuggestionsPage() {
           ) : (
             <div className="space-y-3">
               {list?.data.map((s) => (
-                <Card key={s._id} variant="elevated">
+                <Card key={s.id} variant="elevated">
                   <CardHeader>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -377,11 +377,11 @@ export default function AdminCatalogSuggestionsPage() {
                               {t("adminCatalogSuggestion.noteLabel")}
                             </label>
                             <Textarea
-                              value={notes[s._id] ?? ""}
+                              value={notes[s.id] ?? ""}
                               onChange={(e) =>
                                 setNotes((prev) => ({
                                   ...prev,
-                                  [s._id]: e.target.value,
+                                  [s.id]: e.target.value,
                                 }))
                               }
                               placeholder={t("adminCatalogSuggestion.notePlaceholder")}
@@ -392,17 +392,17 @@ export default function AdminCatalogSuggestionsPage() {
                           <div className="grid grid-cols-2 gap-2">
                             <Button
                               variant="destructive"
-                              onClick={() => updateStatus(s._id, "rejected")}
-                              disabled={actionLoading === s._id}
+                              onClick={() => updateStatus(s.id, "rejected")}
+                              disabled={actionLoading === s.id}
                             >
                               <XCircle size={16} />
                               {t("adminCatalogSuggestion.reject")}
                             </Button>
                             <Button
                               variant="success"
-                              onClick={() => updateStatus(s._id, "approved")}
-                              disabled={actionLoading === s._id}
-                              loading={actionLoading === s._id}
+                              onClick={() => updateStatus(s.id, "approved")}
+                              disabled={actionLoading === s.id}
+                              loading={actionLoading === s.id}
                             >
                               <CheckCircle2 size={16} />
                               {t("adminCatalogSuggestion.approve")}
