@@ -18,7 +18,10 @@
  * onboarding bug.
  */
 
-export const SUPPORTED_COUNTRIES = [
+// Every country we hold reference data for (currency, map center, labels).
+// Drives the CountryCode type so those tables stay complete + type-safe.
+// This is NOT the list of live markets — see SUPPORTED_COUNTRIES below.
+export const KNOWN_COUNTRIES = [
   "GE",
   "IL",
   "FR",
@@ -26,7 +29,14 @@ export const SUPPORTED_COUNTRIES = [
   "DE",
   "UK",
 ] as const;
-export type CountryCode = (typeof SUPPORTED_COUNTRIES)[number];
+export type CountryCode = (typeof KNOWN_COUNTRIES)[number];
+
+// Countries with a LIVE Homico marketplace. This is the ONLY switch that
+// drives URL routing, geo-IP detection, the sitemap and the country
+// selector. Georgia only: visitors from anywhere else (geo-IP, cookie, or a
+// hand-typed /fr URL) fall through to GE — we NEVER route anyone to a
+// foreign/empty marketplace. To launch a new market, add its code here.
+export const SUPPORTED_COUNTRIES = ["GE"] as const;
 
 export const DEFAULT_COUNTRY: CountryCode = "GE";
 
