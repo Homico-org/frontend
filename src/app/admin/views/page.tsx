@@ -27,13 +27,13 @@ interface RankRow {
 }
 
 interface RefLite {
-  _id?: string;
+  id?: string;
   name?: string;
   avatar?: string;
   uid?: number;
 }
 interface LogRow {
-  _id: string;
+  id: string;
   proId?: RefLite | null;
   viewerId?: RefLite | null;
   viewerName?: string | null;
@@ -213,10 +213,10 @@ function JournalTable({ rows, L }: { rows: LogRow[]; L: (k: keyof typeof TXT) =>
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r._id} style={{ borderTop: `1px solid ${THEME.border}`, color: THEME.text }}>
+            <tr key={r.id} style={{ borderTop: `1px solid ${THEME.border}`, color: THEME.text }}>
               <td className="px-4 py-3">
                 {r.proId ? (
-                  <Link href={`/professionals/${r.proId._id}`} className="flex items-center gap-2 hover:underline">
+                  <Link href={`/professionals/${r.proId.id}`} className="flex items-center gap-2 hover:underline">
                     <Avatar src={r.proId.avatar} name={r.proId.name || "?"} size="sm" />
                     <span>{r.proId.name || `#${r.proId.uid ?? "?"}`}</span>
                   </Link>

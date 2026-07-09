@@ -231,7 +231,8 @@ export interface CommentAuthor {
  * Portfolio item preview in comments
  */
 export interface CommentPortfolioItem {
-  _id: string;
+  // api client normalizes Mongo _id → id on every response (lib/api.ts)
+  id: string;
   title: string;
   images: string[];
 }

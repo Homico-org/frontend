@@ -31,7 +31,7 @@ type ServiceRequestStatus =
 type Timing = "asap" | "this_week" | "flexible";
 
 interface ServiceRequest {
-  _id: string;
+  id: string;
   category: string;
   subcategory?: string;
   description: string;
@@ -230,10 +230,10 @@ function AdminRequestsPageContent(): React.ReactElement {
           <div className="space-y-3">
             {items.map((req) => (
               <RequestCard
-                key={req._id}
+                key={req.id}
                 req={req}
-                isUpdating={updatingId === req._id}
-                onStatusChange={(s) => updateStatus(req._id, s)}
+                isUpdating={updatingId === req.id}
+                onStatusChange={(s) => updateStatus(req.id, s)}
                 t={t}
                 locale={locale}
               />

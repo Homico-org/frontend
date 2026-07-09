@@ -114,18 +114,21 @@ interface Activity {
   date: string;
 }
 
+// api client normalizes Mongo _id → id on every response (lib/api.ts). These
+// analytics rows come from aggregation pipelines where _id is the group key
+// (category / date / location), so read it as `id` client-side.
 interface CategoryData {
-  _id: string;
+  id: string;
   count: number;
 }
 
 interface DailyData {
-  _id: string;
+  id: string;
   count: number;
 }
 
 interface LocationData {
-  _id: string;
+  id: string;
   count: number;
 }
 
@@ -387,14 +390,14 @@ function AdminDashboardPageContent() {
 
   // Merge categories that resolve to the same label
   const mergedCategories = (() => {
-    const labelMap = new Map<string, { _id: string; count: number }>();
+    const labelMap = new Map<string, { id: string; count: number }>();
     for (const cat of jobsByCategory) {
-      const label = getSafeCategoryLabel(cat._id);
+      const label = getSafeCategoryLabel(cat.id);
       const existing = labelMap.get(label);
       if (existing) {
         existing.count += cat.count;
       } else {
-        labelMap.set(label, { _id: cat._id, count: cat.count });
+        labelMap.set(label, { id: cat.id, count: cat.count });
       }
     }
     return Array.from(labelMap.values()).sort((a, b) => b.count - a.count);
@@ -402,7 +405,7 @@ function AdminDashboardPageContent() {
 
   // Filter out meaningless locations
   const cleanedLocations = jobsByLocation.filter(loc => {
-    const id = (loc._id || '').trim();
+    const id = (loc.id || '').trim();
     return id.length > 0 && id !== 'unknown' && id !== 'Unknown';
   });
 
@@ -888,7 +891,7 @@ function AdminDashboardPageContent() {
               <div className="relative h-full flex items-end gap-1 px-1">
                 {chartData.map((day, i) => (
                   <div
-                    key={day._id || `day-${i}`}
+                    key={day.id || `day-${i}`}
                     className="flex-1 flex flex-col items-center justify-end group cursor-pointer"
                     style={{ height: '100%' }}
                   >
@@ -898,7 +901,7 @@ function AdminDashboardPageContent() {
                       style={{ background: THEME.surface, border: `1px solid ${THEME.border}` }}
                     >
                       <p className="text-xs font-medium" style={{ color: THEME.text }}>{day.count}</p>
-                      <p className="text-[10px]" style={{ color: THEME.textDim }}>{day._id?.slice(5) || ''}</p>
+                      <p className="text-[10px]" style={{ color: THEME.textDim }}>{day.id?.slice(5) || ''}</p>
                     </div>
 
                     <div
@@ -917,10 +920,10 @@ function AdminDashboardPageContent() {
             {/* X-axis labels */}
             <div className="flex justify-between mt-2 sm:mt-3 px-1">
               <span className="text-[8px] sm:text-[10px]" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
-                {chartData[0]?._id?.slice(5) || ''}
+                {chartData[0]?.id?.slice(5) || ''}
               </span>
               <span className="text-[8px] sm:text-[10px]" style={{ color: THEME.textDim, fontFamily: "'JetBrains Mono', monospace" }}>
-                {chartData[chartData.length - 1]?._id?.slice(5) || ''}
+                {chartData[chartData.length - 1]?.id?.slice(5) || ''}
               </span>
             </div>
           </div>
@@ -1081,10 +1084,10 @@ function AdminDashboardPageContent() {
                   </p>
                 ) : (
                   mergedCategories.slice(0, 5).map((cat, i) => (
-                    <div key={`${cat._id || 'unknown'}-${i}`} className="group">
+                    <div key={`${cat.id || 'unknown'}-${i}`} className="group">
                       <div className="flex items-center justify-between mb-1 sm:mb-1.5">
                         <span className="text-[10px] sm:text-sm truncate" style={{ color: THEME.textMuted }}>
-                          {getSafeCategoryLabel(cat._id)}
+                          {getSafeCategoryLabel(cat.id)}
                         </span>
                         <span
                           className="text-[10px] sm:text-xs font-medium ml-1 sm:ml-2"
@@ -1134,10 +1137,10 @@ function AdminDashboardPageContent() {
                   </p>
                 ) : (
                   cleanedLocations.slice(0, 5).map((loc, i) => (
-                    <div key={`${loc._id || 'unknown'}-${i}`} className="group">
+                    <div key={`${loc.id || 'unknown'}-${i}`} className="group">
                       <div className="flex items-center justify-between mb-1 sm:mb-1.5">
                         <span className="text-[10px] sm:text-sm truncate" style={{ color: THEME.textMuted }}>
-                          {loc._id}
+                          {loc.id}
                         </span>
                         <span
                           className="text-[10px] sm:text-xs font-medium ml-1 sm:ml-2"

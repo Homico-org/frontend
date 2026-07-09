@@ -33,7 +33,7 @@ type DisputeStatus =
 type DisputeType = "pro_noshow" | "client_noshow" | "quality" | "cancellation" | "other";
 
 interface Dispute {
-  _id: string;
+  id: string;
   entityType: "booking" | "project_milestone";
   entityId: string;
   escrowId: string;
@@ -107,7 +107,7 @@ export default function AdminDisputesPage() {
       setList(data);
       // Auto-select first open dispute for fast triage.
       if (!selectedId && data.data.length > 0) {
-        setSelectedId(data.data[0]._id);
+        setSelectedId(data.data[0].id);
       }
     } catch (err) {
       const name = (err as { name?: string })?.name;
@@ -213,13 +213,13 @@ export default function AdminDisputesPage() {
                 <CardBody className="!p-0">
                   <ul>
                     {list?.data.map((d) => (
-                      <li key={d._id}>
+                      <li key={d.id}>
                         <button
-                          onClick={() => setSelectedId(d._id)}
+                          onClick={() => setSelectedId(d.id)}
                           className="w-full text-left px-3 py-2.5 transition-colors"
                           style={{
                             backgroundColor:
-                              selectedId === d._id
+                              selectedId === d.id
                                 ? "rgba(239, 78, 36, 0.08)"
                                 : "transparent",
                             borderLeft: `3px solid ${

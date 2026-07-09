@@ -267,14 +267,14 @@ function AdminUsersPageContent() {
 
     setIsProcessingVerification(true);
     try {
-      await api.patch(`/admin/users/${showVerificationModal._id}/verification`, {
+      await api.patch(`/admin/users/${getUserId(showVerificationModal)}/verification`, {
         status: action === "approve" ? "verified" : "rejected",
         rejectionNote: action === "reject" ? rejectionNote : undefined,
       });
 
       setUsers((prev) =>
         prev.map((u) =>
-          u._id === showVerificationModal._id
+          getUserId(u) === getUserId(showVerificationModal)
             ? { ...u, verificationStatus: action === "approve" ? "verified" : "rejected" }
             : u
         )

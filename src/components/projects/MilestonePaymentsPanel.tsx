@@ -32,8 +32,8 @@ export type MilestonePaymentStatus =
   | 'cancelled';
 
 interface MilestonePayment {
-  _id: string;
-  id?: string;
+  // api client normalizes Mongo _id → id on every response (lib/api.ts)
+  id: string;
   engagementId: string;
   label: string;
   amountMinor: number;
@@ -195,10 +195,10 @@ export default function MilestonePaymentsPanel({
     path: string,
     successKey?: string,
   ) => {
-    setBusyId(mp._id);
+    setBusyId(mp.id);
     try {
       const { data } = await api.post<{ redirectUrl?: string }>(
-        `/milestone-payments/${mp._id}/${path}`,
+        `/milestone-payments/${mp.id}/${path}`,
       );
       if (path === 'fund' && data?.redirectUrl) {
         window.location.href = data.redirectUrl;
@@ -226,9 +226,9 @@ export default function MilestonePaymentsPanel({
   };
 
   const removeRow = async (mp: MilestonePayment) => {
-    setBusyId(mp._id);
+    setBusyId(mp.id);
     try {
-      await api.delete(`/milestone-payments/${mp._id}`);
+      await api.delete(`/milestone-payments/${mp.id}`);
       await refresh();
     } catch (e) {
       err(e);
@@ -274,10 +274,10 @@ export default function MilestonePaymentsPanel({
       ) : (
         <div className="flex flex-col divide-y divide-[var(--hm-border-subtle)]">
           {rows.map((mp) => {
-            const busy = busyId === mp._id;
+            const busy = busyId === mp.id;
             return (
               <div
-                key={mp._id}
+                key={mp.id}
                 className="flex items-center gap-2 py-2 first:pt-0 last:pb-0"
               >
                 <div className="min-w-0 flex-1">
@@ -527,7 +527,7 @@ function DisputeModal({
     if (!description.trim()) return;
     setSaving(true);
     try {
-      await api.post(`/milestone-payments/${mp._id}/dispute`, {
+      await api.post(`/milestone-payments/${mp.id}/dispute`, {
         type,
         description: description.trim(),
       });
