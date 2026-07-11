@@ -21,6 +21,7 @@ import {
   Package,
   Pencil,
   Plus,
+  Settings2,
   Trash2,
   Upload,
   X,
@@ -37,6 +38,9 @@ interface Shop {
   status: 'pending' | 'approved' | 'suspended';
   legalName?: string;
   logo?: string;
+  taxId?: string;
+  payoutIban?: string;
+  deliveryFeeMinor?: number;
 }
 
 interface SellerProduct {
@@ -323,6 +327,8 @@ function Dashboard({
   const [importing, setImporting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   // ── stats ──
   const stats = useMemo(() => {
     const inStock = products.filter((p) => (p.stockQty ?? 1) > 0 && p.isAvailable !== false).length;
@@ -484,17 +490,27 @@ function Dashboard({
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
       {/* Header */}
-      <header className="mb-6">
-        <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--hm-fg-subtle)]">
-          {pick({ en: 'My shop', ka: 'ჩემი მაღაზია', ru: 'Мой магазин' })} · #{shop.key.slice(-6)}
-        </p>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[26px] font-bold tracking-[-0.02em] text-[var(--hm-fg-primary)]">{shop.name}</h1>
-          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusCls}`}>
-            <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-            {statusLabel}
-          </span>
+      <header className="mb-6 flex items-start justify-between gap-3">
+        <div>
+          <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--hm-fg-subtle)]">
+            {pick({ en: 'My shop', ka: 'ჩემი მაღაზია', ru: 'Мой магазин' })} · #{shop.key.slice(-6)}
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-[26px] font-bold tracking-[-0.02em] text-[var(--hm-fg-primary)]">{shop.name}</h1>
+            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusCls}`}>
+              <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+              {statusLabel}
+            </span>
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(true)}
+          className="mt-1 inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-[var(--hm-border-subtle)] px-3 text-[12px] font-medium text-[var(--hm-fg-secondary)] transition-colors hover:border-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"
+        >
+          <Settings2 className="h-4 w-4" strokeWidth={1.75} />
+          <span className="hidden sm:inline">{pick({ en: 'Shop settings', ka: 'პარამეტრები', ru: 'Настройки' })}</span>
+        </button>
       </header>
 
       {/* Metric strip - bare on surface */}
@@ -712,6 +728,143 @@ function Dashboard({
           </Button>
         </ModalFooter>
       </Modal>
+
+      {/* Shop settings */}
+      <ShopSettingsModal
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        shop={shop}
+        pick={pick}
+        onSaved={onChanged}
+      />
     </div>
+  );
+}
+
+function ShopSettingsModal({
+  isOpen,
+  onClose,
+  shop,
+  pick,
+  onSaved,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  shop: Shop;
+  pick: (l: Loc) => string;
+  onSaved: () => void | Promise<void>;
+}) {
+  const toast = useToast();
+  const [name, setName] = useState(shop.name);
+  const [legalName, setLegalName] = useState(shop.legalName || '');
+  const [taxId, setTaxId] = useState(shop.taxId || '');
+  const [iban, setIban] = useState(shop.payoutIban || '');
+  const [deliveryFee, setDeliveryFee] = useState(
+    shop.deliveryFeeMinor ? String(Math.round(shop.deliveryFeeMinor / 100)) : '',
+  );
+  const [logo, setLogo] = useState<string | null>(shop.logo || null);
+  const [saving, setSaving] = useState(false);
+  const logoRef = useRef<HTMLInputElement>(null);
+
+  // Reset the form to the shop's current values each time the modal opens.
+  useEffect(() => {
+    if (!isOpen) return;
+    setName(shop.name);
+    setLegalName(shop.legalName || '');
+    setTaxId(shop.taxId || '');
+    setIban(shop.payoutIban || '');
+    setDeliveryFee(shop.deliveryFeeMinor ? String(Math.round(shop.deliveryFeeMinor / 100)) : '');
+    setLogo(shop.logo || null);
+  }, [isOpen, shop]);
+
+  const onLogoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setLogo(typeof reader.result === 'string' ? reader.result : null);
+    reader.readAsDataURL(file);
+  };
+
+  const save = async () => {
+    if (!name.trim()) return;
+    setSaving(true);
+    try {
+      await api.patch('/supplier-catalog/my-shop', {
+        name: name.trim(),
+        legalName: legalName.trim() || undefined,
+        taxId: taxId.trim() || undefined,
+        payoutIban: iban.trim() || undefined,
+        deliveryFee: deliveryFee ? Number(deliveryFee) : 0,
+      });
+      toast.success(pick({ en: 'Saved', ka: 'შენახულია', ru: 'Сохранено' }));
+      await onSaved();
+      onClose();
+    } catch (err) {
+      toast.error(extractApiErrorMessage(err, pick({ en: 'Save failed', ka: 'ვერ შეინახა', ru: 'Не сохранено' })));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="md" showCloseButton>
+      <ModalHeader title={pick({ en: 'Shop settings', ka: 'მაღაზიის პარამეტრები', ru: 'Настройки магазина' })} />
+      <ModalBody className="space-y-5">
+        <div className="space-y-3">
+          <GroupCaption n="01" label={pick({ en: 'Identity', ka: 'იდენტობა', ru: 'Профиль' })} />
+          <div className="flex items-start gap-3">
+            <button
+              type="button"
+              onClick={() => logoRef.current?.click()}
+              className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-subtle)] transition-colors hover:border-[var(--hm-fg-muted)]"
+            >
+              {logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logo} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <ImagePlus className="h-5 w-5" strokeWidth={1.5} />
+              )}
+            </button>
+            <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={onLogoPick} />
+            <div className="flex-1">
+              <Field label={pick({ en: 'Shop name', ka: 'მაღაზიის დასახელება', ru: 'Название магазина' })}>
+                <Input variant="filled" value={name} onChange={(e) => setName(e.target.value)} />
+              </Field>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <GroupCaption n="02" label={pick({ en: 'Legal & payout', ka: 'იურიდიული და გადახდა', ru: 'Реквизиты' })} />
+          <Field label={pick({ en: 'Legal entity', ka: 'იურიდიული პირი', ru: 'Юр. лицо' })}>
+            <Input variant="filled" value={legalName} onChange={(e) => setLegalName(e.target.value)} />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label={pick({ en: 'Tax ID', ka: 'საიდენტიფიკაციო კოდი', ru: 'Налог. код' })}>
+              <Input variant="filled" className="font-mono" value={taxId} onChange={(e) => setTaxId(e.target.value)} />
+            </Field>
+            <Field label={pick({ en: 'IBAN', ka: 'ანგარიში / IBAN', ru: 'IBAN' })}>
+              <Input variant="filled" className="font-mono" value={iban} onChange={(e) => setIban(e.target.value)} />
+            </Field>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <GroupCaption n="03" label={pick({ en: 'Delivery', ka: 'მიწოდება', ru: 'Доставка' })} />
+          <Field label={pick({ en: 'Delivery fee, ₾', ka: 'მიწოდების საფასური, ₾', ru: 'Стоимость доставки, ₾' })}>
+            <Input variant="filled" type="number" value={deliveryFee} onChange={(e) => setDeliveryFee(e.target.value)} />
+          </Field>
+        </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button variant="outline" onClick={onClose}>
+          {pick({ en: 'Cancel', ka: 'გაუქმება', ru: 'Отмена' })}
+        </Button>
+        <Button onClick={save} disabled={saving || !name.trim()}>
+          {saving ? <LoadingSpinner size="sm" /> : pick({ en: 'Save', ka: 'შენახვა', ru: 'Сохранить' })}
+        </Button>
+      </ModalFooter>
+    </Modal>
   );
 }
