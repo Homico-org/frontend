@@ -328,6 +328,7 @@ function Dashboard({
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [tab, setTab] = useState<'inventory' | 'orders'>('inventory');
 
   // ── stats ──
   const stats = useMemo(() => {
@@ -532,6 +533,30 @@ function Dashboard({
         </div>
       )}
 
+      {/* Tabs - Inventory / Orders */}
+      <div className="mt-6 flex items-center gap-6 border-b border-[var(--hm-border-subtle)]">
+        {(['inventory', 'orders'] as const).map((tk) => (
+          <button
+            key={tk}
+            type="button"
+            onClick={() => setTab(tk)}
+            className={`-mb-px border-b-2 pb-2.5 text-[13px] font-semibold transition-colors ${
+              tab === tk
+                ? 'border-[var(--hm-brand-500)] text-[var(--hm-fg-primary)]'
+                : 'border-transparent text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-secondary)]'
+            }`}
+          >
+            {tk === 'inventory'
+              ? pick({ en: 'Inventory', ka: 'მარაგი', ru: 'Склад' })
+              : pick({ en: 'Orders', ka: 'შეკვეთები', ru: 'Заказы' })}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'orders' ? (
+        <ShopOrdersPanel pick={pick} />
+      ) : (
+      <>
       {/* Toolbar */}
       <div className="sticky top-0 z-10 mt-5 flex flex-wrap items-center gap-2 bg-[var(--hm-bg-page)]/90 py-2 backdrop-blur">
         <div className="min-w-[180px] flex-1">
@@ -660,6 +685,8 @@ function Dashboard({
           </Button>
           <button type="button" onClick={() => setSelected(new Set())} className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"><X className="h-4 w-4" /></button>
         </div>
+      )}
+      </>
       )}
 
       {/* Import modal */}
@@ -866,5 +893,113 @@ function ShopSettingsModal({
         </Button>
       </ModalFooter>
     </Modal>
+  );
+}
+
+/* ─────────────────────────── Orders ─────────────────────────── */
+
+type ShopOrderItem = { name: string; nameKa?: string; qty: number; imageUrl?: string };
+type ShopOrder = {
+  _id: string;
+  orderNumber: string;
+  status: 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+  createdAt: string;
+  itemCount: number;
+  shopSubtotalMinor: number;
+  items: ShopOrderItem[];
+};
+
+const ORDER_STATUS: Record<ShopOrder['status'], { loc: Loc; cls: string }> = {
+  paid: { loc: { en: 'New', ka: 'ახალი', ru: 'Новый' }, cls: 'bg-[var(--hm-brand-500)]/[0.12] text-[var(--hm-brand-500)]' },
+  processing: { loc: { en: 'Preparing', ka: 'მზადდება', ru: 'Готовится' }, cls: 'bg-[var(--hm-warning-500)]/[0.12] text-[var(--hm-warning-600)]' },
+  shipped: { loc: { en: 'Shipped', ka: 'გზაშია', ru: 'Отправлен' }, cls: 'bg-[var(--hm-info-500)]/[0.12] text-[var(--hm-info-600)]' },
+  delivered: { loc: { en: 'Delivered', ka: 'მიტანილი', ru: 'Доставлен' }, cls: 'bg-[var(--hm-success-500)]/[0.12] text-[var(--hm-success-600)]' },
+  cancelled: { loc: { en: 'Cancelled', ka: 'გაუქმებული', ru: 'Отменён' }, cls: 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]' },
+  refunded: { loc: { en: 'Refunded', ka: 'დაბრუნებული', ru: 'Возврат' }, cls: 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]' },
+};
+
+function ShopOrdersPanel({ pick }: { pick: (l: Loc) => string }) {
+  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<ShopOrder[]>([]);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const { data } = await api.get<{ items: ShopOrder[] }>('/orders/my-shop');
+        if (alive) setOrders(data?.items || []);
+      } catch {
+        if (alive) setOrders([]);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const fmtDate = (iso: string) => {
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime())
+      ? ''
+      : `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[30vh] items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <div className="mt-6 rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] px-6 py-16 text-center">
+        <h3 className="text-[16px] font-semibold text-[var(--hm-fg-primary)]">
+          {pick({ en: 'No orders yet', ka: 'შეკვეთები ჯერ არ არის', ru: 'Заказов пока нет' })}
+        </h3>
+        <p className="mx-auto mt-1.5 max-w-sm text-[13px] text-[var(--hm-fg-muted)]">
+          {pick({
+            en: 'When a customer buys your products, the orders you need to prepare show up here.',
+            ka: 'როცა მომხმარებელი შენს პროდუქტს იყიდის, მოსამზადებელი შეკვეთები აქ გამოჩნდება.',
+            ru: 'Когда клиент купит ваши товары, заказы к подготовке появятся здесь.',
+          })}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 overflow-hidden rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]">
+      {orders.map((o) => {
+        const st = ORDER_STATUS[o.status];
+        return (
+          <div
+            key={o._id}
+            className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--hm-border-subtle)] px-4 py-3.5 last:border-b-0"
+          >
+            <div className="flex min-w-[140px] flex-col">
+              <span className="font-mono text-[12px] font-semibold text-[var(--hm-fg-primary)]">#{o.orderNumber}</span>
+              <span className="text-[11px] text-[var(--hm-fg-muted)]">{fmtDate(o.createdAt)}</span>
+            </div>
+            <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${st?.cls}`}>
+              <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+              {pick(st?.loc || { en: o.status, ka: o.status, ru: o.status })}
+            </span>
+            <div className="min-w-[180px] flex-1 truncate text-[13px] text-[var(--hm-fg-secondary)]">
+              {o.items.map((i) => `${pick({ en: i.name, ka: i.nameKa || i.name, ru: i.name })} ×${i.qty}`).join(', ')}
+            </div>
+            <div className="ml-auto text-right">
+              <div className="font-mono text-[13px] font-semibold text-[var(--hm-fg-primary)]">{fmt(o.shopSubtotalMinor)}</div>
+              <div className="text-[11px] text-[var(--hm-fg-muted)]">
+                {o.itemCount} {pick({ en: 'items', ka: 'ერთეული', ru: 'шт.' })}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
