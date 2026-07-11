@@ -159,7 +159,7 @@ export default function ProductDetailModal({
             </h2>
 
             <div className="mt-3 flex items-baseline gap-2.5">
-              <span className="text-[30px] font-bold tabular-nums tracking-[-0.02em] text-[var(--hm-brand-500)]">
+              <span className="text-[30px] font-bold tabular-nums tracking-[-0.02em] text-[var(--hm-fg-primary)]">
                 {fmt(product.priceGel)}
               </span>
               {!available && (

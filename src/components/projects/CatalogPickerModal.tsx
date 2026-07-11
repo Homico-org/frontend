@@ -25,6 +25,8 @@ interface CatalogPickerModalProps {
   onPrefill?: (prefill: CatalogPrefill) => void;
   /** direct mode: refresh the project after a successful add. */
   onSaved?: () => Promise<void> | void;
+  /** Pre-search the catalog (e.g. "shop this scope item" seeds the service name). */
+  initialQuery?: string;
 }
 
 function toPrefill(p: CatalogProduct): CatalogPrefill {
@@ -48,6 +50,7 @@ export default function CatalogPickerModal({
   stepId,
   onPrefill,
   onSaved,
+  initialQuery,
 }: CatalogPickerModalProps) {
   const { t } = useLanguage();
   const toast = useToast();
@@ -104,6 +107,7 @@ export default function CatalogPickerModal({
           onPick={handlePick}
           pickBusyId={busyId}
           addedIds={addedIds}
+          initialQuery={initialQuery}
         />
       </ModalBody>
     </Modal>

@@ -5,7 +5,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import EdgeFadeScroller from '@/components/ui/EdgeFadeScroller';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
-import { Check, Package, PackageCheck, Store, Wallet, X } from 'lucide-react';
+import { Check, Package, PackageCheck, SlidersHorizontal, Store, Wallet, X } from 'lucide-react';
 import SupplierAvatar from './SupplierAvatar';
 import Select from '@/components/common/Select';
 import { ReactNode, useEffect, useRef, useState } from 'react';
@@ -64,6 +64,8 @@ interface CatalogSearchProps {
   sticky?: boolean;
   /** Rendered inline at the right of the search row (e.g. a cart button). */
   endSlot?: ReactNode;
+  /** Seed the search box - used by "shop this scope item" to pre-search a service. */
+  initialQuery?: string;
 }
 
 export default function CatalogSearch({
@@ -79,6 +81,7 @@ export default function CatalogSearch({
   cartMode,
   sticky,
   endSlot,
+  initialQuery,
 }: CatalogSearchProps) {
   const { t } = useLanguage();
   const {
@@ -94,7 +97,7 @@ export default function CatalogSearch({
     error,
     loadMore,
     reset,
-  } = useProductSearch();
+  } = useProductSearch({ initialQuery });
 
   const hasActiveFilters =
     !!query ||
@@ -111,6 +114,7 @@ export default function CatalogSearch({
 
   const [suppliers, setSuppliers] = useState<CatalogSupplier[]>([]);
   const [categories, setCategories] = useState<CatalogCategoryFacet[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
 
   // Shops, fetched once.
@@ -169,7 +173,7 @@ export default function CatalogSearch({
   const shopCardCls = (active: boolean) =>
     `group relative flex shrink-0 items-center gap-2.5 rounded-2xl border p-2.5 pr-3.5 text-left transition-all ${
       active
-        ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/[0.05] ring-1 ring-[var(--hm-brand-500)]'
+        ? 'border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)]/[0.06]'
         : 'border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] hover:-translate-y-0.5 hover:border-[var(--hm-border)] hover:shadow-[0_8px_22px_-14px_rgba(17,16,13,0.25)]'
     }`;
 
@@ -254,7 +258,6 @@ export default function CatalogSearch({
               onValueChange={setQuery}
               placeholder={t('projects.catalogSearchPlaceholder')}
               variant="filled"
-              autoFocus
             />
           </div>
           {endSlot}
@@ -268,7 +271,7 @@ export default function CatalogSearch({
             onClick={() => setFilters((f) => ({ ...f, category: undefined }))}
             className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors ${
               !filters.category
-                ? 'border border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)] text-white'
+                ? 'border border-[var(--hm-fg-primary)] bg-[var(--hm-fg-primary)] text-[var(--hm-bg-elevated)]'
                 : 'border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
             }`}
           >
@@ -286,7 +289,7 @@ export default function CatalogSearch({
               }
               className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors ${
                 filters.category === c.category
-                  ? 'border border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)] text-white'
+                  ? 'border border-[var(--hm-fg-primary)] bg-[var(--hm-fg-primary)] text-[var(--hm-bg-elevated)]'
                   : 'border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
               }`}
             >
@@ -305,59 +308,91 @@ export default function CatalogSearch({
         </EdgeFadeScroller>
       )}
 
-      {/* Sort + in-stock + price - one swipeable row on mobile */}
-      <EdgeFadeScroller className="-mx-1 mt-3 flex items-center gap-2 px-1 pb-0.5">
-        <Select
-          value={filters.sort || 'relevance'}
-          onChange={(v) =>
-            setFilters((f) => ({ ...f, sort: v as ProductSort }))
-          }
-          options={SORTS.map((s) => ({
-            value: s,
-            label: t(SORT_LABEL_KEY[s]),
-          }))}
-          size="sm"
-          className="w-[172px] shrink-0"
-        />
+      {/* Sort + a Filters toggle. In-stock + price live behind Filters so the
+          default view stays calm; an active filter keeps the panel open. */}
+      {(() => {
+        const priceActive = PRICE_PRESETS.some((p) => activePreset(p));
+        const extraCount = (filters.inStockOnly ? 1 : 0) + (priceActive ? 1 : 0);
+        const panelOpen = showFilters || extraCount > 0;
+        return (
+          <>
+            <div className="mt-3 flex items-center gap-2">
+              <Select
+                value={filters.sort || 'relevance'}
+                onChange={(v) =>
+                  setFilters((f) => ({ ...f, sort: v as ProductSort }))
+                }
+                options={SORTS.map((s) => ({
+                  value: s,
+                  label: t(SORT_LABEL_KEY[s]),
+                }))}
+                size="sm"
+                className="w-[172px] shrink-0"
+              />
+              <button
+                type="button"
+                onClick={() => setShowFilters((v) => !v)}
+                aria-expanded={panelOpen}
+                className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[12px] font-semibold transition-colors ${
+                  panelOpen
+                    ? 'border-[var(--hm-fg-primary)] text-[var(--hm-fg-primary)]'
+                    : 'border-[var(--hm-border-subtle)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
+                }`}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                {t('projects.catalogFilters')}
+                {extraCount > 0 && (
+                  <span className="ml-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--hm-brand-500)] px-1 text-[10px] font-bold tabular-nums text-white">
+                    {extraCount}
+                  </span>
+                )}
+              </button>
+            </div>
 
-        <button
-          type="button"
-          onClick={() =>
-            setFilters((f) => ({ ...f, inStockOnly: !f.inStockOnly }))
-          }
-          className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold transition-colors ${
-            filters.inStockOnly
-              ? 'bg-[var(--hm-success-500)] text-white'
-              : 'border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
-          }`}
-        >
-          {filters.inStockOnly ? (
-            <Check className="h-3.5 w-3.5" />
-          ) : (
-            <PackageCheck className="h-3.5 w-3.5" />
-          )}
-          {t('projects.catalogInStockOnly')}
-        </button>
+            {panelOpen && (
+              <EdgeFadeScroller className="-mx-1 mt-2.5 flex items-center gap-2 px-1 pb-0.5">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFilters((f) => ({ ...f, inStockOnly: !f.inStockOnly }))
+                  }
+                  className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold transition-colors ${
+                    filters.inStockOnly
+                      ? 'bg-[var(--hm-success-500)] text-white'
+                      : 'border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
+                  }`}
+                >
+                  {filters.inStockOnly ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <PackageCheck className="h-3.5 w-3.5" />
+                  )}
+                  {t('projects.catalogInStockOnly')}
+                </button>
 
-        {PRICE_PRESETS.map((preset, i) => {
-          const active = activePreset(preset);
-          return (
-            <button
-              key={preset.key}
-              type="button"
-              onClick={() => togglePreset(preset)}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-                active
-                  ? 'border border-[var(--hm-brand-500)] bg-[var(--hm-brand-500)] text-white'
-                  : 'border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
-              }`}
-            >
-              {i === 0 && <Wallet className="h-3.5 w-3.5" />}
-              {t(preset.labelKey, preset.params)}
-            </button>
-          );
-        })}
-      </EdgeFadeScroller>
+                {PRICE_PRESETS.map((preset, i) => {
+                  const active = activePreset(preset);
+                  return (
+                    <button
+                      key={preset.key}
+                      type="button"
+                      onClick={() => togglePreset(preset)}
+                      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+                        active
+                          ? 'border border-[var(--hm-fg-primary)] bg-[var(--hm-fg-primary)] text-[var(--hm-bg-elevated)]'
+                          : 'border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] hover:border-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
+                      }`}
+                    >
+                      {i === 0 && <Wallet className="h-3.5 w-3.5" />}
+                      {t(preset.labelKey, preset.params)}
+                    </button>
+                  );
+                })}
+              </EdgeFadeScroller>
+            )}
+          </>
+        );
+      })()}
 
       </div>
 
@@ -406,11 +441,23 @@ export default function CatalogSearch({
             </button>
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-10 text-center">
-            <Package className="h-6 w-6 text-[var(--hm-fg-muted)]" />
-            <p className="text-[14px] text-[var(--hm-fg-muted)]">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-10 text-center">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]">
+              <Package className="h-5 w-5" strokeWidth={1.6} />
+            </span>
+            <p className="text-[14px] font-medium text-[var(--hm-fg-primary)]">
               {t('projects.catalogNoResults')}
             </p>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hm-border-strong)] px-4 py-2 text-[13px] font-semibold text-[var(--hm-fg-primary)] transition-colors hover:border-[var(--hm-fg-primary)]"
+              >
+                <X className="h-3.5 w-3.5" />
+                {t('projects.catalogClearAll')}
+              </button>
+            )}
           </div>
         ) : (
           <>
