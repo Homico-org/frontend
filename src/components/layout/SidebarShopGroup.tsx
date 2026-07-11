@@ -1,7 +1,7 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ChevronDown, Package, ShoppingBag, Store } from 'lucide-react';
+import { Boxes, ChevronDown, Package, ShoppingBag, Store } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -19,7 +19,7 @@ interface Props {
  */
 export default function SidebarShopGroup({ label, isCollapsed, active }: Props) {
   const pathname = usePathname() || '';
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
   const inSection =
     /\/shop(\/|$)/.test(pathname) || /\/orders(\/|$)/.test(pathname);
   const [expanded, setExpanded] = useState(inSection);
@@ -35,13 +35,20 @@ export default function SidebarShopGroup({ label, isCollapsed, active }: Props) 
       href: '/shop',
       label: t('nav.shopCatalog'),
       Icon: Store,
-      isCurrent: /\/shop(\/|$)/.test(pathname),
+      isCurrent:
+        /\/shop(\/|$)/.test(pathname) && !/\/shop\/manage/.test(pathname),
     },
     {
       href: '/orders',
       label: t('header.orders'),
       Icon: Package,
       isCurrent: /\/orders(\/|$)/.test(pathname),
+    },
+    {
+      href: '/shop/manage',
+      label: pick({ en: 'Sell on Homico', ka: 'გაყიდე Homico-ზე', ru: 'Продавать на Homico' }),
+      Icon: Boxes,
+      isCurrent: /\/shop\/manage/.test(pathname),
     },
   ];
 
