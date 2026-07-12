@@ -16,6 +16,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAiServiceSearch } from "@/hooks/useAiServiceSearch";
 import { getCategoryLabelStatic } from "@/hooks/useCategoryLabels";
 import { useCountryLink } from "@/hooks/useCountry";
+import { useMyShop } from "@/hooks/useMyShop";
 import api from "@/lib/api";
 import { stripCountryPrefix } from "@/utils/countryLink";
 import {
@@ -38,6 +39,7 @@ import {
   Search,
   Settings,
   ShoppingBag,
+  Store,
   Users,
   Wrench,
   X,
@@ -540,10 +542,10 @@ function SidebarCategoriesUI({
   onSubClick,
 }: {
   isCollapsed: boolean;
-  categories: { key: string; name: string; nameKa: string }[];
+  categories: { key: string; name: string; nameKa: string; nameRu?: string }[];
   getSubcategoriesForCategory: (
     key: string,
-  ) => { key: string; name: string; nameKa: string }[];
+  ) => { key: string; name: string; nameKa: string; nameRu?: string }[];
   locale: string;
   expandedCategories: Record<string, boolean>;
   setExpandedCategories: React.Dispatch<
@@ -607,7 +609,7 @@ function SidebarCategoriesUI({
         const subcategories = getSubcategoriesForCategory(catKey);
         const isExpanded = expandedCategories[catKey] ?? false;
         const label =
-          pick({ en: cat.name, ka: cat.nameKa }) ||
+          pick({ en: cat.name, ka: cat.nameKa, ru: cat.nameRu }) ||
           getCategoryLabelStatic(catKey, locale);
         const hasSelectedSub = subcategories.some((s) => isSubSelected(s.key));
 
@@ -659,7 +661,7 @@ function SidebarCategoriesUI({
                 {subcategories.map((sub) => {
                   const selected = isSubSelected(sub.key);
                   const subLabel =
-                    pick({ en: sub.name, ka: sub.nameKa }) ||
+                    pick({ en: sub.name, ka: sub.nameKa, ru: sub.nameRu }) ||
                     getCategoryLabelStatic(sub.key, locale);
                   return (
                     <button
@@ -723,6 +725,7 @@ function ShellContent({ children }: { children: ReactNode }) {
   const isPro = user?.role === "pro" || user?.role === "admin";
   const isClient = user?.role === "client";
   const isAuthenticated = !!user;
+  const { shop: myShop } = useMyShop();
   const [pendingBookingCount, setPendingBookingCount] = useState(0);
 
   // Fetch pending booking count for badge
@@ -956,6 +959,7 @@ function ShellContent({ children }: { children: ReactNode }) {
                       })}
                       isCollapsed={isCollapsed}
                       active={isActive}
+                      shop={myShop}
                     />
                   );
                 }
@@ -1025,6 +1029,27 @@ function ShellContent({ children }: { children: ReactNode }) {
                       <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--hm-fg-muted)] px-2 pt-1 pb-2">
                         {t("nav.sectionAccount")}
                       </div>
+                    )}
+                    {myShop && (
+                      <Link
+                        href="/shop/manage"
+                        className={`flex items-center rounded-xl text-[12.5px] transition-colors ${
+                          isCollapsed
+                            ? "justify-center px-2 py-2"
+                            : "gap-2.5 px-2.5 py-2"
+                        } ${
+                          pathname.startsWith("/shop/manage")
+                            ? "bg-[var(--hm-brand-500)]/[0.10] font-semibold text-[var(--hm-brand-500)]"
+                            : "font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
+                        }`}
+                        title={isCollapsed ? myShop.name : undefined}
+                      >
+                        <Store
+                          className="w-[18px] h-[18px] shrink-0"
+                          strokeWidth={pathname.startsWith("/shop/manage") ? 2.1 : 1.75}
+                        />
+                        {!isCollapsed && <span className="truncate">{myShop.name}</span>}
+                      </Link>
                     )}
                     <Link
                       href="/settings"

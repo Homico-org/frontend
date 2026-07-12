@@ -225,7 +225,9 @@ export default function CatalogSearch({
                   <SupplierAvatar supplierKey={s.key} size={44} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-semibold text-[var(--hm-fg-primary)]">
-                      {supplierLabel(s.key)}
+                      {/* Self-serve shops carry their real name; legacy scraped
+                          suppliers get the curated label from the key. */}
+                      {s.name?.trim() || supplierLabel(s.key)}
                     </span>
                     <span className="mt-0.5 flex items-center gap-1 text-[11px] tabular-nums text-[var(--hm-fg-muted)]">
                       <Package className="h-3 w-3" strokeWidth={1.8} />

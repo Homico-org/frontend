@@ -135,20 +135,45 @@ function Onboarding({ pick, onCreated }: { pick: (l: Loc) => string; onCreated: 
   const [taxId, setTaxId] = useState('');
   const [iban, setIban] = useState('');
   const [deliveryFee, setDeliveryFee] = useState('');
-  const [logo, setLogo] = useState<string | null>(null); // preview only
+  const [logo, setLogo] = useState<string | null>(null); // instant data-URL preview
+  const [logoUrl, setLogoUrl] = useState<string | null>(null); // uploaded URL to persist
+  const [logoUploading, setLogoUploading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const logoRef = useRef<HTMLInputElement>(null);
 
-  const onLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
+    e.target.value = '';
     if (!f) return;
+    // Instant local preview...
     const r = new FileReader();
     r.onload = () => setLogo(String(r.result));
     r.readAsDataURL(f);
+    // ...then upload so it actually persists on the shop.
+    setLogoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', f);
+      const { data } = await api.post<{ url: string }>('/upload/public', fd);
+      setLogoUrl(data?.url || null);
+    } catch (err) {
+      toast.error(extractApiErrorMessage(err, pick({ en: 'Logo upload failed', ka: 'ლოგო ვერ აიტვირთა', ru: 'Логотип не загрузился' })));
+      setLogo(null);
+      setLogoUrl(null);
+    } finally {
+      setLogoUploading(false);
+    }
   };
 
   const create = async () => {
-    if (!name.trim()) return;
+    setNameError(null);
+    setFormError(null);
+    if (!name.trim()) {
+      setNameError(pick({ en: 'Shop name is required', ka: 'შეიყვანეთ მაღაზიის სახელი', ru: 'Введите название магазина' }));
+      return;
+    }
     setCreating(true);
     try {
       await api.post('/supplier-catalog/my-shop', {
@@ -157,11 +182,24 @@ function Onboarding({ pick, onCreated }: { pick: (l: Loc) => string; onCreated: 
         taxId: taxId.trim() || undefined,
         payoutIban: iban.trim() || undefined,
         deliveryFee: deliveryFee ? Number(deliveryFee) : undefined,
+        logo: logoUrl || undefined,
       });
       toast.success(pick({ en: 'Shop created', ka: 'მაღაზია შეიქმნა', ru: 'Магазин создан' }));
       onCreated();
     } catch (err) {
-      toast.error(extractApiErrorMessage(err, pick({ en: 'Try again', ka: 'სცადეთ თავიდან', ru: 'Попробуйте снова' })));
+      const code = extractApiErrorMessage(err, '');
+      if (code === 'SHOP_EXISTS') {
+        // The caller already owns a shop - don't strand them on the form, just
+        // take them into their dashboard.
+        toast.success(pick({ en: 'You already have a shop', ka: 'მაღაზია უკვე გაქვთ', ru: 'У вас уже есть магазин' }));
+        onCreated();
+        return;
+      }
+      if (code === 'NAME_TAKEN') {
+        setNameError(pick({ en: 'A shop with this name already exists', ka: 'ამ სახელით მაღაზია უკვე არსებობს', ru: 'Магазин с таким названием уже существует' }));
+      } else {
+        setFormError(code || pick({ en: 'Could not create the shop. Try again.', ka: 'მაღაზია ვერ შეიქმნა. სცადეთ თავიდან.', ru: 'Не удалось создать магазин. Попробуйте снова.' }));
+      }
     } finally {
       setCreating(false);
     }
@@ -198,8 +236,15 @@ function Onboarding({ pick, onCreated }: { pick: (l: Loc) => string; onCreated: 
                   className="group relative flex h-[72px] w-[72px] shrink-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl border border-dashed border-[var(--hm-border-strong)] bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] transition-colors hover:border-[var(--hm-fg-primary)]"
                 >
                   {logo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={logo} alt="" className="h-full w-full object-cover" />
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={logo} alt="" className="h-full w-full object-cover" />
+                      {logoUploading && (
+                        <span className="absolute inset-0 flex items-center justify-center bg-[rgba(17,16,13,0.45)]">
+                          <LoadingSpinner size="sm" />
+                        </span>
+                      )}
+                    </>
                   ) : (
                     <>
                       <ImagePlus className="h-4 w-4" strokeWidth={1.6} />
@@ -209,10 +254,16 @@ function Onboarding({ pick, onCreated }: { pick: (l: Loc) => string; onCreated: 
                 </button>
                 <div className="flex-1">
                   <Field label={pick({ en: 'Shop name', ka: 'მაღაზიის დასახელება', ru: 'Название магазина' })}>
-                    <Input variant="filled" value={name} onChange={(e) => setName(e.target.value)} />
+                    <Input
+                      variant="filled"
+                      value={name}
+                      onChange={(e) => { setName(e.target.value); if (nameError) setNameError(null); }}
+                      aria-invalid={!!nameError}
+                      className={nameError ? 'border-[var(--hm-error-500)] focus:border-[var(--hm-error-500)]' : ''}
+                    />
                   </Field>
-                  <p className="mt-1.5 text-[11.5px] text-[var(--hm-fg-muted)]">
-                    {pick({ en: 'How buyers find you across Homico.', ka: 'ასე გპოვებენ მყიდველები Homico-ზე.', ru: 'Так покупатели находят вас на Homico.' })}
+                  <p className={`mt-1.5 text-[11.5px] ${nameError ? 'text-[var(--hm-error-500)]' : 'text-[var(--hm-fg-muted)]'}`}>
+                    {nameError || pick({ en: 'How buyers find you across Homico.', ka: 'ასე გპოვებენ მყიდველები Homico-ზე.', ru: 'Так покупатели находят вас на Homico.' })}
                   </p>
                 </div>
               </div>
@@ -248,7 +299,12 @@ function Onboarding({ pick, onCreated }: { pick: (l: Loc) => string; onCreated: 
               </p>
             </div>
 
-            <Button className="w-full sm:w-auto" onClick={create} disabled={creating || !name.trim()}>
+            {formError && (
+              <div className="rounded-xl border border-[var(--hm-error-500)]/30 bg-[var(--hm-error-500)]/[0.06] px-3.5 py-2.5 text-[13px] text-[var(--hm-error-500)]">
+                {formError}
+              </div>
+            )}
+            <Button className="w-full sm:w-auto" onClick={create} disabled={creating || logoUploading || !name.trim()}>
               {creating ? <LoadingSpinner size="sm" /> : pick({ en: 'Open my shop', ka: 'გახსენი ჩემი მაღაზია', ru: 'Открыть магазин' })}
             </Button>
           </div>
@@ -263,6 +319,7 @@ function Onboarding({ pick, onCreated }: { pick: (l: Loc) => string; onCreated: 
             <ProductCard
               name={pick({ en: 'Your product', ka: 'შენი პროდუქტი', ru: 'Ваш товар' })}
               vendorLabel={name.trim() || pick({ en: 'Your shop', ka: 'შენი მაღაზია', ru: 'Ваш магазин' })}
+              vendorLogo={logo ?? undefined}
               priceLabel="—"
               inStock
             />
@@ -789,7 +846,9 @@ function ShopSettingsModal({
   const [deliveryFee, setDeliveryFee] = useState(
     shop.deliveryFeeMinor ? String(Math.round(shop.deliveryFeeMinor / 100)) : '',
   );
-  const [logo, setLogo] = useState<string | null>(shop.logo || null);
+  const [logo, setLogo] = useState<string | null>(shop.logo || null); // preview src
+  const [logoUrl, setLogoUrl] = useState<string | null>(shop.logo || null); // persisted URL
+  const [logoUploading, setLogoUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const logoRef = useRef<HTMLInputElement>(null);
 
@@ -802,15 +861,29 @@ function ShopSettingsModal({
     setIban(shop.payoutIban || '');
     setDeliveryFee(shop.deliveryFeeMinor ? String(Math.round(shop.deliveryFeeMinor / 100)) : '');
     setLogo(shop.logo || null);
+    setLogoUrl(shop.logo || null);
   }, [isOpen, shop]);
 
-  const onLogoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onLogoPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => setLogo(typeof reader.result === 'string' ? reader.result : null);
     reader.readAsDataURL(file);
+    setLogoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const { data } = await api.post<{ url: string }>('/upload/public', fd);
+      setLogoUrl(data?.url || null);
+    } catch (err) {
+      toast.error(extractApiErrorMessage(err, pick({ en: 'Logo upload failed', ka: 'ლოგო ვერ აიტვირთა', ru: 'Логотип не загрузился' })));
+      setLogo(shop.logo || null);
+      setLogoUrl(shop.logo || null);
+    } finally {
+      setLogoUploading(false);
+    }
   };
 
   const save = async () => {
@@ -823,6 +896,7 @@ function ShopSettingsModal({
         taxId: taxId.trim() || undefined,
         payoutIban: iban.trim() || undefined,
         deliveryFee: deliveryFee ? Number(deliveryFee) : 0,
+        logo: logoUrl || undefined,
       });
       toast.success(pick({ en: 'Saved', ka: 'შენახულია', ru: 'Сохранено' }));
       await onSaved();
@@ -844,11 +918,18 @@ function ShopSettingsModal({
             <button
               type="button"
               onClick={() => logoRef.current?.click()}
-              className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-subtle)] transition-colors hover:border-[var(--hm-fg-muted)]"
+              className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-subtle)] transition-colors hover:border-[var(--hm-fg-muted)]"
             >
               {logo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logo} alt="" className="h-full w-full object-cover" />
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={logo} alt="" className="h-full w-full object-cover" />
+                  {logoUploading && (
+                    <span className="absolute inset-0 flex items-center justify-center bg-[rgba(17,16,13,0.45)]">
+                      <LoadingSpinner size="sm" />
+                    </span>
+                  )}
+                </>
               ) : (
                 <ImagePlus className="h-5 w-5" strokeWidth={1.5} />
               )}
@@ -888,7 +969,7 @@ function ShopSettingsModal({
         <Button variant="outline" onClick={onClose}>
           {pick({ en: 'Cancel', ka: 'გაუქმება', ru: 'Отмена' })}
         </Button>
-        <Button onClick={save} disabled={saving || !name.trim()}>
+        <Button onClick={save} disabled={saving || logoUploading || !name.trim()}>
           {saving ? <LoadingSpinner size="sm" /> : pick({ en: 'Save', ka: 'შენახვა', ru: 'Сохранить' })}
         </Button>
       </ModalFooter>
