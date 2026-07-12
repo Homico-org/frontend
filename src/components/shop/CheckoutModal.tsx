@@ -232,8 +232,10 @@ export default function CheckoutModal({
     ? quote.subtotalMinor + quote.feeMinor + deliveryFee
     : 0;
 
-  // Payments gated off until the payment provider is live - never open the checkout flow.
-  if (!features.payments) return null;
+  // Checkout gated off until the Flitt provider is live - never open the flow.
+  // Uses shopCheckout (a direct platform charge, no escrow), not the escrow
+  // `payments` flag, so the marketplace can launch without bank payout approval.
+  if (!features.shopCheckout) return null;
 
   // While the order is being created + payment intent prepared, swap the whole
   // modal for a clear processing state (and block close) so the few-second wait
