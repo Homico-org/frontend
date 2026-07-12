@@ -65,9 +65,9 @@ type ProductForm = {
   price: string;
   stockQty: string;
   category: string;
-  imageUrl: string;
+  imageUrls: string[];
 };
-const EMPTY_FORM: ProductForm = { name: '', nameKa: '', price: '', stockQty: '', category: '', imageUrl: '' };
+const EMPTY_FORM: ProductForm = { name: '', nameKa: '', price: '', stockQty: '', category: '', imageUrls: [] };
 
 export default function SellerDashboardPage() {
   const { pick } = useLanguage();
@@ -379,6 +379,29 @@ function Dashboard({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ProductForm>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [imgUploading, setImgUploading] = useState(false);
+  const imgRef = useRef<HTMLInputElement>(null);
+
+  const onProductImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (!files.length) return;
+    setImgUploading(true);
+    try {
+      const urls: string[] = [];
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append('file', file);
+        const { data } = await api.post<{ url: string }>('/upload/public', fd);
+        if (data?.url) urls.push(data.url);
+      }
+      if (urls.length) setForm((f) => ({ ...f, imageUrls: [...f.imageUrls, ...urls] }));
+    } catch (err) {
+      toast.error(extractApiErrorMessage(err, pick({ en: 'Upload failed', ka: 'ვერ აიტვირთა', ru: 'Не загрузилось' })));
+    } finally {
+      setImgUploading(false);
+    }
+  };
 
   const [importOpen, setImportOpen] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -417,6 +440,11 @@ function Dashboard({
 
   // ── optimistic patch helpers ──
   const patchProduct = async (id: string, body: Partial<SellerProduct> & Record<string, unknown>) => {
+    if (!id) {
+      toast.error(pick({ en: 'Please refresh and try again', ka: 'განაახლეთ გვერდი და სცადეთ', ru: 'Обновите страницу и повторите' }));
+      onChanged();
+      return;
+    }
     setProducts((prev) => prev.map((p) => (p._id === id ? { ...p, ...body } : p)));
     try {
       await api.patch(`/supplier-catalog/my-shop/products/${id}`, body);
@@ -443,7 +471,7 @@ function Dashboard({
       name: p.name, nameKa: p.nameKa || '',
       price: String(Math.round(p.priceMinor / 100)),
       stockQty: p.stockQty != null ? String(p.stockQty) : '',
-      category: p.category || '', imageUrl: p.imageUrls?.[0] || '',
+      category: p.category || '', imageUrls: p.imageUrls || [],
     });
     setModalOpen(true);
   };
@@ -456,7 +484,7 @@ function Dashboard({
       price: form.price ? Number(form.price) : 0,
       stockQty: form.stockQty ? Number(form.stockQty) : undefined,
       category: form.category.trim() || undefined,
-      imageUrls: form.imageUrl.trim() ? [form.imageUrl.trim()] : undefined,
+      imageUrls: form.imageUrls.length ? form.imageUrls : undefined,
     };
     try {
       if (editingId) await api.patch(`/supplier-catalog/my-shop/products/${editingId}`, body);
@@ -551,7 +579,7 @@ function Dashboard({
       <header className="mb-6 flex items-start justify-between gap-3">
         <div>
           <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--hm-fg-subtle)]">
-            {pick({ en: 'My shop', ka: 'ჩემი მაღაზია', ru: 'Мой магазин' })} · #{shop.key.slice(-6)}
+            {pick({ en: 'My shop', ka: 'ჩემი მაღაზია', ru: 'Мой магазин' })}
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-[26px] font-bold tracking-[-0.02em] text-[var(--hm-fg-primary)]">{shop.name}</h1>
@@ -797,17 +825,41 @@ function Dashboard({
           <Field label={pick({ en: 'Category', ka: 'კატეგორია', ru: 'Категория' })}>
             <Input variant="filled" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} />
           </Field>
-          <Field label={pick({ en: 'Image URL', ka: 'სურათის ბმული', ru: 'URL картинки' })}>
-            <Input variant="filled" value={form.imageUrl} onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))} />
+          <Field label={pick({ en: 'Photos', ka: 'ფოტოები', ru: 'Фото' })}>
+            <input ref={imgRef} type="file" accept="image/*" multiple className="hidden" onChange={onProductImages} />
+            <div className="flex flex-wrap gap-2">
+              {form.imageUrls.map((url, i) => (
+                <div key={url + i} className="group relative h-16 w-16 overflow-hidden rounded-lg border border-[var(--hm-border-subtle)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, imageUrls: f.imageUrls.filter((_, j) => j !== i) }))}
+                    className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(17,16,13,0.6)] text-white opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-label={pick({ en: 'Remove', ka: 'წაშლა', ru: 'Удалить' })}
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => imgRef.current?.click()}
+                disabled={imgUploading}
+                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] transition-colors hover:border-[var(--hm-fg-muted)] disabled:opacity-60"
+              >
+                {imgUploading ? <LoadingSpinner size="sm" /> : <ImagePlus className="h-5 w-5" strokeWidth={1.5} />}
+              </button>
+            </div>
           </Field>
         </ModalBody>
         <ModalFooter>
           {!editingId && (
-            <Button variant="outline" onClick={() => saveProduct(true)} disabled={saving || !form.name.trim()}>
+            <Button variant="outline" onClick={() => saveProduct(true)} disabled={saving || imgUploading || !form.name.trim()}>
               {pick({ en: 'Save & add another', ka: 'შენახვა და კიდევ', ru: 'Сохранить и ещё' })}
             </Button>
           )}
-          <Button onClick={() => saveProduct(false)} disabled={saving || !form.name.trim()}>
+          <Button onClick={() => saveProduct(false)} disabled={saving || imgUploading || !form.name.trim()}>
             {saving ? <LoadingSpinner size="sm" /> : pick({ en: 'Save', ka: 'შენახვა', ru: 'Сохранить' })}
           </Button>
         </ModalFooter>
