@@ -32,7 +32,7 @@ import * as XLSX from 'xlsx';
 type Loc = { en: string; ka: string; ru: string };
 
 interface Shop {
-  _id: string;
+  id: string;
   key: string;
   name: string;
   status: 'pending' | 'approved' | 'suspended';
@@ -44,7 +44,7 @@ interface Shop {
 }
 
 interface SellerProduct {
-  _id: string;
+  id: string;
   name: string;
   nameKa?: string;
   priceMinor: number;
@@ -445,7 +445,7 @@ function Dashboard({
       onChanged();
       return;
     }
-    setProducts((prev) => prev.map((p) => (p._id === id ? { ...p, ...body } : p)));
+    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...body } : p)));
     try {
       await api.patch(`/supplier-catalog/my-shop/products/${id}`, body);
     } catch (err) {
@@ -456,17 +456,17 @@ function Dashboard({
 
   const setStock = (p: SellerProduct, next: number) => {
     const qty = Math.max(0, next);
-    patchProduct(p._id, { stockQty: qty, inStock: qty > 0 });
+    patchProduct(p.id, { stockQty: qty, inStock: qty > 0 });
   };
   const toggleAvail = (p: SellerProduct) => {
     const nextAvail = !(p.isAvailable !== false);
-    patchProduct(p._id, { isAvailable: nextAvail });
+    patchProduct(p.id, { isAvailable: nextAvail });
   };
 
   // ── add / edit ──
   const openAdd = () => { setEditingId(null); setForm(EMPTY_FORM); setModalOpen(true); };
   const openEdit = (p: SellerProduct) => {
-    setEditingId(p._id);
+    setEditingId(p.id);
     setForm({
       name: p.name, nameKa: p.nameKa || '',
       price: String(Math.round(p.priceMinor / 100)),
@@ -500,7 +500,7 @@ function Dashboard({
   };
 
   const deleteOne = async (id: string) => {
-    setProducts((prev) => prev.filter((p) => p._id !== id));
+    setProducts((prev) => prev.filter((p) => p.id !== id));
     try { await api.delete(`/supplier-catalog/my-shop/products/${id}`); }
     catch { onChanged(); }
   };
@@ -513,7 +513,7 @@ function Dashboard({
     });
     if (!ok) return;
     const ids = [...selected];
-    setProducts((prev) => prev.filter((p) => !selected.has(p._id)));
+    setProducts((prev) => prev.filter((p) => !selected.has(p.id)));
     setSelected(new Set());
     await Promise.all(ids.map((id) => api.delete(`/supplier-catalog/my-shop/products/${id}`).catch(() => {})));
     onChanged();
@@ -715,15 +715,15 @@ function Dashboard({
       ) : (
         <div className="mt-4 overflow-hidden rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)]">
           {visible.map((p) => {
-            const isSel = selected.has(p._id);
+            const isSel = selected.has(p.id);
             const on = p.isAvailable !== false;
             const oos = p.stockQty === 0;
             return (
-              <div key={p._id} className="flex items-center gap-3 border-b border-[var(--hm-border-subtle)] px-3 py-2.5 last:border-0">
+              <div key={p.id} className="flex items-center gap-3 border-b border-[var(--hm-border-subtle)] px-3 py-2.5 last:border-0">
                 <input
                   type="checkbox"
                   checked={isSel}
-                  onChange={(e) => setSelected((prev) => { const n = new Set(prev); if (e.target.checked) n.add(p._id); else n.delete(p._id); return n; })}
+                  onChange={(e) => setSelected((prev) => { const n = new Set(prev); if (e.target.checked) n.add(p.id); else n.delete(p.id); return n; })}
                   className="h-4 w-4 shrink-0 accent-[var(--hm-brand-500)]"
                 />
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-subtle)]">
@@ -743,7 +743,7 @@ function Dashboard({
                     <button type="button" onClick={() => setStock(p, (p.stockQty ?? 0) - 1)} className="flex h-8 w-7 items-center justify-center text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"><Minus className="h-3 w-3" /></button>
                     <input
                       value={p.stockQty}
-                      onChange={(e) => { const v = parseInt(e.target.value.replace(/\D/g, ''), 10); setProducts((prev) => prev.map((x) => x._id === p._id ? { ...x, stockQty: Number.isFinite(v) ? v : 0 } : x)); }}
+                      onChange={(e) => { const v = parseInt(e.target.value.replace(/\D/g, ''), 10); setProducts((prev) => prev.map((x) => x.id === p.id ? { ...x, stockQty: Number.isFinite(v) ? v : 0 } : x)); }}
                       onBlur={(e) => setStock(p, parseInt(e.target.value, 10) || 0)}
                       className={`h-8 w-10 border-x border-[var(--hm-border-subtle)] bg-transparent text-center text-[12.5px] font-semibold tabular-nums outline-none ${oos ? 'text-[var(--hm-error-500)]' : 'text-[var(--hm-fg-primary)]'}`}
                     />
@@ -752,7 +752,7 @@ function Dashboard({
                 ) : <span className="w-[92px] shrink-0 text-center font-mono text-[10px] uppercase text-[var(--hm-fg-subtle)]">—</span>}
                 <Toggle checked={on} onChange={() => toggleAvail(p)} size="sm" className="shrink-0" />
                 <button type="button" onClick={() => openEdit(p)} aria-label="edit" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--hm-fg-muted)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"><Pencil className="h-3.5 w-3.5" /></button>
-                <button type="button" onClick={() => deleteOne(p._id)} aria-label="delete" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--hm-fg-muted)] hover:bg-[var(--hm-error-50)] hover:text-[var(--hm-error-500)]"><Trash2 className="h-3.5 w-3.5" /></button>
+                <button type="button" onClick={() => deleteOne(p.id)} aria-label="delete" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--hm-fg-muted)] hover:bg-[var(--hm-error-50)] hover:text-[var(--hm-error-500)]"><Trash2 className="h-3.5 w-3.5" /></button>
               </div>
             );
           })}
@@ -1033,7 +1033,7 @@ function ShopSettingsModal({
 
 type ShopOrderItem = { name: string; nameKa?: string; qty: number; imageUrl?: string };
 type ShopOrder = {
-  _id: string;
+  id: string;
   orderNumber: string;
   status: 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
   createdAt: string;
@@ -1110,7 +1110,7 @@ function ShopOrdersPanel({ pick }: { pick: (l: Loc) => string }) {
         const st = ORDER_STATUS[o.status];
         return (
           <div
-            key={o._id}
+            key={o.id}
             className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--hm-border-subtle)] px-4 py-3.5 last:border-b-0"
           >
             <div className="flex min-w-[140px] flex-col">
