@@ -422,6 +422,14 @@ fbq('track', 'PageView');`,
           <ShortcutsHelp />
           <SwipeBackHandler />
         </Providers>
+        {/* TOP.GE ASYNC COUNTER CODE */}
+        <div
+          style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}
+        >
+          <div id="top-ge-counter-container" data-site-id="118847" />
+        </div>
+        <script async src="//counter.top.ge/counter.js" />
+        {/* / END OF TOP.GE COUNTER CODE */}
       </body>
     </html>
   );
