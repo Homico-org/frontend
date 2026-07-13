@@ -132,7 +132,7 @@ export function useProRegistration(): UseProRegistrationReturn {
       ).then(r => r.json());
 
       if (phoneCheck.exists) {
-        setError(pick({ en: 'This phone number is already registered', ka: 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია' }));
+        setError(pick({ en: 'This phone number is already registered', ka: 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია', ru: 'Этот номер телефона уже зарегистрирован' }));
         setIsLoading(false);
         return;
       }
@@ -321,10 +321,10 @@ export function useProRegistration(): UseProRegistrationReturn {
         const msg = data.message || 'Registration failed';
         // Translate known backend errors
         if (msg.includes('phone number already exists')) {
-          throw new Error(pick({ en: 'This phone number is already registered', ka: 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია' }));
+          throw new Error(pick({ en: 'This phone number is already registered', ka: 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია', ru: 'Этот номер телефона уже зарегистрирован' }));
         }
         if (msg.includes('email already exists')) {
-          throw new Error(pick({ en: 'This email is already registered', ka: 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' }));
+          throw new Error(pick({ en: 'This email is already registered', ka: 'ეს ელ-ფოსტა უკვე რეგისტრირებულია', ru: 'Эта почта уже зарегистрирована' }));
         }
         throw new Error(msg);
       }
@@ -351,7 +351,7 @@ export function useProRegistration(): UseProRegistrationReturn {
       // would just bounce off /pro/premium via ProProfileGuard.
       router.push('/pro/profile-setup/about');
     } catch (err) {
-      setError(err instanceof Error ? err.message : pick({ en: 'Registration failed', ka: 'რეგისტრაცია ვერ მოხერხდა' }));
+      setError(err instanceof Error ? err.message : pick({ en: 'Registration failed', ka: 'რეგისტრაცია ვერ მოხერხდა', ru: 'Регистрация не удалась' }));
     } finally {
       setIsLoading(false);
     }

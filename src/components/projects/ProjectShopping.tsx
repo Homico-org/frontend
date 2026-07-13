@@ -22,9 +22,7 @@ import {
   Pencil,
   Plus,
   Search,
-  ShoppingCart,
-  Tag,
-  Trash2,
+  ShoppingCart,  Trash2,
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -226,7 +224,10 @@ export default function ProjectShopping({
     delivered: products.filter((p) => p.status === 'delivered').length,
   };
 
-  const fmt = (n: number) => `${n.toLocaleString()} ₾`;
+  // Space thousands separator + ₾ suffix, matching every other project surface
+  // (Rooms/Scope/Selections) and the brand number convention (`8 000 ₾`).
+  const fmt = (n: number) =>
+    `${Math.round(n).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
 
   // Export the full schedule to CSV. UTF-8 BOM so Excel reads Georgian/Russian.
   const exportCsv = () => {
@@ -449,7 +450,7 @@ export default function ProjectShopping({
         topRight={
           !canManage ? (
             <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[9px] font-bold uppercase tracking-[0.06em] shadow-sm ${STATUS_PILL[p.status]}`}
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[9px] font-bold uppercase tracking-[0.06em] ${STATUS_PILL[p.status]}`}
             >
               <span
                 className="h-1.5 w-1.5 rounded-full"
@@ -890,7 +891,7 @@ export default function ProjectShopping({
               onClick={() => setFilter(s as 'all' | ProductStatus)}
               className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors ${
                 filter === s
-                  ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[0_1px_2px_rgba(17,16,13,0.06)]'
+                  ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)]'
                   : 'text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
               }`}
             >
@@ -918,7 +919,7 @@ export default function ProjectShopping({
                 onClick={() => setView(v)}
                 className={`rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors ${
                   view === v
-                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[0_1px_2px_rgba(17,16,13,0.06)]'
+                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)]'
                     : 'text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
                 }`}
               >
@@ -946,7 +947,7 @@ export default function ProjectShopping({
                 onClick={() => setGroupBy(g)}
                 className={`rounded-full px-2.5 py-1 font-medium transition-colors ${
                   groupBy === g
-                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[0_1px_2px_rgba(17,16,13,0.06)]'
+                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)]'
                     : 'text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
                 }`}
               >
@@ -1024,15 +1025,6 @@ export default function ProjectShopping({
                             open ? '' : '-rotate-90'
                           }`}
                         />
-                        <span
-                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${
-                            named
-                              ? 'bg-[var(--hm-brand-500)]/[0.10] text-[var(--hm-brand-500)]'
-                              : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
-                          }`}
-                        >
-                          <Tag className="h-3.5 w-3.5" />
-                        </span>
                         <span className="truncate text-[13.5px] font-semibold text-[var(--hm-fg-primary)]">
                           {label}
                         </span>

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import { Modal, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { FormGroup, Input, Label, Textarea } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -139,21 +140,12 @@ export default function EditRoleModal({
         </div>
       </ModalBody>
       <ModalFooter className="justify-end">
-        <button
-          type="button"
-          onClick={onClose}
-          className="border border-[var(--hm-n-200)] px-3 py-2 text-[11px] font-semibold text-[var(--hm-n-700)] transition-colors hover:border-[var(--hm-n-900)] hover:text-[var(--hm-n-900)]"
-        >
+        <Button variant="outline" onClick={onClose}>
           {t('common.cancel')}
-        </button>
-        <button
-          type="button"
-          onClick={submit}
-          disabled={saving}
-          className="bg-[var(--hm-n-900)] px-3 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-[var(--hm-brand-500)] disabled:opacity-60"
-        >
-          {saving ? '...' : t('common.save')}
-        </button>
+        </Button>
+        <Button onClick={submit} loading={saving} disabled={!label.trim()}>
+          {t('common.save')}
+        </Button>
       </ModalFooter>
     </Modal>
   );

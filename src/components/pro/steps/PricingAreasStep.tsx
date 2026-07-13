@@ -119,27 +119,39 @@ export default function PricingAreasStep({
 
   return (
     <div className="space-y-4">
-      {/* Nationwide toggle */}
-      <button
-        type="button"
-        onClick={handleNationwide}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-          formData.nationwide
-            ? "bg-[var(--hm-brand-500)] text-white"
-            : "bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-secondary)] border border-[var(--hm-border-subtle)] hover:border-[var(--hm-brand-500)]/30"
-        }`}
-      >
-        <Globe className="w-4 h-4 shrink-0" />
-        <span className="flex-1 text-left">
-          {t("common.nationwide")} {locationData.emoji}
-        </span>
-        {formData.nationwide && <Check className="w-4 h-4" />}
-      </button>
+      {/* Nationwide — presented as the first, emphasized chip so it reads as
+          one of the area choices ("everywhere" vs. individual cities). */}
+      <div className="flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          onClick={handleNationwide}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            formData.nationwide
+              ? "bg-[var(--hm-brand-500)] text-white"
+              : "bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)] border border-[var(--hm-brand-500)]/30 hover:bg-[var(--hm-brand-500)]/15"
+          }`}
+        >
+          {formData.nationwide ? (
+            <Check className="w-3.5 h-3.5 shrink-0" strokeWidth={2.5} />
+          ) : (
+            <Globe className="w-3.5 h-3.5 shrink-0" />
+          )}
+          <span>
+            {t("common.nationwide")} {locationData.emoji}
+          </span>
+        </button>
+      </div>
 
-      {!formData.nationwide && (
-        <>
-          {/* Search — filter the curated list or add a custom location */}
-          <div className="relative">
+      {/* When "everywhere" is on, keep the regions below fully tappable so a pro
+          can drop into specific cities in one tap — spell that out. */}
+      {formData.nationwide && (
+        <p className="text-xs" style={{ color: "var(--hm-fg-muted)" }}>
+          {t("common.nationwideHint")}
+        </p>
+      )}
+
+      {/* Search — filter the curated list or add a custom location */}
+      <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--hm-fg-muted)] pointer-events-none" />
             <input
               type="text"
@@ -283,13 +295,11 @@ export default function PricingAreasStep({
             </div>
           )}
 
-          {/* Selection summary */}
-          {selectedCount > 0 && (
-            <p className="text-xs text-[var(--hm-fg-muted)] text-center">
-              {`${selectedCount} ${t("common.cities") || "ქალაქი"}`}
-            </p>
-          )}
-        </>
+      {/* Selection summary */}
+      {!formData.nationwide && selectedCount > 0 && (
+        <p className="text-xs text-[var(--hm-fg-muted)] text-center">
+          {`${selectedCount} ${t("common.cities") || "ქალაქი"}`}
+        </p>
       )}
     </div>
   );

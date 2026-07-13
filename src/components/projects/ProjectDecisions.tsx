@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
-import { ClipboardCheck, Send, Trash2 } from 'lucide-react';
+import { Send, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 export interface ProjectDecision {
@@ -82,8 +82,7 @@ export default function ProjectDecisions({
   return (
     <section>
       <div className="flex items-center gap-2 mb-2">
-        <h2 className="inline-flex items-center gap-2 text-[18px] font-bold text-[var(--hm-fg-primary)]">
-          <ClipboardCheck className="w-5 h-5 text-[var(--hm-brand-500)]" />
+        <h2 className="text-[18px] font-bold text-[var(--hm-fg-primary)]">
           {t('projects.decisionsTitle')}
         </h2>
       </div>
@@ -122,11 +121,8 @@ export default function ProjectDecisions({
       </div>
 
       {ordered.length === 0 ? (
-        <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-10 flex flex-col items-center text-center gap-3">
-          <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[var(--hm-brand-500)]/[0.10] text-[var(--hm-brand-500)]">
-            <ClipboardCheck className="w-6 h-6" />
-          </span>
-          <p className="text-[14px] text-[var(--hm-fg-muted)] max-w-[42ch]">
+        <div className="flex flex-col items-center gap-4 border border-dashed border-[var(--hm-border-subtle)] px-6 py-14 text-center">
+          <p className="max-w-[42ch] font-display text-[16px] font-bold italic text-[var(--hm-fg-primary)]">
             {t('projects.noDecisions')}
           </p>
         </div>

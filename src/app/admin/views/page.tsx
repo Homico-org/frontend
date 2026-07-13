@@ -9,7 +9,16 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/lib/api";
 import { formatDateTimeShort } from "@/utils/dateUtils";
-import { Eye, Phone, RefreshCw, Trophy, List as ListIcon } from "lucide-react";
+import {
+  Eye,
+  Phone,
+  RefreshCw,
+  Trophy,
+  List as ListIcon,
+  Users,
+  Activity,
+  Download,
+} from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
@@ -41,6 +50,18 @@ interface LogRow {
   createdAt: string;
 }
 
+interface TypeSummary {
+  total: number;
+  uniquePros: number;
+  lastHour: number;
+}
+interface Summary {
+  phone: TypeSummary;
+  profile: TypeSummary;
+}
+
+const PAGE_SIZE = 50;
+
 // Small inline i18n - this is an admin-only screen, kept self-contained.
 const TXT = {
   title: { en: "View tracking", ka: "ნახვების მონიტორინგი", ru: "Отслеживание просмотров" },
@@ -61,6 +82,20 @@ const TXT = {
   anonymous: { en: "Anonymous", ka: "ანონიმური", ru: "Аноним" },
   empty: { en: "No data yet", ka: "მონაცემები ჯერ არ არის", ru: "Пока нет данных" },
   refresh: { en: "Refresh", ka: "განახლება", ru: "Обновить" },
+  totalOpens: { en: "Total opens", ka: "სულ ნახვები", ru: "Всего открытий" },
+  uniquePros: { en: "Unique pros", ka: "უნიკალური პრო", ru: "Уникальных про" },
+  lastHour: { en: "Last hour", ka: "ბოლო საათი", ru: "За час" },
+  avgPerPro: { en: "Avg / pro", ka: "საშ. / პრო", ru: "Сред. / про" },
+  window24h: { en: "Rolling 24h", ka: "ბოლო 24 სთ", ru: "За 24 часа" },
+  loadMore: { en: "Load more", ka: "მეტის ჩვენება", ru: "Показать ещё" },
+  showing: { en: "Showing", ka: "ნაჩვენებია", ru: "Показано" },
+  of: { en: "of", ka: "-დან", ru: "из" },
+  export: { en: "Export CSV", ka: "CSV ექსპორტი", ru: "Экспорт CSV" },
+  exporting: { en: "Exporting…", ka: "ექსპორტი…", ru: "Экспорт…" },
+  rank: { en: "Rank", ka: "ადგილი", ru: "Место" },
+  name: { en: "Name", ka: "სახელი", ru: "Имя" },
+  uid: { en: "UID", ka: "UID", ru: "UID" },
+  phoneCol: { en: "Phone", ka: "ტელეფონი", ru: "Телефон" },
 };
 
 function AdminViewsContent() {
@@ -72,54 +107,134 @@ function AdminViewsContent() {
   const [tab, setTab] = useState<Tab>("ranking");
   const [ranking, setRanking] = useState<RankRow[]>([]);
   const [logs, setLogs] = useState<LogRow[]>([]);
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPaging, setIsPaging] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
+  const fetchSummary = useCallback(async () => {
     try {
-      if (tab === "ranking") {
-        const res = await api.get(`/admin/view-stats?type=${type}&limit=50`);
-        setRanking(res.data.items || []);
-      } else {
-        const res = await api.get(`/admin/view-logs?type=${type}&limit=100`);
-        setLogs(res.data.items || []);
-      }
+      const res = await api.get("/admin/view-summary");
+      setSummary(res.data);
     } catch (err) {
-      console.error("Failed to load view tracking:", err);
-      toast.error(L("empty"));
-    } finally {
-      setIsLoading(false);
+      console.error("Failed to load view summary:", err);
     }
-  }, [type, tab]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Load one page. `append` keeps prior rows (Load more); otherwise replaces.
+  const fetchPage = useCallback(
+    async (nextPage: number, append: boolean) => {
+      append ? setIsPaging(true) : setIsLoading(true);
+      try {
+        const path = tab === "ranking" ? "view-stats" : "view-logs";
+        const res = await api.get(
+          `/admin/${path}?type=${type}&page=${nextPage}&limit=${PAGE_SIZE}`,
+        );
+        const items = res.data.items || [];
+        setTotalPages(res.data.totalPages || 1);
+        setTotal(res.data.total || 0);
+        setPage(nextPage);
+        if (tab === "ranking") {
+          setRanking((prev) => (append ? [...prev, ...items] : items));
+        } else {
+          setLogs((prev) => (append ? [...prev, ...items] : items));
+        }
+      } catch (err) {
+        console.error("Failed to load view tracking:", err);
+        toast.error(L("empty"));
+      } finally {
+        setIsLoading(false);
+        setIsPaging(false);
+      }
+    },
+    [type, tab], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  // Reset to page 1 whenever the type or tab changes.
+  useEffect(() => {
+    fetchPage(1, false);
+  }, [fetchPage]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchSummary();
+  }, [fetchSummary]);
 
-  const Toggle = ({
-    active,
-    onClick,
-    icon: Icon,
-    label,
-  }: {
-    active: boolean;
-    onClick: () => void;
-    icon: React.ComponentType<{ className?: string }>;
-    label: string;
-  }) => (
-    <button
-      onClick={onClick}
-      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-      style={{
-        background: active ? `${THEME.primary}20` : THEME.surfaceLight,
-        color: active ? THEME.primary : THEME.textMuted,
-        border: `1px solid ${active ? THEME.primary : THEME.border}`,
-      }}
-    >
-      <Icon className="w-4 h-4" />
-      {label}
-    </button>
-  );
+  const refresh = useCallback(() => {
+    fetchPage(1, false);
+    fetchSummary();
+  }, [fetchPage, fetchSummary]);
+
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Pull every page for the current tab+type (capped for safety), then hand the
+  // browser a CSV blob to download. Uses the same endpoints as the table.
+  const exportCsv = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      const path = tab === "ranking" ? "view-stats" : "view-logs";
+      const EXPORT_LIMIT = 200;
+      const MAX_PAGES = 50; // hard cap: up to 10k rows
+      const rows: any[] = [];
+      let p = 1;
+      let pages = 1;
+      do {
+        const res = await api.get(
+          `/admin/${path}?type=${type}&page=${p}&limit=${EXPORT_LIMIT}`,
+        );
+        rows.push(...(res.data.items || []));
+        pages = res.data.totalPages || 1;
+        p += 1;
+      } while (p <= pages && p <= MAX_PAGES);
+
+      const esc = (v: unknown) => {
+        const str = v == null ? "" : String(v);
+        return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+      };
+
+      let headers: string[];
+      let lines: string[];
+      if (tab === "ranking") {
+        headers = [L("rank"), L("name"), L("uid"), L("phoneCol"), L("opens"), L("last")];
+        lines = (rows as RankRow[]).map((r, i) =>
+          [i + 1, r.proName ?? "", r.proUid ?? "", r.proPhone ?? "", r.count, r.lastViewedAt ?? ""]
+            .map(esc)
+            .join(","),
+        );
+      } else {
+        headers = [L("when"), L("pro"), L("uid"), L("visitor"), "IP"];
+        lines = (rows as LogRow[]).map((r) =>
+          [
+            r.createdAt ?? "",
+            r.proId?.name ?? "",
+            r.proId?.uid ?? "",
+            r.viewerId?.name ?? r.viewerName ?? L("anonymous"),
+            r.ip ?? "",
+          ]
+            .map(esc)
+            .join(","),
+        );
+      }
+
+      const csv = [headers.join(","), ...lines].join("\n");
+      const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `views-${type}-${tab}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to export view tracking:", err);
+      toast.error(L("empty"));
+    } finally {
+      setIsExporting(false);
+    }
+  }, [tab, type]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const s = summary?.[type];
+  const hasMore = page < totalPages;
 
   return (
     <div className="p-4 sm:p-6 max-w-5xl mx-auto">
@@ -133,10 +248,50 @@ function AdminViewsContent() {
             {L("subtitle")}
           </p>
         </div>
-        <Button onClick={fetchData} size="sm" variant="secondary" className="h-9">
-          <RefreshCw className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">{L("refresh")}</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={exportCsv}
+            size="sm"
+            variant="secondary"
+            className="h-9"
+            disabled={isExporting || isLoading}
+          >
+            <Download className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">
+              {isExporting ? L("exporting") : L("export")}
+            </span>
+          </Button>
+          <Button onClick={refresh} size="sm" variant="secondary" className="h-9">
+            <RefreshCw className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">{L("refresh")}</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Summary stat row (rolling 24h, reflects selected type) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+        <StatCard
+          icon={type === "phone" ? Phone : Eye}
+          label={L("totalOpens")}
+          value={s ? s.total.toLocaleString() : "—"}
+          hint={L("window24h")}
+          accent
+        />
+        <StatCard
+          icon={Users}
+          label={L("uniquePros")}
+          value={s ? s.uniquePros.toLocaleString() : "—"}
+        />
+        <StatCard
+          icon={Activity}
+          label={L("lastHour")}
+          value={s ? s.lastHour.toLocaleString() : "—"}
+        />
+        <StatCard
+          icon={Trophy}
+          label={L("avgPerPro")}
+          value={s && s.uniquePros ? (s.total / s.uniquePros).toFixed(1) : "—"}
+        />
       </div>
 
       {/* Type toggle: phone / profile */}
@@ -146,9 +301,17 @@ function AdminViewsContent() {
       </div>
 
       {/* Tab toggle: ranking / journal */}
-      <div className="flex flex-wrap gap-2 mb-5">
-        <Toggle active={tab === "ranking"} onClick={() => setTab("ranking")} icon={Trophy} label={L("ranking")} />
-        <Toggle active={tab === "journal"} onClick={() => setTab("journal")} icon={ListIcon} label={L("journal")} />
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-5">
+        <div className="flex flex-wrap gap-2">
+          <Toggle active={tab === "ranking"} onClick={() => setTab("ranking")} icon={Trophy} label={L("ranking")} />
+          <Toggle active={tab === "journal"} onClick={() => setTab("journal")} icon={ListIcon} label={L("journal")} />
+        </div>
+        {!isLoading && total > 0 && (
+          <span className="text-xs" style={{ color: THEME.textDim }}>
+            {L("showing")} {(tab === "ranking" ? ranking.length : logs.length).toLocaleString()} {L("of")}{" "}
+            {total.toLocaleString()}
+          </span>
+        )}
       </div>
 
       {isLoading ? (
@@ -156,16 +319,104 @@ function AdminViewsContent() {
           <LoadingSpinner />
         </div>
       ) : tab === "ranking" ? (
-        <RankingTable rows={ranking} L={L} />
+        <RankingTable rows={ranking} type={type} L={L} />
       ) : (
         <JournalTable rows={logs} L={L} />
+      )}
+
+      {!isLoading && hasMore && (
+        <div className="mt-4 flex justify-center">
+          <Button
+            onClick={() => fetchPage(page + 1, true)}
+            variant="secondary"
+            size="sm"
+            disabled={isPaging}
+          >
+            {isPaging ? <LoadingSpinner size="xs" /> : L("loadMore")}
+          </Button>
+        </div>
       )}
     </div>
   );
 }
 
-function RankingTable({ rows, L }: { rows: RankRow[]; L: (k: keyof typeof TXT) => string }) {
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  accent,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  hint?: string;
+  accent?: boolean;
+}) {
+  return (
+    <div
+      className="rounded-xl p-3 sm:p-4"
+      style={{
+        background: accent ? `${THEME.primary}12` : THEME.surfaceLight,
+        border: `1px solid ${accent ? `${THEME.primary}40` : THEME.border}`,
+      }}
+    >
+      <div className="flex items-center gap-2 mb-1.5">
+        <Icon className="w-4 h-4" />
+        <span className="text-xs font-medium" style={{ color: THEME.textMuted }}>
+          {label}
+        </span>
+      </div>
+      <div className="text-2xl font-semibold leading-none" style={{ color: THEME.text }}>
+        {value}
+      </div>
+      {hint && (
+        <div className="text-[11px] mt-1.5" style={{ color: THEME.textDim }}>
+          {hint}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Toggle({
+  active,
+  onClick,
+  icon: Icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+      style={{
+        background: active ? `${THEME.primary}20` : THEME.surfaceLight,
+        color: active ? THEME.primary : THEME.textMuted,
+        border: `1px solid ${active ? THEME.primary : THEME.border}`,
+      }}
+    >
+      <Icon className="w-4 h-4" />
+      {label}
+    </button>
+  );
+}
+
+function RankingTable({
+  rows,
+  type,
+  L,
+}: {
+  rows: RankRow[];
+  type: ViewType;
+  L: (k: keyof typeof TXT) => string;
+}) {
   if (!rows.length) return <EmptyState L={L} />;
+  const medal = (i: number) => (i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : null);
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${THEME.border}` }}>
       <table className="w-full text-sm">
@@ -180,16 +431,25 @@ function RankingTable({ rows, L }: { rows: RankRow[]; L: (k: keyof typeof TXT) =
         <tbody>
           {rows.map((r, i) => (
             <tr key={r.proId} style={{ borderTop: `1px solid ${THEME.border}`, color: THEME.text }}>
-              <td className="px-4 py-3" style={{ color: THEME.textMuted }}>{i + 1}</td>
+              <td className="px-4 py-3 tabular-nums" style={{ color: THEME.textMuted }}>
+                {medal(i) ?? i + 1}
+              </td>
               <td className="px-4 py-3">
                 <Link href={`/professionals/${r.proId}`} className="flex items-center gap-2 hover:underline">
                   <Avatar src={r.proAvatar} name={r.proName || "?"} size="sm" />
-                  <span>{r.proName || `#${r.proUid ?? "?"}`}</span>
+                  <span className="min-w-0">
+                    <span className="block truncate">{r.proName || `#${r.proUid ?? "?"}`}</span>
+                    {type === "phone" && r.proPhone && (
+                      <span className="block font-mono text-xs" style={{ color: THEME.textDim }}>
+                        {r.proPhone}
+                      </span>
+                    )}
+                  </span>
                 </Link>
               </td>
-              <td className="px-4 py-3 text-right font-semibold">{r.count}</td>
+              <td className="px-4 py-3 text-right font-semibold tabular-nums">{r.count}</td>
               <td className="px-4 py-3 text-right hidden sm:table-cell" style={{ color: THEME.textMuted }}>
-                {r.lastViewedAt ? formatDateTimeShort(r.lastViewedAt) : "—"}
+                {r.lastViewedAt ? formatDateTimeShort(r.lastViewedAt) : "-"}
               </td>
             </tr>
           ))}
@@ -221,7 +481,7 @@ function JournalTable({ rows, L }: { rows: LogRow[]; L: (k: keyof typeof TXT) =>
                     <span>{r.proId.name || `#${r.proId.uid ?? "?"}`}</span>
                   </Link>
                 ) : (
-                  <span style={{ color: THEME.textMuted }}>—</span>
+                  <span style={{ color: THEME.textMuted }}>-</span>
                 )}
               </td>
               <td className="px-4 py-3">

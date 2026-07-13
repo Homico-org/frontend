@@ -14,7 +14,7 @@ import {
   type ProfileSetupStepSlug,
 } from "@/contexts/ProfileSetupContext";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, ChevronLeft, X } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, Home, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect } from "react";
@@ -49,6 +49,7 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
     goBack,
     isSaving,
     canProceedFromStep,
+    stepBlockReasonKey,
     isLoading,
     isEditMode,
     error,
@@ -59,6 +60,10 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
 
   const stepIdx = currentStepIndex(slug);
   const isLastStep = slug === "review";
+  // Reason the "Save & continue" button is disabled, so the pro isn't left
+  // guessing at a dead button. Hidden while a save/load is in flight.
+  const blockReasonKey =
+    isSaving || isLoading ? null : stepBlockReasonKey(slug);
 
   // Prefetch the next step so Save & continue navigates instantly instead of
   // saving, then waiting for the next route to load/compile. Without this the
@@ -106,6 +111,14 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
               >
                 {stepIdx + 1}/{STEP_SLUGS.length}
               </span>
+              <Link
+                href="/"
+                className="flex items-center gap-1 text-xs font-medium transition-colors hover:text-[var(--hm-brand-500)]"
+                style={{ color: "var(--hm-fg-secondary)" }}
+              >
+                <Home className="w-3.5 h-3.5" />
+                {t("common.home")}
+              </Link>
               <Link
                 href="/help"
                 className="text-xs transition-colors"
@@ -167,6 +180,14 @@ function ProfileSetupShell({ children }: { children: React.ReactNode }) {
         }}
       >
         <div className="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
+          {blockReasonKey && (
+            <p
+              className="mb-2 text-center text-xs font-medium"
+              style={{ color: "var(--hm-fg-muted)" }}
+            >
+              {t(blockReasonKey)}
+            </p>
+          )}
           <div className="flex items-center justify-between gap-3 relative">
             {stepIdx > 0 ? (
               <button

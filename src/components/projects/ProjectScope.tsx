@@ -14,9 +14,7 @@ import {
   Check,
   ChevronDown,
   ChevronLeft,
-  DoorOpen,
-  ListChecks,
-  Pencil,
+  DoorOpen,  Pencil,
   Plus,
   Search,
   Trash2,
@@ -409,8 +407,7 @@ export default function ProjectScope({
   return (
     <section>
       <div className="flex items-center justify-between gap-3 mb-1 flex-wrap">
-        <h2 className="inline-flex items-center gap-2 text-[18px] font-bold text-[var(--hm-fg-primary)]">
-          <ListChecks className="w-5 h-5 text-[var(--hm-brand-500)]" />
+        <h2 className="text-[18px] font-bold text-[var(--hm-fg-primary)]">
           {t('projects.scopeTitle')}
         </h2>
         {canManage && (
@@ -438,9 +435,8 @@ export default function ProjectScope({
       </p>
 
       {grandTotal > 0 && (
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-[var(--hm-brand-500)]/15 bg-gradient-to-r from-[var(--hm-brand-500)]/[0.07] to-transparent px-5 py-3.5">
-          <span className="inline-flex items-center gap-2 text-[13px] font-medium text-[var(--hm-fg-secondary)]">
-            <ListChecks className="w-4 h-4 text-[var(--hm-brand-500)]" />
+        <div className="mb-5 flex items-center justify-between gap-3 border-b border-[var(--hm-border-subtle)] px-1 py-3.5">
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--hm-fg-muted)]">
             {t('projects.scopeEstTotal')}
           </span>
           <span className="text-[18px] font-bold text-[var(--hm-fg-primary)] tabular-nums">
@@ -450,11 +446,8 @@ export default function ProjectScope({
       )}
 
       {isEmpty ? (
-        <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-10 flex flex-col items-center text-center gap-3">
-          <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[var(--hm-brand-500)]/[0.10] text-[var(--hm-brand-500)]">
-            <ListChecks className="w-6 h-6" />
-          </span>
-          <p className="text-[14px] text-[var(--hm-fg-muted)] max-w-sm">
+        <div className="flex flex-col items-center gap-4 border border-dashed border-[var(--hm-border-subtle)] px-6 py-14 text-center">
+          <p className="max-w-sm font-display text-[16px] font-bold italic text-[var(--hm-fg-primary)]">
             {t('projects.scopeEmpty')}
           </p>
           {canManage && (

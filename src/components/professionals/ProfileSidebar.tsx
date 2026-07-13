@@ -140,18 +140,18 @@ export function ProfileSidebarMobile({
       tabs={[
         {
           id: "about",
-          label: pick({ en: "About", ka: "შესახებ" }),
+          label: pick({ en: "About", ka: "შესახებ", ru: "Обзор" }),
           icon: <FileText className="w-4 h-4" />,
         },
         {
           id: "portfolio",
-          label: pick({ en: "Portfolio", ka: "ნამუშევრები" }),
+          label: pick({ en: "Portfolio", ka: "ნამუშევრები", ru: "Портфолио" }),
           icon: <FolderKanban className="w-4 h-4" />,
           badge: portfolioCount > 0 ? (portfolioCount > 9 ? "9+" : portfolioCount) : undefined,
         },
         {
           id: "reviews",
-          label: pick({ en: "Reviews", ka: "შეფასებები" }),
+          label: pick({ en: "Reviews", ka: "შეფასებები", ru: "Отзывы" }),
           icon: <MessageSquareQuote className="w-4 h-4" />,
           badge: reviewsCount > 0 ? (reviewsCount > 9 ? "9+" : reviewsCount) : undefined,
         },

@@ -69,6 +69,7 @@ const variantConfig: Record<StatusPillVariant, {
   icon: React.ComponentType<{ className?: string; strokeWidth?: string | number }>;
   labelEn: string;
   labelKa: string;
+  labelRu: string;
 }> = {
   verified: {
     bgClass: 'bg-[var(--hm-success-50)]',
@@ -76,6 +77,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: BadgeCheck,
     labelEn: 'Verified',
     labelKa: 'დადასტურებული',
+    labelRu: 'Проверен',
   },
   topRated: {
     bgClass: 'bg-[var(--hm-warning-50)]',
@@ -83,6 +85,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: Star,
     labelEn: 'Top Rated',
     labelKa: 'საუკეთესო',
+    labelRu: 'Топ рейтинг',
   },
   experienced: {
     bgClass: 'bg-[var(--hm-info-50)]',
@@ -90,6 +93,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: Award,
     labelEn: 'Experienced',
     labelKa: 'გამოცდილი',
+    labelRu: 'Опытный',
   },
   new: {
     bgClass: 'bg-[var(--hm-info-50)]',
@@ -97,6 +101,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: Sprout,
     labelEn: 'New',
     labelKa: 'ახალი',
+    labelRu: 'Новый',
   },
   urgent: {
     bgClass: 'bg-[var(--hm-error-50)]',
@@ -104,6 +109,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: AlertTriangle,
     labelEn: 'Urgent',
     labelKa: 'სასწრაფო',
+    labelRu: 'Срочно',
   },
   applied: {
     bgClass: 'bg-[var(--hm-info-50)]',
@@ -111,6 +117,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: CheckCircle,
     labelEn: 'Applied',
     labelKa: 'გაგზავნილი',
+    labelRu: 'Отправлено',
   },
   premium: {
     bgClass: 'bg-[var(--hm-brand-50)]',
@@ -118,6 +125,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: Crown,
     labelEn: 'Premium',
     labelKa: 'პრემიუმ',
+    labelRu: 'Премиум',
   },
   featured: {
     bgClass: 'bg-[var(--hm-brand-50)]',
@@ -125,6 +133,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: Zap,
     labelEn: 'Featured',
     labelKa: 'გამორჩეული',
+    labelRu: 'Избранный',
   },
   topQuality: {
     bgClass: 'bg-[var(--hm-success-50)]',
@@ -132,6 +141,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: Gem,
     labelEn: 'Top Quality',
     labelKa: 'ტოპ ხარისხი',
+    labelRu: 'Высшее качество',
   },
   homicoPartner: {
     // Solid brand fill - the premier badge; it's the only bookable status.
@@ -140,6 +150,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: Handshake,
     labelEn: 'Homico Partner',
     labelKa: 'Homico პარტნიორი',
+    labelRu: 'Партнёр Homico',
   },
   pending: {
     bgClass: 'bg-[var(--hm-warning-50)]',
@@ -147,6 +158,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: Clock,
     labelEn: 'Pending',
     labelKa: 'მოლოდინში',
+    labelRu: 'В ожидании',
   },
   completed: {
     bgClass: 'bg-[var(--hm-success-50)]',
@@ -154,6 +166,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: CheckCircle,
     labelEn: 'Completed',
     labelKa: 'დასრულებული',
+    labelRu: 'Завершено',
   },
   accepted: {
     bgClass: 'bg-[var(--hm-success-50)]',
@@ -161,6 +174,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: CheckCircle,
     labelEn: 'Accepted',
     labelKa: 'მიღებული',
+    labelRu: 'Принято',
   },
   rejected: {
     bgClass: 'bg-[var(--hm-error-50)]',
@@ -168,6 +182,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: XCircle,
     labelEn: 'Rejected',
     labelKa: 'უარყოფილი',
+    labelRu: 'Отклонено',
   },
   withdrawn: {
     bgClass: 'bg-[var(--hm-bg-tertiary)]',
@@ -175,6 +190,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: CornerUpLeft,
     labelEn: 'Withdrawn',
     labelKa: 'გაუქმებული',
+    labelRu: 'Отозвано',
   },
   away: {
     // Calm neutral - greys the card slightly without screaming "broken".
@@ -184,6 +200,7 @@ const variantConfig: Record<StatusPillVariant, {
     icon: Moon,
     labelEn: 'Away',
     labelKa: 'მიუწვდომელი',
+    labelRu: 'Недоступен',
   },
   homico: {
     bgClass: '', // Uses inline style for theme color
@@ -191,37 +208,47 @@ const variantConfig: Record<StatusPillVariant, {
     icon: BadgeCheck,
     labelEn: 'Homico',
     labelKa: 'Homico',
+    labelRu: 'Homico',
   },
 };
 
 // Short "what it is" descriptions for the trust badges, surfaced in the native
-// hover title of the icon-only chip — works even on overflow-hidden cards where
+// hover title of the icon-only chip - works even on overflow-hidden cards where
 // the floating CSS tooltip gets clipped. Only the pro trust badges need one.
 const DESCRIPTIONS: Partial<
-  Record<StatusPillVariant, { en: string; ka: string }>
+  Record<StatusPillVariant, { en: string; ka: string; ru: string }>
 > = {
   verified: {
     en: 'Identity checked by Homico',
     ka: 'ვინაობა დადასტურებულია Homico-ს მიერ',
+    ru: 'Личность проверена Homico',
   },
   topRated: {
     en: '4.8★ or higher with 5+ reviews',
     ka: '4.8★ ან მეტი, 5+ შეფასებით',
+    ru: '4.8★ и выше, 5+ отзывов',
   },
   experienced: {
     en: '10+ jobs completed on Homico',
     ka: '10+ დასრულებული სამუშაო Homico-ზე',
+    ru: '10+ выполненных работ на Homico',
   },
-  new: { en: 'New to Homico', ka: 'ახალი Homico-ზე' },
-  premium: { en: 'Premium member', ka: 'პრემიუმ წევრი' },
-  featured: { en: 'Hand-picked by Homico', ka: 'შერჩეული Homico-ს მიერ' },
+  new: { en: 'New to Homico', ka: 'ახალი Homico-ზე', ru: 'Новый на Homico' },
+  premium: { en: 'Premium member', ka: 'პრემიუმ წევრი', ru: 'Премиум-участник' },
+  featured: {
+    en: 'Hand-picked by Homico',
+    ka: 'შერჩეული Homico-ს მიერ',
+    ru: 'Отобран Homico',
+  },
   topQuality: {
-    en: 'Top-quality profile — verified by Homico',
-    ka: 'მაღალი ხარისხის პროფილი — დადასტურებული Homico-ს მიერ',
+    en: 'Top-quality profile - verified by Homico',
+    ka: 'მაღალი ხარისხის პროფილი - დადასტურებული Homico-ს მიერ',
+    ru: 'Профиль высшего качества - проверен Homico',
   },
   homicoPartner: {
-    en: 'Contracted partner — directly bookable',
-    ka: 'კონტრაქტორი პარტნიორი — პირდაპირ დაჯავშნადი',
+    en: 'Contracted partner - directly bookable',
+    ka: 'კონტრაქტორი პარტნიორი - პირდაპირ დაჯავშნადი',
+    ru: 'Партнёр по договору - прямое бронирование',
   },
 };
 
@@ -285,7 +312,13 @@ export function StatusPill({
   const variantStyles = variantConfig[variant];
   const Icon = variantStyles.icon;
 
-  const displayLabel = label || (locale === 'ka' ? variantStyles.labelKa : variantStyles.labelEn);
+  const displayLabel =
+    label ||
+    (locale === 'ka'
+      ? variantStyles.labelKa
+      : locale === 'ru'
+        ? variantStyles.labelRu
+        : variantStyles.labelEn);
 
   // Premium and Homico variants use theme colors
   const usesThemeColor = variant === 'premium' || variant === 'homico';
@@ -305,12 +338,12 @@ export function StatusPill({
     const glyph =
       size === 'xs' ? 'w-2.5 h-2.5' : size === 'md' ? 'w-[13px] h-[13px]' : 'w-3 h-3';
     const seal = TIER_SEAL[BADGE_TIER[variant] ?? 'standard'];
-    // Native browser tooltip: "Label — what it is". Always set (even when the
+    // Native browser tooltip: "Label - what it is". Always set (even when the
     // animated CSS tooltip is off) so hovering a badge explains it on any
     // surface, including overflow-hidden cards.
     const desc = DESCRIPTIONS[variant];
     const titleText = desc
-      ? `${displayLabel} — ${locale === 'ka' ? desc.ka : desc.en}`
+      ? `${displayLabel} - ${locale === 'ka' ? desc.ka : locale === 'ru' ? desc.ru : desc.en}`
       : displayLabel;
     return (
       <span

@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
 import { Pill } from '@/components/projects/TableCard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -120,6 +120,8 @@ export default function DocumentReviewModal({
   };
 
   const removeComment = async (commentId: string) => {
+    if (busy) return; // guard against a double-click double-delete
+    setBusy(true);
     try {
       await api.delete(
         `/projects/${projectId}/documents/${doc.id}/comments/${commentId}`,
@@ -127,6 +129,8 @@ export default function DocumentReviewModal({
       await onChanged();
     } catch (err) {
       toast.error(t('projects.tryAgain'), errMsg(err));
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -220,39 +224,6 @@ export default function DocumentReviewModal({
                 <span className="font-mono text-[12px] text-[var(--hm-fg-muted)]">
                   v{doc.version ?? 1}
                 </span>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {canEdit && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => replaceRef.current?.click()}
-                    loading={busy}
-                    leftIcon={<RotateCcw />}
-                  >
-                    {t('projects.replaceFile')}
-                  </Button>
-                )}
-                {isClient && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setApproval('changes_requested')}
-                      disabled={busy}
-                    >
-                      {t('projects.requestChanges')}
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => setApproval('approved')}
-                      disabled={busy}
-                      leftIcon={<Check />}
-                    >
-                      {t('projects.approve')}
-                    </Button>
-                  </>
-                )}
               </div>
             </div>
             {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
@@ -396,6 +367,41 @@ export default function DocumentReviewModal({
           </div>
         </div>
       </ModalBody>
+      {(canEdit || isClient) && (
+        <ModalFooter className="justify-end">
+          {canEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => replaceRef.current?.click()}
+              loading={busy}
+              leftIcon={<RotateCcw />}
+            >
+              {t('projects.replaceFile')}
+            </Button>
+          )}
+          {isClient && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setApproval('changes_requested')}
+                disabled={busy}
+              >
+                {t('projects.requestChanges')}
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setApproval('approved')}
+                disabled={busy}
+                leftIcon={<Check />}
+              >
+                {t('projects.approve')}
+              </Button>
+            </>
+          )}
+        </ModalFooter>
+      )}
     </Modal>
   );
 }

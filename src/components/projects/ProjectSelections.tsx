@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, ModalBody, ModalHeader } from '@/components/ui/Modal';
+import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FormGroup, Input, Label } from '@/components/ui/input';
@@ -11,9 +11,7 @@ import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
 import {
   Check,
-  ExternalLink,
-  Palette,
-  Plus,
+  ExternalLink,  Plus,
   ShoppingCart,
   Trash2,
   Upload,
@@ -254,8 +252,7 @@ export default function ProjectSelections({
   return (
     <section>
       <div className="flex items-center justify-between gap-3 mb-5">
-        <h2 className="inline-flex items-center gap-2 text-[18px] font-bold text-[var(--hm-fg-primary)]">
-          <Palette className="w-5 h-5 text-[var(--hm-brand-500)]" />
+        <h2 className="text-[18px] font-bold text-[var(--hm-fg-primary)]">
           {t('projects.selTab')}
         </h2>
         {canManage && (
@@ -270,11 +267,8 @@ export default function ProjectSelections({
       </div>
 
       {selections.length === 0 ? (
-        <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-10 flex flex-col items-center text-center gap-3">
-          <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[var(--hm-brand-500)]/[0.10] text-[var(--hm-brand-500)]">
-            <Palette className="w-6 h-6" />
-          </span>
-          <p className="text-[14px] text-[var(--hm-fg-muted)] max-w-[44ch]">
+        <div className="flex flex-col items-center gap-4 border border-dashed border-[var(--hm-border-subtle)] px-6 py-14 text-center">
+          <p className="max-w-[44ch] font-display text-[16px] font-bold italic text-[var(--hm-fg-primary)]">
             {t('projects.selEmpty')}
           </p>
           {canManage && (
@@ -526,16 +520,16 @@ export default function ProjectSelections({
                   onChange={(e) => setSelForm({ ...selForm, surface: e.target.value })}
                 />
               </FormGroup>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setAddingSel(false)}>
-                  {t('common.cancel')}
-                </Button>
-                <Button onClick={createSelection} disabled={saving || !selForm.title.trim()}>
-                  {t('common.add')}
-                </Button>
-              </div>
             </div>
           </ModalBody>
+          <ModalFooter className="justify-end">
+            <Button variant="outline" onClick={() => setAddingSel(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={createSelection} disabled={saving || !selForm.title.trim()}>
+              {t('common.add')}
+            </Button>
+          </ModalFooter>
         </Modal>
       )}
 
@@ -664,16 +658,16 @@ export default function ProjectSelections({
                 </>
               )}
 
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setOptionFor(null)}>
-                  {t('common.cancel')}
-                </Button>
-                <Button onClick={addOption} disabled={saving || !optForm.name.trim()}>
-                  {t('common.add')}
-                </Button>
-              </div>
             </div>
           </ModalBody>
+          <ModalFooter className="justify-end">
+            <Button variant="outline" onClick={() => setOptionFor(null)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={addOption} disabled={saving || !optForm.name.trim()}>
+              {t('common.add')}
+            </Button>
+          </ModalFooter>
         </Modal>
       )}
     </section>

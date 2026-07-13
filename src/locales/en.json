@@ -266,6 +266,7 @@
     "multiplePhotos": "Multiple Photos",
     "myLocation": "My Location",
     "nationwide": "Nationwide",
+    "nationwideHint": "You work nationwide. Pick specific cities below.",
     "newProject": "New Project",
     "noProjectsAdded": "No Projects Added",
     "noneSelected": "None Selected",
@@ -568,7 +569,7 @@
       "adminPanel": "Manage users, jobs, disputes, and payouts",
       "allTools": "Browse every planning tool in one place",
       "estimateAnalyzer": "Upload a contractor estimate for AI-powered analysis",
-      "priceDatabase": "Search 100+ market prices for renovation work",
+      "priceDatabase": "Search 80+ market prices for renovation work",
       "shop": "Browse products from Georgian shops in one place",
       "renovationCalculator": "Estimate your budget by apartment parameters",
       "compareEstimates": "Compare two estimates side-by-side",
@@ -1364,6 +1365,12 @@
     "servicesEmptyDesc": "Add the services you offer with prices so clients can see what you do."
   },
   "becomePro": {
+    "blockName": "Enter your first and last name",
+    "blockAvatar": "Add a profile photo",
+    "blockBio": "Write a short bio (at least 50 characters)",
+    "blockServices": "Set a price for every selected service",
+    "blockAreas": "Select at least one service area",
+    "blockReview": "Fill in all required fields to finish",
     "title": "Become a Pro",
     "subtitle": "Join Georgia's leading platform and get more jobs",
     "freeToJoin": "Free to join",
@@ -1410,6 +1417,7 @@
     "joinGeorgiasLeadingPlatformAnd": "Join Georgias Leading Platform And...",
     "moreProjects": "More Projects",
     "portfolio": "Portfolio",
+    "portfolioSubtitle": "Add your work samples. You can also add them later from your profile.",
     "pricingAreas": "Pricing Areas",
     "review": "Review",
     "reviewYourProfile": "Review Your Profile",
@@ -1425,7 +1433,7 @@
   "premium": {
     "announce": {
       "title": "Premium is here",
-      "message": "Stand out from the crowd. Premium puts your profile in front of more clients, unlocks priority placement and exclusive badges — so you win more jobs.",
+      "message": "Stand out from the crowd. Premium puts your profile in front of more clients, unlocks priority placement and exclusive badges, so you win more jobs.",
       "cta": "View Premium",
       "later": "Maybe later"
     },
@@ -2725,7 +2733,10 @@
     "designer": {
       "actionNeeded": "Action needed ({count})",
       "assignPro": "Assign a pro: {role}",
-      "addOptions": "Add options: {item}"
+      "addOptions": "Add options: {item}",
+      "assignProSub": "No pro assigned yet",
+      "addOptionsSub": "The client cannot choose until options exist",
+      "waitingHeader": "Waiting on the client"
     },
     "phaseDesign": "Design",
     "client": {
@@ -2749,7 +2760,49 @@
       "yourTeam": "Your team",
       "noTeamYet": "No one assigned yet",
       "peopleCount": "{count} people",
-      "seeFullDetails": "See full details"
+      "seeFullDetails": "See full details",
+      "requestedBy": "Requested by {role}",
+      "approvePlanShort": "Approve plan",
+      "fundNow": "Fund now",
+      "workSubmitted": "Work submitted for review",
+      "confirmDone": "Confirm done",
+      "approve": "Approve",
+      "review": "Review",
+      "choose": "Choose",
+      "tapToReview": "Needs your review",
+      "upcoming": "Upcoming",
+      "viewAll": "View all",
+      "noDate": "No date",
+      "budgetPayments": "Budget & payments",
+      "manage": "Manage",
+      "planned": "Planned",
+      "paidLabel": "Paid",
+      "remaining": "Remaining",
+      "committedLabel": "Committed",
+      "spaces": "Spaces",
+      "files": "Files",
+      "siteDetails": "Site details",
+      "recentActivity": "Recent activity",
+      "address": "Address",
+      "propertyType": "Property type",
+      "area": "Area",
+      "sqm": "{n} m²",
+      "floors": "Floors",
+      "cadastral": "Cadastral ID",
+      "approved": "Approved",
+      "changesRequested": "Changes requested",
+      "pendingReview": "Pending review",
+      "openFullTools": "Open full project tools",
+      "getStarted": "Get started",
+      "getStartedIntro": "A few steps to set up your project.",
+      "stepBuildTeam": "Build your team",
+      "stepBuildTeamSub": "Find and invite pros",
+      "stepAddSpaces": "Add your spaces",
+      "stepAddSpacesSub": "List the rooms you are renovating",
+      "stepShareFiles": "Share plans & files",
+      "stepShareFilesSub": "Drawings, permits, references",
+      "setBudget": "Set a budget",
+      "progress": "Progress"
     },
     "phasePermits": "Permits",
     "phaseConstruction": "Construction",
@@ -3579,7 +3632,24 @@
     "groupBy": "Group by",
     "groupCategory": "Category",
     "groupRoom": "Room",
-    "groupSupplier": "Supplier"
+    "groupSupplier": "Supplier",
+    "shopForSpecced": "Shop what you planned:",
+    "loadErrorTitle": "Couldn't load your projects",
+    "loadErrorHint": "Check your connection and try again.",
+    "historyError": "Couldn't load activity",
+    "milestoneTitle": "Title",
+    "milestoneTitlePlaceholder": "e.g. Demolition complete",
+    "milestoneDueDate": "Target date",
+    "milestoneStatus": "Status",
+    "milestoneTitleRequired": "A milestone needs a title.",
+    "milestoneCreated": "Milestone added",
+    "milestoneUpdated": "Milestone updated",
+    "msStatus_pending": "Planned",
+    "msStatus_active": "In progress",
+    "msStatus_done": "Done",
+    "msStatus_blocked": "Blocked",
+    "collapseHeader": "Collapse",
+    "expandHeader": "Expand"
   },
   "polls": {
     "title": "Polls",
@@ -4456,7 +4526,15 @@
     "address": "Tbilisi, 42 Mukhrani St."
   },
   "tools": {
+    "cta": {
+      "title": "Ready to get it done?",
+      "subtitle": "Post your job for free and get quotes from verified Homico pros near you.",
+      "postJob": "Post a job",
+      "browsePros": "Browse pros",
+      "trust": "Free to post. Verified pros. No obligation."
+    },
     "back": "Tools",
+    "moreTools": "More tools",
     "home": {
       "title": "Tools",
       "subtitle": "Plan your renovation with calculators and AI",
@@ -4469,9 +4547,9 @@
       },
       "prices": {
         "title": "Price Database",
-        "description": "Search 100+ renovation work market prices in Tbilisi. Updated prices for 2024.",
+        "description": "Search 80+ renovation work market prices in Tbilisi. Regularly updated.",
         "cta": "View Prices",
-        "tag": "100+ Items"
+        "tag": "80+ Items"
       },
       "calculator": {
         "title": "Renovation Calculator",

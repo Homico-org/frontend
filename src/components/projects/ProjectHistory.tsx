@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
@@ -58,14 +59,18 @@ const ICON: Record<string, React.ComponentType<{ className?: string }>> = {
 export default function ProjectHistory({ projectId }: { projectId: string }) {
   const { t, pick, locale } = useLanguage();
   const [entries, setEntries] = useState<ActivityEntry[] | null>(null);
+  // A load failure must not read as "no activity yet" - distinct error + retry.
+  const [error, setError] = useState(false);
 
   const load = useCallback(async () => {
+    setError(false);
     try {
       const { data } = await api.get<ActivityEntry[]>(
         `/projects/${projectId}/activity`,
       );
       setEntries(Array.isArray(data) ? data : []);
     } catch {
+      setError(true);
       setEntries([]);
     }
   }, [projectId]);
@@ -82,11 +87,23 @@ export default function ProjectHistory({ projectId }: { projectId: string }) {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-start gap-4 py-12">
+        <p className="font-display text-[16px] font-bold italic text-[var(--hm-fg-primary)]">
+          {t('projects.historyError')}
+        </p>
+        <Button variant="outline" size="sm" onClick={load}>
+          {t('common.tryAgain')}
+        </Button>
+      </div>
+    );
+  }
+
   if (entries.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 py-16 text-center">
-        <Clock className="h-8 w-8 text-[var(--hm-fg-subtle)]" />
-        <p className="text-[14px] text-[var(--hm-fg-muted)]">
+      <div className="py-14 text-center">
+        <p className="font-display text-[16px] font-bold italic text-[var(--hm-fg-primary)]">
           {t('projects.historyEmpty')}
         </p>
       </div>

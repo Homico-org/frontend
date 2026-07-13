@@ -14,7 +14,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { invalidateMyProjects } from '@/hooks/useMyProjects';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
-import { Boxes, Pencil, Plus, X } from 'lucide-react';
+import { Pencil, Plus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 // Draft autosaved here so a refresh doesn't lose an in-progress project.
@@ -183,7 +183,7 @@ export default function StartProjectPage() {
       (s.length && s.width
         ? Math.round(s.length * s.width * 100) / 100
         : undefined);
-    return area ? `${area} m²` : '';
+    return area ? `${area} ${t('projects.sqm')}` : '';
   };
 
   const presets = [
@@ -331,11 +331,8 @@ export default function StartProjectPage() {
 
           {/* Empty state - illustration + guidance until the first space */}
           {spaces.length === 0 && (
-            <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-[var(--hm-border-strong)] px-6 py-8 text-center">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--hm-brand-500)]/[0.10] text-[var(--hm-brand-500)]">
-                <Boxes className="h-7 w-7" strokeWidth={1.6} />
-              </span>
-              <p className="max-w-[34ch] text-[13px] leading-relaxed text-[var(--hm-fg-muted)]">
+            <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-[var(--hm-border-subtle)] px-6 py-10 text-center">
+              <p className="max-w-[34ch] font-display text-[16px] font-bold italic text-[var(--hm-fg-primary)]">
                 {t('projects.spacesEmpty')}
               </p>
               <Button

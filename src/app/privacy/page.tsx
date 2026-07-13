@@ -9,18 +9,18 @@ import { useState, useEffect } from 'react';
 
 // Table of contents sections
 const sections = [
-  { id: 'introduction', titleEn: 'Introduction', titleKa: 'შესავალი' },
-  { id: 'collection', titleEn: 'Information We Collect', titleKa: 'შეგროვებული ინფორმაცია' },
-  { id: 'usage', titleEn: 'How We Use Information', titleKa: 'ინფორმაციის გამოყენება' },
-  { id: 'sharing', titleEn: 'Information Sharing', titleKa: 'ინფორმაციის გაზიარება' },
-  { id: 'cookies', titleEn: 'Cookies & Tracking', titleKa: 'Cookies და თვალყურის დევნება' },
-  { id: 'security', titleEn: 'Data Security', titleKa: 'მონაცემების უსაფრთხოება' },
-  { id: 'retention', titleEn: 'Data Retention', titleKa: 'მონაცემების შენახვა' },
-  { id: 'rights', titleEn: 'Your Rights', titleKa: 'თქვენი უფლებები' },
-  { id: 'children', titleEn: 'Children\'s Privacy', titleKa: 'ბავშვთა კონფიდენციალურობა' },
-  { id: 'international', titleEn: 'International Transfers', titleKa: 'საერთაშორისო გადაცემები' },
-  { id: 'changes', titleEn: 'Policy Changes', titleKa: 'პოლიტიკის ცვლილებები' },
-  { id: 'contact', titleEn: 'Contact Us', titleKa: 'დაგვიკავშირდით' },
+  { id: 'introduction', titleEn: 'Introduction', titleKa: 'შესავალი', titleRu: 'Введение' },
+  { id: 'collection', titleEn: 'Information We Collect', titleKa: 'შეგროვებული ინფორმაცია', titleRu: 'Информация, которую мы собираем' },
+  { id: 'usage', titleEn: 'How We Use Information', titleKa: 'ინფორმაციის გამოყენება', titleRu: 'Как мы используем информацию' },
+  { id: 'sharing', titleEn: 'Information Sharing', titleKa: 'ინფორმაციის გაზიარება', titleRu: 'Обмен информацией' },
+  { id: 'cookies', titleEn: 'Cookies & Tracking', titleKa: 'Cookies და თვალყურის დევნება', titleRu: 'Cookies и отслеживание' },
+  { id: 'security', titleEn: 'Data Security', titleKa: 'მონაცემების უსაფრთხოება', titleRu: 'Безопасность данных' },
+  { id: 'retention', titleEn: 'Data Retention', titleKa: 'მონაცემების შენახვა', titleRu: 'Хранение данных' },
+  { id: 'rights', titleEn: 'Your Rights', titleKa: 'თქვენი უფლებები', titleRu: 'Ваши права' },
+  { id: 'children', titleEn: 'Children\'s Privacy', titleKa: 'ბავშვთა კონფიდენციალურობა', titleRu: 'Конфиденциальность детей' },
+  { id: 'international', titleEn: 'International Transfers', titleKa: 'საერთაშორისო გადაცემები', titleRu: 'Международные переводы' },
+  { id: 'changes', titleEn: 'Policy Changes', titleKa: 'პოლიტიკის ცვლილებები', titleRu: 'Изменения политики' },
+  { id: 'contact', titleEn: 'Contact Us', titleKa: 'დაგვიკავშირდით', titleRu: 'Свяжитесь с нами' },
 ];
 
 export default function PrivacyPage() {
@@ -134,7 +134,7 @@ export default function PrivacyPage() {
                         {index + 1}
                       </span>
                       <span className="truncate">
-                        {pick({ en: section.titleEn, ka: section.titleKa })}
+                        {pick({ en: section.titleEn, ka: section.titleKa, ru: section.titleRu })}
                       </span>
                     </Button>
                   ))}
@@ -208,7 +208,7 @@ export default function PrivacyPage() {
                       }`}>
                         {index + 1}
                       </span>
-                      {pick({ en: section.titleEn, ka: section.titleKa })}
+                      {pick({ en: section.titleEn, ka: section.titleKa, ru: section.titleRu })}
                     </Button>
                   ))}
                 </nav>
@@ -406,7 +406,7 @@ export default function PrivacyPage() {
                 <section id="children" className="scroll-mt-28 py-10 border-b border-[var(--hm-border-subtle)]">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-8 h-8 rounded-lg bg-[var(--hm-brand-500)] text-white text-sm font-semibold flex items-center justify-center">9</span>
-                    <h2 className="!mb-0">{pick({ en: 'Children\'s Privacy', ka: 'ბავშვთა კონფიდენციალურობა' })}</h2>
+                    <h2 className="!mb-0">{pick({ en: 'Children\'s Privacy', ka: 'ბავშვთა კონფიდენციალურობა', ru: 'Конфиденциальность детей' })}</h2>
                   </div>
                   <p>
                     {t('privacy.homicoIsNotIntendedFor')}

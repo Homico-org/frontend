@@ -501,6 +501,12 @@ export default function ProCard({
 
   // Default / Compact variant - unified card with portfolio photos
   const hasMedia = visibleSlides.length > 0;
+  // No-portfolio cards have no photo band, so the pro's primary discipline
+  // stands in as an editorial nameplate - the card reads as intentional
+  // ("an architect with no photos yet") rather than broken/empty.
+  const primaryDisciplineLabel = userCategories?.[0]
+    ? getCategoryLabel(userCategories[0])
+    : null;
   return (
     <Link ref={cardRef} href={`/${(profile.country ?? 'GE').toLowerCase()}/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} - ${t('browse.professionals')}`}>
       <div
@@ -633,19 +639,36 @@ export default function ProCard({
             )}
           </div>
         ) : (
-          // No portfolio: thin neutral band acting as a clean spacer for the
-          // overlapping avatar below. Uses `--hm-bg-tertiary` (theme-aware) so
-          // it shows as off-white in light mode and a subtle elevated dark in
-          // dark mode - previously hardcoded `--hm-n-50` rendered as bright
-          // white in both modes, creating a "white strip on a dark card" look.
+          // No portfolio: an editorial nameplate instead of an empty spacer.
+          // The pro's primary discipline sits right-aligned in Fraunces italic
+          // (left side stays clear for the overlapping avatar below), so the
+          // card has presence and says what the pro does at a glance rather
+          // than reading as a blank/broken strip. `--hm-bg-tertiary` keeps it
+          // theme-aware (off-white in light, subtle elevated dark in dark).
           <div
-            aria-hidden
-            className="relative h-7 sm:h-8"
+            className="relative flex items-start justify-end overflow-hidden px-4 pt-3 pb-6"
             style={{
               backgroundColor: 'var(--hm-bg-tertiary)',
               borderBottom: '1px solid var(--hm-border-subtle)',
             }}
-          />
+          >
+            {primaryDisciplineLabel ? (
+              // Upright, not italic: `.font-display` falls back to Noto Serif
+              // Georgian for ka labels, which has no italic face - `italic` would
+              // synthesize a faux-oblique that reads as broken. Upright serif is
+              // clean in both scripts.
+              <p className="font-display max-w-[75%] truncate text-right text-[15px] leading-tight text-[var(--hm-fg-secondary)] sm:text-[17px]">
+                {primaryDisciplineLabel}
+              </p>
+            ) : (
+              <span
+                aria-hidden
+                className="font-display text-[26px] leading-none text-[var(--hm-fg-muted)] opacity-40"
+              >
+                {profile.name.charAt(0)}
+              </span>
+            )}
+          </div>
         )}
 
         {/* Avatar overlap. Larger when there's no media (it becomes the card's

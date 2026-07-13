@@ -25,28 +25,28 @@ const PREMIUM_TIERS: Record<
   string,
   {
     id: PremiumTierId;
-    name: { en: string; ka: string };
-    features: { en: string; ka: string }[];
+    name: { en: string; ka: string; ru: string };
+    features: { en: string; ka: string; ru: string }[];
   }
 > = {
   pro: {
     id: "pro",
-    name: { en: "Pro", ka: "პრო" },
+    name: { en: "Pro", ka: "პრო", ru: "Про" },
     features: [
-      { en: "Top of search results", ka: "ძიების პირველ ადგილზე" },
-      { en: "Featured on the homepage", ka: "მთავარ გვერდზე გამოჩენა" },
-      { en: "5x more profile views", ka: "5x მეტი ნახვა" },
-      { en: "Priority support", ka: "პრიორიტეტული მხარდაჭერა" },
+      { en: "Top of search results", ka: "ძიების პირველ ადგილზე", ru: "В топе результатов поиска" },
+      { en: "Featured on the homepage", ka: "მთავარ გვერდზე გამოჩენა", ru: "На главной странице" },
+      { en: "5x more profile views", ka: "5x მეტი ნახვა", ru: "В 5 раз больше просмотров" },
+      { en: "Priority support", ka: "პრიორიტეტული მხარდაჭერა", ru: "Приоритетная поддержка" },
     ],
   },
   elite: {
     id: "elite",
-    name: { en: "Super Pro", ka: "სუპერ პრო" },
+    name: { en: "Super Pro", ka: "სუპერ პრო", ru: "Супер Про" },
     features: [
-      { en: "Everything in Pro", ka: "ყველაფერი Pro-დან" },
-      { en: "Promotion on Facebook & Instagram", ka: "პრომოცია Facebook-სა და Instagram-ზე" },
-      { en: "Content & storytelling made for you", ka: "კონტენტი და სთორითელინგი შენთვის" },
-      { en: "Marketing & PR support", ka: "მარკეტინგი და PR მხარდაჭერა" },
+      { en: "Everything in Pro", ka: "ყველაფერი Pro-დან", ru: "Всё из Pro" },
+      { en: "Promotion on Facebook & Instagram", ka: "პრომოცია Facebook-სა და Instagram-ზე", ru: "Продвижение в Facebook и Instagram" },
+      { en: "Content & storytelling made for you", ka: "კონტენტი და სთორითელინგი თქვენთვის", ru: "Контент и сторителлинг для вас" },
+      { en: "Marketing & PR support", ka: "მარკეტინგი და PR მხარდაჭერა", ru: "Маркетинг и PR-поддержка" },
     ],
   },
 };
@@ -132,7 +132,7 @@ function CheckoutContent() {
       }
       setPromo({ finalAmount: data.finalAmount ?? price, code: data.code ?? code });
     } catch {
-      setPromoErr(pick({ en: "Couldn't check the code", ka: "კოდის შემოწმება ვერ მოხერხდა" }));
+      setPromoErr(pick({ en: "Couldn't check the code", ka: "კოდის შემოწმება ვერ მოხერხდა", ru: "Не удалось проверить код" }));
     } finally {
       setApplyingPromo(false);
     }
@@ -205,26 +205,26 @@ function CheckoutContent() {
             className="mb-6 inline-flex items-center gap-1.5 text-[13px] font-light text-[var(--hm-fg-muted)] transition-colors hover:text-[var(--hm-fg-primary)]"
           >
             <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} />
-            {pick({ en: "Back to plans", ka: "უკან გეგმებზე" })}
+            {pick({ en: "Back to plans", ka: "უკან გეგმებზე", ru: "Назад к планам" })}
           </button>
 
           <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.28em] text-[var(--hm-fg-subtle)]">
             Homico Premium
           </p>
           <h1 className="text-[28px] font-light leading-[1.1] tracking-[-0.02em] text-[var(--hm-fg-primary)] sm:text-[32px]">
-            {pick({ en: "Confirm your plan", ka: "დაადასტურე გეგმა" })}
+            {pick({ en: "Confirm your plan", ka: "დაადასტურე გეგმა", ru: "Подтвердите план" })}
           </h1>
 
           {/* Order summary */}
           <div className="mt-8 rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-7">
             <div className="flex items-baseline justify-between">
               <span className="text-[17px] font-medium text-[var(--hm-fg-primary)]">
-                {pick({ en: tier.name.en, ka: tier.name.ka })}
+                {pick({ en: tier.name.en, ka: tier.name.ka, ru: tier.name.ru })}
               </span>
               <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-[var(--hm-fg-subtle)]">
                 {period === "monthly"
-                  ? pick({ en: "monthly", ka: "თვიური" })
-                  : pick({ en: "yearly", ka: "წლიური" })}
+                  ? pick({ en: "monthly", ka: "თვიური", ru: "ежемесячно" })
+                  : pick({ en: "yearly", ka: "წლიური", ru: "ежегодно" })}
               </span>
             </div>
 
@@ -256,7 +256,7 @@ function CheckoutContent() {
                 <li key={i} className="flex items-start gap-2.5">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--hm-fg-subtle)]" strokeWidth={1.75} />
                   <span className="text-[13.5px] font-light leading-snug text-[var(--hm-fg-secondary)]">
-                    {pick({ en: f.en, ka: f.ka })}
+                    {pick({ en: f.en, ka: f.ka, ru: f.ru })}
                   </span>
                 </li>
               ))}
@@ -279,7 +279,7 @@ function CheckoutContent() {
                   }}
                   className="text-[12px] text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"
                 >
-                  {pick({ en: "Remove", ka: "მოშორება" })}
+                  {pick({ en: "Remove", ka: "მოშორება", ru: "Убрать" })}
                 </button>
               </div>
             ) : (
@@ -292,7 +292,7 @@ function CheckoutContent() {
                       setPromoErr("");
                     }}
                     onKeyDown={(e) => e.key === "Enter" && applyPromo()}
-                    placeholder={pick({ en: "Promo code", ka: "პრომო კოდი" })}
+                    placeholder={pick({ en: "Promo code", ka: "პრომო კოდი", ru: "Промокод" })}
                     className="h-10 flex-1 rounded-xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-page)] px-3 text-[14px] uppercase tracking-wide text-[var(--hm-fg-primary)] outline-none placeholder:tracking-normal placeholder:text-[var(--hm-fg-subtle)] focus:border-[var(--hm-brand-500)]"
                   />
                   <button
@@ -301,7 +301,7 @@ function CheckoutContent() {
                     disabled={applyingPromo || !promoInput.trim()}
                     className="h-10 shrink-0 rounded-xl border border-[var(--hm-border-strong)] px-4 text-[13px] font-medium text-[var(--hm-fg-primary)] transition-colors hover:bg-[var(--hm-bg-tertiary)] disabled:opacity-50"
                   >
-                    {applyingPromo ? <LoadingSpinner size="sm" /> : pick({ en: "Apply", ka: "გამოყენება" })}
+                    {applyingPromo ? <LoadingSpinner size="sm" /> : pick({ en: "Apply", ka: "გამოყენება", ru: "Применить" })}
                   </button>
                 </div>
                 {promoErr && (
@@ -314,7 +314,7 @@ function CheckoutContent() {
 
             <div className="flex items-baseline justify-between">
               <span className="text-[13px] font-light text-[var(--hm-fg-muted)]">
-                {pick({ en: "Total today", ka: "ჯამი" })}
+                {pick({ en: "Total today", ka: "ჯამი", ru: "Итого сегодня" })}
               </span>
               <span className="text-[20px] font-light tabular-nums tracking-[-0.02em] text-[var(--hm-fg-primary)]">
                 {currency}
@@ -333,7 +333,7 @@ function CheckoutContent() {
               <LoadingSpinner size="sm" />
             ) : (
               <>
-                {pick({ en: "Pay securely", ka: "უსაფრთხო გადახდა" })}
+                {pick({ en: "Pay securely", ka: "უსაფრთხო გადახდა", ru: "Оплатить безопасно" })}
                 <ArrowUpRight className="h-4 w-4" strokeWidth={1.75} />
               </>
             )}
@@ -342,7 +342,7 @@ function CheckoutContent() {
           <div className="mt-4 flex items-center justify-center gap-3">
             <p className="flex items-center gap-1.5 text-[12px] font-light text-[var(--hm-fg-muted)]">
               <Lock className="h-3.5 w-3.5" strokeWidth={1.75} />
-              {pick({ en: "Secure payment", ka: "უსაფრთხო გადახდა" })}
+              {pick({ en: "Secure payment", ka: "უსაფრთხო გადახდა", ru: "Безопасная оплата" })}
             </p>
             <PaymentMarks />
           </div>

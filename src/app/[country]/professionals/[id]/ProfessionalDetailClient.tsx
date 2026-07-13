@@ -64,6 +64,7 @@ import {
   ChevronRight,
   Clock,
   Edit3,
+  Home,
   Eye,
   Facebook,
   Link2,
@@ -84,6 +85,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useClickOutside } from "@/hooks/useClickOutside";
 
 // API response types for before/after pairs (supports both formats)
 interface ApiBeforeAfterPair {
@@ -207,6 +209,12 @@ export default function ProfessionalDetailClient({
   const [showFloatingButton, setShowFloatingButton] = useState(false);
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  // Close the share dropdown on any outside click (was staying open until the
+  // trigger was clicked again).
+  const shareMenuRef = useClickOutside<HTMLDivElement>(
+    () => setShowShareMenu(false),
+    showShareMenu,
+  );
   const [copySuccess, setCopySuccess] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const [showAvatarZoom, setShowAvatarZoom] = useState(false);
@@ -569,6 +577,16 @@ export default function ProfessionalDetailClient({
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [showAvatarZoom]);
+
+  // Close the share menu on Escape (pairs with the outside-click handler).
+  useEffect(() => {
+    if (!showShareMenu) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowShareMenu(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [showShareMenu]);
 
   const proCategories = useMemo(() => {
     if (!profile) return [];
@@ -1858,19 +1876,30 @@ export default function ProfessionalDetailClient({
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex justify-between items-center">
-            {/* Minimal ghost icon - no pill bg, no border. Hover reveals
-                vermillion hint. Cleaner and less visually intrusive. */}
-            <button
-              type="button"
-              onClick={() => backOrNavigate(router, "/professionals")}
-              aria-label={t("common.back")}
-              className="group inline-flex items-center gap-1.5 text-[13px] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors p-1 -ml-1"
-            >
-              <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" strokeWidth={2} />
-              <span className="hidden sm:inline font-medium">{t("common.back")}</span>
-            </button>
+            {/* Minimal ghost icons - no pill bg, no border. Hover reveals
+                vermillion hint. Back and Home paired so navigation is obvious. */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              <button
+                type="button"
+                onClick={() => backOrNavigate(router, "/professionals")}
+                aria-label={t("common.back")}
+                className="group inline-flex items-center gap-1.5 text-[13px] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors p-1 -ml-1"
+              >
+                <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" strokeWidth={2} />
+                <span className="hidden sm:inline font-medium">{t("common.back")}</span>
+              </button>
+              <span className="w-px h-4 bg-[var(--hm-border)]" aria-hidden="true" />
+              <Link
+                href={cl("/")}
+                aria-label={t("common.home")}
+                className="group inline-flex items-center gap-1.5 text-[13px] text-[var(--hm-fg-muted)] hover:text-[var(--hm-brand-500)] transition-colors p-1"
+              >
+                <Home className="w-4 h-4" strokeWidth={2} />
+                <span className="hidden sm:inline font-medium">{t("common.home")}</span>
+              </Link>
+            </div>
 
-            <div className="relative">
+            <div className="relative" ref={shareMenuRef}>
               <button
                 type="button"
                 onClick={() => setShowShareMenu(!showShareMenu)}
