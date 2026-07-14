@@ -50,23 +50,17 @@ export default function ReviewItem({
 }: ReviewItemProps) {
   const { t } = useLanguage();
   
-  // Determine display name based on source and anonymity
   const isExternal = review.source === 'external';
-  const displayName = review.isAnonymous
-    ? t('common.anonymous')
-    : isExternal
-      ? (review.externalClientName || t('common.anonymous'))
-      : review.clientId?.name || t('common.anonymous');
-
-  // Determine avatar
-  const avatarName = review.isAnonymous 
-    ? '?' 
-    : isExternal 
-      ? (review.externalClientName || '?')
-      : (review.clientId?.name || '?');
-  const avatarSrc = review.isAnonymous
-    ? undefined
-    : review.clientId?.avatar || undefined;
+  // Trust the backend: for anonymous reviews it redacts the reviewer's name +
+  // avatar for everyone but admins, so if a name is present we're allowed to
+  // show it. Only fall back to "Anonymous" when no identity was provided.
+  const providedName = review.clientId?.name || review.externalClientName;
+  const displayName = providedName || t('common.anonymous');
+  const avatarName = providedName || '?';
+  const avatarSrc = providedName ? review.clientId?.avatar || undefined : undefined;
+  // Admin case: the review was left anonymously but we still received the
+  // identity - flag it so the admin knows it's hidden from the pro.
+  const showAnonymousTag = review.isAnonymous && !!providedName;
 
   return (
     <div
@@ -91,6 +85,11 @@ export default function ReviewItem({
               <p className="font-semibold text-[var(--hm-fg-primary)] text-sm truncate">
                 {displayName}
               </p>
+              {showAnonymousTag && (
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] shrink-0">
+                  {t('common.anonymous')}
+                </span>
+              )}
               {/* Source badge. Was rendered at 30% opacity before -
                   effectively invisible. Now reads as a clear trust
                   signal: green "Verified Homico booking" for reviews

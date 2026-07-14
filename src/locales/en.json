@@ -1903,6 +1903,8 @@
     "homepage": "Homepage",
     "requestedFeedback": "{name} has requested your feedback about working together",
     "yourReview": "Your Review",
+    "postAnonymously": "Post anonymously",
+    "anonymousHint": "The professional won't see your name - only Homico admins can.",
     "describeExperience": "Describe your experience...",
     "projectName": "Project Name",
     "projectNamePlaceholder": "e.g. Apartment Renovation",

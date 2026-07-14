@@ -1906,6 +1906,8 @@
     "homepage": "Главная",
     "requestedFeedback": "{name} просит вас оставить отзыв о совместной работе",
     "yourReview": "Ваш отзыв",
+    "postAnonymously": "Оставить анонимно",
+    "anonymousHint": "Мастер не увидит ваше имя - его видят только администраторы Homico.",
     "describeExperience": "Опишите ваш опыт...",
     "projectName": "Название проекта",
     "projectNamePlaceholder": "напр. Ремонт квартиры",

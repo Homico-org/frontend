@@ -1903,6 +1903,8 @@
     "homepage": "მთავარი",
     "requestedFeedback": "{name}-მა მოითხოვა შეფასება თქვენი თანამშრომლობის შესახებ",
     "yourReview": "თქვენი შეფასება",
+    "postAnonymously": "ანონიმურად დატოვება",
+    "anonymousHint": "ოსტატი ვერ ნახავს, ვინ დაწერა. ვინაობა მხოლოდ Homico-ს ადმინისტრატორს უჩანს.",
     "describeExperience": "აღწერეთ გამოცდილება...",
     "projectName": "პროექტის სახელი",
     "projectNamePlaceholder": "მაგ: ბინის რემონტი",

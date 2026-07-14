@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Tabs } from "@/components/ui/Tabs";
+import { Toggle } from "@/components/ui/Toggle";
 import { storage } from "@/services/storage";
 import {
   Modal,
@@ -110,6 +111,7 @@ export default function ReviewsTab({
   const [reviewHoverRating, setReviewHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [reviewerPhone, setReviewerPhone] = useState("");
+  const [reviewAnonymous, setReviewAnonymous] = useState(false);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   // Check if user's phone is already verified (pros always have verified phone, or user has phone in profile)
@@ -243,6 +245,7 @@ export default function ReviewsTab({
         rating: reviewRating,
         text: reviewText.trim() || undefined,
         phone: !isPhoneVerified ? reviewerPhone.trim() : undefined,
+        isAnonymous: reviewAnonymous,
       });
 
       toast.success(t("reviews.thankYou"), t("reviews.reviewSubmitted"));
@@ -252,6 +255,7 @@ export default function ReviewsTab({
       setReviewRating(0);
       setReviewText("");
       setReviewerPhone("");
+      setReviewAnonymous(false);
 
       // Refresh reviews list
       if (onReviewSubmitted) {
@@ -620,6 +624,24 @@ export default function ReviewsTab({
               onChange={(e) => setReviewText(e.target.value)}
               placeholder={t("reviews.describeExperience")}
               rows={3}
+            />
+          </div>
+
+          {/* Anonymous toggle - hides the reviewer's identity from the pro */}
+          <div className="mb-4 flex items-start justify-between gap-3 rounded-xl border border-[var(--hm-border-subtle)] px-3.5 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-[var(--hm-fg-primary)]">
+                {t("reviews.postAnonymously")}
+              </p>
+              <p className="mt-0.5 text-xs text-[var(--hm-fg-muted)]">
+                {t("reviews.anonymousHint")}
+              </p>
+            </div>
+            <Toggle
+              checked={reviewAnonymous}
+              onChange={() => setReviewAnonymous((v) => !v)}
+              size="sm"
+              className="mt-0.5 shrink-0"
             />
           </div>
 
