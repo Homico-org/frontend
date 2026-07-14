@@ -103,6 +103,18 @@ const CATEGORY_LABELS: Record<string, { en: string; ka: string; ru: string }> = 
   furniture: { en: 'Furniture', ka: 'ავეჯი', ru: 'Мебель' },
   other: { en: 'Other', ka: 'სხვა', ru: 'Другое' },
 
+  // Service Catalog top-level categories (keys from /service-catalog/as-categories).
+  // Without these, getCategoryLabel() fell through to humanizeServiceKey() and
+  // showed the English key title-cased (e.g. "Windows Doors") on every locale.
+  movers: { en: 'Movers', ka: 'გადაზიდვა', ru: 'Переезд и грузоперевозки' },
+  painters: { en: 'Painters', ka: 'შეღებვა', ru: 'Покраска' },
+  contractors: { en: 'Contractors', ka: 'რემონტი და მშენებლობა', ru: 'Ремонт и отделка' },
+  architects: { en: 'Architects', ka: 'არქიტექტურა', ru: 'Архитектура' },
+  pool_spa: { en: 'Pool & Spa', ka: 'აუზი და სპა', ru: 'Бассейн и спа' },
+  windows_doors: { en: 'Windows & Doors', ka: 'ფანჯრები და კარები', ru: 'Окна и двери' },
+  concrete_masonry: { en: 'Concrete & Masonry', ka: 'ბეტონი და ქვა', ru: 'Бетон и кладка' },
+  designers: { en: 'Designers', ka: 'დიზაინერები', ru: 'Дизайнеры' },
+
   // Service Catalog categories
   heating_cooling: { en: 'Heating & Cooling', ka: 'გათბობა და გაგრილება', ru: 'Отопление и охлаждение' },
   appliance: { en: 'Appliance Repair', ka: 'ტექნიკის შეკეთება', ru: 'Ремонт техники' },

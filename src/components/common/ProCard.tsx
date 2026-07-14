@@ -386,11 +386,11 @@ export default function ProCard({
   const catalogLabelMap = useMemo(() => {
     const map = new Map<string, string>();
     for (const cat of catalogCategories) {
-      map.set(cat.key, pick({ en: cat.name, ka: cat.nameKa }));
+      map.set(cat.key, pick({ en: cat.name, ka: cat.nameKa, ru: cat.nameRu }));
       for (const sub of cat.subcategories) {
-        map.set(sub.key, pick({ en: sub.name, ka: sub.nameKa }));
+        map.set(sub.key, pick({ en: sub.name, ka: sub.nameKa, ru: sub.nameRu }));
         for (const svc of (sub.services || [])) {
-          map.set(svc.key, pick({ en: svc.name, ka: svc.nameKa }));
+          map.set(svc.key, pick({ en: svc.name, ka: svc.nameKa, ru: svc.nameRu }));
         }
       }
     }
@@ -505,7 +505,7 @@ export default function ProCard({
   // stands in as an editorial nameplate - the card reads as intentional
   // ("an architect with no photos yet") rather than broken/empty.
   const primaryDisciplineLabel = userCategories?.[0]
-    ? getCategoryLabel(userCategories[0])
+    ? catalogLabelMap.get(userCategories[0]) || getCategoryLabel(userCategories[0])
     : null;
   return (
     <Link ref={cardRef} href={`/${(profile.country ?? 'GE').toLowerCase()}/professionals/${profile.id}`} className="group block h-full" onClick={handleClick} aria-label={`${profile.name} - ${t('browse.professionals')}`}>
