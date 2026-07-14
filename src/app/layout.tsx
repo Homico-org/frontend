@@ -11,6 +11,7 @@ import Providers from "@/components/common/Providers";
 import PushNotificationPrompt from "@/components/common/PushNotificationPrompt";
 import RouteProgressBar from "@/components/common/RouteProgressBar";
 import SessionExpiredToast from "@/components/common/SessionExpiredToast";
+import TopGeCounter from "@/components/common/TopGeCounter";
 import ShortcutsHelp from "@/components/common/ShortcutsHelp";
 import SkipToMainLink from "@/components/common/SkipToMainLink";
 import SwipeBackHandler from "@/components/common/SwipeBackHandler";
@@ -422,14 +423,8 @@ fbq('track', 'PageView');`,
           <ShortcutsHelp />
           <SwipeBackHandler />
         </Providers>
-        {/* TOP.GE ASYNC COUNTER CODE */}
-        <div
-          style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}
-        >
-          <div id="top-ge-counter-container" data-site-id="118847" />
-        </div>
-        <script async src="//counter.top.ge/counter.js" />
-        {/* / END OF TOP.GE COUNTER CODE */}
+        {/* TOP.GE async counter - injected client-side after hydration */}
+        <TopGeCounter />
       </body>
     </html>
   );
