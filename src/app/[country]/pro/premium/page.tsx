@@ -39,7 +39,7 @@ const SUPER_PRO_FEATURES: Loc[] = [
 // `pro` / `elite` are the internal tier ids; `elite` ships as "Super Pro".
 const PLANS = [
   { id: "pro", icon: Crown, popular: false, features: PRO_FEATURES, compareAt: 0 },
-  { id: "elite", icon: Megaphone, popular: true, features: SUPER_PRO_FEATURES, compareAt: 300 },
+  { id: "elite", icon: Megaphone, popular: true, features: SUPER_PRO_FEATURES, compareAt: 0 },
 ] as const;
 
 export default function PremiumPlansPage() {
