@@ -30,7 +30,7 @@ export function PriceCard({
 }: PriceCardProps) {
   const { t, pick } = useLanguage();
 
-  const itemName = pick({ en: item.nameEn, ka: item.nameKa });
+  const itemName = pick({ en: item.nameEn, ka: item.nameKa, ru: item.nameRu });
   const categoryName = t(`tools.categories.${item.category}`);
   const unitLabel = t(`tools.units.${item.unit}`);
   const perUnit = t('tools.prices.perUnit');

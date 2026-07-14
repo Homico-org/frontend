@@ -9,6 +9,7 @@ import ProductCard from '@/components/shop/ProductCard';
 import type { CartItem } from '@/hooks/useCart';
 import { FilterPills } from '@/components/projects/TableCard';
 import { Room } from '@/components/projects/ProjectRooms';
+import type { ScopeItem } from '@/components/projects/ProjectScope';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
@@ -21,9 +22,7 @@ import {
   Pencil,
   Plus,
   Search,
-  ShoppingCart,
-  Tag,
-  Trash2,
+  ShoppingCart,  Trash2,
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -91,6 +90,8 @@ interface ProjectShoppingProps {
   products: ProjectProduct[];
   log?: ProductLogEntry[];
   rooms?: Room[];
+  /** The takeoff/BoQ lines - power the "shop what you specced" quick chips. */
+  scopeItems?: ScopeItem[];
   canManage: boolean;
   /** The client (owner) - only they can sign off on schedule line items. */
   canApprove?: boolean;
@@ -103,6 +104,7 @@ export default function ProjectShopping({
   projectId,
   products,
   rooms = [],
+  scopeItems = [],
   canManage,
   canApprove = false,
   budget,
@@ -115,7 +117,29 @@ export default function ProjectShopping({
   const [roomFilter, setRoomFilter] = useState<string>('all');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  // Seeds the catalog search when opened from a "shop this scope item" chip.
+  const [catalogQuery, setCatalogQuery] = useState<string | undefined>(undefined);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+
+  const openCatalog = (query?: string) => {
+    setCatalogQuery(query);
+    setCatalogOpen(true);
+  };
+
+  // Distinct specced services from the takeoff - the "shop for what you planned"
+  // shortcut. Deduped by display name, capped so the row stays tidy.
+  const speccedServices = useMemo(() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const s of scopeItems) {
+      const n = (s.name || '').trim();
+      if (n && !seen.has(n.toLowerCase())) {
+        seen.add(n.toLowerCase());
+        out.push(n);
+      }
+    }
+    return out.slice(0, 8);
+  }, [scopeItems]);
   // Card grid (browse) vs schedule table (the FF&E procurement master view).
   const [view, setView] = useState<'cards' | 'schedule'>('cards');
   // How the list is grouped: by category (default), room, or supplier (the PO view).
@@ -200,7 +224,10 @@ export default function ProjectShopping({
     delivered: products.filter((p) => p.status === 'delivered').length,
   };
 
-  const fmt = (n: number) => `${n.toLocaleString()} ₾`;
+  // Space thousands separator + ₾ suffix, matching every other project surface
+  // (Rooms/Scope/Selections) and the brand number convention (`8 000 ₾`).
+  const fmt = (n: number) =>
+    `${Math.round(n).toLocaleString('en-US').replace(/,/g, ' ')} ₾`;
 
   // Export the full schedule to CSV. UTF-8 BOM so Excel reads Georgian/Russian.
   const exportCsv = () => {
@@ -423,7 +450,7 @@ export default function ProjectShopping({
         topRight={
           !canManage ? (
             <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[9px] font-bold uppercase tracking-[0.06em] shadow-sm ${STATUS_PILL[p.status]}`}
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[9px] font-bold uppercase tracking-[0.06em] ${STATUS_PILL[p.status]}`}
             >
               <span
                 className="h-1.5 w-1.5 rounded-full"
@@ -696,7 +723,7 @@ export default function ProjectShopping({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setCatalogOpen(true)}
+                onClick={() => openCatalog()}
                 leftIcon={<Search className="w-4 h-4" />}
               >
                 {t('projects.catalogBrowse')}
@@ -722,6 +749,27 @@ export default function ProjectShopping({
           )}
         </div>
       </div>
+
+      {/* Shop what you specced - one tap from a takeoff line to a pre-searched
+          catalog. The project's real edge: plan a material, buy it. */}
+      {canManage && speccedServices.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-1.5">
+          <span className="mr-0.5 inline-flex items-center gap-1 text-[12px] font-medium text-[var(--hm-fg-muted)]">
+            <Search className="h-3.5 w-3.5" />
+            {t('projects.shopForSpecced')}
+          </span>
+          {speccedServices.map((name) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => openCatalog(name)}
+              className="inline-flex items-center rounded-full border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] px-3 py-1 text-[12px] font-medium text-[var(--hm-fg-secondary)] transition-colors hover:border-[var(--hm-fg-primary)] hover:text-[var(--hm-fg-primary)]"
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Summary - compact total + status counts */}
       {products.length > 0 && (
@@ -803,6 +851,7 @@ export default function ProjectShopping({
           roomId={
             roomFilter !== 'all' && roomFilter !== 'none' ? roomFilter : undefined
           }
+          initialQuery={catalogQuery}
           onSaved={onChanged}
         />
       )}
@@ -842,7 +891,7 @@ export default function ProjectShopping({
               onClick={() => setFilter(s as 'all' | ProductStatus)}
               className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[12px] font-medium transition-colors ${
                 filter === s
-                  ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[0_1px_2px_rgba(17,16,13,0.06)]'
+                  ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)]'
                   : 'text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
               }`}
             >
@@ -870,7 +919,7 @@ export default function ProjectShopping({
                 onClick={() => setView(v)}
                 className={`rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors ${
                   view === v
-                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[0_1px_2px_rgba(17,16,13,0.06)]'
+                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)]'
                     : 'text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
                 }`}
               >
@@ -898,7 +947,7 @@ export default function ProjectShopping({
                 onClick={() => setGroupBy(g)}
                 className={`rounded-full px-2.5 py-1 font-medium transition-colors ${
                   groupBy === g
-                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)] shadow-[0_1px_2px_rgba(17,16,13,0.06)]'
+                    ? 'bg-[var(--hm-bg-elevated)] text-[var(--hm-fg-primary)]'
                     : 'text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]'
                 }`}
               >
@@ -976,15 +1025,6 @@ export default function ProjectShopping({
                             open ? '' : '-rotate-90'
                           }`}
                         />
-                        <span
-                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${
-                            named
-                              ? 'bg-[var(--hm-brand-500)]/[0.10] text-[var(--hm-brand-500)]'
-                              : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'
-                          }`}
-                        >
-                          <Tag className="h-3.5 w-3.5" />
-                        </span>
                         <span className="truncate text-[13.5px] font-semibold text-[var(--hm-fg-primary)]">
                           {label}
                         </span>

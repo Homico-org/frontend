@@ -46,7 +46,9 @@ const SPACE_TYPES: { key: string; labelKey: string }[] = [
 ];
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
-const fmtArea = (n: number) => `${round2(n)} მ²`;
+// Unit suffix is passed in (localized `projects.sqm`) - hardcoding `მ²` showed
+// Georgian script to en/ru users.
+const fmtArea = (n: number, unit: string) => `${round2(n)} ${unit}`;
 
 const blank = {
   name: '',
@@ -149,7 +151,7 @@ export default function AddSpaceModal({
       aria-label={t('projects.applySuggested')}
       className="mt-1 inline-flex items-center gap-1 text-[12px] font-medium text-[var(--hm-brand-500)] transition-opacity hover:opacity-80"
     >
-      <Check className="h-3 w-3" />≈ {fmtArea(value)}
+      <Check className="h-3 w-3" />≈ {fmtArea(value, t('projects.sqm'))}
     </button>
   );
 
@@ -257,7 +259,7 @@ export default function AddSpaceModal({
                 <span className="inline-flex items-center gap-1.5 text-[var(--hm-fg-secondary)]">
                   <Square className="h-4 w-4 text-[var(--hm-fg-muted)]" />
                   <span className="font-semibold tabular-nums text-[var(--hm-fg-primary)]">
-                    {fmtArea(effArea)}
+                    {fmtArea(effArea, t('projects.sqm'))}
                   </span>
                 </span>
               )}
@@ -265,7 +267,7 @@ export default function AddSpaceModal({
                 <span className="inline-flex items-center gap-1.5 text-[var(--hm-fg-secondary)]">
                   {t('projects.wallAreaLabel')}
                   <span className="font-semibold tabular-nums text-[var(--hm-fg-primary)]">
-                    {fmtArea(effWall)}
+                    {fmtArea(effWall, t('projects.sqm'))}
                   </span>
                 </span>
               )}

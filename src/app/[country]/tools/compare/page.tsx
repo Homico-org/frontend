@@ -7,6 +7,8 @@ import { useCountry } from '@/hooks/useCountry';
 import { currencySymbol } from '@/utils/currency';
 import { type PriceCategory } from '@/data/priceDatabase';
 import { aiService, CompareEstimatesResult } from '@/services/ai';
+import { ToolCTA } from '@/components/tools/ToolCTA';
+import { RelatedTools } from '@/components/tools/RelatedTools';
 import * as XLSX from 'xlsx';
 import {
   Scale,
@@ -570,7 +572,7 @@ Grand Total: 91,600₾`,
             </div>
           ) : estimates ? (
             /* Results */
-            <div className="space-y-5">
+            <div className="space-y-5 tool-print-report">
               {/* Winner Summary */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Best Price */}
@@ -1127,8 +1129,13 @@ Grand Total: 91,600₾`,
                 </div>
               </div>
 
+              {/* Convert research intent into a posted job */}
+              <div className="print-hide">
+                <ToolCTA />
+              </div>
+
               {/* Actions */}
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 print-hide">
                 <Button
                   variant="outline"
                   onClick={resetComparison}
@@ -1137,13 +1144,19 @@ Grand Total: 91,600₾`,
                   <RefreshCw className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   {t('tools.compare.startOver')}
                 </Button>
-                <Button className="flex-1 px-6 py-3.5 h-auto rounded-xl font-semibold">
+                <Button
+                  onClick={() => window.print()}
+                  className="flex-1 px-6 py-3.5 h-auto rounded-xl font-semibold"
+                >
                   <Download className="w-4 h-4 mr-2" strokeWidth={1.5} />
                   {t('tools.compare.downloadComparison')}
                 </Button>
               </div>
             </div>
           ) : null}
+
+          {/* Cross-link to the other tools */}
+          <RelatedTools current="compare" className="mt-10" />
         </div>
       </div>
     </div>

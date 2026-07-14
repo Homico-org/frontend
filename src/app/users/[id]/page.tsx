@@ -185,7 +185,7 @@ export default function UserProfilePage() {
               {t('users.userNotFound')}
             </h2>
             <p className="text-[var(--hm-fg-muted)] mb-6">
-              {pick({ en: "Sorry, this page doesn't exist", ka: 'სამწუხაროდ, ეს გვერდი არ არსებობს' })}
+              {pick({ en: "Sorry, this page doesn't exist", ka: 'სამწუხაროდ, ეს გვერდი არ არსებობს', ru: 'К сожалению, эта страница не существует' })}
             </p>
             <button onClick={() => router.push('/portfolio')} className="px-6 py-3 text-sm font-semibold rounded-xl bg-[var(--hm-brand-500)] text-white hover:opacity-90 transition-opacity">
               {t('common.goBack')}

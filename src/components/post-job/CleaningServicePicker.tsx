@@ -74,6 +74,7 @@ export default function CleaningServicePicker({
         categoryKey: category.key,
         name: svc.name,
         nameKa: svc.nameKa,
+        nameRu: 'nameRu' in svc ? svc.nameRu : undefined,
         unit: svc.unit,
         unitName: unitNameEn ?? svc.unit,
         unitNameKa: unitNameKa ?? svc.unit,
@@ -179,7 +180,7 @@ export default function CleaningServicePicker({
                   <p className="text-xs text-[var(--hm-fg-muted)]">
                     {svc.basePrice}
                     {sym}
-                    {isArea ? ` / ${pick({ en: svc.unitName ?? 'm²', ka: svc.unitNameKa ?? 'მ²' })}` : ''}
+                    {isArea ? ` / ${pick({ en: svc.unitName ?? 'm²', ka: svc.unitNameKa ?? 'მ²', ru: svc.unitName ?? 'м²' })}` : ''}
                   </p>
                 </div>
 

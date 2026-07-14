@@ -437,12 +437,12 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
       if (!file) return;
 
       if (!file.type.startsWith("image/")) {
-        setError(pick({ en: "Only image files are allowed", ka: "მხოლოდ სურათები არის დაშვებული" }));
+        setError(pick({ en: "Only image files are allowed", ka: "მხოლოდ სურათები არის დაშვებული", ru: "Разрешены только изображения" }));
         return;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        setError(pick({ en: "File is too large (max 10MB)", ka: "ფაილი ძალიან დიდია (მაქს. 10MB)" }));
+        setError(pick({ en: "File is too large (max 10MB)", ka: "ფაილი ძალიან დიდია (მაქს. 10MB)", ru: "Файл слишком большой (макс. 10 МБ)" }));
         return;
       }
 
@@ -489,7 +489,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         }
       } catch (err) {
         console.error("Upload error:", err);
-        setError(pick({ en: "Failed to upload image", ka: "სურათის ატვირთვა ვერ მოხერხდა" }));
+        setError(pick({ en: "Failed to upload image", ka: "სურათის ატვირთვა ვერ მოხერხდა", ru: "Не удалось загрузить изображение" }));
         URL.revokeObjectURL(previewUrl);
         setAvatarPreview(null);
       } finally {
@@ -560,7 +560,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         const code = otpCode || phoneOtp.join("");
 
         if (code.length !== 4) {
-          throw new Error(pick({ en: "Please enter 4-digit code", ka: "შეიყვანეთ 4-ნიშნა კოდი" }));
+          throw new Error(pick({ en: "Please enter 4-digit code", ka: "შეიყვანეთ 4-ნიშნა კოდი", ru: "Введите 4-значный код" }));
         }
 
         const response = await fetch(
@@ -669,11 +669,11 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
 
       Array.from(files).forEach((file) => {
         if (!allowedTypes.includes(file.type)) {
-          setError(pick({ en: "Only JPG, PNG or WebP allowed", ka: "მხოლოდ JPG, PNG ან WebP ფორმატი" }));
+          setError(pick({ en: "Only JPG, PNG or WebP allowed", ka: "მხოლოდ JPG, PNG ან WebP ფორმატი", ru: "Разрешены только JPG, PNG или WebP" }));
           return;
         }
         if (file.size > maxSize) {
-          setError(pick({ en: "File too large (max 5MB)", ka: "ფაილი ძალიან დიდია (მაქს. 5MB)" }));
+          setError(pick({ en: "File too large (max 5MB)", ka: "ფაილი ძალიან დიდია (მაქს. 5MB)", ru: "Файл слишком большой (макс. 5 МБ)" }));
           return;
         }
 
@@ -726,11 +726,11 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
 
       Array.from(files).forEach((file) => {
         if (!allowedTypes.includes(file.type)) {
-          setError(pick({ en: "Only MP4, WebM or MOV allowed", ka: "მხოლოდ MP4, WebM ან MOV ფორმატი" }));
+          setError(pick({ en: "Only MP4, WebM or MOV allowed", ka: "მხოლოდ MP4, WebM ან MOV ფორმატი", ru: "Разрешены только MP4, WebM или MOV" }));
           return;
         }
         if (file.size > maxSize) {
-          setError(pick({ en: "Video too large (max 100MB)", ka: "ვიდეო ძალიან დიდია (მაქს. 100MB)" }));
+          setError(pick({ en: "Video too large (max 100MB)", ka: "ვიდეო ძალიან დიდია (მაქს. 100MB)", ru: "Видео слишком большое (макс. 100 МБ)" }));
           return;
         }
 
@@ -940,10 +940,10 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
       if (!response.ok) {
         const msg = data.message || "Registration failed";
         if (msg.includes('phone number already exists')) {
-          throw new Error(pick({ en: 'This phone number is already registered', ka: 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია' }));
+          throw new Error(pick({ en: 'This phone number is already registered', ka: 'ეს ტელეფონის ნომერი უკვე რეგისტრირებულია', ru: 'Этот номер телефона уже зарегистрирован' }));
         }
         if (msg.includes('email already exists')) {
-          throw new Error(pick({ en: 'This email is already registered', ka: 'ეს ელ-ფოსტა უკვე რეგისტრირებულია' }));
+          throw new Error(pick({ en: 'This email is already registered', ka: 'ეს ელ-ფოსტა უკვე რეგისტრირებულია', ru: 'Эта почта уже зарегистрирована' }));
         }
         throw new Error(msg);
       }
@@ -1038,7 +1038,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         ).then((r) => r.json());
 
         if (phoneCheck.exists) {
-          setError(pick({ en: "This phone number is already registered", ka: "ეს ტელეფონის ნომერი უკვე რეგისტრირებულია" }));
+          setError(pick({ en: "This phone number is already registered", ka: "ეს ტელეფონის ნომერი უკვე რეგისტრირებულია", ru: "Этот номер телефона уже зарегистрирован" }));
           setIsLoading(false);
           return;
         }
@@ -1063,7 +1063,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
         ).then((r) => r.json());
 
         if (phoneCheck.exists) {
-          setError(pick({ en: "This phone number is already registered", ka: "ეს ტელეფონის ნომერი უკვე რეგისტრირებულია" }));
+          setError(pick({ en: "This phone number is already registered", ka: "ეს ტელეფონის ნომერი უკვე რეგისტრირებულია", ru: "Этот номер телефона уже зарегистрирован" }));
           setIsLoading(false);
           return;
         }
@@ -1074,7 +1074,7 @@ export function useRegistration(options?: UseRegistrationOptions): UseRegistrati
           ).then((r) => r.json());
 
           if (emailCheck.exists) {
-            setError(pick({ en: "This email is already registered", ka: "ეს ელ-ფოსტა უკვე რეგისტრირებულია" }));
+            setError(pick({ en: "This email is already registered", ka: "ეს ელ-ფოსტა უკვე რეგისტრირებულია", ru: "Эта почта уже зарегистрирована" }));
             setIsLoading(false);
             return;
           }

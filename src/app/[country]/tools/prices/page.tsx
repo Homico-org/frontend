@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Database, Info, Search } from 'lucide-react';
 import {
   priceDatabase,
+  priceCategoryToCatalogKey,
   type PriceCategory,
   type PriceItem,
 } from '@/data/priceDatabase';
@@ -18,6 +19,8 @@ import { Badge } from '@/components/ui/badge';
 // Tools Components
 import { PriceCard } from '@/components/tools/prices/PriceCard';
 import { categoryIconMap } from '@/components/tools/prices/categoryIcons';
+import { ToolCTA } from '@/components/tools/ToolCTA';
+import { RelatedTools } from '@/components/tools/RelatedTools';
 import EmptyState from '@/components/common/EmptyState';
 
 // All categories for filter
@@ -63,9 +66,12 @@ export default function PricesPage() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       items = items.filter((item) => {
-        const name = pick({ en: item.nameEn, ka: item.nameKa });
+        const name = pick({ en: item.nameEn, ka: item.nameKa, ru: item.nameRu });
         return (
           name.toLowerCase().includes(query) ||
+          item.nameRu.toLowerCase().includes(query) ||
+          item.nameEn.toLowerCase().includes(query) ||
+          item.nameKa.toLowerCase().includes(query) ||
           item.workType.toLowerCase().includes(query)
         );
       });
@@ -221,8 +227,23 @@ export default function PricesPage() {
             />
           )}
 
+          {/* Convert price research into a posted job. When a category is
+              filtered, pre-seed the post-job flow with the matching trade. */}
+          <div className="mt-8">
+            <ToolCTA
+              postJobQuery={
+                selectedCategory !== 'all'
+                  ? `category=${priceCategoryToCatalogKey[selectedCategory]}`
+                  : undefined
+              }
+            />
+          </div>
+
+          {/* Cross-link to the other tools */}
+          <RelatedTools current="prices" className="mt-8" />
+
           {/* Footer Note */}
-          <div className="mt-8 p-4 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)]">
+          <div className="mt-6 p-4 bg-[var(--hm-bg-elevated)] border border-[var(--hm-border)]">
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 bg-[var(--hm-bg-tertiary)] flex items-center justify-center flex-shrink-0">
                 <Info className="w-4 h-4 text-[var(--hm-fg-muted)]" strokeWidth={1.5} />

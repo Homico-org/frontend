@@ -2,6 +2,7 @@
 
 import { Modal, ModalBody, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { FormGroup, Input, Label } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -272,7 +273,7 @@ export default function AddProductModal({
             ) : (
               <span className="absolute inset-0 flex flex-col items-center justify-center gap-1">
                 {imageUploading ? (
-                  <span className="text-[11px]">…</span>
+                  <LoadingSpinner size="sm" />
                 ) : (
                   <>
                     <ImagePlus className="h-5 w-5" />

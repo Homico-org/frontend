@@ -7,7 +7,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api';
-import { FolderOpen, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -22,6 +22,10 @@ export default function ProjectsIndexPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const [empty, setEmpty] = useState(false);
+  // A load failure must NOT masquerade as "no projects" - that reads like data
+  // loss to a user who actually has projects. Distinct error state + retry.
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [trashOpen, setTrashOpen] = useState(false);
 
   useEffect(() => {
@@ -31,6 +35,8 @@ export default function ProjectsIndexPage() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
+    setLoadError(false);
+    setEmpty(false);
     api
       .get('/projects')
       .then((r) => {
@@ -42,12 +48,28 @@ export default function ProjectsIndexPage() {
         else setEmpty(true);
       })
       .catch(() => {
-        if (!cancelled) setEmpty(true);
+        if (!cancelled) setLoadError(true);
       });
     return () => {
       cancelled = true;
     };
-  }, [user, router]);
+  }, [user, router, reloadKey]);
+
+  if (loadError) {
+    return (
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-start gap-4 px-4 py-16">
+        <p className="font-display text-[20px] font-bold italic text-[var(--hm-fg-primary)]">
+          {t('projects.loadErrorTitle')}
+        </p>
+        <p className="max-w-md text-[14px] text-[var(--hm-fg-muted)]">
+          {t('projects.loadErrorHint')}
+        </p>
+        <Button variant="outline" onClick={() => setReloadKey((k) => k + 1)}>
+          {t('common.tryAgain')}
+        </Button>
+      </div>
+    );
+  }
 
   if (empty) {
     // A client with no projects gets the richer activation hero (create a
@@ -74,15 +96,12 @@ export default function ProjectsIndexPage() {
       );
     }
     return (
-      <div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-4 px-4 text-center">
-        <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--hm-brand-500)]/[0.10] text-[var(--hm-brand-500)]">
-          <FolderOpen className="h-7 w-7" />
-        </span>
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-start gap-5 px-4 py-16">
         <div>
-          <h1 className="text-[20px] font-bold text-[var(--hm-fg-primary)]">
+          <h1 className="font-display text-[22px] font-bold italic text-[var(--hm-fg-primary)]">
             {t('projects.listTitle')}
           </h1>
-          <p className="mx-auto mt-1 max-w-sm text-[14px] text-[var(--hm-fg-muted)]">
+          <p className="mt-2 max-w-md text-[14px] text-[var(--hm-fg-muted)]">
             {t('projects.listEmpty')}
           </p>
         </div>

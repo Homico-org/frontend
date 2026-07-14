@@ -563,10 +563,10 @@ export default function ProfessionalsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-[13px] sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate leading-tight">
-                    {pick({ en: "Register as a Professional", ka: "დარეგისტრირდით პროფესიონალად" })}
+                    {pick({ en: "Register as a Professional", ka: "დარეგისტრირდით პროფესიონალად", ru: "Зарегистрироваться как специалист" })}
                   </p>
                   <p className="text-[10px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
-                    {pick({ en: "Join and start finding clients", ka: "შემოგვიერთდით და იპოვეთ კლიენტები" })}
+                    {pick({ en: "Join and start finding clients", ka: "შემოგვიერთდით და იპოვეთ კლიენტები", ru: "Присоединяйтесь и находите клиентов" })}
                   </p>
                 </div>
               </div>

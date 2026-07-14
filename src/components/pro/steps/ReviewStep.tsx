@@ -26,11 +26,11 @@ import {
 import Image from "next/image";
 import { PortfolioProject } from "./ProjectsStep";
 
-const EXP_LABELS: Record<string, { en: string; ka: string }> = {
-  "1-2": { en: "1-2 years", ka: "1-2 წელი" },
-  "3-5": { en: "3-5 years", ka: "3-5 წელი" },
-  "5-10": { en: "5-10 years", ka: "5-10 წელი" },
-  "10+": { en: "10+ years", ka: "10+ წელი" },
+const EXP_LABELS: Record<string, { en: string; ka: string; ru: string }> = {
+  "1-2": { en: "1-2 years", ka: "1-2 წელი", ru: "1-2 года" },
+  "3-5": { en: "3-5 years", ka: "3-5 წელი", ru: "3-5 лет" },
+  "5-10": { en: "5-10 years", ka: "5-10 წელი", ru: "5-10 лет" },
+  "10+": { en: "10+ years", ka: "10+ წელი", ru: "10+ лет" },
 };
 
 interface ReviewStepProps {
@@ -216,7 +216,9 @@ export default function ReviewStep({
               const cat = getCategoryByKey(sub.categoryKey);
               const catName = cat ? pick({ en: cat.name, ka: cat.nameKa }) : undefined;
               const expEntry = EXP_LABELS[sub.experience];
-              const expLabel = expEntry ? pick({ en: expEntry.en, ka: expEntry.ka }) : sub.experience;
+              const expLabel = expEntry
+                ? pick({ en: expEntry.en, ka: expEntry.ka, ru: expEntry.ru })
+                : sub.experience;
               // Include services where either the top-level `price` is set OR
               // at least one active unit has a valid price (single or range mode).
               const pricedServices = sub.services.filter((s) => {

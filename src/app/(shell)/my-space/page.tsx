@@ -69,13 +69,13 @@ interface ReviewStats {
 
 const STAGE_CONFIG: Record<
   ProjectStage,
-  { en: string; ka: string; color: string; step: number }
+  { en: string; ka: string; ru: string; color: string; step: number }
 > = {
-  hired: { en: "Hired", ka: "დაქირავებული", color: "#3b82f6", step: 1 },
-  started: { en: "Started", ka: "დაწყებული", color: 'var(--hm-brand-500)', step: 2 },
-  in_progress: { en: "In Progress", ka: "მიმდინარე", color: 'var(--hm-brand-500)', step: 3 },
-  review: { en: "Under Review", ka: "შემოწმება", color: "#f59e0b", step: 4 },
-  completed: { en: "Completed", ka: "დასრულებული", color: "#22c55e", step: 5 },
+  hired: { en: "Hired", ka: "დაქირავებული", ru: "Нанят", color: "#3b82f6", step: 1 },
+  started: { en: "Started", ka: "დაწყებული", ru: "Начато", color: 'var(--hm-brand-500)', step: 2 },
+  in_progress: { en: "In Progress", ka: "მიმდინარე", ru: "В процессе", color: 'var(--hm-brand-500)', step: 3 },
+  review: { en: "Under Review", ka: "შემოწმება", ru: "На проверке", color: "#f59e0b", step: 4 },
+  completed: { en: "Completed", ka: "დასრულებული", ru: "Завершено", color: "#22c55e", step: 5 },
 };
 
 /* ── Animation variants ── */
@@ -754,7 +754,7 @@ function MySpaceContent() {
               <div className="flex items-center gap-1.5 min-w-0">
                 <Avatar src={job.clientId?.avatar} name={job.clientId?.name || t("common.client")} size="xs" className="w-5 h-5 flex-shrink-0" />
                 <span className="text-[11px] truncate" style={{ color: "var(--hm-fg-muted)" }}>{job.clientId?.name}</span>
-                {stageConfig && <Badge variant="info" size="sm">{pick({ en: stageConfig.en, ka: stageConfig.ka })}</Badge>}
+                {stageConfig && <Badge variant="info" size="sm">{pick({ en: stageConfig.en, ka: stageConfig.ka, ru: stageConfig.ru })}</Badge>}
               </div>
               <span className="text-xs font-bold whitespace-nowrap" style={{ color: "var(--hm-fg-primary)" }}>
                 {agreedPrice

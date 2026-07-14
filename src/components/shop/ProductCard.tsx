@@ -16,6 +16,8 @@ export interface ProductCardProps {
   supplierKey?: string;
   externalUrl?: string;
   vendorLabel?: string;
+  /** Explicit logo image (data URL or URL) - overrides the derived avatar. */
+  vendorLogo?: string;
   inStock?: boolean;
   available?: boolean;
   /** Small line under the name (e.g. "2 × 50 ₾ · Kitchen"). */
@@ -44,6 +46,7 @@ export default function ProductCard({
   supplierKey,
   externalUrl,
   vendorLabel,
+  vendorLogo,
   inStock,
   available = true,
   subline,
@@ -107,12 +110,21 @@ export default function ProductCard({
         {/* Shop tag - dark glass, always legible */}
         {tagLabel && (
           <span className="absolute left-2 top-2 inline-flex items-center gap-1.5 rounded-full bg-[rgba(17,16,13,0.55)] py-0.5 pl-0.5 pr-2 text-[10px] font-semibold text-white shadow-sm ring-1 ring-white/15 backdrop-blur-md">
-            {avatarKey && (
-              <SupplierAvatar
-                supplierKey={avatarKey}
-                url={externalUrl}
-                size={16}
+            {vendorLogo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={vendorLogo}
+                alt=""
+                className="h-4 w-4 shrink-0 rounded-full object-cover ring-1 ring-white/20"
               />
+            ) : (
+              avatarKey && (
+                <SupplierAvatar
+                  supplierKey={avatarKey}
+                  url={externalUrl}
+                  size={16}
+                />
+              )
             )}
             {tagLabel}
           </span>

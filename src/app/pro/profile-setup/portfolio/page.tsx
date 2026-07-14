@@ -5,7 +5,7 @@ import { useProfileSetup } from '@/contexts/ProfileSetupContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function ProfileSetupPortfolioPage() {
-  const { t, pick } = useLanguage();
+  const { t } = useLanguage();
   const { portfolioProjects, setPortfolioProjects } = useProfileSetup();
 
   return (
@@ -26,10 +26,7 @@ export default function ProfileSetupPortfolioPage() {
           </span>
         </div>
         <p className="text-sm" style={{ color: 'var(--hm-fg-secondary)' }}>
-          {pick({
-            en: 'Add your work samples. You can also add them later from your profile.',
-            ka: 'დაამატე შენი ნამუშევრები. შეგიძლია მოგვიანებითაც დაამატო პროფილიდან.',
-          })}
+          {t('becomePro.portfolioSubtitle')}
         </p>
       </div>
 

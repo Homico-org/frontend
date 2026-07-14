@@ -15,7 +15,7 @@ export interface SubSubcategory {
 }
 
 export interface CatalogUnitOption {
-  id?: string; // Stable permanent identifier — save selections by id
+  id?: string; // Stable permanent identifier - save selections by id
   key: string;
   unit: string;
   label: { en: string; ka: string; ru: string };
@@ -33,12 +33,12 @@ export type CatalogServiceType =
   | 'recurring';
 
 export interface CatalogServiceItem {
-  id?: string; // Stable permanent identifier — save selections by id
+  id?: string; // Stable permanent identifier - save selections by id
   key: string;
   name: string;
   nameKa: string;
   nameRu?: string;
-  // Backward compat — primary unit (from unitOptions[0])
+  // Backward compat - primary unit (from unitOptions[0])
   basePrice: number;
   maxPrice?: number;
   unit: string;
@@ -47,7 +47,7 @@ export interface CatalogServiceItem {
   // Multi-unit pricing options
   unitOptions?: CatalogUnitOption[];
   // Optional flexibility fields (added 2026-05). All optional and
-  // backward-compatible — old documents resolve them to undefined.
+  // backward-compatible - old documents resolve them to undefined.
   description?: { en: string; ka: string; ru: string };
   priceRange?: { min: number; typical?: number; max: number };
   pricingModel?: CatalogPricingModel;
@@ -75,10 +75,11 @@ export interface CatalogAddonItem {
 }
 
 export interface Subcategory {
-  id?: string; // Stable permanent identifier — save selections by id
+  id?: string; // Stable permanent identifier - save selections by id
   key: string;
   name: string;
   nameKa: string;
+  nameRu?: string;
   icon?: string;
   keywords: string[];
   sortOrder: number;
@@ -94,10 +95,11 @@ export interface Subcategory {
 }
 
 export interface Category {
-  id: string; // Stable permanent identifier — save selections by id
+  id: string; // Stable permanent identifier - save selections by id
   key: string;
   name: string;
   nameKa: string;
+  nameRu?: string;
   description?: string;
   descriptionKa?: string;
   icon?: string;
@@ -121,6 +123,7 @@ interface RawCategory {
   key: string;
   name: string;
   nameKa?: string;
+  nameRu?: string;
   description?: string;
   descriptionKa?: string;
   icon?: string;
@@ -140,6 +143,7 @@ interface RawSubcategory {
   key: string;
   name: string;
   nameKa?: string;
+  nameRu?: string;
   // as-categories sends subcategory description as a {en,ka,ru} object.
   description?: { en?: string; ka?: string; ru?: string };
   descriptionKa?: string;
@@ -162,6 +166,7 @@ function transformSubcategory(sub: RawSubcategory): Subcategory {
     key: sub.key,
     name: sub.name,
     nameKa: sub.nameKa || sub.name,
+    nameRu: sub.nameRu || sub.name,
     icon: sub.icon,
     keywords: sub.keywords || [],
     sortOrder: sub.sortOrder ?? 0,
@@ -189,6 +194,7 @@ function transformCategory(cat: RawCategory): Category {
     key: cat.key,
     name: cat.name,
     nameKa: cat.nameKa || cat.name,
+    nameRu: cat.nameRu || cat.name,
     description: cat.description,
     descriptionKa: cat.descriptionKa,
     icon: cat.icon,
@@ -359,7 +365,11 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
   const getCategoryName = useCallback((key: string, locale: 'en' | 'ka' | 'ru'): string => {
     const category = getCategoryByKey(key);
     if (!category) return key;
-    return locale === 'ka' ? category.nameKa : category.name;
+    return locale === 'ka'
+      ? category.nameKa
+      : locale === 'ru'
+        ? category.nameRu || category.name
+        : category.name;
   }, [getCategoryByKey]);
 
   const getSubcategoryName = useCallback(
@@ -367,7 +377,11 @@ export function CategoriesProvider({ children }: { children: ReactNode }) {
       const subcategories = getSubcategoriesForCategory(categoryKey);
       const subcategory = subcategories.find(sub => sub.key === subcategoryKey);
       if (!subcategory) return subcategoryKey;
-      return locale === 'ka' ? subcategory.nameKa : subcategory.name;
+      return locale === 'ka'
+        ? subcategory.nameKa
+        : locale === 'ru'
+          ? subcategory.nameRu || subcategory.name
+          : subcategory.name;
     },
     [getSubcategoriesForCategory]
   );

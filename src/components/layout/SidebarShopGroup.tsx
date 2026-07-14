@@ -1,7 +1,8 @@
 'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ChevronDown, Package, ShoppingBag, Store } from 'lucide-react';
+import type { MyShopLite } from '@/hooks/useMyShop';
+import { Boxes, ChevronDown, Package, ShoppingBag, Store } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -10,6 +11,8 @@ interface Props {
   label: string;
   isCollapsed: boolean;
   active: boolean;
+  /** The user's own shop, if any - swaps the "Sell on Homico" child label. */
+  shop?: MyShopLite | null;
 }
 
 /**
@@ -17,9 +20,9 @@ interface Props {
  * (Catalog, Orders, ...). Mirrors the Projects tree styling; expands when
  * you're anywhere in the shop section.
  */
-export default function SidebarShopGroup({ label, isCollapsed, active }: Props) {
+export default function SidebarShopGroup({ label, isCollapsed, active, shop }: Props) {
   const pathname = usePathname() || '';
-  const { t } = useLanguage();
+  const { t, pick } = useLanguage();
   const inSection =
     /\/shop(\/|$)/.test(pathname) || /\/orders(\/|$)/.test(pathname);
   const [expanded, setExpanded] = useState(inSection);
@@ -35,13 +38,24 @@ export default function SidebarShopGroup({ label, isCollapsed, active }: Props) 
       href: '/shop',
       label: t('nav.shopCatalog'),
       Icon: Store,
-      isCurrent: /\/shop(\/|$)/.test(pathname),
+      isCurrent:
+        /\/shop(\/|$)/.test(pathname) && !/\/shop\/manage/.test(pathname),
     },
     {
       href: '/orders',
       label: t('header.orders'),
       Icon: Package,
       isCurrent: /\/orders(\/|$)/.test(pathname),
+    },
+    {
+      href: '/shop/manage',
+      // Once the user owns a shop, show its name instead of the "Sell on
+      // Homico" call-to-action - it becomes a link into their own shop.
+      label: shop?.name?.trim()
+        ? shop.name
+        : pick({ en: 'Sell on Homico', ka: 'გაყიდე Homico-ზე', ru: 'Продавать на Homico' }),
+      Icon: shop ? Store : Boxes,
+      isCurrent: /\/shop\/manage/.test(pathname),
     },
   ];
 

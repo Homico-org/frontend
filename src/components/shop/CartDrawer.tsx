@@ -210,7 +210,7 @@ export default function CartDrawer({
                 {fmt(total)}
               </span>
             </div>
-            {features.payments && (
+            {features.shopCheckout && (
               <button
                 type="button"
                 onClick={onCheckout}

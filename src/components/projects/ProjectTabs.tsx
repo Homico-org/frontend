@@ -24,9 +24,10 @@ interface ProjectTabsProps {
 }
 
 /**
- * Fancy segmented tab bar for the project page: a soft-elevated "pill"
- * slides under the active tab, the active icon + label lift into brand
- * color. Horizontally scrollable on narrow screens.
+ * Project page tab bar: a 2px vermillion underline slides under the active tab
+ * (design system §3.4 / §6 - underline, never a tinted pill). Sits flat on the
+ * page ground with a single bottom hairline; horizontally scrollable on narrow
+ * screens with edge fades.
  */
 export default function ProjectTabs({
   tabs,
@@ -90,18 +91,8 @@ export default function ProjectTabs({
       role="tablist"
       aria-label="Project sections"
       onScroll={updateEdges}
-      className="scrollbar-hide relative flex gap-1 overflow-x-auto rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-1.5 shadow-[0_1px_2px_rgba(17,16,13,0.04)]"
+      className="scrollbar-hide relative flex gap-1 overflow-x-auto border-b border-[var(--hm-border-subtle)]"
     >
-      {/* Sliding active pill - solid brand to match the rest of the UI */}
-      <span
-        aria-hidden
-        className="absolute bottom-1.5 top-1.5 rounded-xl bg-[var(--hm-brand-500)] shadow-[0_2px_8px_-2px_rgba(239,78,36,0.4)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
-        style={{
-          left: pill.left,
-          width: pill.width,
-          opacity: pill.ready ? 1 : 0,
-        }}
-      />
       {tabs.map((tab) => {
         const active = tab.id === activeTab;
         return (
@@ -113,47 +104,51 @@ export default function ProjectTabs({
             type="button"
             role="tab"
             aria-selected={active}
+            aria-label={tab.label}
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(tab.id)}
             className={cn(
-              'relative z-10 flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl py-2.5 text-[13px] font-semibold transition-colors duration-200 sm:justify-start sm:gap-2 sm:px-3.5',
-              // Inactive tabs are centered square tap targets on phones (>=42px),
-              // so the bar reads as a tidy button row, not stray icons. The
-              // active tab keeps its label, so it grows past the square.
-              active ? 'px-3.5 text-white' : 'min-w-[42px] text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)] sm:min-w-0 sm:px-3.5',
+              'relative z-10 flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap py-3 text-[13px] font-semibold transition-colors duration-200 sm:justify-start sm:gap-2 sm:px-3',
+              // Inactive tabs collapse to a centered icon-only tap target on
+              // phones (>=42px) so the bar reads as a tidy row; active keeps its
+              // label. Active = brand ink, matching the sliding underline.
+              active
+                ? 'px-3 text-[var(--hm-brand-500)]'
+                : 'min-w-[42px] text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)] sm:min-w-0 sm:px-3',
             )}
           >
-            <span
-              className={cn(
-                'flex items-center transition-transform duration-200',
-                active ? 'scale-105' : 'scale-100',
-              )}
-            >
-              {tab.icon}
-            </span>
-            {/* Inactive tabs collapse to icon-only on phones so all sections
-                fit without the bar clipping; active keeps its label. */}
+            <span className="flex items-center">{tab.icon}</span>
             <span className={cn(!active && 'hidden sm:inline')}>{tab.label}</span>
           </button>
         );
       })}
+      {/* Sliding 2px vermillion underline under the active tab (§3.4 / §6). */}
+      <span
+        aria-hidden
+        className="absolute bottom-0 h-[2px] bg-[var(--hm-brand-500)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+        style={{
+          left: pill.left,
+          width: pill.width,
+          opacity: pill.ready ? 1 : 0,
+        }}
+      />
     </div>
       {/* Edge fades - appear only when there's more to scroll that way. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-1.5 left-1.5 w-8 rounded-l-xl transition-opacity duration-200"
+        className="pointer-events-none absolute inset-y-0 left-0 w-8 transition-opacity duration-200"
         style={{
           background:
-            'linear-gradient(to right, var(--hm-bg-elevated), transparent)',
+            'linear-gradient(to right, var(--hm-bg-page), transparent)',
           opacity: edges.left ? 1 : 0,
         }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-1.5 right-1.5 w-8 rounded-r-xl transition-opacity duration-200"
+        className="pointer-events-none absolute inset-y-0 right-0 w-8 transition-opacity duration-200"
         style={{
           background:
-            'linear-gradient(to left, var(--hm-bg-elevated), transparent)',
+            'linear-gradient(to left, var(--hm-bg-page), transparent)',
           opacity: edges.right ? 1 : 0,
         }}
       />

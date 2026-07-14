@@ -482,7 +482,7 @@ export default function AddServiceModal({
                     setForm((f) => ({ ...f, unitPrice: e.target.value }))
                   }
                 />
-                {activeUnit && (
+                {activeUnit && activeUnit.defaultPrice != null && (
                   <p className="mt-1 text-[12px] text-[var(--hm-fg-muted)]">
                     {t('projects.marketRange')}:{' '}
                     {activeUnit.maxPrice && activeUnit.maxPrice > activeUnit.defaultPrice

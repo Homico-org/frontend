@@ -19,8 +19,10 @@ interface ConditionOption {
   value: PropertyCondition;
   labelEn: string;
   labelKa: string;
+  labelRu: string;
   descEn: string;
   descKa: string;
+  descRu: string;
   icon: ReactNode;
 }
 
@@ -29,40 +31,50 @@ const allConditions: ConditionOption[] = [
     value: 'shell',
     labelEn: 'Shell / White Frame',
     labelKa: 'თეთრი კარკასი',
+    labelRu: 'Белый каркас',
     descEn: 'Bare walls, no finishing',
     descKa: 'შიშველი კედლები, მოპირკეთება არ არის',
+    descRu: 'Голые стены, без отделки',
     icon: <HardHat className="w-5 h-5" />,
   },
   {
     value: 'black-frame',
     labelEn: 'Black Frame',
     labelKa: 'შავი კარკასი',
+    labelRu: 'Чёрный каркас',
     descEn: 'Basic utilities, unfinished',
     descKa: 'ძირითადი კომუნიკაციები, დაუმთავრებელი',
+    descRu: 'Базовые коммуникации, без отделки',
     icon: <Wrench className="w-5 h-5" />,
   },
   {
     value: 'needs-renovation',
     labelEn: 'Needs Full Renovation',
     labelKa: 'სრული რემონტი სჭირდება',
+    labelRu: 'Нужен полный ремонт',
     descEn: 'Old finish, complete redo needed',
     descKa: 'ძველი მოპირკეთება, სრული განახლება სჭირდება',
+    descRu: 'Старая отделка, нужно полное обновление',
     icon: <Hammer className="w-5 h-5" />,
   },
   {
     value: 'partial-renovation',
     labelEn: 'Partial Renovation',
     labelKa: 'ნაწილობრივი რემონტი',
+    labelRu: 'Частичный ремонт',
     descEn: 'Some areas need work',
     descKa: 'ზოგიერთი ზონა საჭიროებს სამუშაოს',
+    descRu: 'Некоторые зоны требуют работ',
     icon: <PaintBucket className="w-5 h-5" />,
   },
   {
     value: 'good',
     labelEn: 'Good Condition',
     labelKa: 'კარგ მდგომარეობაში',
+    labelRu: 'Хорошее состояние',
     descEn: 'Minor updates or additions',
     descKa: 'მცირე განახლებები ან დამატებები',
+    descRu: 'Небольшие обновления или дополнения',
     icon: <Home className="w-5 h-5" />,
   },
 ];
@@ -131,10 +143,10 @@ export default function ConditionSelector({
                   : 'text-[var(--hm-fg-primary)]'
               }`}
             >
-              {pick({ en: condition.labelEn, ka: condition.labelKa })}
+              {pick({ en: condition.labelEn, ka: condition.labelKa, ru: condition.labelRu })}
             </p>
             <p className="text-sm text-[var(--hm-fg-muted)] mt-0.5">
-              {pick({ en: condition.descEn, ka: condition.descKa })}
+              {pick({ en: condition.descEn, ka: condition.descKa, ru: condition.descRu })}
             </p>
           </div>
           <div
@@ -159,5 +171,5 @@ export default function ConditionSelector({
 export function getConditionLabel(condition: PropertyCondition | string, locale: 'en' | 'ka' | 'ru'): string {
   const found = allConditions.find((c) => c.value === condition);
   if (!found) return condition;
-  return locale === 'ka' ? found.labelKa : found.labelEn;
+  return locale === 'ka' ? found.labelKa : locale === 'ru' ? found.labelRu : found.labelEn;
 }

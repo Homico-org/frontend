@@ -22,6 +22,7 @@ export interface JobServiceSelection {
   categoryKey: string;
   name: string;
   nameKa: string;
+  nameRu?: string;
   unit: string;
   unitKey?: string;
   unitName: string;
@@ -231,9 +232,10 @@ export default function JobServicePicker({
           categoryKey: catKey,
           name: svc.name,
           nameKa: svc.nameKa,
+          nameRu: svc.nameRu,
           unit: primaryUnit?.unit ?? svc.unit,
           unitKey: primaryUnit?.key,
-          unitName: primaryUnit ? pick({ en: primaryUnit.label.en, ka: primaryUnit.label.ka }) : svc.unitName,
+          unitName: primaryUnit ? pick({ en: primaryUnit.label.en, ka: primaryUnit.label.ka, ru: primaryUnit.label.ru }) : svc.unitName,
           unitNameKa: primaryUnit?.label.ka ?? svc.unitNameKa,
           quantity: 1,
           budget: 0,
@@ -409,10 +411,10 @@ export default function JobServicePicker({
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-sm font-medium block truncate" style={{ color: 'var(--hm-fg-primary)' }}>
-                      {pick({ en: svc.name, ka: svc.nameKa })}
+                      {pick({ en: svc.name, ka: svc.nameKa, ru: svc.nameRu })}
                     </span>
                     <span className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
-                      {pick({ en: sub.name, ka: sub.nameKa })}
+                      {pick({ en: sub.name, ka: sub.nameKa, ru: sub.nameRu })}
                     </span>
                   </div>
                   {svc.basePrice > 0 && (
@@ -488,7 +490,7 @@ export default function JobServicePicker({
                   <span className="inline-flex w-3.5 h-3.5">
                     <CategoryIcon type={cat.key} className="w-full h-full" />
                   </span>
-                  {pick({ en: cat.name, ka: cat.nameKa })}
+                  {pick({ en: cat.name, ka: cat.nameKa, ru: cat.nameRu })}
                   {pickedCount > 0 && (
                     <span
                       className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white"
@@ -565,7 +567,7 @@ export default function JobServicePicker({
                       <CategoryIcon type={cat.key} className="w-4 h-4" />
                     </span>
                     <span className="text-sm font-semibold text-[var(--hm-fg-primary)]">
-                      {pick({ en: cat.name, ka: cat.nameKa })}
+                      {pick({ en: cat.name, ka: cat.nameKa, ru: cat.nameRu })}
                     </span>
                   </div>
                 )}
@@ -583,7 +585,7 @@ export default function JobServicePicker({
                   <div className="flex items-center gap-2.5">
                     <span className="block w-[3px] h-4 rounded-full" style={{ background: accent }} />
                     <span className="text-[13px] font-semibold text-[var(--hm-fg-primary)]">
-                      {pick({ en: subcat.name, ka: subcat.nameKa })}
+                      {pick({ en: subcat.name, ka: subcat.nameKa, ru: subcat.nameRu })}
                     </span>
                   </div>
                   <span className="text-[10px] uppercase tracking-wider text-[var(--hm-fg-muted)]">
@@ -607,7 +609,7 @@ export default function JobServicePicker({
                     const unitLabel = selection
                       ? pick({ en: selection.unitName, ka: selection.unitNameKa })
                       : selectedUnit
-                        ? pick({ en: selectedUnit.label.en, ka: selectedUnit.label.ka })
+                        ? pick({ en: selectedUnit.label.en, ka: selectedUnit.label.ka, ru: selectedUnit.label.ru })
                         : pick({ en: svc.unitName, ka: svc.unitNameKa });
                     // Admin marked this service as quote-only - hide price inputs
                     // and surface a "Request a quote" indicator instead.
@@ -643,7 +645,7 @@ export default function JobServicePicker({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap mb-1">
                               <span className="text-sm font-medium text-[var(--hm-fg-primary)]">
-                                {pick({ en: svc.name, ka: svc.nameKa })}
+                                {pick({ en: svc.name, ka: svc.nameKa, ru: svc.nameRu })}
                               </span>
                               {!isChecked && unitLabel && !isQuoteOnly && (
                                 <span
@@ -697,7 +699,7 @@ export default function JobServicePicker({
                                                     ...s,
                                                     unit: uo.unit,
                                                     unitKey: uo.key,
-                                                    unitName: pick({ en: uo.label.en, ka: uo.label.ka }),
+                                                    unitName: pick({ en: uo.label.en, ka: uo.label.ka, ru: uo.label.ru }),
                                                     unitNameKa: uo.label.ka,
                                                     marketMin: uo.defaultPrice,
                                                     marketMax: uo.maxPrice ?? uo.defaultPrice,
@@ -712,7 +714,7 @@ export default function JobServicePicker({
                                           }`}
                                           style={!isActive ? { border: '1px solid var(--hm-border-subtle)' } : undefined}
                                         >
-                                          {pick({ en: uo.label.en, ka: uo.label.ka })}
+                                          {pick({ en: uo.label.en, ka: uo.label.ka, ru: uo.label.ru })}
                                           {uo.defaultPrice > 0 && (
                                             <span className={`ml-1 ${isActive ? 'opacity-80' : 'opacity-50'}`}>~{uo.defaultPrice}{sym}</span>
                                           )}

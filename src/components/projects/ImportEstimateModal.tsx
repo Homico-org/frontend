@@ -364,9 +364,10 @@ export default function ImportEstimateModal({
               onClick={() => fileRef.current?.click()}
               className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--hm-border)] bg-[var(--hm-bg-tertiary)]/40 px-6 py-10 text-center transition-colors hover:border-[var(--hm-brand-500)] hover:bg-[var(--hm-brand-500)]/[0.04]"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]">
-                <FileSpreadsheet className="h-6 w-6" />
-              </span>
+              <FileSpreadsheet
+                className="h-7 w-7 text-[var(--hm-fg-muted)]"
+                strokeWidth={1.5}
+              />
               <span className="text-[14px] font-semibold text-[var(--hm-fg-primary)]">
                 {t('projects.importPick')}
               </span>
@@ -622,7 +623,7 @@ function ImportRowView({
             </span>
           </div>
           <span className="w-20 shrink-0 text-right text-[12px] font-semibold tabular-nums text-[var(--hm-fg-primary)]">
-            {lineTotal > 0 ? fmt(lineTotal) : '—'}
+            {lineTotal > 0 ? fmt(lineTotal) : '-'}
           </span>
         </div>
       </div>

@@ -32,14 +32,14 @@ const PRO_FEATURES: Loc[] = [
 const SUPER_PRO_FEATURES: Loc[] = [
   { en: "Everything in Pro", ka: "ყველაფერი Pro-დან", ru: "Всё из Pro" },
   { en: "Promotion on Facebook & Instagram", ka: "პრომოცია Facebook-სა და Instagram-ზე", ru: "Продвижение в Facebook и Instagram" },
-  { en: "Content & storytelling made for you", ka: "კონტენტი და სთორითელინგი შენთვის", ru: "Контент и сторителлинг для вас" },
+  { en: "Content & storytelling made for you", ka: "კონტენტი და სთორითელინგი თქვენთვის", ru: "Контент и сторителлинг для вас" },
   { en: "Marketing & PR support", ka: "მარკეტინგი და PR მხარდაჭერა", ru: "Поддержка маркетинга и PR" },
 ];
 
 // `pro` / `elite` are the internal tier ids; `elite` ships as "Super Pro".
 const PLANS = [
   { id: "pro", icon: Crown, popular: false, features: PRO_FEATURES, compareAt: 0 },
-  { id: "elite", icon: Megaphone, popular: true, features: SUPER_PRO_FEATURES, compareAt: 300 },
+  { id: "elite", icon: Megaphone, popular: true, features: SUPER_PRO_FEATURES, compareAt: 0 },
 ] as const;
 
 export default function PremiumPlansPage() {

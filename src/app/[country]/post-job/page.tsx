@@ -344,6 +344,23 @@ function PostJobPageContent() {
     }>
   >([]);
 
+  // Prefill the category when arriving from a tool link (e.g. the Price
+  // Database "Post a job" CTA passes ?category=<catalogKey>). Runs once, only
+  // when the key is a real catalog category and nothing is selected yet - so it
+  // never clobbers a restored draft or an edit-mode load.
+  const categoryPrefilledRef = useRef(false);
+  useEffect(() => {
+    if (categoryPrefilledRef.current) return;
+    if (editJobId) return;
+    if (selectedCategory) return;
+    const param = searchParams.get("category");
+    if (!param || !categories.length) return;
+    if (categories.some((c) => c.key === param)) {
+      setSelectedCategory(param);
+      categoryPrefilledRef.current = true;
+    }
+  }, [categories, selectedCategory, editJobId, searchParams]);
+
   // Fetch job data for edit mode. AbortController cancels the first
   // Strict Mode mount's request so the Network tab doesn't show a
   // duplicate `GET /jobs/:id` on every page load in dev.
@@ -453,6 +470,7 @@ function PostJobPageContent() {
         categoryKey: saved.categoryKey || foundCat.key,
         name: foundSvc.name,
         nameKa: foundSvc.nameKa,
+        nameRu: foundSvc.nameRu,
         unit: matchedUnit?.unit ?? saved.unit ?? foundSvc.unit,
         unitKey: matchedUnit?.key ?? saved.unitKey,
         unitName: matchedUnit
@@ -494,14 +512,14 @@ function PostJobPageContent() {
   const deriveJobTitle = (): string => {
     if (selectedJobServices.length > 0) {
       const first = selectedJobServices[0];
-      const firstName = pick({ en: first.name, ka: first.nameKa });
+      const firstName = pick({ en: first.name, ka: first.nameKa, ru: first.nameRu });
       return selectedJobServices.length === 1
         ? firstName
         : `${firstName} +${selectedJobServices.length - 1}`;
     }
     if (selectedCategory) {
       const cat = categories.find((c) => c.key === selectedCategory);
-      if (cat) return pick({ en: cat.name, ka: cat.nameKa });
+      if (cat) return pick({ en: cat.name, ka: cat.nameKa, ru: cat.nameRu });
     }
     return formData.title.trim() || 'New job';
   };
@@ -1579,7 +1597,7 @@ function PostJobPageContent() {
                   {selectedCategoryData && (
                     <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(239,78,36,0.12)', color: 'var(--hm-brand-500)' }}>
                       <CategoryIcon type={selectedCategory} className="w-3.5 h-3.5" />
-                      {pick({ en: selectedCategoryData.name, ka: selectedCategoryData.nameKa })}
+                      {pick({ en: selectedCategoryData.name, ka: selectedCategoryData.nameKa, ru: selectedCategoryData.nameRu })}
                     </span>
                   )}
                   <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: 'var(--hm-bg-elevated)', color: 'var(--hm-fg-secondary)', border: '1px solid var(--hm-border-subtle)' }}>
@@ -1689,7 +1707,7 @@ function PostJobPageContent() {
                                   <CategoryIcon type={catData.key} className="w-3 h-3" />
                                 </span>
                                 <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--hm-fg-secondary)' }}>
-                                  {pick({ en: catData.name, ka: catData.nameKa })}
+                                  {pick({ en: catData.name, ka: catData.nameKa, ru: catData.nameRu })}
                                 </span>
                                 <span className="text-[10px] ml-auto" style={{ color: 'var(--hm-fg-muted)' }}>
                                   {services.length}
@@ -1716,7 +1734,7 @@ function PostJobPageContent() {
                                 <div key={svc.serviceKey} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3 px-4 py-2.5">
                                   <div className="flex-1 min-w-0">
                                     <span className="text-[13px] font-medium block sm:truncate" style={{ color: 'var(--hm-fg-primary)' }}>
-                                      {pick({ en: svc.name, ka: svc.nameKa })}
+                                      {pick({ en: svc.name, ka: svc.nameKa, ru: svc.nameRu })}
                                     </span>
                                     <span className="text-[11px]" style={{ color: 'var(--hm-fg-muted)' }}>
                                       {qty > 1 ? `${qty} × ` : ''}{pick({ en: svc.unitName, ka: svc.unitNameKa })}

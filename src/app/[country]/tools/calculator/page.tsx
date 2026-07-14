@@ -4,6 +4,7 @@ import { Calculator } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { CalculatorWizard } from '@/components/tools/calculator';
+import { RelatedTools } from '@/components/tools/RelatedTools';
 
 export default function CalculatorPage() {
   const { t } = useLanguage();
@@ -23,6 +24,7 @@ export default function CalculatorPage() {
       <div className="px-4 py-6 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
           <CalculatorWizard t={t} />
+          <RelatedTools current="calculator" className="mt-10" />
         </div>
       </div>
     </div>

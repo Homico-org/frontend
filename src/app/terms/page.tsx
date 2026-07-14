@@ -9,19 +9,19 @@ import { useState, useEffect } from 'react';
 
 // Table of contents sections
 const sections = [
-  { id: 'acceptance', titleEn: 'Acceptance of Terms', titleKa: 'პირობების მიღება' },
-  { id: 'eligibility', titleEn: 'Eligibility', titleKa: 'უფლებამოსილება' },
-  { id: 'account', titleEn: 'Account Registration', titleKa: 'ანგარიშის რეგისტრაცია' },
-  { id: 'services', titleEn: 'Platform Services', titleKa: 'პლატფორმის სერვისები' },
-  { id: 'professionals', titleEn: 'Professional Users', titleKa: 'პროფესიონალები' },
-  { id: 'clients', titleEn: 'Client Users', titleKa: 'კლიენტები' },
-  { id: 'payments', titleEn: 'Payments & Subscriptions', titleKa: 'გადახდები და გამოწერა' },
-  { id: 'content', titleEn: 'User Content', titleKa: 'მომხმარებლის კონტენტი' },
-  { id: 'prohibited', titleEn: 'Prohibited Conduct', titleKa: 'აკრძალული ქმედებები' },
-  { id: 'liability', titleEn: 'Limitation of Liability', titleKa: 'პასუხისმგებლობის შეზღუდვა' },
-  { id: 'termination', titleEn: 'Termination', titleKa: 'შეწყვეტა' },
-  { id: 'changes', titleEn: 'Changes to Terms', titleKa: 'პირობების ცვლილება' },
-  { id: 'contact', titleEn: 'Contact Information', titleKa: 'საკონტაქტო ინფორმაცია' },
+  { id: 'acceptance', titleEn: 'Acceptance of Terms', titleKa: 'პირობების მიღება', titleRu: 'Принятие условий' },
+  { id: 'eligibility', titleEn: 'Eligibility', titleKa: 'უფლებამოსილება', titleRu: 'Право на использование' },
+  { id: 'account', titleEn: 'Account Registration', titleKa: 'ანგარიშის რეგისტრაცია', titleRu: 'Регистрация аккаунта' },
+  { id: 'services', titleEn: 'Platform Services', titleKa: 'პლატფორმის სერვისები', titleRu: 'Услуги платформы' },
+  { id: 'professionals', titleEn: 'Professional Users', titleKa: 'პროფესიონალები', titleRu: 'Специалисты' },
+  { id: 'clients', titleEn: 'Client Users', titleKa: 'კლიენტები', titleRu: 'Клиенты' },
+  { id: 'payments', titleEn: 'Payments & Subscriptions', titleKa: 'გადახდები და გამოწერა', titleRu: 'Платежи и подписки' },
+  { id: 'content', titleEn: 'User Content', titleKa: 'მომხმარებლის კონტენტი', titleRu: 'Пользовательский контент' },
+  { id: 'prohibited', titleEn: 'Prohibited Conduct', titleKa: 'აკრძალული ქმედებები', titleRu: 'Запрещённые действия' },
+  { id: 'liability', titleEn: 'Limitation of Liability', titleKa: 'პასუხისმგებლობის შეზღუდვა', titleRu: 'Ограничение ответственности' },
+  { id: 'termination', titleEn: 'Termination', titleKa: 'შეწყვეტა', titleRu: 'Прекращение' },
+  { id: 'changes', titleEn: 'Changes to Terms', titleKa: 'პირობების ცვლილება', titleRu: 'Изменения условий' },
+  { id: 'contact', titleEn: 'Contact Information', titleKa: 'საკონტაქტო ინფორმაცია', titleRu: 'Контактная информация' },
 ];
 
 type Loc = { en: string; ka: string; ru: string };
@@ -376,7 +376,7 @@ export default function TermsPage() {
                       }`}>
                         {index + 1}
                       </span>
-                      <span className="truncate">{pick({ en: section.titleEn, ka: section.titleKa })}</span>
+                      <span className="truncate">{pick({ en: section.titleEn, ka: section.titleKa, ru: section.titleRu })}</span>
                     </Button>
                   ))}
                 </nav>
@@ -418,7 +418,7 @@ export default function TermsPage() {
                       <span className={`w-6 h-6 rounded-lg text-xs flex items-center justify-center flex-shrink-0 ${activeSection === section.id ? 'bg-[var(--hm-brand-500)] text-white' : 'bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]'}`}>
                         {index + 1}
                       </span>
-                      {pick({ en: section.titleEn, ka: section.titleKa })}
+                      {pick({ en: section.titleEn, ka: section.titleKa, ru: section.titleRu })}
                     </Button>
                   ))}
                 </nav>

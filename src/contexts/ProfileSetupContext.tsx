@@ -189,6 +189,9 @@ export interface ProfileSetupContextValue {
   validation: ProfileSetupValidation;
   isFormValid: boolean;
   canProceedFromStep: (slug: ProfileSetupStepSlug) => boolean;
+  // i18n key explaining why the step can't be completed yet, or null when it
+  // can proceed. Drives the hint under the disabled "Save & continue" button.
+  stepBlockReasonKey: (slug: ProfileSetupStepSlug) => string | null;
 
   // Navigation helpers
   currentStepIndex: (slug: ProfileSetupStepSlug) => number;
@@ -1350,6 +1353,40 @@ export function ProfileSetupProvider({
     ],
   );
 
+  // Mirrors canProceedFromStep, but returns the specific reason the step is
+  // blocked so the footer can tell the pro exactly what's missing instead of
+  // leaving a silently-disabled button.
+  const stepBlockReasonKey = useCallback(
+    (slug: ProfileSetupStepSlug): string | null => {
+      switch (slug) {
+        case "about":
+          if (
+            formData.firstName.trim().length < 2 ||
+            formData.lastName.trim().length < 2
+          )
+            return "becomePro.blockName";
+          if (!validation.avatar) return "becomePro.blockAvatar";
+          if (!validation.bio) return "becomePro.blockBio";
+          return null;
+        case "services":
+          return allActiveServicesPriced ? null : "becomePro.blockServices";
+        case "areas":
+          return validation.serviceAreas ? null : "becomePro.blockAreas";
+        case "portfolio":
+          return null;
+        case "review":
+          return isFormValid ? null : "becomePro.blockReview";
+      }
+    },
+    [
+      formData.firstName,
+      formData.lastName,
+      validation,
+      allActiveServicesPriced,
+      isFormValid,
+    ],
+  );
+
   // ── Handlers ──────────────────────────────────────────────────────────────────
 
   const handleFormChange = useCallback((updates: Partial<FormData>) => {
@@ -1934,6 +1971,7 @@ export function ProfileSetupProvider({
     validation,
     isFormValid,
     canProceedFromStep,
+    stepBlockReasonKey,
     currentStepIndex,
     goToStep,
     goNext,

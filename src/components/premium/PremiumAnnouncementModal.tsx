@@ -53,10 +53,12 @@ export default function PremiumAnnouncementModal() {
     const isOnboarded =
       user.isProfileCompleted === true || user.verificationStatus === 'verified';
     if (!isOnboarded) return;
-    // Don't pop on the setup wizard or the premium page itself.
+    // Don't pop on the setup wizard, the premium page itself, or the shop -
+    // the shop is a focused browse/buy task and an upsell interrupts it.
     if (
       pathname?.includes('/pro/profile-setup') ||
-      pathname?.includes('/pro/premium')
+      pathname?.includes('/pro/premium') ||
+      pathname?.includes('/shop')
     )
       return;
     // Already a paying pro -> nothing to upsell.

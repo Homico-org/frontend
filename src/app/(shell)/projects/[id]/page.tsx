@@ -25,6 +25,7 @@ import AddProductModal from '@/components/projects/AddProductModal';
 import AddFilesModal from '@/components/projects/AddFilesModal';
 import DocumentReviewModal from '@/components/projects/DocumentReviewModal';
 import AddSpaceModal from '@/components/projects/AddSpaceModal';
+import AddMilestoneModal from '@/components/projects/AddMilestoneModal';
 import ImageLightbox from '@/components/common/ImageLightbox';
 import EditProjectModal from '@/components/projects/EditProjectModal';
 import MilestonePaymentsPanel from '@/components/projects/MilestonePaymentsPanel';
@@ -45,6 +46,7 @@ import { useCategories } from '@/contexts/CategoriesContext';
 import { useCountryLink } from '@/hooks/useCountry';
 import { api } from '@/lib/api';
 import { storage } from '@/services/storage';
+import { formatDateShort } from '@/utils/dateUtils';
 import {
   ArrowRight,
   Boxes,
@@ -265,10 +267,22 @@ function describeActivity(ev: ActivityItem, t: TFn): string {
 
 // Circular progress ring for the hero. The dasharray trick: r=15.9155 gives a
 // circumference of ~100, so `${v}, 100` fills v percent of the ring.
-function ProgressRing({ value }: { value: number }) {
+function ProgressRing({
+  value,
+  size = 'md',
+}: {
+  value: number;
+  size?: 'sm' | 'md';
+}) {
   const v = Math.min(100, Math.max(0, Math.round(value)));
+  const sm = size === 'sm';
+  const stroke = sm ? '3.2' : '3.4';
   return (
-    <div className="relative h-[56px] w-[56px] shrink-0 sm:h-[60px] sm:w-[60px]">
+    <div
+      className={`relative shrink-0 ${
+        sm ? 'h-9 w-9' : 'h-[56px] w-[56px] sm:h-[60px] sm:w-[60px]'
+      }`}
+    >
       <svg viewBox="0 0 36 36" className="h-full w-full -rotate-90">
         <circle
           cx="18"
@@ -276,7 +290,7 @@ function ProgressRing({ value }: { value: number }) {
           r="15.9155"
           fill="none"
           stroke="var(--hm-bg-tertiary)"
-          strokeWidth="3.4"
+          strokeWidth={stroke}
         />
         <circle
           cx="18"
@@ -284,13 +298,17 @@ function ProgressRing({ value }: { value: number }) {
           r="15.9155"
           fill="none"
           stroke="var(--hm-brand-500)"
-          strokeWidth="3.4"
+          strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={`${v}, 100`}
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-[14px] font-bold tabular-nums text-[var(--hm-fg-primary)] sm:text-[15px]">
+        <span
+          className={`font-bold tabular-nums text-[var(--hm-fg-primary)] ${
+            sm ? 'text-[10px]' : 'text-[14px] sm:text-[15px]'
+          }`}
+        >
           {v}%
         </span>
       </div>
@@ -341,6 +359,27 @@ function collectProjectImages(project: Project): string[] {
 // Top-level tabs after the 2026 "back to simple" pass: four standard surfaces.
 const TOP_TABS = ['overview', 'plan', 'rooms', 'materials', 'moodboard', 'shopping', 'library', 'history'] as const;
 
+// Legacy subsystem tab ids remap to the standard surface that absorbed them, so
+// notification links, old bookmarks, AND in-app callers using the pre-2026 names
+// (e.g. the client view / editor strip passing 'team' or 'timeline') land on a
+// real tab instead of a blank content area. TOP_TABS is checked FIRST, so a name
+// that is still valid (e.g. 'materials') is never remapped.
+const LEGACY_TAB_MAP: Record<string, string> = {
+  timeline: 'overview',
+  team: 'plan',
+  scope: 'plan',
+  materials: 'rooms',
+  selections: 'materials',
+  shopping: 'rooms',
+  renders: 'library',
+  documents: 'library',
+  decisions: 'library',
+};
+const normalizeTab = (tab: string): string =>
+  (TOP_TABS as readonly string[]).includes(tab)
+    ? tab
+    : LEGACY_TAB_MAP[tab] ?? 'overview';
+
 export default function ProjectDashboardPage() {
   const params = useParams();
   const projectId = params?.id as string;
@@ -360,7 +399,7 @@ export default function ProjectDashboardPage() {
   const roleLabelOf = useCallback(
     (key: string, fallback?: string): string => {
       const c = categories.find((cat) => cat.key === key);
-      if (c) return pick({ en: c.name, ka: c.nameKa });
+      if (c) return pick({ en: c.name, ka: c.nameKa, ru: c.nameRu });
       const i18nLabel = t(`projects.roles.${key}`);
       if (i18nLabel && i18nLabel !== `projects.roles.${key}`) {
         return i18nLabel;
@@ -394,6 +433,10 @@ export default function ProjectDashboardPage() {
     { mode: 'create' } | { mode: 'edit'; step: ProjectStep } | null
   >(null);
   const [removeStep, setRemoveStep] = useState<{ id: string; name: string } | null>(null);
+  // Add/edit a milestone. `null` = closed; `{}` = create; `{ milestone }` = edit.
+  const [milestoneModal, setMilestoneModal] = useState<
+    { milestone?: Milestone } | null
+  >(null);
   // Add/edit a service (scope item) under a step. stepId omitted = unassigned.
   const [serviceModal, setServiceModal] = useState<{
     stepId?: string;
@@ -450,23 +493,17 @@ export default function ProjectDashboardPage() {
   // Deep-linkable tabs. Legacy subsystem deep-links remap to the standard
   // surface that absorbed them so notification emails and old bookmarks land
   // somewhere sensible.
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    const tp = searchParams.get('tab');
-    const legacyMap: Record<string, string> = {
-      timeline: 'overview',
-      team: 'plan',
-      scope: 'plan',
-      materials: 'rooms',
-      selections: 'materials',
-      shopping: 'rooms',
-      renders: 'library',
-      documents: 'library',
-      decisions: 'library',
-    };
-    if (tp && (TOP_TABS as readonly string[]).includes(tp)) return tp;
-    if (tp && legacyMap[tp]) return legacyMap[tp];
-    return 'overview';
-  });
+  const [activeTab, setActiveTab] = useState<string>(() =>
+    normalizeTab(searchParams.get('tab') || 'overview'),
+  );
+  // Normalizing tab setter for ALL callers that may pass a legacy/absent name
+  // (client view "See full details", editor focus strip, deep links). Prevents
+  // the blank-content bug where setActiveTab('team'|'timeline') matched no
+  // render block. Internal callers already pass valid ids, so it's a no-op there.
+  const goToTab = useCallback(
+    (tab: string) => setActiveTab(normalizeTab(tab)),
+    [],
+  );
 
   // Clients default to the simplified "Status & Decisions" view; "See full
   // details" drops them into the same tabbed view editors/workers see. A
@@ -474,6 +511,33 @@ export default function ProjectDashboardPage() {
   const [clientSimpleView, setClientSimpleView] = useState(
     () => !searchParams.get('tab'),
   );
+
+  // Collapsible hero header - collapsed by DEFAULT (a compact status + progress
+  // row); expanding reveals a details drawer. Persisted globally so it stays how
+  // the user left it.
+  const [heroCollapsed, setHeroCollapsed] = useState(true);
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem('homico:project-hero-collapsed');
+      if (v !== null) setHeroCollapsed(v === '1');
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const toggleHero = useCallback(() => {
+    setHeroCollapsed((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem(
+          'homico:project-hero-collapsed',
+          next ? '1' : '0',
+        );
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     const current = searchParams.get('tab') || 'overview';
@@ -1044,32 +1108,31 @@ export default function ProjectDashboardPage() {
   ];
 
   const sectionTitle = (text: string) => (
-    <h2 className="flex items-center gap-2 text-[18px] font-bold text-[var(--hm-fg-primary)]">
+    <h2 className="flex items-center gap-2.5 text-[18px] font-bold text-[var(--hm-fg-primary)]">
       <span
         aria-hidden
-        className="h-4 w-1 rounded-full bg-[var(--hm-brand-500)]"
+        className="h-4 w-px bg-[var(--hm-fg-primary)]"
       />
       {text}
     </h2>
   );
 
-  // Warm, friendly empty state: soft brand icon + headline + guidance + CTA.
+  // Editorial empty state: italic display headline + guidance + CTA, no icon
+  // bubble (design system §6 / P10). `icon` kept in the signature for call-site
+  // compatibility but intentionally not rendered.
   const friendlyEmpty = (
-    icon: React.ReactNode,
+    _icon: React.ReactNode,
     title: string,
     subtitle: string,
     ctaLabel?: string,
     onCta?: () => void,
   ) => (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-[var(--hm-border-strong)] bg-[var(--hm-bg-tertiary)]/40 px-6 py-9 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]">
-        {icon}
-      </span>
+    <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-[var(--hm-border-subtle)] px-6 py-12 text-center">
       <div>
-        <p className="text-[15px] font-semibold text-[var(--hm-fg-primary)]">
+        <p className="font-display text-[16px] font-bold italic text-[var(--hm-fg-primary)]">
           {title}
         </p>
-        <p className="mx-auto mt-1 max-w-[40ch] text-[13px] text-[var(--hm-fg-muted)]">
+        <p className="mx-auto mt-1.5 max-w-[40ch] text-[13px] text-[var(--hm-fg-muted)]">
           {subtitle}
         </p>
       </div>
@@ -1088,8 +1151,9 @@ export default function ProjectDashboardPage() {
       <ProjectClientView
         project={project}
         projectId={projectId}
+        onChanged={load}
         onSeeFullDetails={(tab) => {
-          if (tab) setActiveTab(tab);
+          if (tab) goToTab(tab);
           setClientSimpleView(false);
         }}
       />
@@ -1137,7 +1201,8 @@ export default function ProjectDashboardPage() {
           <ProjectDesignerActions
             engagements={project.engagements}
             selections={project.selections}
-            onGoTo={(tab) => setActiveTab(tab)}
+            documents={project.documents}
+            onGoTo={goToTab}
           />
         )}
 
@@ -1158,9 +1223,11 @@ export default function ProjectDashboardPage() {
                 ? 'info'
                 : 'neutral';
           return (
-            <Card variant="elevated" className="animate-card-enter overflow-hidden rounded-2xl">
-              <div className="flex items-start gap-4 bg-gradient-to-br from-[var(--hm-brand-500)]/[0.06] to-transparent p-4 sm:items-center sm:gap-5 sm:p-5">
-                {/* Cover thumbnail. Owner taps to change it; viewer to open it. */}
+            <Card variant="outlined" className="overflow-hidden rounded-2xl">
+              {/* Compact header row - always visible: cover + status + title +
+                  progress. The chevron reveals the details drawer. Collapsed by
+                  default so the header never eats the fold. */}
+              <div className="flex items-center gap-3 px-3.5 py-3 sm:px-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -1178,7 +1245,7 @@ export default function ProjectDashboardPage() {
                   aria-label={
                     project.coverImage ? project.title : t('projects.addCover')
                   }
-                  className="group relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] shadow-sm ring-1 ring-[var(--hm-border-subtle)] transition-colors hover:text-[var(--hm-brand-500)] disabled:cursor-default sm:h-[72px] sm:w-[72px]"
+                  className="group relative h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)] ring-1 ring-[var(--hm-border-subtle)] transition-colors hover:text-[var(--hm-brand-500)] disabled:cursor-default"
                 >
                   {project.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -1192,124 +1259,135 @@ export default function ProjectDashboardPage() {
                     />
                   ) : (
                     <span className="absolute inset-0 flex items-center justify-center">
-                      <ImagePlus className="h-5 w-5" />
+                      <ImagePlus className="h-4 w-4" />
                     </span>
                   )}
                 </button>
 
-                {/* Identity */}
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Pill tone={statusTone}>
-                          {statusTone === 'info' && (
-                            <span className="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
-                          )}
-                          {t(`status.${project.status}`)}
-                        </Pill>
-                        {heroAvatars.length > 0 && (
-                          <div className="flex items-center">
-                            <div className="flex -space-x-2">
-                              {heroAvatars.slice(0, 4).map((a, i) => (
-                                <span
-                                  key={i}
-                                  className="inline-flex h-6 w-6 items-center justify-center overflow-hidden rounded-full ring-2 ring-[var(--hm-bg-elevated)]"
-                                >
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img
-                                    src={storage.getOptimizedImageUrl(a, 'avatar')}
-                                    alt=""
-                                    className="h-full w-full object-cover"
-                                  />
-                                </span>
-                              ))}
-                            </div>
-                            {moreCount > 0 && (
-                              <span className="ml-1.5 text-[12px] font-medium text-[var(--hm-fg-muted)]">
-                                +{moreCount}
-                              </span>
-                            )}
-                          </div>
+                  <div className="flex items-center gap-2">
+                    <Pill tone={statusTone}>
+                      {statusTone === 'info' && (
+                        <span className="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
+                      )}
+                      {t(`status.${project.status}`)}
+                    </Pill>
+                    {heroAvatars.length > 0 && (
+                      <div className="hidden items-center sm:flex">
+                        <div className="flex -space-x-2">
+                          {heroAvatars.slice(0, 3).map((a, i) => (
+                            <span
+                              key={i}
+                              className="inline-flex h-5 w-5 items-center justify-center overflow-hidden rounded-full ring-2 ring-[var(--hm-bg-elevated)]"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={storage.getOptimizedImageUrl(a, 'avatar')}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            </span>
+                          ))}
+                        </div>
+                        {moreCount > 0 && (
+                          <span className="ml-1.5 text-[11px] font-medium text-[var(--hm-fg-muted)]">
+                            +{moreCount}
+                          </span>
                         )}
                       </div>
-                      <h1 className="mt-1.5 line-clamp-2 text-[20px] font-bold leading-tight text-[var(--hm-fg-primary)] sm:text-[24px]">
-                        {project.title}
-                      </h1>
-                    </div>
+                    )}
+                  </div>
+                  <h1 className="mt-0.5 truncate text-[16px] font-bold leading-tight text-[var(--hm-fg-primary)] sm:text-[18px]">
+                    {project.title}
+                  </h1>
+                </div>
 
-                    {/* Ring + edit - top-right of the identity column */}
-                    <div className="flex shrink-0 flex-col items-end gap-2">
-                      <ProgressRing value={project.progress} />
-                      {/* Client's calm summary is their home - always one tap
-                          back from the full workspace. */}
+                <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+                  <ProgressRing value={project.progress} size="sm" />
+                  <button
+                    type="button"
+                    onClick={toggleHero}
+                    aria-label={
+                      heroCollapsed
+                        ? t('projects.expandHeader')
+                        : t('projects.collapseHeader')
+                    }
+                    className="rounded-md p-1.5 text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
+                  >
+                    {heroCollapsed ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronUp className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Details drawer - revealed on expand */}
+              {!heroCollapsed && (
+                <div className="animate-fade-in border-t border-[var(--hm-border-subtle)] px-3.5 py-3.5 sm:px-4">
+                  {(project.location ||
+                    !!project.landArea ||
+                    !!project.floorCount) && (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[var(--hm-fg-secondary)]">
+                      {project.location && (
+                        <span className="inline-flex min-w-0 items-center gap-1.5">
+                          <MapPin className="h-4 w-4 shrink-0 text-[var(--hm-fg-muted)]" />
+                          <span className="min-w-0">{project.location}</span>
+                        </span>
+                      )}
+                      {!!project.landArea && (
+                        <span>
+                          {project.landArea} {t('projects.sqm')}
+                        </span>
+                      )}
+                      {!!project.floorCount && (
+                        <span>
+                          {t('projects.floorsCount', {
+                            count: project.floorCount,
+                          })}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {!isPro && (
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
                       {isClient && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            // Reset to overview so the ?tab= param clears -
-                            // otherwise a reload drops back into the full view.
                             setActiveTab('overview');
                             setClientSimpleView(true);
                           }}
                           leftIcon={<LayoutDashboard className="h-4 w-4" />}
                         >
-                          <span className="hidden sm:inline">
-                            {t('projects.backToSummary')}
-                          </span>
+                          {t('projects.backToSummary')}
                         </Button>
                       )}
-                      {!isPro && (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowEditProject(true)}
-                            leftIcon={<Pencil />}
-                            aria-label={t('common.edit')}
-                          >
-                            <span className="hidden sm:inline">
-                              {t('common.edit')}
-                            </span>
-                          </Button>
-                          {isClient && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleDeleteProject}
-                              aria-label={t('projects.deleteProject')}
-                              className="border-[var(--hm-error-500)]/30 text-[var(--hm-error-500)] hover:bg-[var(--hm-error-500)]/[0.06] hover:text-[var(--hm-error-500)]"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowEditProject(true)}
+                        leftIcon={<Pencil />}
+                      >
+                        {t('common.edit')}
+                      </Button>
+                      {isClient && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleDeleteProject}
+                          aria-label={t('projects.deleteProject')}
+                          className="border-[var(--hm-error-500)]/30 text-[var(--hm-error-500)] hover:bg-[var(--hm-error-500)]/[0.06] hover:text-[var(--hm-error-500)]"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       )}
                     </div>
-                  </div>
-
-                  {/* Location + meta - full width beneath the title */}
-                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[var(--hm-fg-secondary)]">
-                    {project.location && (
-                      <span className="inline-flex min-w-0 items-center gap-1.5">
-                        <MapPin className="h-4 w-4 shrink-0 text-[var(--hm-brand-500)]" />
-                        <span className="min-w-0">{project.location}</span>
-                      </span>
-                    )}
-                    {!!project.landArea && (
-                      <span>
-                        {project.landArea} {t('projects.sqm')}
-                      </span>
-                    )}
-                    {!!project.floorCount && (
-                      <span>
-                        {t('projects.floorsCount', { count: project.floorCount })}
-                      </span>
-                    )}
-                  </div>
+                  )}
                 </div>
-              </div>
+              )}
             </Card>
           );
         })()}
@@ -1335,17 +1413,13 @@ export default function ProjectDashboardPage() {
                   pro: e.assignedProId as { name?: string; avatar?: string },
                 }));
               const metaCard =
-                'rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-4 shadow-[0_1px_2px_rgba(17,16,13,0.04)]';
+                'rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-4';
               const eyebrow =
-                'text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--hm-fg-muted)]';
-              // Card header with a soft brand icon tile + label.
-              const cardHead = (icon: React.ReactNode, label: string) => (
-                <span className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]">
-                    {icon}
-                  </span>
-                  <span className={eyebrow}>{label}</span>
-                </span>
+                'font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--hm-fg-muted)]';
+              // Card header - mono eyebrow label only (no icon bubble, §4.1/§6).
+              // `icon` kept for call-site compatibility, intentionally unused.
+              const cardHead = (_icon: React.ReactNode, label: string) => (
+                <span className={eyebrow}>{label}</span>
               );
               // Budget split for the segmented bar (labor vs materials).
               const budgetBase = planned > 0 ? planned : spent || 1;
@@ -1457,7 +1531,7 @@ export default function ProjectDashboardPage() {
                                 onClick={() => setActiveTab(a.tab)}
                                 className="group flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--hm-bg-tertiary)]/50"
                               >
-                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--hm-warning-50)] text-[var(--hm-warning-600)]">
+                                <span className="shrink-0 text-[var(--hm-warning-600)]">
                                   {a.icon}
                                 </span>
                                 <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-[var(--hm-fg-primary)]">
@@ -1517,7 +1591,7 @@ export default function ProjectDashboardPage() {
                                 onClick={a.onClick}
                                 className="group flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[var(--hm-bg-tertiary)]/50"
                               >
-                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--hm-brand-500)]/10 text-[var(--hm-brand-500)]">
+                                <span className="shrink-0 text-[var(--hm-fg-secondary)]">
                                   {a.icon}
                                 </span>
                                 <span className="min-w-0 flex-1">
@@ -1625,6 +1699,132 @@ export default function ProjectDashboardPage() {
                             })}
                           </CardBody>
                         </Card>
+                      </section>
+                    )}
+
+                    {/* Milestones / timeline */}
+                    {(!isPro || (project.milestones?.length ?? 0) > 0) && (
+                      <section>
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          {sectionTitle(t('projects.tabTimeline'))}
+                          {!isPro && (project.milestones?.length ?? 0) > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setMilestoneModal({})}
+                              className="inline-flex items-center gap-1 text-[12px] font-semibold text-[var(--hm-brand-500)] hover:opacity-80"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                              {t('projects.addMilestone')}
+                            </button>
+                          )}
+                        </div>
+                        {(() => {
+                          const ms = [...(project.milestones ?? [])].sort(
+                            (a, b) => {
+                              const da = a.dueDate
+                                ? new Date(a.dueDate).getTime()
+                                : Infinity;
+                              const db = b.dueDate
+                                ? new Date(b.dueDate).getTime()
+                                : Infinity;
+                              if (da !== db) return da - db;
+                              return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+                            },
+                          );
+                          if (ms.length === 0) {
+                            return (
+                              <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-[var(--hm-border-subtle)] px-6 py-12 text-center">
+                                <p className="max-w-[40ch] font-display text-[16px] font-bold text-[var(--hm-fg-primary)]">
+                                  {t('projects.noMilestonesYet')}
+                                </p>
+                                {!isPro && (
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => setMilestoneModal({})}
+                                    leftIcon={<Plus />}
+                                  >
+                                    {t('projects.addMilestone')}
+                                  </Button>
+                                )}
+                              </div>
+                            );
+                          }
+                          const STATUS_DOT: Record<string, string> = {
+                            pending: 'var(--hm-n-300)',
+                            active: 'var(--hm-brand-500)',
+                            done: 'var(--hm-success-500)',
+                            blocked: 'var(--hm-warning-600)',
+                          };
+                          return (
+                            <Card variant="outlined">
+                              <CardBody className="flex flex-col divide-y divide-[var(--hm-border-subtle)] p-0">
+                                {ms.map((m) => (
+                                  <div
+                                    key={m.id}
+                                    className="group flex items-center gap-3 px-4 py-3"
+                                  >
+                                    <span className="w-[88px] shrink-0 truncate font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--hm-fg-muted)]">
+                                      {m.dueDate
+                                        ? formatDateShort(m.dueDate, locale)
+                                        : '-'}
+                                    </span>
+                                    <span
+                                      aria-hidden
+                                      className="h-2 w-2 shrink-0 rounded-full"
+                                      style={{
+                                        backgroundColor:
+                                          STATUS_DOT[m.status] ||
+                                          'var(--hm-n-300)',
+                                      }}
+                                    />
+                                    <span className="min-w-0 flex-1">
+                                      <span
+                                        className={`block truncate text-[14px] font-medium ${
+                                          m.status === 'done'
+                                            ? 'text-[var(--hm-fg-muted)] line-through'
+                                            : 'text-[var(--hm-fg-primary)]'
+                                        }`}
+                                      >
+                                        {m.title}
+                                      </span>
+                                      <span className="block text-[11px] text-[var(--hm-fg-muted)]">
+                                        {t(`projects.msStatus_${m.status}`)}
+                                      </span>
+                                    </span>
+                                    {!isPro && (
+                                      <span className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+                                        <button
+                                          type="button"
+                                          aria-label={t('projects.editMilestone')}
+                                          onClick={() =>
+                                            setMilestoneModal({ milestone: m })
+                                          }
+                                          className="rounded-md p-1.5 text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-fg-primary)]"
+                                        >
+                                          <Pencil className="h-3.5 w-3.5" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          aria-label={t('common.delete')}
+                                          onClick={() =>
+                                            setRemoveTarget({
+                                              kind: 'milestone',
+                                              id: m.id,
+                                            })
+                                          }
+                                          className="rounded-md p-1.5 text-[var(--hm-fg-muted)] transition-colors hover:bg-[var(--hm-bg-tertiary)] hover:text-[var(--hm-brand-500)]"
+                                        >
+                                          <Trash2 className="h-3.5 w-3.5" />
+                                        </button>
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                              </CardBody>
+                            </Card>
+                          );
+                        })()}
                       </section>
                     )}
 
@@ -1941,7 +2141,7 @@ export default function ProjectDashboardPage() {
                   if (isPro)
                     return (
                       <span className="text-[13px] text-[var(--hm-fg-muted)]">
-                        —
+                        -
                       </span>
                     );
                   return (
@@ -2038,10 +2238,10 @@ export default function ProjectDashboardPage() {
                         <div className="text-[13px] tabular-nums text-[var(--hm-fg-secondary)]">
                           {svc.quantity
                             ? `${svc.quantity} ${svc.unitLabel || ''}`.trim()
-                            : '—'}
+                            : '-'}
                         </div>
                         <div className="text-[14px] font-semibold tabular-nums text-[var(--hm-fg-primary)]">
-                          {total > 0 ? formatGel(total) : '—'}
+                          {total > 0 ? formatGel(total) : '-'}
                         </div>
                         <div className="min-w-0">{servicePro(svc)}</div>
                         {!isPro ? (
@@ -2210,7 +2410,7 @@ export default function ProjectDashboardPage() {
                         <div className="truncate text-[12px] text-[var(--hm-fg-muted)]">
                           {proName
                             ? roleLabelOf(eng.roleKey, eng.roleLabel)
-                            : eng.scope || '—'}
+                            : eng.scope || '-'}
                         </div>
                       </div>
                     </div>
@@ -2728,7 +2928,7 @@ export default function ProjectDashboardPage() {
                         <div className="flex items-center gap-3 sm:justify-end">
                           {svcPro(svc)}
                           <span className="shrink-0 text-[14px] font-semibold tabular-nums text-[var(--hm-fg-primary)]">
-                            {total > 0 ? formatGel(total) : '—'}
+                            {total > 0 ? formatGel(total) : '-'}
                           </span>
                           {!isPro && (
                             <span className="flex items-center">
@@ -3214,6 +3414,7 @@ export default function ProjectDashboardPage() {
               products={project.products ?? []}
               log={project.productLog ?? []}
               rooms={project.rooms ?? []}
+              scopeItems={project.scopeItems ?? []}
               canManage={!isPro}
               canApprove={isClient}
               budget={project.budgetMax}
@@ -3396,6 +3597,16 @@ export default function ProjectDashboardPage() {
           onClose={() => setEditStep(null)}
           projectId={projectId}
           step={editStep.mode === 'edit' ? editStep.step : undefined}
+          onSaved={load}
+        />
+      )}
+
+      {milestoneModal && (
+        <AddMilestoneModal
+          isOpen={!!milestoneModal}
+          onClose={() => setMilestoneModal(null)}
+          projectId={projectId}
+          milestone={milestoneModal.milestone}
           onSaved={load}
         />
       )}

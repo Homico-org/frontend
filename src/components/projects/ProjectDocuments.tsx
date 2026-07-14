@@ -18,9 +18,7 @@ import {
   Check,
   ChevronDown,
   ExternalLink,
-  FileText,
-  FolderOpen,
-  History,
+  FileText,  History,
   MapPin,
   MessageSquare,
   Send,
@@ -376,8 +374,7 @@ export default function ProjectDocuments({
   return (
     <section>
       <div className="flex items-center justify-between gap-3 mb-5">
-        <h2 className="inline-flex items-center gap-2 text-[18px] font-bold text-[var(--hm-fg-primary)]">
-          <FolderOpen className="w-5 h-5 text-[var(--hm-brand-500)]" />
+        <h2 className="text-[18px] font-bold text-[var(--hm-fg-primary)]">
           {t('projects.documentsTitle')}
         </h2>
         <Button
@@ -419,11 +416,8 @@ export default function ProjectDocuments({
       )}
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-10 flex flex-col items-center text-center gap-3">
-          <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[var(--hm-brand-500)]/[0.10] text-[var(--hm-brand-500)]">
-            <FolderOpen className="w-6 h-6" />
-          </span>
-          <p className="text-[14px] text-[var(--hm-fg-muted)] max-w-[42ch]">
+        <div className="flex flex-col items-center gap-4 border border-dashed border-[var(--hm-border-subtle)] px-6 py-14 text-center">
+          <p className="max-w-[42ch] font-display text-[16px] font-bold italic text-[var(--hm-fg-primary)]">
             {t('projects.docNone')}
           </p>
           <Button

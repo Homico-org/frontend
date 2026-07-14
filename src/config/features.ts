@@ -29,6 +29,16 @@ export const features = {
   /** Payment methods (settings tab, saved cards). OFF until payment provider is integrated. */
   payments: parseFlag(process.env.NEXT_PUBLIC_FEATURE_PAYMENTS),
   /**
+   * Shop product checkout (cart -> order -> pay). Decoupled from `payments`
+   * because a product order is a direct platform charge (Homico is merchant of
+   * record, manual ops fulfilment) with NO escrow - the same reason `premium`
+   * is decoupled. So the marketplace buy loop can launch for the MVP as soon as
+   * the Flitt provider is live, without waiting for the bank-approved escrow /
+   * payouts that gate `payments`. When OFF, browse + cart still work but the
+   * checkout CTA and modal are hidden.
+   */
+  shopCheckout: parseFlag(process.env.NEXT_PUBLIC_FEATURE_SHOP_CHECKOUT),
+  /**
    * Premium subscriptions for pros (pay-per-period, manual renewal, no escrow).
    * Decoupled from `payments` so premium can launch for the MVP as a simple
    * platform charge while escrow / marketplace payouts stay off until the bank

@@ -18,38 +18,71 @@ export interface MyProject {
 // `/projects` request instead of each firing their own on every shell page.
 let cache: MyProject[] | null = null;
 let inflight = false;
-let retries = 0;
+let attempt = 0;
+// Bumped on every invalidate (incl. sign-out). An in-flight `/projects` whose
+// generation no longer matches is a stale response - dropped instead of writing
+// the cache, so User A's list can't resurrect the cache after User A logs out
+// and User B signs in on the same tab (no full reload clears module state).
+let generation = 0;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
-const MAX_RETRIES = 4;
+const RETRY_STEP_MS = 1200;
+const RETRY_MAX_MS = 10000;
 const subscribers = new Set<() => void>();
 const notify = () => subscribers.forEach((fn) => fn());
+
+// Re-arm the load when the tab regains focus / comes back online. The shell's
+// SidebarProjectsGroup lives in a persistent layout and never remounts, so
+// without this a load that failed while the tab was backgrounded (or the
+// backend was momentarily down) would leave the sidebar stuck on its skeleton.
+let reArmBound = false;
+function bindReArm() {
+  if (reArmBound || typeof window === 'undefined') return;
+  reArmBound = true;
+  const reArm = () => {
+    if (subscribers.size > 0 && cache === null && !inflight) ensureLoaded();
+  };
+  window.addEventListener('focus', reArm);
+  window.addEventListener('online', reArm);
+}
+
+function scheduleRetry() {
+  // Keep retrying with escalating-but-capped backoff for as long as anything
+  // is watching. Giving up after a fixed number of attempts was the "sidebar
+  // shows the loader forever" bug: a transient failure (token refresh race, a
+  // dev backend recompile, a network blip) exhausted the retries and, because
+  // the component never remounts, nothing ever re-triggered the fetch.
+  if (retryTimer || subscribers.size === 0) return;
+  attempt += 1;
+  const delay = Math.min(RETRY_STEP_MS * attempt, RETRY_MAX_MS);
+  retryTimer = setTimeout(() => {
+    retryTimer = null;
+    if (subscribers.size > 0) ensureLoaded();
+  }, delay);
+}
 
 function ensureLoaded() {
   if (cache !== null || inflight) return;
   inflight = true;
+  const gen = generation;
   api
     .get('/projects')
     .then((r) => {
+      if (gen !== generation) return; // invalidated mid-flight - drop stale data
       cache = (r.data as MyProject[]) || [];
-      retries = 0;
+      attempt = 0;
     })
     .catch(() => {
+      if (gen !== generation) return;
       // Do NOT cache the failure as an empty list - that was the
       // "projects sometimes don't load" bug: a transient error (a token
       // refresh, a backend restart, a network blip) would stick as "no
       // projects" forever, because `cache !== null` blocks every retry.
       // Leave it null and retry with backoff so the sidebar self-heals.
       cache = null;
-      if (subscribers.size > 0 && retries < MAX_RETRIES) {
-        retries += 1;
-        if (retryTimer) clearTimeout(retryTimer);
-        retryTimer = setTimeout(() => {
-          retryTimer = null;
-          if (subscribers.size > 0) ensureLoaded();
-        }, 1200 * retries);
-      }
+      scheduleRetry();
     })
     .finally(() => {
+      if (gen !== generation) return; // a newer generation owns `inflight` now
       inflight = false;
       notify();
     });
@@ -60,9 +93,12 @@ function ensureLoaded() {
  * deleting a project, or on logout, to keep the shared list fresh.
  */
 export function invalidateMyProjects() {
+  // Bump the generation FIRST so any in-flight request's callbacks no-op when
+  // they resolve (see `ensureLoaded`) instead of writing a stale cache.
+  generation += 1;
   cache = null;
   inflight = false;
-  retries = 0;
+  attempt = 0;
   if (retryTimer) {
     clearTimeout(retryTimer);
     retryTimer = null;
@@ -81,11 +117,15 @@ export function useMyProjects(enabled: boolean): MyProject[] | null {
 
   useEffect(() => {
     if (!enabled) {
-      // Signed out - drop the cache so a later sign-in refetches fresh.
-      if (cache !== null) invalidateMyProjects();
+      // Signed out - drop the cache AND invalidate any in-flight request so a
+      // response that lands after sign-out can't resurrect one user's list for
+      // the next user on this tab. Unconditional (not `if cache !== null`) so an
+      // in-flight fetch is cancelled even before its first result arrives.
+      invalidateMyProjects();
       return;
     }
     subscribers.add(rerender);
+    bindReArm();
     ensureLoaded();
     return () => {
       subscribers.delete(rerender);

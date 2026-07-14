@@ -954,3 +954,29 @@ input[type='number'] {
     font-size: 16px !important;
   }
 }
+
+/* Print isolation for the research tools (analyzer/compare "Save as PDF").
+   The tools live inside the app shell (header + sidebar); when printing we
+   hide everything and reveal only the tagged report so the exported PDF is a
+   clean, standalone document. `.print-hide` drops interactive chrome (CTAs,
+   action buttons) from the printout. */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .tool-print-report,
+  .tool-print-report * {
+    visibility: visible !important;
+  }
+  .tool-print-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 16px;
+  }
+  .print-hide {
+    display: none !important;
+  }
+}

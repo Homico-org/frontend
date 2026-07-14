@@ -22,6 +22,8 @@ export interface ProductSearchFilters {
 interface UseProductSearchOptions {
   debounceMs?: number;
   pageSize?: number;
+  /** Seed the search box (e.g. "shop this scope item" pre-fills the service name). */
+  initialQuery?: string;
 }
 
 /**
@@ -30,9 +32,9 @@ interface UseProductSearchOptions {
  * An empty query returns a populated "browse" first page rather than nothing.
  */
 export function useProductSearch(options: UseProductSearchOptions = {}) {
-  const { debounceMs = 300, pageSize = 24 } = options;
+  const { debounceMs = 300, pageSize = 24, initialQuery = '' } = options;
 
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [filters, setFilters] = useState<ProductSearchFilters>({});
   const [items, setItems] = useState<CatalogProduct[]>([]);
   const [total, setTotal] = useState(0);
