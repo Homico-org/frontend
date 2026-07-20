@@ -4352,7 +4352,18 @@
     },
     "termsOfService": "Terms Of Service",
     "todayHomicoConnectsThousandsOf": "Today we're a small team in Tbilisi, matching clients with the right pro one request at a time. No inflated directories - just humans doing the work.",
-    "weDecidedToCreateA": "We took a different approach. Instead of another marketplace, we built a team service: you tell us what you need, we talk to our pros, collect quotes, and call you back the same day."
+    "weDecidedToCreateA": "We took a different approach. Instead of another marketplace, we built a team service: you tell us what you need, we talk to our pros, collect quotes, and call you back the same day.",
+    "founder": {
+      "heading": "Meet our founder",
+      "fromFounder": "From the founder",
+      "letterP1": "I started Homico after watching people I know struggle to find someone reliable for even small jobs at home in Tbilisi. Listings were outdated, prices were a guess, and trust came down to luck.",
+      "letterP2": "I wanted something more human: a real person who knows the pros, listens to what you actually need, and calls you back the same day - no bidding wars, no app to download.",
+      "letterP3": "That is Homico. We are a small team in Tbilisi, and every request still passes through human hands. Thank you for trusting us with your home.",
+      "name": "Your Name",
+      "title": "Founder",
+      "teamHeading": "The team behind every request",
+      "teamCaption": "The Homico team in Tbilisi"
+    }
   },
   "forgotPassword": {
     "changeNumber": "Change Number",
