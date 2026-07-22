@@ -1,0 +1,625 @@
+"use client";
+
+import AuthGuard from "@/components/common/AuthGuard";
+import AddressPicker from "@/components/common/AddressPicker";
+import BudgetSelector, { BudgetType } from "@/components/post-job/BudgetSelector";
+import JobServicePicker, {
+  JobServiceSelection,
+} from "@/components/post-job/JobServicePicker";
+import PropertyTypeSelector, {
+  PropertyType,
+} from "@/components/post-job/PropertyTypeSelector";
+import TimingSelector, { Timing } from "@/components/post-job/TimingSelector";
+import { Button } from "@/components/ui/button";
+import { FormGroup, Input, Textarea } from "@/components/ui/input";
+import { Stepper } from "@/components/ui/Stepper";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useToast } from "@/contexts/ToastContext";
+import { api } from "@/lib/api";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Camera,
+  CheckCircle2,
+  Copy,
+  ImageIcon,
+  Link2,
+  Mail,
+  Phone,
+  Sparkles,
+  User,
+  X,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
+
+/**
+ * Admin "assisted job" builder.
+ *
+ * An admin fills in everything a client dictated to them (contact, service,
+ * details, photos/videos) and generates a single-use link. The client opens it,
+ * signs in / sets a password, reviews, and approves in one tap — which creates
+ * the real Job.
+ *
+ * This is the ADMIN-facing page (data capture + link generation). It posts to:
+ *
+ *   POST /assisted-jobs   (admin-only)
+ *   body: {
+ *     client: { name, phone, email? },
+ *     category, subcategory?, services: JobServiceSelection[],
+ *     propertyType, description?, areaSize?,
+ *     timing, budgetType, budgetMin?, budgetMax?,
+ *     location, coordinates?: { lat, lng },
+ *     images: string[], videos: string[],
+ *   }
+ *   → 201 { id, token, clientPath, expiresAt }
+ *
+ * The client opens `clientPath` (see src/app/assisted-job/[token]).
+ */
+
+const MAX_MEDIA_BYTES = 10 * 1024 * 1024; // 10 MB per file (matches post-job)
+const MAX_MEDIA_COUNT = 20;
+
+type MediaItem = { file: File; preview: string; isVideo: boolean };
+
+const STEP_KEYS = ["client", "service", "details", "media", "review"] as const;
+type StepKey = (typeof STEP_KEYS)[number];
+
+function AssistedJobContent() {
+  const router = useRouter();
+  const toast = useToast();
+  const { locale } = useLanguage();
+  const lang = (["en", "ka", "ru"].includes(locale) ? locale : "en") as
+    | "en"
+    | "ka"
+    | "ru";
+
+  const [stepIdx, setStepIdx] = useState(0);
+  const step: StepKey = STEP_KEYS[stepIdx];
+
+  // ── Client ──
+  const [clientName, setClientName] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+
+  // ── Service ──
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedServices, setSelectedServices] = useState<JobServiceSelection[]>(
+    [],
+  );
+
+  // ── Details ──
+  const [propertyType, setPropertyType] = useState<PropertyType>("apartment");
+  const [description, setDescription] = useState("");
+  const [areaSize, setAreaSize] = useState("");
+  const [timing, setTiming] = useState<Timing>("flexible");
+  const [budgetType, setBudgetType] = useState<BudgetType>("negotiable");
+  const [budgetMin, setBudgetMin] = useState("");
+  const [budgetMax, setBudgetMax] = useState("");
+  const [location, setLocation] = useState("");
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
+
+  // ── Media ──
+  const [media, setMedia] = useState<MediaItem[]>([]);
+
+  // ── Result ──
+  const [generating, setGenerating] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+
+  const steps = useMemo(
+    () => [
+      { key: "client", label: "Client" },
+      { key: "service", label: "Service" },
+      { key: "details", label: "Details" },
+      { key: "media", label: "Photos & videos" },
+      { key: "review", label: "Review & link" },
+    ],
+    [],
+  );
+
+  // ── Per-step validation (gentle gate on "Continue") ──
+  const stepValid = useCallback(
+    (s: StepKey): boolean => {
+      switch (s) {
+        case "client":
+          return clientName.trim().length > 1 && clientPhone.trim().length >= 9;
+        case "service":
+          return selectedCategory !== "" && selectedServices.length > 0;
+        case "details":
+          return location.trim().length > 0;
+        case "media":
+          return true; // media is optional
+        case "review":
+          return true;
+        default:
+          return true;
+      }
+    },
+    [clientName, clientPhone, selectedCategory, selectedServices, location],
+  );
+
+  const goNext = () => {
+    if (!stepValid(step)) {
+      toast.warning("Please complete this step before continuing.");
+      return;
+    }
+    setStepIdx((i) => Math.min(i + 1, STEP_KEYS.length - 1));
+  };
+  const goBack = () => setStepIdx((i) => Math.max(i - 1, 0));
+
+  // ── Media handlers ──
+  const onPickMedia = (files: FileList | null) => {
+    if (!files) return;
+    const next: MediaItem[] = [];
+    for (const file of Array.from(files)) {
+      if (media.length + next.length >= MAX_MEDIA_COUNT) {
+        toast.warning(`You can attach up to ${MAX_MEDIA_COUNT} files.`);
+        break;
+      }
+      if (file.size > MAX_MEDIA_BYTES) {
+        toast.warning(`"${file.name}" is larger than 10 MB and was skipped.`);
+        continue;
+      }
+      next.push({
+        file,
+        preview: URL.createObjectURL(file),
+        isVideo: file.type.startsWith("video/"),
+      });
+    }
+    if (next.length) setMedia((m) => [...m, ...next]);
+  };
+
+  const removeMedia = (idx: number) => {
+    setMedia((m) => {
+      const copy = [...m];
+      const [removed] = copy.splice(idx, 1);
+      if (removed) URL.revokeObjectURL(removed.preview);
+      return copy;
+    });
+  };
+
+  // ── Upload media then create the assisted-job draft ──
+  const uploadOne = async (file: File): Promise<string | null> => {
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await api.post("/upload", fd);
+      return (res.data?.url as string) || (res.data?.filename as string) || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const handleGenerate = async () => {
+    if (generating) return;
+    setGenerating(true);
+    try {
+      // Upload media in parallel; a single failure doesn't abort the rest.
+      const results = await Promise.allSettled(media.map((m) => uploadOne(m.file)));
+      const urls = results
+        .map((r) => (r.status === "fulfilled" ? r.value : null))
+        .filter((u): u is string => Boolean(u));
+      const images = urls.filter((u, i) => !media[i]?.isVideo);
+      const videos = urls.filter((u, i) => media[i]?.isVideo);
+
+      const payload = {
+        client: {
+          name: clientName.trim(),
+          phone: clientPhone.trim(),
+          email: clientEmail.trim() || undefined,
+        },
+        category: selectedCategory,
+        services: selectedServices,
+        propertyType,
+        description: description.trim() || undefined,
+        areaSize: areaSize.trim() || undefined,
+        timing,
+        budgetType,
+        budgetMin: budgetMin.trim() || undefined,
+        budgetMax: budgetMax.trim() || undefined,
+        location: location.trim(),
+        coordinates: coordinates || undefined,
+        images,
+        videos,
+      };
+
+      const res = await api.post("/assisted-jobs", payload);
+      const clientPath: string =
+        res.data?.clientPath ||
+        (res.data?.token ? `/assisted-job/${res.data.token}` : "");
+      const clientUrl = clientPath
+        ? `${window.location.origin}${clientPath}`
+        : "";
+      if (!clientUrl) throw new Error("No link returned");
+      setGeneratedLink(clientUrl);
+      toast.success("Link generated. Share it with the client.");
+    } catch {
+      toast.error(
+        "Couldn't generate the link. The backend endpoint may not be ready yet.",
+      );
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const copyLink = async () => {
+    if (!generatedLink) return;
+    try {
+      await navigator.clipboard.writeText(generatedLink);
+      toast.success("Link copied.");
+    } catch {
+      toast.error("Couldn't copy — select and copy the link manually.");
+    }
+  };
+
+  const serviceNames = selectedServices
+    .map((s) => (lang === "ka" ? s.nameKa : lang === "ru" ? s.nameRu : s.name))
+    .filter(Boolean);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Success screen (after link generation)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (generatedLink) {
+    return (
+      <div className="min-h-screen bg-[var(--hm-bg-page)]">
+        <div className="mx-auto max-w-2xl px-5 py-16">
+          <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-8 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--hm-success-500)]/15">
+              <CheckCircle2 className="h-8 w-8 text-[var(--hm-success-600)]" />
+            </div>
+            <h1 className="text-[22px] font-semibold text-[var(--hm-fg-primary)]">
+              Link ready to send
+            </h1>
+            <p className="mx-auto mt-2 max-w-md text-[14px] text-[var(--hm-fg-secondary)]">
+              Send this link to {clientName || "the client"}. They open it, sign in
+              (or set a password), review the details, and approve — that creates
+              the job.
+            </p>
+
+            <div className="mt-6 flex items-center gap-2 rounded-xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] px-3 py-2.5 text-left">
+              <Link2 className="h-4 w-4 shrink-0 text-[var(--hm-fg-muted)]" />
+              <span className="flex-1 truncate text-[13px] text-[var(--hm-fg-secondary)]">
+                {generatedLink}
+              </span>
+              <Button size="sm" variant="outline" leftIcon={<Copy className="h-4 w-4" />} onClick={copyLink}>
+                Copy
+              </Button>
+            </div>
+
+            <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  // Reset for a brand-new draft.
+                  setGeneratedLink(null);
+                  setStepIdx(0);
+                  setClientName("");
+                  setClientPhone("");
+                  setClientEmail("");
+                  setSelectedCategory("");
+                  setSelectedServices([]);
+                  setDescription("");
+                  setAreaSize("");
+                  setLocation("");
+                  setCoordinates(null);
+                  media.forEach((m) => URL.revokeObjectURL(m.preview));
+                  setMedia([]);
+                }}
+              >
+                Create another
+              </Button>
+              <Button onClick={() => router.push("/admin")}>Back to admin</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Wizard
+  // ─────────────────────────────────────────────────────────────────────────
+  return (
+    <div className="min-h-screen bg-[var(--hm-bg-page)]">
+      <div className="mx-auto max-w-3xl px-5 py-8">
+        {/* Header */}
+        <button
+          onClick={() => router.push("/admin")}
+          className="mb-4 inline-flex items-center gap-1.5 text-[13px] text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]"
+        >
+          <ArrowLeft className="h-4 w-4" /> Admin
+        </button>
+        <h1 className="flex items-center gap-2 text-[24px] font-semibold tracking-[-0.02em] text-[var(--hm-fg-primary)]">
+          <Sparkles className="h-6 w-6 text-[var(--hm-brand-500)]" />
+          Create a job for a client
+        </h1>
+        <p className="mt-1 text-[14px] text-[var(--hm-fg-secondary)]">
+          Fill in what the client told you, then generate a link they approve in one
+          tap.
+        </p>
+
+        {/* Progress */}
+        <div className="my-6">
+          <Stepper
+            steps={steps}
+            currentIndex={stepIdx}
+            onStepClick={(i) => {
+              // Allow jumping back freely; only forward if prior steps are valid.
+              if (i <= stepIdx) setStepIdx(i);
+              else if (STEP_KEYS.slice(stepIdx, i).every((s) => stepValid(s)))
+                setStepIdx(i);
+            }}
+          />
+        </div>
+
+        {/* Step body */}
+        <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-5 sm:p-6">
+          {step === "client" && (
+            <div className="space-y-5">
+              <StepTitle
+                title="Who is the client?"
+                subtitle="The person who contacted you. The link will be tied to their phone number."
+              />
+              <FormGroup label="Full name" required>
+                <Input
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="e.g. Nino Beridze"
+                  leftIcon={<User className="h-4 w-4" />}
+                />
+              </FormGroup>
+              <FormGroup
+                label="Phone number"
+                required
+                hint="Used to match or create the client's account."
+              >
+                <Input
+                  value={clientPhone}
+                  onChange={(e) => setClientPhone(e.target.value)}
+                  placeholder="+995 5XX XX XX XX"
+                  inputMode="tel"
+                  leftIcon={<Phone className="h-4 w-4" />}
+                />
+              </FormGroup>
+              <FormGroup label="Email" optional>
+                <Input
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  inputMode="email"
+                  leftIcon={<Mail className="h-4 w-4" />}
+                />
+              </FormGroup>
+            </div>
+          )}
+
+          {step === "service" && (
+            <div className="space-y-5">
+              <StepTitle
+                title="What service do they need?"
+                subtitle="Pick the category, then the specific services."
+              />
+              <JobServicePicker
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                selectedServices={selectedServices}
+                onServicesChange={setSelectedServices}
+              />
+            </div>
+          )}
+
+          {step === "details" && (
+            <div className="space-y-6">
+              <StepTitle
+                title="Job details"
+                subtitle="Where, when, and roughly how much."
+              />
+              <FormGroup label="Property type">
+                <PropertyTypeSelector
+                  value={propertyType}
+                  onChange={setPropertyType}
+                  locale={lang}
+                />
+              </FormGroup>
+              <AddressPicker
+                value={location}
+                onChange={(value, coords) => {
+                  setLocation(value);
+                  setCoordinates(coords || null);
+                }}
+                locale={lang}
+                label="Location"
+                required
+              />
+              <FormGroup label="Approximate area" optional hint="Square meters, if relevant.">
+                <Input
+                  value={areaSize}
+                  onChange={(e) => setAreaSize(e.target.value.replace(/[^0-9]/g, ""))}
+                  placeholder="e.g. 75"
+                  inputMode="numeric"
+                  rightIcon={<span className="text-[13px]">m²</span>}
+                />
+              </FormGroup>
+              <FormGroup label="Description" optional hint="Anything the client mentioned.">
+                <Textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Details, access instructions, preferences…"
+                  minRows={3}
+                  autoResize
+                />
+              </FormGroup>
+              <FormGroup label="When do they need it?">
+                <TimingSelector value={timing} onChange={setTiming} locale={lang} />
+              </FormGroup>
+              <BudgetSelector
+                budgetType={budgetType}
+                onBudgetTypeChange={setBudgetType}
+                budgetMin={budgetMin}
+                onBudgetMinChange={setBudgetMin}
+                budgetMax={budgetMax}
+                onBudgetMaxChange={setBudgetMax}
+                locale={lang}
+              />
+            </div>
+          )}
+
+          {step === "media" && (
+            <div className="space-y-5">
+              <StepTitle
+                title="Photos & videos"
+                subtitle="Optional, but they help pros understand the job. Up to 20 files, 10 MB each."
+              />
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] px-4 py-10 text-center hover:border-[var(--hm-brand-500)]">
+                <Camera className="h-8 w-8 text-[var(--hm-fg-muted)]" />
+                <span className="text-[14px] font-medium text-[var(--hm-fg-primary)]">
+                  Add photos or videos
+                </span>
+                <span className="text-[12px] text-[var(--hm-fg-muted)]">
+                  Tap to choose from this device
+                </span>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    onPickMedia(e.target.files);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+
+              {media.length > 0 && (
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                  {media.map((m, i) => (
+                    <div
+                      key={i}
+                      className="group relative aspect-square overflow-hidden rounded-xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)]"
+                    >
+                      {m.isVideo ? (
+                        <video src={m.preview} className="h-full w-full object-cover" />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={m.preview}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      )}
+                      <button
+                        onClick={() => removeMedia(i)}
+                        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition group-hover:opacity-100"
+                        aria-label="Remove"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === "review" && (
+            <div className="space-y-5">
+              <StepTitle
+                title="Review before generating"
+                subtitle="Check everything, then generate the link to send to the client."
+              />
+              <ReviewRow label="Client" value={`${clientName} · ${clientPhone}${clientEmail ? ` · ${clientEmail}` : ""}`} />
+              <ReviewRow label="Services" value={serviceNames.join(", ") || "—"} />
+              <ReviewRow label="Location" value={location || "—"} />
+              {areaSize && <ReviewRow label="Area" value={`${areaSize} m²`} />}
+              <ReviewRow
+                label="Budget"
+                value={
+                  budgetType === "negotiable"
+                    ? "Negotiable"
+                    : `${budgetMin || "?"}${budgetMax ? ` – ${budgetMax}` : ""} ₾`
+                }
+              />
+              {description && <ReviewRow label="Description" value={description} />}
+              <ReviewRow
+                label="Media"
+                value={media.length ? `${media.length} file(s)` : "None"}
+              />
+
+              <div className="flex items-start gap-2 rounded-xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] p-3">
+                <ImageIcon className="mt-0.5 h-4 w-4 shrink-0 text-[var(--hm-fg-muted)]" />
+                <p className="text-[13px] text-[var(--hm-fg-secondary)]">
+                  The client will be able to edit some fields and must confirm before
+                  the job is created.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer nav */}
+        <div className="mt-6 flex items-center justify-between gap-3">
+          <Button
+            variant="ghost"
+            leftIcon={<ArrowLeft className="h-4 w-4" />}
+            onClick={goBack}
+            disabled={stepIdx === 0}
+          >
+            Back
+          </Button>
+
+          {step !== "review" ? (
+            <Button
+              rightIcon={<ArrowRight className="h-4 w-4" />}
+              onClick={goNext}
+              disabled={!stepValid(step)}
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button
+              leftIcon={<Link2 className="h-4 w-4" />}
+              onClick={handleGenerate}
+              loading={generating}
+            >
+              Generate link
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StepTitle({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div>
+      <h2 className="text-[18px] font-semibold text-[var(--hm-fg-primary)]">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="mt-1 text-[13px] text-[var(--hm-fg-secondary)]">{subtitle}</p>
+      )}
+    </div>
+  );
+}
+
+function ReviewRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex gap-3 border-b border-[var(--hm-border-subtle)] pb-3 last:border-0">
+      <span className="w-28 shrink-0 text-[13px] font-medium text-[var(--hm-fg-muted)]">
+        {label}
+      </span>
+      <span className="flex-1 text-[14px] text-[var(--hm-fg-primary)]">{value}</span>
+    </div>
+  );
+}
+
+export default function AssistedJobPage() {
+  return (
+    <AuthGuard allowedRoles={["admin"]}>
+      <AssistedJobContent />
+    </AuthGuard>
+  );
+}
