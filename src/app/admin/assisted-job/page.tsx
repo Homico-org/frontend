@@ -256,12 +256,23 @@ function AssistedJobContent() {
     setGenerating(true);
     try {
       // Upload media in parallel; a single failure doesn't abort the rest.
-      const results = await Promise.allSettled(media.map((m) => uploadOne(m.file)));
-      const urls = results
-        .map((r) => (r.status === "fulfilled" ? r.value : null))
-        .filter((u): u is string => Boolean(u));
-      const images = urls.filter((u, i) => !media[i]?.isVideo);
-      const videos = urls.filter((u, i) => media[i]?.isVideo);
+      // Keep each url paired with its isVideo flag BEFORE dropping failures —
+      // filtering first would de-align the index and swap photos/videos.
+      const uploaded = await Promise.all(
+        media.map(async (m) => ({ url: await uploadOne(m.file), isVideo: m.isVideo })),
+      );
+      const failedCount = uploaded.filter((u) => !u.url).length;
+      const images = uploaded
+        .filter((u) => u.url && !u.isVideo)
+        .map((u) => u.url as string);
+      const videos = uploaded
+        .filter((u) => u.url && u.isVideo)
+        .map((u) => u.url as string);
+      if (failedCount > 0) {
+        toast.warning(
+          `${failedCount} file(s) couldn't be uploaded and were skipped.`,
+        );
+      }
 
       const payload = {
         client: {
