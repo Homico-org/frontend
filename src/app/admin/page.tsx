@@ -47,7 +47,8 @@ import {
   MousePointer,
   Zap,
   LayoutList,
-  Crown
+  Crown,
+  Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -561,6 +562,7 @@ function AdminDashboardPageContent() {
         {/* Quick Actions - Prominent at top */}
         <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 mb-4 sm:mb-8">
           {[
+            { label: 'Create job for client', icon: Sparkles, href: '/admin/assisted-job', color: 'var(--hm-brand-500)' },
             { label: 'Traction', icon: Target, href: '/admin/traction', color: THEME.primary },
             { label: t('adminAnalytics.title'), icon: BarChart3, href: '/admin/analytics', color: THEME.info },
             { label: t('adminFunnel.title'), icon: TrendingUp, href: '/admin/funnel', color: THEME.success },
