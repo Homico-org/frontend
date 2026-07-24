@@ -35,7 +35,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * Admin "assisted job" builder.
@@ -65,6 +65,8 @@ const MAX_MEDIA_BYTES = 10 * 1024 * 1024; // 10 MB per file (matches post-job)
 const MAX_MEDIA_COUNT = 20;
 
 type MediaItem = { file: File; preview: string; isVideo: boolean };
+
+type ClientHit = { id: string; name: string; phone: string; email?: string };
 
 const STEP_KEYS = ["client", "service", "details", "media", "review"] as const;
 type StepKey = (typeof STEP_KEYS)[number];
@@ -115,6 +117,11 @@ function AssistedJobContent() {
   // "create" = the wizard, "history" = the list of previously sent links.
   const [view, setView] = useState<"create" | "history">("create");
 
+  // Existing-client autocomplete: as the admin types a name or phone, suggest
+  // matching client accounts so they can reuse one (avoids duplicates + typos).
+  const [clientHits, setClientHits] = useState<ClientHit[]>([]);
+  const suppressClientSearch = useRef(false);
+
   const steps = useMemo(
     () => [
       { key: "client", label: "Client" },
@@ -125,6 +132,43 @@ function AssistedJobContent() {
     ],
     [],
   );
+
+  // Debounced lookup of existing clients by the name/phone the admin is typing.
+  useEffect(() => {
+    // Skip the run triggered by programmatically filling the fields on select.
+    if (suppressClientSearch.current) {
+      suppressClientSearch.current = false;
+      return;
+    }
+    const digits = clientPhone.replace(/\D/g, "");
+    const term =
+      digits.length >= 3
+        ? digits
+        : clientName.trim().length >= 2
+          ? clientName.trim()
+          : "";
+    if (!term) {
+      setClientHits([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      api
+        .get("/admin/users", {
+          params: { search: term, role: "client", limit: 6 },
+        })
+        .then((r) => setClientHits((r.data?.users as ClientHit[]) || []))
+        .catch(() => setClientHits([]));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [clientName, clientPhone]);
+
+  const selectClient = (hit: ClientHit) => {
+    suppressClientSearch.current = true;
+    setClientName(hit.name || "");
+    setClientPhone(hit.phone || "");
+    setClientEmail(hit.email || "");
+    setClientHits([]);
+  };
 
   // ── Per-step validation (gentle gate on "Continue") ──
   const stepValid = useCallback(
@@ -422,6 +466,35 @@ function AssistedJobContent() {
                   leftIcon={<Mail className="h-4 w-4" />}
                 />
               </FormGroup>
+
+              {clientHits.length > 0 && (
+                <div className="rounded-xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] p-2">
+                  <p className="px-2 py-1 text-[12px] font-medium text-[var(--hm-fg-muted)]">
+                    Existing clients — tap to use
+                  </p>
+                  {clientHits.map((hit) => (
+                    <button
+                      key={hit.id}
+                      type="button"
+                      onClick={() => selectClient(hit)}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-[var(--hm-bg-elevated)]"
+                    >
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--hm-brand-500)]/15 text-[12px] font-semibold text-[var(--hm-brand-500)]">
+                        {(hit.name || "?").charAt(0).toUpperCase()}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-[14px] text-[var(--hm-fg-primary)]">
+                          {hit.name || "—"}
+                        </span>
+                        <span className="block truncate text-[12px] text-[var(--hm-fg-muted)]">
+                          {hit.phone}
+                          {hit.email ? ` · ${hit.email}` : ""}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
