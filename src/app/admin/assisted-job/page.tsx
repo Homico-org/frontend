@@ -19,11 +19,15 @@ import { api } from "@/lib/api";
 import {
   ArrowLeft,
   ArrowRight,
+  Ban,
   Camera,
   CheckCircle2,
+  Clock,
   Copy,
+  ExternalLink,
   ImageIcon,
   Link2,
+  Loader2,
   Mail,
   Phone,
   Sparkles,
@@ -31,7 +35,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
  * Admin "assisted job" builder.
@@ -107,6 +111,9 @@ function AssistedJobContent() {
   // ── Result ──
   const [generating, setGenerating] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+
+  // "create" = the wizard, "history" = the list of previously sent links.
+  const [view, setView] = useState<"create" | "history">("create");
 
   const steps = useMemo(
     () => [
@@ -340,6 +347,29 @@ function AssistedJobContent() {
           tap.
         </p>
 
+        {/* View toggle */}
+        <div className="mt-6 flex gap-2 border-b border-[var(--hm-border-subtle)] pb-3">
+          {(["create", "history"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                view === v
+                  ? "bg-[var(--hm-brand-500)] text-white"
+                  : "text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
+              }`}
+            >
+              {v === "create" ? "New request" : "Sent links"}
+            </button>
+          ))}
+        </div>
+
+        {view === "history" ? (
+          <div className="mt-6">
+            <DraftsList />
+          </div>
+        ) : (
+          <>
         {/* Progress */}
         <div className="my-6">
           <Stepper
@@ -587,7 +617,167 @@ function AssistedJobContent() {
             </Button>
           )}
         </div>
+          </>
+        )}
       </div>
+    </div>
+  );
+}
+
+interface Draft {
+  id: string;
+  status: "pending" | "approved" | "expired" | "cancelled";
+  clientName: string;
+  clientPhone: string;
+  category: string;
+  clientPath: string;
+  createdAt?: string;
+  expiresAt?: string;
+  approvedAt?: string;
+  createdJobId?: string;
+}
+
+const STATUS_STYLE: Record<
+  Draft["status"],
+  { label: string; className: string; Icon: typeof Clock }
+> = {
+  pending: {
+    label: "Pending",
+    className:
+      "bg-[var(--hm-warning-500)]/15 text-[var(--hm-warning-600)]",
+    Icon: Clock,
+  },
+  approved: {
+    label: "Approved",
+    className:
+      "bg-[var(--hm-success-500)]/15 text-[var(--hm-success-600)]",
+    Icon: CheckCircle2,
+  },
+  expired: {
+    label: "Expired",
+    className: "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]",
+    Icon: Clock,
+  },
+  cancelled: {
+    label: "Cancelled",
+    className: "bg-[var(--hm-bg-tertiary)] text-[var(--hm-fg-muted)]",
+    Icon: Ban,
+  },
+};
+
+function DraftsList() {
+  const toast = useToast();
+  const [rows, setRows] = useState<Draft[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    api
+      .get("/assisted-jobs")
+      .then((r) => setRows((r.data as Draft[]) || []))
+      .catch(() => toast.error("Couldn't load the list."))
+      .finally(() => setLoading(false));
+  }, [toast]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const copyLink = async (path: string) => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${path}`);
+      toast.success("Link copied.");
+    } catch {
+      toast.error("Couldn't copy the link.");
+    }
+  };
+
+  const cancelDraft = async (id: string) => {
+    try {
+      await api.post(`/assisted-jobs/${id}/cancel`);
+      toast.success("Request cancelled.");
+      load();
+    } catch {
+      toast.error("Couldn't cancel this request.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-[var(--hm-brand-500)]" />
+      </div>
+    );
+  }
+
+  if (!rows.length) {
+    return (
+      <div className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-10 text-center text-[14px] text-[var(--hm-fg-secondary)]">
+        No links generated yet. Create one from the “New request” tab.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {rows.map((d) => {
+        const s = STATUS_STYLE[d.status] ?? STATUS_STYLE.pending;
+        return (
+          <div
+            key={d.id}
+            className="rounded-2xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-elevated)] p-4"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate text-[15px] font-semibold text-[var(--hm-fg-primary)]">
+                  {d.clientName}
+                </p>
+                <p className="text-[13px] text-[var(--hm-fg-muted)]">
+                  {d.clientPhone} · {d.category}
+                </p>
+              </div>
+              <span
+                className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${s.className}`}
+              >
+                <s.Icon className="h-3 w-3" />
+                {s.label}
+              </span>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              {d.status === "pending" && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    leftIcon={<Copy className="h-3.5 w-3.5" />}
+                    onClick={() => copyLink(d.clientPath)}
+                  >
+                    Copy link
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    leftIcon={<Ban className="h-3.5 w-3.5" />}
+                    onClick={() => cancelDraft(d.id)}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
+              {d.status === "approved" && d.createdJobId && (
+                <a
+                  href={`/ge/jobs/${d.createdJobId}`}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hm-border-subtle)] px-3 py-1.5 text-[13px] font-medium text-[var(--hm-fg-secondary)] hover:bg-[var(--hm-bg-tertiary)]"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  View job
+                </a>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
