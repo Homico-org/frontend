@@ -120,6 +120,9 @@ function AssistedJobContent() {
   // Existing-client autocomplete: as the admin types a name or phone, suggest
   // matching client accounts so they can reuse one (avoids duplicates + typos).
   const [clientHits, setClientHits] = useState<ClientHit[]>([]);
+  // True once a search for the current name/phone has completed — lets us show
+  // a "no existing client" hint (vs. nothing) so the admin knows the lookup ran.
+  const [clientSearched, setClientSearched] = useState(false);
   const suppressClientSearch = useRef(false);
   const clientSearchSeq = useRef(0);
 
@@ -150,6 +153,7 @@ function AssistedJobContent() {
           : "";
     if (!term) {
       setClientHits([]);
+      setClientSearched(false);
       return;
     }
     const timer = setTimeout(() => {
@@ -160,11 +164,17 @@ function AssistedJobContent() {
           params: { search: term, role: "client", limit: 6 },
         })
         .then((r) => {
-          if (seq === clientSearchSeq.current)
+          if (seq === clientSearchSeq.current) {
             setClientHits((r.data?.users as ClientHit[]) || []);
+            setClientSearched(true);
+          }
         })
         .catch(() => {
-          if (seq === clientSearchSeq.current) setClientHits([]);
+          // On error, don't claim "no existing client" — just show nothing.
+          if (seq === clientSearchSeq.current) {
+            setClientHits([]);
+            setClientSearched(false);
+          }
         });
     }, 300);
     return () => clearTimeout(timer);
@@ -176,6 +186,7 @@ function AssistedJobContent() {
     setClientPhone(hit.phone || "");
     setClientEmail(hit.email || "");
     setClientHits([]);
+    setClientSearched(false);
   };
 
   // ── Per-step validation (gentle gate on "Continue") ──
@@ -513,6 +524,13 @@ function AssistedJobContent() {
                     </button>
                   ))}
                 </div>
+              )}
+
+              {clientHits.length === 0 && clientSearched && (
+                <p className="rounded-xl border border-dashed border-[var(--hm-border-subtle)] px-3 py-2.5 text-[13px] text-[var(--hm-fg-muted)]">
+                  No existing client found — a new account will be created for
+                  this phone number.
+                </p>
               )}
             </div>
           )}
