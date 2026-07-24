@@ -121,6 +121,7 @@ function AssistedJobContent() {
   // matching client accounts so they can reuse one (avoids duplicates + typos).
   const [clientHits, setClientHits] = useState<ClientHit[]>([]);
   const suppressClientSearch = useRef(false);
+  const clientSearchSeq = useRef(0);
 
   const steps = useMemo(
     () => [
@@ -152,12 +153,19 @@ function AssistedJobContent() {
       return;
     }
     const timer = setTimeout(() => {
+      // Ignore out-of-order responses: only the latest fired request applies.
+      const seq = ++clientSearchSeq.current;
       api
         .get("/admin/users", {
           params: { search: term, role: "client", limit: 6 },
         })
-        .then((r) => setClientHits((r.data?.users as ClientHit[]) || []))
-        .catch(() => setClientHits([]));
+        .then((r) => {
+          if (seq === clientSearchSeq.current)
+            setClientHits((r.data?.users as ClientHit[]) || []);
+        })
+        .catch(() => {
+          if (seq === clientSearchSeq.current) setClientHits([]);
+        });
     }, 300);
     return () => clearTimeout(timer);
   }, [clientName, clientPhone]);
