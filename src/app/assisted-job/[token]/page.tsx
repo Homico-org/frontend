@@ -37,6 +37,7 @@ interface AssistedPreview {
   videos: string[];
   existingUser: boolean;
   hasPassword: boolean;
+  viewerIsClient: boolean;
 }
 
 export default function AssistedJobClientPage() {
@@ -102,11 +103,9 @@ export default function AssistedJobClientPage() {
       toast.warning("Please confirm the details to continue.");
       return;
     }
-    const viewerIsClient =
-      !!user?.phone &&
-      user.phone.replace(/\D/g, "") === preview.clientPhone.replace(/\D/g, "");
     const needsPassword =
-      !viewerIsClient && (!preview.existingUser || preview.hasPassword);
+      !preview.viewerIsClient &&
+      (!preview.existingUser || preview.hasPassword);
     if (needsPassword && password.trim().length < 6) {
       toast.warning("Your password must be at least 6 characters.");
       return;
@@ -121,9 +120,14 @@ export default function AssistedJobClientPage() {
         budgetMin: budgetMin.trim() || undefined,
         budgetMax: budgetMax.trim() || undefined,
       });
-      const { access_token, refresh_token, user, redirectPath } = res.data;
-      if (access_token && user) {
-        login(access_token, user, refresh_token);
+      const {
+        access_token,
+        refresh_token,
+        user: sessionUser,
+        redirectPath,
+      } = res.data;
+      if (access_token && sessionUser) {
+        login(access_token, sessionUser, refresh_token);
       }
       toast.success("Your request is live!");
       router.push(redirectPath || "/ge/jobs");
@@ -163,9 +167,7 @@ export default function AssistedJobClientPage() {
     );
   }
 
-  const viewerIsClient =
-    !!user?.phone &&
-    user.phone.replace(/\D/g, "") === preview.clientPhone.replace(/\D/g, "");
+  const viewerIsClient = preview.viewerIsClient;
   const needsPassword =
     !viewerIsClient && (!preview.existingUser || preview.hasPassword);
   const serviceNames = preview.services.map(serviceLabel).filter(Boolean);

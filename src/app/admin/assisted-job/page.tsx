@@ -66,8 +66,8 @@ const MAX_MEDIA_COUNT = 20;
 
 type MediaItem = { file: File; preview: string; isVideo: boolean };
 
-// /admin/users returns Mongo `_id` (not transformed to `id` on this endpoint),
-// so read either.
+// The api client's transformIds normally renames `_id`→`id`; read either to be
+// safe against any response shape.
 type ClientHit = {
   id?: string;
   _id?: string;
@@ -445,6 +445,11 @@ function AssistedJobContent() {
                   setAreaSize("");
                   setLocation("");
                   setCoordinates(null);
+                  setPropertyType("apartment");
+                  setTiming("flexible");
+                  setBudgetType("negotiable");
+                  setBudgetMin("");
+                  setBudgetMax("");
                   media.forEach((m) => URL.revokeObjectURL(m.preview));
                   setMedia([]);
                 }}
