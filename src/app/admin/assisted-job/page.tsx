@@ -29,6 +29,7 @@ import {
   Link2,
   Loader2,
   Mail,
+  MessageSquare,
   Phone,
   Sparkles,
   User,
@@ -123,6 +124,8 @@ function AssistedJobContent() {
   // ── Result ──
   const [generating, setGenerating] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+  const [generatedId, setGeneratedId] = useState<string | null>(null);
+  const [sending, setSending] = useState<"sms" | "email" | null>(null);
 
   // "create" = the wizard, "history" = the list of previously sent links.
   const [view, setView] = useState<"create" | "history">("create");
@@ -372,6 +375,7 @@ function AssistedJobContent() {
         : "";
       if (!clientUrl) throw new Error("No link returned");
       setGeneratedLink(clientUrl);
+      setGeneratedId(res.data?.id ?? null);
       toast.success("Link generated. Share it with the client.");
     } catch {
       toast.error(
@@ -389,6 +393,26 @@ function AssistedJobContent() {
       toast.success("Link copied.");
     } catch {
       toast.error("Couldn't copy — select and copy the link manually.");
+    }
+  };
+
+  const sendGeneratedLink = async (channel: "sms" | "email") => {
+    if (!generatedId || sending) return;
+    setSending(channel);
+    try {
+      await api.post(`/assisted-jobs/${generatedId}/send`, { channel });
+      toast.success(
+        channel === "sms"
+          ? "Link sent by SMS to the client."
+          : "Link sent by email to the client.",
+      );
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || "Couldn't send the link.";
+      toast.error(Array.isArray(msg) ? msg.join(", ") : msg);
+    } finally {
+      setSending(null);
     }
   };
 
@@ -426,12 +450,42 @@ function AssistedJobContent() {
               </Button>
             </div>
 
+            {/* Send the link directly to the client */}
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              <span className="text-[13px] text-[var(--hm-fg-muted)]">
+                or send it:
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                leftIcon={<MessageSquare className="h-4 w-4" />}
+                onClick={() => sendGeneratedLink("sms")}
+                loading={sending === "sms"}
+                disabled={!!sending}
+              >
+                SMS
+              </Button>
+              {clientEmail.trim() && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  leftIcon={<Mail className="h-4 w-4" />}
+                  onClick={() => sendGeneratedLink("email")}
+                  loading={sending === "email"}
+                  disabled={!!sending}
+                >
+                  Email
+                </Button>
+              )}
+            </div>
+
             <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
               <Button
                 variant="outline"
                 onClick={() => {
                   // Reset for a brand-new draft.
                   setGeneratedLink(null);
+                  setGeneratedId(null);
                   setStepIdx(0);
                   setClientName("");
                   setClientPhone("");
@@ -877,6 +931,7 @@ interface Draft {
   status: "pending" | "approved" | "expired" | "cancelled";
   clientName: string;
   clientPhone: string;
+  clientEmail?: string;
   category: string;
   clientPath: string;
   createdAt?: string;
@@ -917,6 +972,7 @@ function DraftsList() {
   const toast = useToast();
   const [rows, setRows] = useState<Draft[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sendingId, setSendingId] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -947,6 +1003,22 @@ function DraftsList() {
       load();
     } catch {
       toast.error("Couldn't cancel this request.");
+    }
+  };
+
+  const sendDraftLink = async (id: string, channel: "sms" | "email") => {
+    if (sendingId) return;
+    setSendingId(id + channel);
+    try {
+      await api.post(`/assisted-jobs/${id}/send`, { channel });
+      toast.success(channel === "sms" ? "Link sent by SMS." : "Link sent by email.");
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || "Couldn't send the link.";
+      toast.error(Array.isArray(msg) ? msg.join(", ") : msg);
+    } finally {
+      setSendingId(null);
     }
   };
 
@@ -1003,6 +1075,28 @@ function DraftsList() {
                   >
                     Copy link
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    leftIcon={<MessageSquare className="h-3.5 w-3.5" />}
+                    onClick={() => sendDraftLink(d.id, "sms")}
+                    loading={sendingId === d.id + "sms"}
+                    disabled={!!sendingId}
+                  >
+                    SMS
+                  </Button>
+                  {d.clientEmail && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      leftIcon={<Mail className="h-3.5 w-3.5" />}
+                      onClick={() => sendDraftLink(d.id, "email")}
+                      loading={sendingId === d.id + "email"}
+                      disabled={!!sendingId}
+                    >
+                      Email
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"
