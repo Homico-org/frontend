@@ -44,7 +44,7 @@ export default function AssistedJobClientPage() {
   const token = params?.token as string;
   const router = useRouter();
   const toast = useToast();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const { locale } = useLanguage();
   const lang = (["en", "ka", "ru"].includes(locale) ? locale : "en") as
     | "en"
@@ -102,7 +102,11 @@ export default function AssistedJobClientPage() {
       toast.warning("Please confirm the details to continue.");
       return;
     }
-    const needsPassword = !preview.existingUser || preview.hasPassword;
+    const viewerIsClient =
+      !!user?.phone &&
+      user.phone.replace(/\D/g, "") === preview.clientPhone.replace(/\D/g, "");
+    const needsPassword =
+      !viewerIsClient && (!preview.existingUser || preview.hasPassword);
     if (needsPassword && password.trim().length < 6) {
       toast.warning("Your password must be at least 6 characters.");
       return;
@@ -159,7 +163,11 @@ export default function AssistedJobClientPage() {
     );
   }
 
-  const needsPassword = !preview.existingUser || preview.hasPassword;
+  const viewerIsClient =
+    !!user?.phone &&
+    user.phone.replace(/\D/g, "") === preview.clientPhone.replace(/\D/g, "");
+  const needsPassword =
+    !viewerIsClient && (!preview.existingUser || preview.hasPassword);
   const serviceNames = preview.services.map(serviceLabel).filter(Boolean);
   const budgetLabel =
     preview.budgetType === "negotiable" || (!budgetMin && !budgetMax)
@@ -279,6 +287,11 @@ export default function AssistedJobClientPage() {
                 leftIcon={<Lock className="h-4 w-4" />}
               />
             </FormGroup>
+          ) : viewerIsClient ? (
+            <p className="rounded-xl bg-[var(--hm-bg-tertiary)] px-3 py-2.5 text-[13px] text-[var(--hm-fg-secondary)]">
+              You&apos;re signed in as {user?.name || "this client"} — just
+              confirm below.
+            </p>
           ) : (
             <p className="rounded-xl bg-[var(--hm-bg-tertiary)] px-3 py-2.5 text-[13px] text-[var(--hm-fg-secondary)]">
               This link signs you in — no password needed. You can set one later

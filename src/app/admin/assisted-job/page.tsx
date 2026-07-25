@@ -66,7 +66,17 @@ const MAX_MEDIA_COUNT = 20;
 
 type MediaItem = { file: File; preview: string; isVideo: boolean };
 
-type ClientHit = { id: string; name: string; phone: string; email?: string };
+// /admin/users returns Mongo `_id` (not transformed to `id` on this endpoint),
+// so read either.
+type ClientHit = {
+  id?: string;
+  _id?: string;
+  name: string;
+  phone: string;
+  email?: string;
+};
+type ProHit = { id?: string; _id?: string; name: string; email?: string };
+const userId = (u: { id?: string; _id?: string }) => u.id ?? u._id ?? "";
 
 const STEP_KEYS = ["client", "service", "details", "media", "review"] as const;
 type StepKey = (typeof STEP_KEYS)[number];
@@ -125,6 +135,14 @@ function AssistedJobContent() {
   const [clientSearched, setClientSearched] = useState(false);
   const suppressClientSearch = useRef(false);
   const clientSearchSeq = useRef(0);
+
+  // Optional: invite specific pros directly (on top of the open marketplace).
+  const [proQuery, setProQuery] = useState("");
+  const [proHits, setProHits] = useState<ProHit[]>([]);
+  const [invitedPros, setInvitedPros] = useState<{ id: string; name: string }[]>(
+    [],
+  );
+  const proSearchSeq = useRef(0);
 
   const steps = useMemo(
     () => [
@@ -188,6 +206,42 @@ function AssistedJobContent() {
     setClientHits([]);
     setClientSearched(false);
   };
+
+  // Debounced pro search for the optional "invite pros" section.
+  useEffect(() => {
+    const term = proQuery.trim();
+    if (term.length < 2) {
+      setProHits([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      const seq = ++proSearchSeq.current;
+      api
+        .get("/admin/users", { params: { search: term, role: "pro", limit: 6 } })
+        .then((r) => {
+          if (seq === proSearchSeq.current)
+            setProHits((r.data?.users as ProHit[]) || []);
+        })
+        .catch(() => {
+          if (seq === proSearchSeq.current) setProHits([]);
+        });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [proQuery]);
+
+  const addPro = (hit: ProHit) => {
+    const id = userId(hit);
+    if (!id) return;
+    setInvitedPros((prev) =>
+      prev.some((p) => p.id === id)
+        ? prev
+        : [...prev, { id, name: hit.name || "Pro" }],
+    );
+    setProQuery("");
+    setProHits([]);
+  };
+  const removePro = (id: string) =>
+    setInvitedPros((prev) => prev.filter((p) => p.id !== id));
 
   // ── Per-step validation (gentle gate on "Continue") ──
   const stepValid = useCallback(
@@ -304,6 +358,9 @@ function AssistedJobContent() {
         coordinates: coordinates || undefined,
         images,
         videos,
+        invitedPros: invitedPros.length
+          ? invitedPros.map((p) => p.id)
+          : undefined,
       };
 
       const res = await api.post("/assisted-jobs", payload);
@@ -381,6 +438,9 @@ function AssistedJobContent() {
                   setClientEmail("");
                   setSelectedCategory("");
                   setSelectedServices([]);
+                  setInvitedPros([]);
+                  setProQuery("");
+                  setProHits([]);
                   setDescription("");
                   setAreaSize("");
                   setLocation("");
@@ -504,7 +564,7 @@ function AssistedJobContent() {
                   </p>
                   {clientHits.map((hit) => (
                     <button
-                      key={hit.id}
+                      key={userId(hit)}
                       type="button"
                       onClick={() => selectClient(hit)}
                       className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-[var(--hm-bg-elevated)]"
@@ -547,6 +607,73 @@ function AssistedJobContent() {
                 selectedServices={selectedServices}
                 onServicesChange={setSelectedServices}
               />
+
+              {/* Optional: invite specific pros directly */}
+              <div className="rounded-2xl border border-dashed border-[var(--hm-border-subtle)] p-4">
+                <p className="text-[14px] font-medium text-[var(--hm-fg-primary)]">
+                  Invite specific pros{" "}
+                  <span className="text-[var(--hm-fg-muted)]">(optional)</span>
+                </p>
+                <p className="mt-0.5 text-[12px] text-[var(--hm-fg-muted)]">
+                  They&apos;ll be notified in addition to the open marketplace.
+                </p>
+
+                {invitedPros.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {invitedPros.map((p) => (
+                      <span
+                        key={p.id}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[var(--hm-brand-500)]/12 px-2.5 py-1 text-[13px] text-[var(--hm-fg-primary)]"
+                      >
+                        {p.name}
+                        <button
+                          type="button"
+                          onClick={() => removePro(p.id)}
+                          aria-label="Remove pro"
+                        >
+                          <X className="h-3.5 w-3.5 text-[var(--hm-fg-muted)] hover:text-[var(--hm-fg-primary)]" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="mt-3">
+                  <Input
+                    value={proQuery}
+                    onChange={(e) => setProQuery(e.target.value)}
+                    placeholder="Search pros by name…"
+                    leftIcon={<User className="h-4 w-4" />}
+                  />
+                  {proHits.length > 0 && (
+                    <div className="mt-1.5 rounded-xl border border-[var(--hm-border-subtle)] bg-[var(--hm-bg-tertiary)] p-2">
+                      {proHits.map((hit) => {
+                        const id = userId(hit);
+                        const already = invitedPros.some((p) => p.id === id);
+                        return (
+                          <button
+                            key={id}
+                            type="button"
+                            disabled={already}
+                            onClick={() => addPro(hit)}
+                            className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-[var(--hm-bg-elevated)] disabled:opacity-40"
+                          >
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--hm-brand-500)]/15 text-[12px] font-semibold text-[var(--hm-brand-500)]">
+                              {(hit.name || "?").charAt(0).toUpperCase()}
+                            </span>
+                            <span className="min-w-0 flex-1 truncate text-[14px] text-[var(--hm-fg-primary)]">
+                              {hit.name || "—"}
+                            </span>
+                            {already && (
+                              <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--hm-success-600)]" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -682,6 +809,12 @@ function AssistedJobContent() {
                 }
               />
               {description && <ReviewRow label="Description" value={description} />}
+              {invitedPros.length > 0 && (
+                <ReviewRow
+                  label="Invited pros"
+                  value={invitedPros.map((p) => p.name).join(", ")}
+                />
+              )}
               <ReviewRow
                 label="Media"
                 value={media.length ? `${media.length} file(s)` : "None"}
