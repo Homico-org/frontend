@@ -32,6 +32,7 @@ export const GEORGIAN_CITIES_EN = [
   "Chiatura",
   "Tsqaltubo",
   "Sagarejo",
+  "Mtskheta",
 ] as const;
 
 export const GEORGIAN_CITIES_KA = [
@@ -55,6 +56,7 @@ export const GEORGIAN_CITIES_KA = [
   "ჭიათურა",
   "წყალტუბო",
   "საგარეჯო",
+  "მცხეთა",
 ] as const;
 
 export const GEORGIAN_CITIES_RU = [
@@ -78,4 +80,5 @@ export const GEORGIAN_CITIES_RU = [
   "Чиатура",
   "Цкалтубо",
   "Сагареджо",
+  "Мцхета",
 ] as const;
