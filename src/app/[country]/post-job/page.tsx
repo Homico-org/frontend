@@ -846,7 +846,10 @@ function PostJobPageContent() {
         if (allCategories.length > 1) {
           jobData.categories = allCategories;
         }
-        const totalBudget = selectedJobServices.reduce((sum, s) => sum + s.budget, 0);
+        // Multiply by quantity to match what the client reviewed (serviceBudgetTotal
+        // line ~564 and the picker both use s.budget * quantity); otherwise the saved
+        // budgetMin/Max undercount services with quantity > 1.
+        const totalBudget = selectedJobServices.reduce((sum, s) => sum + s.budget * (s.quantity || 1), 0);
         if (totalBudget > 0) {
           jobData.budgetType = 'fixed';
           jobData.budgetMin = totalBudget;

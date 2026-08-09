@@ -19,6 +19,13 @@
     }
   },
   "common": {
+    "clearFilter": "Clear filter",
+    "refresh": "Refresh",
+    "deleted": "Deleted",
+    "untitled": "Untitled",
+    "hide": "Hide",
+    "show": "Show",
+    "viewMore": "View more",
     "save": "Save",
     "saved": "Saved",
     "undo": "Undo",
@@ -702,6 +709,7 @@
     "anyBudget": "Any Budget"
   },
   "job": {
+    "savedJobs": "Saved jobs",
     "title": "Title",
     "description": "Description",
     "budget": "Budget",
@@ -3693,6 +3701,7 @@
     "titleIsRequired": "Title Is Required"
   },
   "admin": {
+    "viewUser": "View user",
     "title": "Administrator",
     "dashboard": "Dashboard",
     "users": "Users",
@@ -4743,6 +4752,8 @@
       "aiUploadError": "Could not analyze project file. Please try again or enter manually."
     },
     "compare": {
+      "tableView": "Table view",
+      "cardsView": "Cards view",
       "title": "Compare Estimates",
       "subtitle": "Compare multiple contractor quotes side by side",
       "uploadEstimates": "Upload Estimates",
@@ -4785,6 +4796,7 @@
       "compareError": "Could not compare estimates. Please try again."
     },
     "analyzer": {
+      "takePhoto": "Take photo",
       "title": "Estimate Analyzer",
       "subtitle": "Upload a contractor estimate and get detailed analysis",
       "uploadTitle": "Upload Your Estimate",
