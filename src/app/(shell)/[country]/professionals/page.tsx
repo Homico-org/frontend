@@ -15,7 +15,7 @@ import { AnalyticsEvent, useAnalytics } from "@/hooks/useAnalytics";
 import { useLikes } from "@/hooks/useLikes";
 import { api } from "@/lib/api";
 import { LikeTargetType, ProProfile } from "@/types";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight, Plus, Users } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCountry } from "@/hooks/useCountry";
@@ -567,6 +567,41 @@ export default function ProfessionalsPage() {
                   </p>
                   <p className="text-[10px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
                     {pick({ en: "Join and start finding clients", ka: "შემოგვიერთდით და იპოვეთ კლიენტები", ru: "Присоединяйтесь и находите клиентов" })}
+                  </p>
+                </div>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[var(--hm-brand-500)] flex-shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
+            </Link>
+          )}
+          {isAuthenticated && user?.role === "client" && (
+            <Link
+              href={`/${country.toLowerCase()}/post-job`}
+              className="group flex items-center justify-between gap-2.5 px-3 py-2.5 sm:p-4 rounded-lg sm:rounded-2xl transition-all duration-200 hover:-translate-y-[1px]"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(239,78,36,0.08) 0%, rgba(239,78,36,0.02) 100%)",
+                border: "1px solid rgba(239,78,36,0.20)",
+                boxShadow:
+                  "0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(239,78,36,0.08), inset 0 1px 0 rgba(255,255,255,0.5)",
+              }}
+            >
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div
+                  className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, rgba(239,78,36,0.20) 0%, rgba(239,78,36,0.08) 100%)",
+                    boxShadow: "inset 0 0 0 1px rgba(239,78,36,0.20)",
+                  }}
+                >
+                  <Plus className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[var(--hm-brand-500)]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[13px] sm:text-base font-semibold text-[var(--hm-fg-primary)] truncate leading-tight">
+                    {pick({ en: "Post a job", ka: "განათავსეთ დავალება", ru: "Разместить заказ" })}
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-[var(--hm-fg-muted)] truncate">
+                    {pick({ en: "Describe your project and get offers", ka: "აღწერეთ პროექტი და მიიღეთ შეთავაზებები", ru: "Опишите проект и получите предложения" })}
                   </p>
                 </div>
               </div>

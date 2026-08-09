@@ -799,6 +799,13 @@ export default function ProfessionalDetailClient({
       return;
     }
 
+    // showPhoneCta is on but this pro has no phone on file: there is nothing to
+    // reveal, and the messaging surface below is gated off in this mode — so bail
+    // instead of falling through to a dead action.
+    if (showPhoneCta) {
+      return;
+    }
+
     // Messaging path still needs a logged-in user. Pass the
     // messages-deep-link as the return target so the user lands
     // inside the conversation after signing in, not on `/`.
