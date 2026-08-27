@@ -1,4 +1,21 @@
 {
+  "cancellationFees": {
+    "title": "Сбор за отмену",
+    "notice": "Предупреждение за {hours} ч",
+    "proposed": "Рекомендация - {amount} ₾ ({percent}% визита).",
+    "charge": "Списать {amount} ₾",
+    "waive": "Не списывать",
+    "charged": "Сбор списан",
+    "waived": "Сбор отменён",
+    "recent": "Последние решения",
+    "status": {
+      "pending": "Ждёт вашего решения",
+      "waived": "Отменён",
+      "charged": "Ожидает оплаты",
+      "paid": "Оплачен",
+      "failed": "Оплата не прошла"
+    }
+  },
   "adminRequests": {
     "title": "Запросы услуг",
     "subtitle": "Входящие запросы команды Homico - обработать, связаться, предложить, закрыть.",
@@ -1780,6 +1797,14 @@
       "project_stage_completed": {
         "title": "Проект завершён",
         "message": "\"{jobTitle}\" завершён"
+      },
+      "cancellation_fee_waived": {
+        "title": "Сбор отменён",
+        "message": "Клинер не стал списывать сбор за отмену - \"{jobTitle}\""
+      },
+      "cancellation_fee_charged": {
+        "title": "Сбор за отмену",
+        "message": "Сбор за отмену {amount} ₾ - \"{jobTitle}\""
       }
     }
   },

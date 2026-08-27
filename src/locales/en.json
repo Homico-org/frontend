@@ -1,4 +1,21 @@
 {
+  "cancellationFees": {
+    "title": "Cancellation fees",
+    "notice": "{hours}h notice",
+    "proposed": "Policy suggests {amount} ₾ ({percent}% of the visit).",
+    "charge": "Charge {amount} ₾",
+    "waive": "Waive",
+    "charged": "Fee charged",
+    "waived": "Fee waived",
+    "recent": "Recent decisions",
+    "status": {
+      "pending": "Awaiting you",
+      "waived": "Waived",
+      "charged": "Awaiting payment",
+      "paid": "Paid",
+      "failed": "Payment failed"
+    }
+  },
   "adminRequests": {
     "title": "Service requests",
     "subtitle": "Incoming Homico team requests - triage, contact, quote, close.",
@@ -1777,6 +1794,14 @@
       "project_stage_completed": {
         "title": "Project Completed",
         "message": "\"{jobTitle}\" has been completed"
+      },
+      "cancellation_fee_waived": {
+        "title": "Cancellation fee waived",
+        "message": "Your cleaner waived the cancellation fee for \"{jobTitle}\""
+      },
+      "cancellation_fee_charged": {
+        "title": "Cancellation fee charged",
+        "message": "A {amount} ₾ cancellation fee applies to \"{jobTitle}\""
       }
     }
   },

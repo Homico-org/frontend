@@ -56,6 +56,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, ReactNode } from "react";
 import ProMilestonePayments from "@/components/projects/ProMilestonePayments";
+import ProCancellationFees from "@/components/jobs/ProCancellationFees";
 
 type WorkProposal = Omit<Proposal, "jobId"> & { jobId: Job };
 
@@ -1043,6 +1044,10 @@ function MySpaceContent() {
       {/* ── Milestone payments ── propose schedules + mark work done, per
            engagement. Renders nothing when the pro has no payable work. */}
       <ProMilestonePayments />
+
+      {/* ── Cancellation fees ── the cleaner decides whether a late cancellation
+           is actually charged. Renders nothing when nothing is pending. */}
+      {(isPro || isAdmin) && <ProCancellationFees />}
 
       {/* ── Find New Jobs ── the growth engine, kept prominent right
            below active work. */}

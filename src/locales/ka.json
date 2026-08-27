@@ -1,4 +1,21 @@
 {
+  "cancellationFees": {
+    "title": "გაუქმების საფასური",
+    "notice": "გაფრთხილება {hours} სთ-ით ადრე",
+    "proposed": "რეკომენდაცია - {amount} ₾ (ვიზიტის {percent}%).",
+    "charge": "დარიცხვა - {amount} ₾",
+    "waive": "არ დაარიცხოთ",
+    "charged": "საფასური დაერიცხა",
+    "waived": "საფასური გაუქმდა",
+    "recent": "ბოლო გადაწყვეტილებები",
+    "status": {
+      "pending": "თქვენს გადაწყვეტილებას ელოდება",
+      "waived": "გაუქმებული",
+      "charged": "გადახდას ელოდება",
+      "paid": "გადახდილი",
+      "failed": "გადახდა ვერ შესრულდა"
+    }
+  },
   "adminRequests": {
     "title": "სერვისის მოთხოვნები",
     "subtitle": "შემომავალი Homico-ს გუნდის მოთხოვნები. დამუშავება, დაკავშირება, შეთავაზება, დახურვა.",
@@ -1777,6 +1794,14 @@
       "project_stage_completed": {
         "title": "პროექტი დასრულდა",
         "message": "\"{jobTitle}\" დასრულდა"
+      },
+      "cancellation_fee_waived": {
+        "title": "საფასური გაუქმდა",
+        "message": "დამლაგებელმა არ დაგარიცხათ გაუქმების საფასური - \"{jobTitle}\""
+      },
+      "cancellation_fee_charged": {
+        "title": "საფასური დაერიცხა",
+        "message": "გაუქმების საფასური {amount} ₾ - \"{jobTitle}\""
       }
     }
   },
